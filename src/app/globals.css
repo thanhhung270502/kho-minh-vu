@@ -1,0 +1,40 @@
+/*
+ * Thứ tự CSS layer phải khai báo TRƯỚC khi import Tailwind.
+ * Layer đứng sau thắng layer đứng trước khi cùng độ ưu tiên selector.
+ *
+ *   base (preflight của Tailwind)  <  antd  <  utilities (class Tailwind)
+ *
+ * Nhờ vậy:
+ *   - preflight không xoá nền/viền mặc định của component antd (lỗi nút antd
+ *     bị mất màu nền là do preflight đặt `button { background: transparent }`);
+ *   - class Tailwind (vd. `className="mb-4"`) vẫn đè được style antd khi cần.
+ *
+ * Style antd chỉ nằm trong `@layer antd` khi AntdRegistry bật prop `layer`
+ * (xem src/providers/app-providers.tsx). Sửa một chỗ phải sửa cả hai.
+ */
+@layer theme, base, antd, components, utilities;
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans:
+    var(--font-app-sans), system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  /* Màu thương hiệu — giữ trùng với token antd trong src/providers/antd-theme.ts */
+  --color-brand-50: #e6f4ff;
+  --color-brand-100: #bae0ff;
+  --color-brand-300: #69b1ff;
+  --color-brand-500: #1677ff;
+  --color-brand-600: #0958d9;
+  --color-brand-700: #003eb3;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+}
