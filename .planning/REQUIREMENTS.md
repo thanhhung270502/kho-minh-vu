@@ -156,13 +156,86 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (chưa map — điền khi tạo roadmap) | — | Pending |
+| DATA-01 | Phase 1 | Pending |
+| DATA-02 | Phase 1 | Pending |
+| DATA-03 | Phase 1 | Pending |
+| DATA-04 | Phase 1 | Pending |
+| DATA-05 | Phase 1 | Pending |
+| DATA-06 | Phase 1 | Pending |
+| DATA-07 | Phase 1 | Pending |
+| DATA-08 | Phase 1 | Pending |
+| DATA-09 | Phase 1 | Pending |
+| DATA-10 | Phase 1 | Pending |
+| AUTH-03 | Phase 1 | Pending |
+| AUTH-04 | Phase 1 | Pending |
+| AUTH-05 | Phase 1 | Pending |
+| AUTH-06 | Phase 1 | Pending |
+| DLIEU-01 | Phase 1 | Pending |
+| DLIEU-02 | Phase 1 | Pending |
+| DLIEU-03 | Phase 1 | Pending |
+| AUTH-01 | Phase 2 | Pending |
+| AUTH-02 | Phase 2 | Pending |
+| AUTH-07 | Phase 2 | Pending |
+| DMUC-01 | Phase 2 | Pending |
+| DMUC-02 | Phase 2 | Pending |
+| DMUC-03 | Phase 2 | Pending |
+| DMUC-04 | Phase 2 | Pending |
+| DMUC-05 | Phase 2 | Pending |
+| DMUC-06 | Phase 2 | Pending |
+| DMUC-07 | Phase 2 | Pending |
+| DTAC-01 | Phase 2 | Pending |
+| DTAC-02 | Phase 2 | Pending |
+| DTAC-03 | Phase 2 | Pending |
+| DLIEU-04 | Phase 2 | Pending |
+| CDAT-01 | Phase 2 | Pending |
+| CDAT-02 | Phase 2 | Pending |
+| CDAT-03 | Phase 2 | Pending |
+| CDAT-04 | Phase 2 | Pending |
+| NHAP-01 | Phase 3 | Pending |
+| NHAP-02 | Phase 3 | Pending |
+| NHAP-03 | Phase 3 | Pending |
+| NHAP-04 | Phase 3 | Pending |
+| NHAP-05 | Phase 3 | Pending |
+| NHAP-06 | Phase 3 | Pending |
+| NHAP-07 | Phase 3 | Pending |
+| NHAP-08 | Phase 3 | Pending |
+| DDH-01 | Phase 4 | Pending |
+| DDH-02 | Phase 4 | Pending |
+| DDH-03 | Phase 4 | Pending |
+| DDH-04 | Phase 4 | Pending |
+| XUAT-01 | Phase 4 | Pending |
+| XUAT-02 | Phase 4 | Pending |
+| XUAT-03 | Phase 4 | Pending |
+| XUAT-04 | Phase 4 | Pending |
+| XUAT-05 | Phase 4 | Pending |
+| XUAT-06 | Phase 4 | Pending |
+| XUAT-07 | Phase 4 | Pending |
+| XUAT-08 | Phase 4 | Pending |
+| XUAT-09 | Phase 4 | Pending |
+| TON-01 | Phase 5 | Pending |
+| TON-02 | Phase 5 | Pending |
+| TON-03 | Phase 5 | Pending |
+| TON-04 | Phase 5 | Pending |
+| TON-05 | Phase 5 | Pending |
+| TQAN-01 | Phase 5 | Pending |
+| TQAN-02 | Phase 5 | Pending |
+| TQAN-03 | Phase 5 | Pending |
+| TQAN-04 | Phase 5 | Pending |
+| TQAN-05 | Phase 5 | Pending |
+| TQAN-06 | Phase 5 | Pending |
+| KKE-01 | Phase 6 | Pending |
+| KKE-02 | Phase 6 | Pending |
+| KKE-03 | Phase 6 | Pending |
+| KKE-04 | Phase 6 | Pending |
+| DLIEU-05 | Phase 6 | Pending |
+| DLIEU-06 | Phase 6 | Pending |
+| DLIEU-07 | Phase 6 | Pending |
 
 **Coverage:**
 - v1 requirements: 74 total
-- Mapped to phases: 0
-- Unmapped: 74 ⚠️
+- Mapped to phases: 74
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-09-12*
-*Last updated: 2026-09-12 after initial definition*
+*Last updated: 2026-09-12 after roadmap creation (6 phases, 100% coverage)*

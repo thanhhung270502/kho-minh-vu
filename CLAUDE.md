@@ -1,32 +1,48 @@
-# Hệ thống theo dõi sản xuất & tồn kho
+# Kho Minh Vũ — quản lý xuất nhập tồn
 
 ## Bối cảnh nghiệp vụ
 
-Công ty sản xuất linh kiện nhựa, 5 xưởng: **ép nhựa, sơn, carbon, xi mạ, đóng gói**.
-Một hệ thống dùng chung cho cả 5 xưởng — không tách riêng từng xưởng.
+Doanh nghiệp **thương mại** phụ tùng xe máy (CTY TNHH SX-TM P.Tùng Xe Máy Minh Vũ).
+Hệ thống thay thế KiotViet đang dùng.
 
-Luồng sản xuất:
+| | |
+|---|---|
+| Mã hàng | 3.266, thuộc 90 nhóm |
+| Kho | 2 |
+| Đối tác | 25 NCC + khách hàng |
+| Nhịp vận hành | ~92 phiếu xuất/ngày (5,1 dòng/phiếu), ~8 phiếu nhập/ngày (7,6 dòng/phiếu) |
 
-```
-Hạt nhựa → ÉP NHỰA → phôi/bán thành phẩm
-                        ├─(1) không cần xử lý bề mặt → ĐÓNG GÓI
-                        ├─(2) cần xử lý bề mặt      → SƠN / CARBON / XI MẠ → ĐÓNG GÓI
-                        └─(3) lưu kho chờ           → sau đó mới qua xử lý bề mặt
-ĐÓNG GÓI → kho thành phẩm
-```
+**Ranh giới: chỉ kho thương mại.** Nhà máy Vũ Trụ L.An là **một nhà cung cấp** —
+không có WIP, không lệnh sản xuất, không tiến độ xưởng. v1 cũng không có công nợ,
+không quản lý lô/hạn dùng, không hóa đơn điện tử (xem `.planning/REQUIREMENTS.md`).
 
-Ba loại tồn kho phải theo dõi tách bạch:
+Ba nhóm người dùng, hai lớp UI trên cùng một API:
+thủ kho (điện thoại, quét mã) · văn phòng (máy tính, bảng dày) · quản lý (dashboard).
 
-1. Nguyên vật liệu (hạt nhựa, hoá chất)
-2. Bán thành phẩm / phôi chờ xử lý (WIP)
-3. Thành phẩm chờ xuất
+### Năm nguyên tắc kiến trúc — mọi tính năng phải tuân theo
 
-Lưu ý: phôi chờ xử lý và thành phẩm hoàn thiện **đang để chung một kho vật lý**
-nhưng trong hệ thống phải tách riêng, nếu không sẽ không biết còn bao nhiêu phôi
-cần chạy tiếp.
+Lệch khỏi năm nguyên tắc này thì hệ thống sẽ lệch tồn trong vòng vài tháng.
 
-Mục tiêu: biết lô hàng đang ở giai đoạn nào, cần sản xuất bao nhiêu, tồn kho bao
-nhiêu — thay thế sổ sách + Google Sheet đang làm thủ công.
+1. **Tồn kho là kết quả, không phải dữ liệu nhập tay.** Không màn nào cho sửa trực
+   tiếp số tồn. Muốn tồn đổi thì phải có chứng từ. Sai số chỉnh bằng phiếu kiểm kê.
+2. **Một sổ cái kho append-only.** Mọi biến động ghi vào `kho_movement` — chỉ thêm,
+   không sửa, không xóa. Đây là nguồn sự thật để dựng lại tồn và truy vết khi lệch.
+3. **Một bảng chứng từ cho bảy loại.** `NHAP`, `XUAT`, `TRA_NCC`, `TRA_KHACH`,
+   `CHUYEN_KHO`, `KIEM_KE`, `DIEU_CHINH` dùng chung header + dòng, phân biệt bằng
+   `loai_ct`. Thẻ kho chỉ phải join một bảng.
+4. **Chứng từ có hai trạng thái sống.** `NHAP_LIEU` (sửa thoải mái, chưa đụng tồn)
+   → `HOAN_THANH` (ghi sổ, khóa). Hủy phiếu đã ghi sổ sinh bút toán đảo, không xóa.
+5. **Mã hàng là khóa nghiệp vụ, ID là khóa kỹ thuật.** PK là `uuid`, `ma_hang` là
+   unique index.
+
+**Giá vốn: bình quân gia quyền di động**, không FIFO. Tính bằng trigger ở database,
+không tính ở JS. `san_pham.gia_von` chỉ ghi được bằng trigger, không ghi từ client.
+
+**Ghi sổ phải atomic** — làm bằng Postgres RPC trong một transaction, không bằng
+Server Action gọi nhiều lệnh rời rạc.
+
+**Xuất âm được phép** nhưng bắt buộc chọn lý do (42 mã đang bị xuất khi tồn ≤ 0 trên
+hệ cũ — chặn cứng sẽ làm kho kẹt ngay ngày đầu).
 
 ## Lệnh hay dùng
 
@@ -49,8 +65,8 @@ npm run db:types     # sinh lại src/types/database.types.ts sau mỗi migratio
 | Database / Auth | Supabase (Postgres + RLS + Realtime)                           |
 | Form            | React Hook Form + Zod                                          |
 | Biểu đồ         | Recharts                                                       |
-| Xuất Excel      | exceljs                                                        |
-| QR lô hàng      | qrcode (sinh) + html5-qrcode (quét)                            |
+| Excel           | exceljs (import danh mục, export báo cáo)                      |
+| Quét barcode    | camera trình duyệt — chốt thư viện ở Phase 4                   |
 
 Không dùng ORM (Prisma/Drizzle), không dùng Redux/Zustand, không dùng NextAuth —
 xem phần "Không tự ý làm".
@@ -102,12 +118,12 @@ Tên file và route: tiếng Việt **không dấu**, nối bằng gạch ngang 
 
 - **Không tự viết type của bảng.** Chạy `npm run db:types` rồi suy ra:
   ```ts
-  type LoSanXuat = Database["public"]["Tables"]["lo_san_xuat"]["Row"];
+  type SanPham = Database["public"]["Tables"]["san_pham"]["Row"];
   ```
   Sửa `src/types/database.types.ts` bằng tay là sai — lần sinh sau sẽ mất.
 - Có form thì viết Zod schema trước, type suy ra bằng `z.infer` — không khai hai lần.
 - Cấm `any`. Không chắc thì `unknown` rồi thu hẹp. Không dùng `!` để làm im lặng lỗi kiểu.
-- Trạng thái mô tả bằng union (`"cho_ep" | "dang_ep" | "cho_xu_ly_be_mat" | ...`),
+- Trạng thái mô tả bằng union (`"NHAP_LIEU" | "HOAN_THANH" | "DA_HUY"`),
   không dùng nhiều boolean rời rạc.
 - **Số lượng tồn kho và sản lượng**: cột Postgres dùng `numeric`, không dùng
   `float8`. Cộng dồn phiếu nhập/xuất bằng float sẽ sai số và lệch sổ kho.
@@ -124,7 +140,7 @@ Tên file và route: tiếng Việt **không dấu**, nối bằng gạch ngang 
 - Luôn kiểm tra `error` supabase-js trả về rồi `throw` để TanStack Query bắt được.
   supabase-js **không tự ném lỗi**:
   ```ts
-  const { data, error } = await supabase.from("lo_san_xuat").select("*");
+  const { data, error } = await supabase.from("san_pham").select("*");
   if (error) throw error;
   return data;
   ```
@@ -150,8 +166,8 @@ Không render thẳng từ `query.data`.
 | success    | nội dung thật                                       |
 
 Thông báo lỗi nói **chuyện gì xảy ra và làm gì tiếp theo**. Cấm "Có lỗi xảy ra".
-Cấm `catch (e) {}` nuốt lỗi im lặng. Người ở xưởng phải biết nên bấm thử lại, gọi
-quản trị, hay sửa lại số liệu vừa nhập.
+Cấm `catch (e) {}` nuốt lỗi im lặng. Thủ kho và văn phòng phải biết nên bấm thử lại,
+gọi quản trị, hay sửa lại số liệu vừa nhập.
 
 Có form thì bắt buộc:
 
@@ -164,7 +180,7 @@ Có form thì bắt buộc:
 Route mới phải trả lời: chưa đăng nhập vào đây thì sao? Chặn ở `src/proxy.ts`
 và giữ `?tiep_tuc=<đường-dẫn>` để đăng nhập xong quay lại đúng trang.
 
-Màn hình nhập liệu tại xưởng phải dùng được trên điện thoại: nút đủ to, bảng cho
+Màn hình thủ kho dùng (phiếu xuất, tồn kho, kiểm kê) phải dùng được trên điện thoại: nút đủ to, bảng cho
 cuộn ngang trong khung riêng, không để cả trang tràn ngang.
 
 ## Bước 6 — Đặt state ở bậc thấp nhất còn đủ dùng
@@ -175,7 +191,7 @@ Thang bậc, luôn thử từ trên xuống:
 2. `useState` ngay trong component đang dùng
 3. `useReducer` khi nhiều trạng thái liên quan nhau
 4. nâng lên cha chung gần nhất
-5. Context — chỉ cho dữ liệu ít thay đổi (người dùng hiện tại, xưởng đang chọn)
+5. Context — chỉ cho dữ liệu ít thay đổi (người dùng hiện tại, kho đang chọn)
 6. global store — phải nói rõ lý do trước khi thêm
 
 Dấu hiệu đang làm sai:
@@ -206,7 +222,7 @@ Chạy `npm run check` (typecheck + lint + build). Sau đó đọc lại diff v�
 Báo cáo cuối nêu rõ: đã tạo/sửa file nào, **giả định nào đã đặt ra** khi yêu cầu
 chưa rõ, và phần nào chưa làm.
 
-Commit theo Conventional Commits: `feat(kho): thêm phiếu nhập nguyên vật liệu`.
+Commit theo Conventional Commits: `feat(nhap): ghi sổ phiếu nhập tính lại giá vốn`.
 Một commit làm một việc.
 
 ---
@@ -271,3 +287,73 @@ tham số `buf` — đường code đó không bao giờ chạy. Cứ để nguy
 - **Bịa shape dữ liệu** khi chưa thấy schema thật — hỏi, hoặc nói rõ là đang giả định.
 - **Đặt `service_role` key vào biến `NEXT_PUBLIC_*`** — key đó lộ ra trình duyệt là
   mất sạch quyền kiểm soát database.
+
+<!-- GSD:project-start source:PROJECT.md -->
+## Project
+
+**Kho Minh Vũ**
+
+Nền tảng quản lý xuất nhập tồn và đặt hàng cho **CTY TNHH SX-TM P.Tùng Xe Máy Minh Vũ** —
+một doanh nghiệp thương mại phụ tùng xe máy với 3.266 mã hàng, 2 kho, 25 nhà cung cấp,
+khoảng 92 phiếu xuất mỗi ngày. Hệ thống thay thế KiotViet đang dùng, dựng bằng
+Next.js + Supabase, phục vụ ba nhóm người dùng: thủ kho (điện thoại, quét mã),
+văn phòng (máy tính, nhập liệu dày) và quản lý (dashboard).
+
+**Core Value:** Ngày đầu go-live, **toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới
+mà không ai phải mở KiotViet để đối chiếu.** Đó là tiêu chí thành công duy nhất — không
+phải số lượng tính năng.
+
+### Constraints
+
+- **Tech stack**: Next.js 16 App Router + TypeScript, Ant Design v6 (bảng/form) +
+  Tailwind v4 (layout), Supabase (Postgres + Auth + RLS + Realtime), TanStack Query v5,
+  React Hook Form + Zod, exceljs, Recharts — đã chốt, không đổi giữa chừng.
+- **Không ORM**: dùng supabase-js + type sinh tự động. Prisma/Drizzle kết nối trực tiếp
+  bằng service role → bypass RLS, phá toàn bộ mô hình phân quyền.
+- **Timeline**: 6 tuần, làm ngoài giờ, một người. Mỗi tuần phải kết thúc bằng một thứ
+  chạy được, không phải một thứ làm dở.
+- **Thiết bị**: thủ kho dùng điện thoại (quét mã, kiểm kê); văn phòng dùng máy tính với
+  bảng dày. Hai lớp UI trên cùng một API.
+- **Hiệu năng nhập liệu**: mục tiêu dưới 20 giây một phiếu xuất khi tạo từ đơn đặt hàng
+  có sẵn. Văn phòng nhập ~470 dòng/ngày.
+- **Bảo mật**: phân quyền cài bằng RLS ở tầng database, không bằng logic giao diện.
+  `service_role` key tuyệt đối không đặt vào biến `NEXT_PUBLIC_*`.
+<!-- GSD:project-end -->
+
+<!-- GSD:stack-start source:STACK.md -->
+## Technology Stack
+
+Technology stack not yet documented. Will populate after codebase mapping or first phase.
+<!-- GSD:stack-end -->
+
+<!-- GSD:conventions-start source:CONVENTIONS.md -->
+## Conventions
+
+Conventions not yet established. Will populate as patterns emerge during development.
+<!-- GSD:conventions-end -->
+
+<!-- GSD:architecture-start source:ARCHITECTURE.md -->
+## Architecture
+
+Architecture not yet mapped. Follow existing patterns found in the codebase.
+<!-- GSD:architecture-end -->
+
+<!-- GSD:workflow-start source:GSD defaults -->
+## GSD Workflow Enforcement
+
+Before using Edit, Write, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.
+
+Use these entry points:
+- `/gsd:quick` for small fixes, doc updates, and ad-hoc tasks
+- `/gsd:debug` for investigation and bug fixing
+- `/gsd:execute-phase` for planned phase work
+
+Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
+<!-- GSD:workflow-end -->
+
+<!-- GSD:profile-start -->
+## Developer Profile
+
+> Profile not yet configured. Run `/gsd:profile-user` to generate your developer profile.
+> This section is managed by `generate-claude-profile` -- do not edit manually.
+<!-- GSD:profile-end -->
