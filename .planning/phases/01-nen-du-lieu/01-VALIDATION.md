@@ -100,6 +100,12 @@ Từ `01-RESEARCH.md` §Work Unit Risk Assessment — planner phải xử lý:
 4. **pg_cron (WU-15)** — tách "viết hàm" (test được) khỏi "đăng ký lịch" (hoãn tới khi có cloud project).
 5. **Import Excel (WU-20/21)** — KiotViet export thường có dòng tổng/dòng trống cuối sheet và cột số format Text; script phải tự ép kiểu, không tin `typeof` mặc định của exceljs.
 
+**Ba lỗi plan-checker bắt được trong vòng soát plan, đã sửa — ghi lại để không tái phạm:**
+
+6. **Quyền theo cột áp theo SQL role, không theo JWT claim.** Quản lý và văn phòng cùng kết nối dưới role `authenticated`, chỉ khác claim. Bỏ một cột khỏi `grant update (...)` là chặn MỌI vai trò, kể cả vai trò lẽ ra được phép, và biến nhánh phân vai của trigger thành code chết. → `gia_von` dùng GRANT cột (chặn tuyệt đối), `gia_ban` dùng trigger (phân vai).
+7. **Khối tự kiểm RLS quét MỌI bảng schema `public`**, không chỉ 13 bảng nghiệp vụ. `chuoi_so_ct` và hai bảng lưu trữ KiotViet cũng phải bật RLS, nếu không `npm run db:reset` hỏng từ wave 7 và kéo theo mọi plan sau.
+8. **Khóa cột trên UPDATE mà quên INSERT là không khóa gì cả.** Chặn sửa `gia_von` nhưng cho tạo mã mới với `gia_von` tùy ý thì người dùng xóa rồi tạo lại là lách được. Giá trị bịa lúc tạo còn nguy hiểm hơn: nó thành `v_gia_von_cu` ở lần ghi sổ đầu tiên và làm hỏng bình quân gia quyền từ con số đầu, im lặng. Mọi ràng buộc cột phải phủ cả hai đường ghi.
+
 ---
 
 ## Validation Sign-Off
