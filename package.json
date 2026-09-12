@@ -23,7 +23,8 @@
     "db:types:local": "supabase gen types typescript --local --schema public > src/types/database.types.ts",
     "seed:users": "tsx scripts/seed-users.ts",
     "verify:hook": "tsx scripts/verify-hook.ts",
-    "import:kiotviet": "tsx scripts/import-kiotviet/index.ts"
+    "import:kiotviet": "tsx scripts/import-kiotviet/index.ts",
+    "import:mau": "tsx scripts/import-kiotviet/tao-du-lieu-mau.ts"
   },
   "dependencies": {
     "@ant-design/cssinjs": "^2.1.2",
