@@ -53,6 +53,13 @@ npm run typecheck
 npm run lint
 npm run format
 npm run db:types     # sinh lại src/types/database.types.ts sau mỗi migration
+
+# Database — xem supabase/README.md để biết chi tiết
+npm run db:push          # áp migration lên cloud
+npm run db:test:linked   # chạy pgTAP trên cloud
+npm run seed:users       # tạo 4 tài khoản mẫu
+npm run verify:hook      # xác nhận JWT có vai_tro/kho_id
+npm run import:kiotviet -- --mau   # thử nạp dữ liệu trên file mẫu
 ```
 
 ## Tech stack
