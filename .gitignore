@@ -40,3 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 !.env.example
+
+# dữ liệu export thật từ KiotViet — dữ liệu kinh doanh, không đẩy lên git
+/data/kiotviet/*
+!/data/kiotviet/README.md
