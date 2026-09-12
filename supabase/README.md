@@ -105,6 +105,36 @@ Chỉ dùng khi biết chắc mình đang làm gì. Trên cloud hãy dùng `db:p
 
 ---
 
+## Cảnh báo advisor đã xem xét và chấp nhận
+
+Chạy `get_advisors(type: security)` sau mỗi lần đổi DDL. Lần quét đầu bắt được
+1 ERROR và 19 WARN — đã vá ở migration `0020`. Bảy cảnh báo còn lại là **cố ý**:
+
+| Hàm | Vì sao giữ nguyên |
+|---|---|
+| `ghi_so_chung_tu`, `huy_chung_tu` | SECURITY DEFINER là **bắt buộc**: client không được GRANT INSERT trên `kho_movement`, nên hàm phải mượn quyền của owner. Quyền nghiệp vụ kiểm tường minh bên trong hàm (`vai_tro_hien_tai() = 'chi_xem'` → 42501). |
+| `doi_chieu_ton` | Như trên, kèm kiểm vai trò chỉ cho `quan_ly`/`van_phong`. |
+| `vai_tro_hien_tai`, `kho_hien_tai` | RLS policy cần `authenticated` gọi được. Chúng chỉ đọc JWT của **chính người gọi**, không lộ gì của người khác. |
+| `rls_auto_enable` | **Hàm nền tảng của Supabase**, không phải của dự án. Event trigger tự bật RLS cho bảng mới. Gọi ngoài ngữ cảnh event trigger sẽ lỗi ngay. Không đụng vào. |
+
+Advisor không biết ý đồ nên vẫn cảnh báo. Cảnh báo **mới** ngoài danh sách này
+thì phải xem xét, đừng bỏ qua cả cụm.
+
+### Hai lỗi thật đã vá, ghi lại để không lặp
+
+1. **View chạy với quyền người tạo (ERROR).** `v_doi_chieu_ton` mặc định chạy
+   dưới quyền owner nên RLS **không** áp dụng — thủ kho truy vấn thẳng view sẽ
+   thấy tồn cả hai kho, lách đúng AUTH-04. Vá bằng `security_invoker = on`.
+   **Mọi view mới đều phải đặt option này.**
+2. **Khóa `search_path` làm hỏng tìm kiếm.** Thêm `set search_path = ''` vào
+   `tim_san_pham` khiến toán tử `%` và `similarity()` của pg_trgm (ở schema
+   `extensions`) không phân giải được → lỗi 42883, tìm kiếm chết. Khóa
+   search_path thì phải qualify **mọi thứ**, kể cả **toán tử**:
+   `a operator(extensions.%) b`. Đây là chỗ dễ quên nhất vì toán tử trông không
+   giống lời gọi hàm.
+
+---
+
 ## Quy ước tên migration
 
 `NNNN_ten_khong_dau.sql` — bốn chữ số, tăng dần. Khóa cho **toàn dự án**.

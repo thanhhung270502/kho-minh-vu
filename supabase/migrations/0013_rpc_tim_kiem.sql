@@ -21,8 +21,12 @@ as $$
     -- Sai thứ tự cột, thiếu coalesce, hay thiếu dấu cách đều làm planner
     -- không nhận ra và chuyển sang Seq Scan.
     --
-    -- % là toán tử trigram similarity (ngưỡng mặc định 0.3), dùng được index
-    -- GIN. KHÔNG thay bằng ILIKE '%...%' — ILIKE không dùng được index này.
+    -- ⚠️ HAI CÂU DƯỚI ĐÂY SAI, ĐÃ SỬA Ở MIGRATION 0022 — giữ lại để thấy vết:
+    --   "% là toán tử trigram similarity, dùng được index GIN.
+    --    KHÔNG thay bằng ILIKE '%...%' — ILIKE không dùng được index này."
+    -- Sai hai chỗ: (a) gin_trgm_ops TĂNG TỐC ĐƯỢC cả LIKE/ILIKE; (b) toán tử %
+    -- đo độ giống TOÀN CHUỖI nên gõ vài ký tự luôn dưới ngưỡng và trả về rỗng —
+    -- hỏng đúng ca dùng chính. Bản dùng thật nằm ở 0022.
     and public.f_unaccent(coalesce(sp.ma_hang,'') || ' ' || coalesce(sp.ten_hang,''))
         % public.f_unaccent(p_tu_khoa)
   order by

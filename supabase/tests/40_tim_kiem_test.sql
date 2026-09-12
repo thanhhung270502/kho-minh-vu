@@ -2,7 +2,7 @@
 -- DATA-07 — Tìm sản phẩm không dấu, ưu tiên mã phát sinh gần đây
 -- =============================================================================
 begin;
-select plan(8);
+select plan(12);
 
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
@@ -97,6 +97,26 @@ select is(
     where schemaname = 'public' and indexname = 'idx_san_pham_tim_kiem'),
   1::bigint,
   'index GIN trigram tồn tại (xem supabase/README.md để kiểm planner có dùng)'
+);
+
+-- Các ca dưới đây đã kiểm chứng thật trên cloud sau migration 0022.
+-- Trước 0022, ca "gõ vài ký tự" trả về RỖNG — toán tử % đo độ giống toàn chuỗi.
+select is(
+  (select count(*) from public.tim_san_pham('bd')),
+  2::bigint,
+  'gõ 2 ký tự "bd" ra cả BD-001 và BD-002 — ca dùng chính của thủ kho'
+);
+select isnt_empty(
+  'select 1 from public.tim_san_pham(''bac dna'')',
+  'gõ sai chính tả "bac dna" vẫn tìm được — nhánh word_similarity'
+);
+select isnt_empty(
+  'select 1 from public.tim_san_pham(''oc vit'')',
+  'tìm được "Ốc vít M6" khi gõ "oc vit"'
+);
+select is_empty(
+  'select 1 from public.tim_san_pham('''')',
+  'từ khóa rỗng trả về rỗng, không quét cả bảng'
 );
 
 select * from finish();
