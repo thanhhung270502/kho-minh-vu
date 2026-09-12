@@ -1,9 +1,9 @@
 ---
 phase: 1
 slug: nen-du-lieu
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: passed
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-09-12
 ---
 
@@ -117,4 +117,47 @@ Từ `01-RESEARCH.md` §Work Unit Risk Assessment — planner phải xử lý:
 - [ ] Feedback latency < 60s
 - [ ] Đặt `nyquist_compliant: true` trong frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-09-12 — 77/77 pgTAP xanh trên cloud, test đồng thời 2 kết nối đạt
+
+---
+
+## Kết quả chạy thật (2026-09-12)
+
+```
+npm run db:test:linked
+  10_ton_kho_test.sql .... ok
+  20_chung_tu_test.sql ... ok
+  30_rls_test.sql ........ ok
+  40_tim_kiem_test.sql ... ok
+  50_doi_chieu_test.sql .. ok
+All tests successful. Files=5, Tests=77.  Result: PASS
+
+npm run test:dong-thoi
+  Giá vốn sau 2 transaction chồng nhau: 166.6667  ✓
+  Bộ đếm sau 50 lần gọi song song: 50             ✓
+```
+
+### Bốn lỗi TRONG TEST mà lần chạy đầu bắt được
+
+Không lỗi nào ở hệ thống — tất cả là lỗi của chính bộ test. Đó cũng là lý do
+phải chạy test thật chứ không chỉ viết ra rồi tin.
+
+1. **Kỳ vọng sai mã lỗi.** Assertion đòi `23514` khi `service_role` sửa sổ cái,
+   thực tế là `42501`. Vì REVOKE (lớp 1) chặn TRƯỚC khi trigger (lớp 2) kịp chạy.
+   Sửa kỳ vọng, và đây hóa ra là bằng chứng hai lớp hoạt động ở hai tầng khác nhau.
+2. **Gọi helper sai schema** — `public.dang_nhap_nhu` thay vì `pg_temp.`.
+3. **Thứ tự assertion.** Tắt `dang_kinh_doanh` của BD-002 trước khi test tìm
+   kiếm nó → thiếu một kết quả.
+4. **Gọi `doi_chieu_ton()` khi chưa đăng nhập** — migration 0020 vừa thêm cổng
+   vai trò vào hàm đó.
+
+### Một FALSE PASS đã bị bắt
+
+`30_rls_test.sql` assertion "chỉ xem không tạo được chứng từ" dùng `from t_id`
+(bảng tạm thuộc `postgres`). Dưới role `authenticated`, đọc bảng tạm ném `42501`
+— **trùng mã với "RLS từ chối"**. Test xanh vì lý do sai.
+
+Bịt bằng `grant select on t_id to authenticated;` trong mọi file test. Sau khi
+grant mà vẫn `42501` thì mới đúng là policy chặn.
+
+Bài học: khi assert theo mã lỗi, phải chắc chỉ có MỘT đường dẫn tới mã đó.

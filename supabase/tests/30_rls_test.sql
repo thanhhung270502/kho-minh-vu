@@ -66,6 +66,12 @@ select pg_temp.sp_test('RLS-001') as sp,
        pg_temp.kho_id('K1')       as k1,
        pg_temp.kho_id('K2')       as k2;
 
+-- Bảng tạm thuộc sở hữu postgres. Không GRANT thì mọi truy vấn đọc nó dưới
+-- role authenticated sẽ ném 42501 — TRÙNG mã lỗi với "RLS từ chối", nên
+-- assertion throws_ok('42501') có thể xanh vì lý do SAI. Đây là false pass
+-- thật sự đã xảy ra ở 30_rls_test.sql lần chạy trước.
+grant select on t_id to authenticated;
+
 -- Dựng tồn ở CẢ HAI kho, dưới quyền postgres.
 insert into public.kho_movement (kho_id, san_pham_id, so_luong, gia_von_tai_thoi_diem)
 select k1, sp, 10, 100 from t_id;

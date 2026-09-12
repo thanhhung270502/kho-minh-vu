@@ -3,7 +3,7 @@
 -- Sổ cái bất biến · tồn tự cập nhật · giá vốn bình quân gia quyền di động
 -- =============================================================================
 begin;
-select plan(17);
+select plan(18);
 
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
@@ -51,6 +51,12 @@ create temp table t_id as
 select pg_temp.sp_test('TEST-001') as sp,
        pg_temp.kho_id('K1')        as k1,
        pg_temp.kho_id('K2')        as k2;
+
+-- Bảng tạm thuộc sở hữu postgres. Không GRANT thì mọi truy vấn đọc nó dưới
+-- role authenticated sẽ ném 42501 — TRÙNG mã lỗi với "RLS từ chối", nên
+-- assertion throws_ok('42501') có thể xanh vì lý do SAI. Đây là false pass
+-- thật sự đã xảy ra ở 30_rls_test.sql lần chạy trước.
+grant select on t_id to authenticated;
 
 -- ─── nhập lần 1: 10 @ 100 ────────────────────────────────────────────────
 insert into public.kho_movement (kho_id, san_pham_id, so_luong, gia_von_tai_thoi_diem)
@@ -159,10 +165,21 @@ select throws_ok(
 );
 
 set local role service_role;
+-- Mã lỗi ở đây là 42501, KHÔNG phải 23514 — và đó là bằng chứng hai lớp chặn
+-- hoạt động ở hai tầng khác nhau:
+--   - service_role: REVOKE (lớp 1) chặn TRƯỚC khi trigger kịp chạy -> 42501
+--   - postgres (chủ sở hữu bảng): REVOKE không áp dụng, trigger (lớp 2)
+--     mới là thứ chặn -> 23514
+-- Nếu ai đó bỏ REVOKE, assertion này sẽ đổi thành 23514 và lộ ra ngay.
 select throws_ok(
   'update public.kho_movement set so_luong = 999',
-  '23514', null,
-  'UPDATE sổ cái bị chặn với service_role (role có BYPASSRLS)'
+  '42501', null,
+  'UPDATE sổ cái bị chặn với service_role bởi LỚP 1 (REVOKE), mã 42501'
+);
+select throws_ok(
+  'delete from public.kho_movement',
+  '42501', null,
+  'DELETE sổ cái bị chặn với service_role bởi LỚP 1 (REVOKE), mã 42501'
 );
 reset role;
 

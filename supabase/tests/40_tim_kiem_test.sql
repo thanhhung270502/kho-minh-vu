@@ -51,6 +51,8 @@ select pg_temp.sp_test('BD-001') as bd1,
        pg_temp.sp_test('BD-002') as bd2,
        pg_temp.sp_test('OC-001') as oc1;
 
+grant select on t_sp to authenticated;
+
 update public.san_pham set ten_hang = 'Bạc đạn 6202', lan_phat_sinh_cuoi = now()
   where ma_hang = 'BD-001';
 update public.san_pham set ten_hang = 'Bạc đạn 6203', lan_phat_sinh_cuoi = now() - interval '30 days'
@@ -85,12 +87,6 @@ select is(
   'tôn trọng tham số giới hạn'
 );
 
-update public.san_pham set dang_kinh_doanh = false where ma_hang = 'BD-002';
-select is(
-  (select count(*) from public.tim_san_pham('bac dan') where ma_hang = 'BD-002'),
-  0::bigint,
-  'hàng đã ngừng kinh doanh không xuất hiện trong kết quả'
-);
 
 select is(
   (select count(*) from pg_indexes
@@ -117,6 +113,15 @@ select isnt_empty(
 select is_empty(
   'select 1 from public.tim_san_pham('''')',
   'từ khóa rỗng trả về rỗng, không quét cả bảng'
+);
+
+-- Để CUỐI CÙNG: tắt BD-002 rồi mới kiểm. Đặt sớm hơn sẽ làm mọi assertion
+-- phía sau thiếu mất một kết quả — đúng lỗi đã gặp ở lần chạy đầu.
+update public.san_pham set dang_kinh_doanh = false where ma_hang = 'BD-002';
+select is(
+  (select count(*) from public.tim_san_pham('bac dan') where ma_hang = 'BD-002'),
+  0::bigint,
+  'hàng đã ngừng kinh doanh không xuất hiện trong kết quả'
 );
 
 select * from finish();

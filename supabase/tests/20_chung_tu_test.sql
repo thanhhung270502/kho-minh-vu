@@ -53,6 +53,12 @@ select pg_temp.sp_test('CT-001') as sp1,
        pg_temp.kho_id('K2')      as k2,
        (select id from public.doi_tac limit 1) as dt;
 
+-- Bảng tạm thuộc sở hữu postgres. Không GRANT thì mọi truy vấn đọc nó dưới
+-- role authenticated sẽ ném 42501 — TRÙNG mã lỗi với "RLS từ chối", nên
+-- assertion throws_ok('42501') có thể xanh vì lý do SAI. Đây là false pass
+-- thật sự đã xảy ra ở 30_rls_test.sql lần chạy trước.
+grant select on t_id to authenticated;
+
 -- doi_tac có thể rỗng trên DB mới; tạo một cái để test.
 insert into public.doi_tac (ma, ten, loai)
 values ('NCC-TEST', 'NCC test', 'CA_HAI') on conflict (ma) do nothing;
@@ -76,7 +82,7 @@ select is(
 );
 
 -- ─── DATA-05: ghi sổ happy path ──────────────────────────────────────────
-select public.dang_nhap_nhu('vanphong@khominhvu.local');
+select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 reset role;  -- dựng dữ liệu dưới quyền postgres, claims vẫn giữ cho RPC đọc
 
 insert into public.chung_tu (so_ct, loai_ct, kho_id, doi_tac_id)
