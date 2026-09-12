@@ -92,6 +92,9 @@ create index if not exists idx_nhat_ky_doi_chieu_ngay
 
 alter table public.nhat_ky_doi_chieu enable row level security;
 
+-- drop trước để migration chạy lại được (Postgres không có
+-- `create policy if not exists`).
+drop policy if exists "quan ly doc nhat ky doi chieu" on public.nhat_ky_doi_chieu;
 create policy "quan ly doc nhat ky doi chieu" on public.nhat_ky_doi_chieu
   for select to authenticated
   using ((select public.vai_tro_hien_tai()) in ('quan_ly','van_phong'));

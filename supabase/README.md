@@ -135,6 +135,28 @@ thì phải xem xét, đừng bỏ qua cả cụm.
 
 ---
 
+## Nếu áp migration bằng công cụ khác CLI
+
+`apply_migration` qua Supabase MCP ghi version dạng **timestamp**
+(`20260912155950`) chứ không theo tên file local (`0020`). Hệ quả: lần
+`db:push` sau, CLI thấy `0020` local là "chưa áp" và chạy lại — migration nào
+có `create policy`, `create type`, `create trigger` sẽ lỗi vì object đã tồn tại.
+
+Sửa bằng cách đồng bộ bảng lịch sử:
+
+```sql
+update supabase_migrations.schema_migrations
+set version = '0020', name = 'va_bao_mat'
+where version = '<timestamp mà công cụ đã ghi>';
+```
+
+Hoặc dùng lệnh chính chủ: `npx supabase migration repair --status applied 0020`.
+
+Kiểm bằng `select version, name from supabase_migrations.schema_migrations order by version;`
+— danh sách phải khớp **chính xác** tên file trong `supabase/migrations/`.
+
+---
+
 ## Quy ước tên migration
 
 `NNNN_ten_khong_dau.sql` — bốn chữ số, tăng dần. Khóa cho **toàn dự án**.
