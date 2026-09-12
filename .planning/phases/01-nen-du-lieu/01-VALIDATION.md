@@ -48,11 +48,11 @@ created: 2026-09-12
 | **DATA-04** | Giá vốn bình quân gia quyền di động đúng công thức, kể cả khi 2 phiếu nhập đồng thời | pgTAP (có 1 test 2-connection) | `supabase/tests/ton_kho_test.sql` | ❌ W0 |
 | **DATA-05** | Ghi sổ atomic — lỗi ở dòng n không để lại movement của n-1 dòng trước | pgTAP (cố tình đưa dòng sai vào giữa phiếu) | `supabase/tests/chung_tu_test.sql` | ❌ W0 |
 | **DATA-06** | Hủy chứng từ sinh bút toán đảo, bản ghi gốc còn nguyên, tồn về đúng số cũ | pgTAP | `supabase/tests/chung_tu_test.sql` | ❌ W0 |
-| **DATA-07** | Gõ không dấu ra kết quả có dấu; mã phát sinh gần đây xếp trước; truy vấn dùng Index Scan | pgTAP + assert `EXPLAIN` có Index Scan | `supabase/tests/tim_kiem_test.sql` | ❌ W0 — **thiếu trong WORK-UNITS.md** |
+| **DATA-07** | Gõ không dấu ra kết quả có dấu; mã phát sinh gần đây xếp trước; truy vấn dùng Index Scan | pgTAP + assert `EXPLAIN` có Index Scan | `supabase/tests/tim_kiem_test.sql` | ❌ W0 — plan **01-12** Task 3 |
 | **DATA-08** | Số chứng từ theo loại+năm, hai phiên tạo đồng thời không ra số trùng | pgTAP mô phỏng 2 kết nối | `supabase/tests/chung_tu_test.sql` | ❌ W0 |
-| **DATA-09** | `doi_chieu_ton()` báo đúng danh sách chênh lệch khi cố tình làm lệch | pgTAP gọi thẳng hàm (**không** phụ thuộc pg_cron) | `supabase/tests/doi_chieu_test.sql` | ❌ W0 — **thiếu trong WORK-UNITS.md** |
+| **DATA-09** | `doi_chieu_ton()` báo đúng danh sách chênh lệch khi cố tình làm lệch | pgTAP gọi thẳng hàm (**không** phụ thuộc pg_cron) | `supabase/tests/doi_chieu_test.sql` | ❌ W0 — plan **01-12** Task 3 |
 | **DATA-10** | Toàn bộ suite pgTAP xanh | CLI exit code | `npx supabase test db` | ❌ W0 |
-| **AUTH-03** | Vai trò nằm trong JWT; policy **không** có subplan truy vấn `nguoi_dung` mỗi dòng | pgTAP + assert `EXPLAIN`; **cộng** script tay verify hook thật khi login | `supabase/tests/rls_test.sql` + `scripts/verify-hook.ts` | ❌ W0 — script **thiếu** |
+| **AUTH-03** | Vai trò nằm trong JWT; policy **không** có subplan truy vấn `nguoi_dung` mỗi dòng | pgTAP + assert `EXPLAIN`; **cộng** script tay verify hook thật khi login | `supabase/tests/rls_test.sql` + `scripts/verify-hook.ts` | ❌ W0 — plan **01-12** Task 1+2 |
 | **AUTH-04** | Thủ kho không đọc được tồn/chứng từ của kho khác | pgTAP với JWT thật của tài khoản seed `thu_kho` | `supabase/tests/rls_test.sql` | ❌ W0 |
 | **AUTH-05** | Văn phòng `UPDATE san_pham SET gia_von` bị từ chối `42501` | pgTAP với JWT `van_phong` | `supabase/tests/rls_test.sql` | ❌ W0 |
 | **AUTH-06** | "Chỉ xem" không insert `chung_tu` và không gọi được `ghi_so_chung_tu` | pgTAP với JWT `chi_xem` | `supabase/tests/rls_test.sql` | ❌ W0 |
