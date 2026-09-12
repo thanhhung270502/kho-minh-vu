@@ -1,7 +1,9 @@
 # Phase 1: Nền dữ liệu — Summary
 
 **Ngày:** 2026-09-12
-**Trạng thái:** Code viết xong, **CHƯA kiểm chứng** — chưa có database nào để chạy.
+**Trạng thái:** Đã chạy thật trên Supabase cloud `kho-vu-tru` (ap-southeast-1).
+23 migration áp xong, logic lõi và phân quyền đã kiểm chứng bằng dữ liệu thật.
+Còn lại: bộ pgTAP đầy đủ (cần Docker) và nạp dữ liệu KiotViet (cần file export).
 
 ---
 
@@ -93,6 +95,53 @@ Cột "Kiểm chứng bằng" là việc phải làm sau khi có project Supabas
    dùng hết 2 project (`PO DB`, `tinhgianoibo`). Người dùng sẽ tự tạo.
 2. **Đĩa còn 1.9 GB / 460 GB (100%).** `npm install` chưa chạy được an toàn.
 3. **Chưa có 4 file export KiotViet** trong `data/kiotviet/`.
+
+---
+
+## Chạy thật tìm ra 5 lỗi mà đọc code không thấy
+
+Đây là phần đáng giá nhất của việc thực thi. Không lỗi nào trong số này lộ ra
+khi đọc lại code — tất cả chỉ hiện khi Postgres thật sự chạy.
+
+| # | Lỗi | Mức | Phát hiện bằng |
+|---|---|---|---|
+| 1 | View `v_doi_chieu_ton` chạy quyền người tạo → thủ kho đọc thẳng view thấy tồn cả hai kho, lách AUTH-04 | **ERROR** | Security Advisor |
+| 2 | `search_path=''` làm `tim_san_pham` không phân giải được toán tử `%` của pg_trgm → 42883, tìm kiếm chết | Chặn | Chạy thử |
+| 3 | Toán tử `%` đo độ giống toàn chuỗi → gõ "bac dan" trả 0 kết quả, hỏng đúng ca dùng chính | Chặn | Chạy thử |
+| 4 | Job cron gọi `doi_chieu_ton()` rồi vứt kết quả — phát hiện lệch xong không ai thấy | Thiết kế | Đọc lại job thật |
+| 5 | Hook không đọc được `nguoi_dung` vì RLS bật mà policy chỉ `to authenticated`, thiếu `supabase_auth_admin` | Chặn | `verify:hook` |
+
+**Lỗi 5 đáng chú ý nhất:** hook KHÔNG báo lỗi. Nó chạy, query trả 0 dòng vì RLS,
+`vai_tro` = NULL, trả claims nguyên vẹn. Đăng nhập thành công, token hợp lệ, chỉ
+thiếu claim — và RLS sau đó từ chối mọi thứ. pgTAP không bao giờ bắt được vì nó
+đặt thẳng `request.jwt.claims`. Đúng lý do `scripts/verify-hook.ts` tồn tại.
+
+**Lỗi 2 do chính bản vá của lỗi 1 gây ra** — vá bảo mật xong thì tính năng chết.
+
+## Đã kiểm chứng trên database thật
+
+| Hạng mục | Kết quả |
+|---|---|
+| Schema | 17 bảng, 5 enum, 38 policy, 54 index, 18 trigger, **0 bảng thiếu RLS** |
+| Giá vốn bình quân | 100 → **150** → (xuất không đổi) → **300** sau khi tồn về 0 |
+| Sổ cái bất biến | UPDATE/DELETE bị chặn `23514` **kể cả dưới role postgres** |
+| Đánh số chứng từ | `PN26-000001` → `PN26-000002`, `PX26-000001` độc lập theo loại |
+| Tìm kiếm | 9/9 ca: không dấu, có dấu, theo mã, gõ 2 ký tự, gõ sai chính tả |
+| Phân quyền | 11/11 ca: AUTH-04 (4), AUTH-05 (4), AUTH-06 (3) |
+| Auth hook | 4/4 tài khoản nhận đúng `vai_tro`, thủ kho nhận đúng `kho_id` |
+| TypeScript | `database.types.ts` 1.158 dòng; typecheck + lint + build xanh |
+
+Mọi dữ liệu test chạy trong khối rollback — database chỉ còn dữ liệu nền và
+4 tài khoản mẫu.
+
+## Còn lại
+
+1. **Bộ pgTAP đầy đủ** — `npm run db:test:linked` cần Docker daemon đang chạy
+   (CLI chạy `pg_prove` trong container). Phần giá trị nhất của nó đã kiểm bằng
+   SQL trực tiếp ở trên.
+2. **Test đồng thời 2 kết nối** — chưa viết. Lỗi thứ tự khóa trong trigger giá
+   vốn chỉ lộ dưới tải thật.
+3. **DLIEU-01..03** — cần 4 file export KiotViet trong `data/kiotviet/`.
 
 ---
 
