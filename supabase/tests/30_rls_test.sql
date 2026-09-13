@@ -6,20 +6,22 @@
 -- báo lỗi rõ ràng ngay ở assertion đầu chứ không âm thầm xanh.
 -- =============================================================================
 begin;
-select plan(17);
+select plan(25);
 
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
-declare v_id uuid; v_nd public.nguoi_dung;
+declare v_id uuid; v_nd public.nguoi_dung; v_kho jsonb;
 begin
   select id into v_id from auth.users where email = p_email;
   if v_id is null then
     raise exception 'Không có tài khoản mẫu %. Chạy `npm run seed:users` trước.', p_email;
   end if;
   select * into v_nd from public.nguoi_dung where id = v_id;
-  perform set_config('request.jwt.claims', json_build_object(
+  select coalesce(jsonb_agg(kho_id), '[]'::jsonb) into v_kho
+  from public.nguoi_dung_kho where nguoi_dung_id = v_id;
+  perform set_config('request.jwt.claims', jsonb_build_object(
     'sub', v_id::text, 'role', 'authenticated',
-    'vai_tro', v_nd.vai_tro::text, 'kho_id', coalesce(v_nd.kho_id::text, '')
+    'vai_tro', v_nd.vai_tro::text, 'kho_id', v_kho
   )::text, true);
   perform set_config('role', 'authenticated', true);
 end $helper$;
@@ -82,15 +84,15 @@ select k2, sp, 20, 100 from t_id;
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 
 select isnt_empty(
-  'select 1 from public.ton_kho tk where tk.kho_id = (select public.kho_hien_tai())',
+  'select 1 from public.ton_kho tk where tk.kho_id = any((select public.kho_hien_tai()))',
   'thủ kho đọc được tồn kho của mình'
 );
 select is_empty(
-  'select 1 from public.ton_kho tk where tk.kho_id <> (select public.kho_hien_tai())',
+  'select 1 from public.ton_kho tk where not (tk.kho_id = any((select public.kho_hien_tai())))',
   'thủ kho KHÔNG đọc được tồn của kho khác'
 );
 select is_empty(
-  'select 1 from public.kho_movement mv where mv.kho_id <> (select public.kho_hien_tai())',
+  'select 1 from public.kho_movement mv where not (mv.kho_id = any((select public.kho_hien_tai())))',
   'thủ kho KHÔNG đọc được sổ cái của kho khác'
 );
 select isnt_empty(
@@ -184,6 +186,104 @@ select is(
   0::bigint,
   'mọi bảng trong schema public đều đã bật RLS'
 );
+
+-- ─── D-06 · D-05: nhiều kho, thu hồi quyền có hiệu lực ngay ──────────────
+
+-- (a) Gán thêm K2 cho thủ kho 1 (giờ là "thủ kho 2 kho"), dưới quyền postgres.
+insert into public.nguoi_dung_kho (nguoi_dung_id, kho_id)
+select id, (select k2 from t_id) from auth.users where email = 'thukho1@khominhvu.local'
+on conflict do nothing;
+
+select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
+select is(
+  (select count(*) from public.ton_kho where san_pham_id = (select sp from t_id)),
+  2::bigint,
+  'thủ kho gắn K1+K2 thấy tồn cả hai kho'
+);
+
+-- (b) Gỡ K2 khỏi bảng nối bằng vai trò postgres, KHÔNG đăng nhập lại — claim
+-- JWT hiện tại của thukho1 (đặt ở bước (a)) vẫn còn K1+K2 nguyên vẹn.
+select set_config('role', 'postgres', true);
+delete from public.nguoi_dung_kho
+where nguoi_dung_id = (select id from auth.users where email = 'thukho1@khominhvu.local')
+  and kho_id = (select k2 from t_id);
+select set_config('role', 'authenticated', true);
+
+select is(
+  (select count(*) from public.ton_kho where san_pham_id = (select sp from t_id)),
+  1::bigint,
+  'gỡ kho có hiệu lực ngay dù claim cũ còn K2'
+);
+
+-- (c) Vô hiệu hóa thủ kho 1 trong khi claim cũ (mô phỏng token còn hạn) vẫn còn.
+select pg_temp.dang_xuat();
+update public.nguoi_dung set dang_hoat_dong = false
+where id = (select id from auth.users where email = 'thukho1@khominhvu.local');
+
+select set_config('request.jwt.claims', jsonb_build_object(
+  'sub', (select id from auth.users where email = 'thukho1@khominhvu.local')::text,
+  'role', 'authenticated',
+  'vai_tro', 'thu_kho',
+  'kho_id', jsonb_build_array((select k1 from t_id), (select k2 from t_id))
+)::text, true);
+select set_config('role', 'authenticated', true);
+
+select is(
+  (select public.vai_tro_hien_tai()), null,
+  'người bị vô hiệu hóa mất vai trò ngay'
+);
+select is(
+  (select count(*) from public.ton_kho),
+  0::bigint,
+  'người bị vô hiệu hóa không đọc được tồn'
+);
+
+select pg_temp.dang_xuat();
+update public.nguoi_dung set dang_hoat_dong = true
+where id = (select id from auth.users where email = 'thukho1@khominhvu.local');
+
+-- (d) Claim vai_tro lệch bảng nguoi_dung bị bỏ qua.
+select set_config('request.jwt.claims', jsonb_build_object(
+  'sub', (select id from auth.users where email = 'vanphong@khominhvu.local')::text,
+  'role', 'authenticated',
+  'vai_tro', 'quan_ly',
+  'kho_id', '[]'::jsonb
+)::text, true);
+select set_config('role', 'authenticated', true);
+
+select is(
+  (select public.vai_tro_hien_tai()), null,
+  'claim vai_tro lệch bảng nguoi_dung bị bỏ qua'
+);
+select pg_temp.dang_xuat();
+
+-- (e) / (f) Chỉ service_role gọi được thu hồi phiên.
+select ok(
+  not has_function_privilege('authenticated', 'public.thu_hoi_phien_nguoi_dung(uuid)', 'execute'),
+  'authenticated không gọi được thu hồi phiên'
+);
+select ok(
+  has_function_privilege('service_role', 'public.thu_hoi_phien_nguoi_dung(uuid)', 'execute'),
+  'service_role gọi được thu hồi phiên'
+);
+
+-- (g) Thủ kho không lưu được hồ sơ người dùng.
+select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
+select throws_ok(
+  $$select public.luu_ho_so_nguoi_dung((select id from auth.users where email='thukho1@khominhvu.local'), 'Thủ kho K1', 'thukho1', 'thu_kho', '{}'::uuid[], false)$$,
+  '42501', null,
+  'thủ kho không lưu được hồ sơ người dùng'
+);
+select pg_temp.dang_xuat();
+
+-- (h) Thủ kho phải có ít nhất một kho.
+select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
+select throws_ok(
+  $$select public.luu_ho_so_nguoi_dung((select id from auth.users where email='thukho1@khominhvu.local'), 'Thủ kho K1', 'thukho1', 'thu_kho', '{}'::uuid[], false)$$,
+  '23514', null,
+  'thủ kho phải có ít nhất một kho'
+);
+select pg_temp.dang_xuat();
 
 select * from finish();
 rollback;
