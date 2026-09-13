@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: "Phase 1: code viết xong, chưa kiểm chứng — chờ project Supabase"
-last_updated: "2026-09-12T15:20:44.338Z"
+stopped_at: Phase 1 verified — UAT 6/6, 89 pgTAP xanh, dữ liệu KiotViet đã nạp
+last_updated: "2026-09-13T05:21:33.235Z"
 last_activity: 2026-09-12 — Roadmap tạo xong, 74/74 yêu cầu v1 đã map vào 6 phase
 progress:
   total_phases: 6
@@ -74,6 +74,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-12T15:20:44.301Z
-Stopped at: Phase 1: code viết xong, chưa kiểm chứng — chờ project Supabase
-Resume file: supabase/README.md
+Last session: 2026-09-13T05:21:33.233Z
+Stopped at: Phase 1 verified — UAT 6/6, 89 pgTAP xanh, dữ liệu KiotViet đã nạp
+Resume file: .memory/index.md
