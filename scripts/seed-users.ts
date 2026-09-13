@@ -27,6 +27,10 @@ async function main() {
 
   const ketQua: Array<{ email: string; vaiTro: string; kho: string; trangThai: string }> = [];
 
+  // TODO(plan 02-09): bỏ ép kiểu "as never" sau khi `npm run db:types` sinh lại
+  // database.types.ts có bảng nguoi_dung_kho (migration 0026).
+  const nguoiDungKho = () => supabase.from("nguoi_dung_kho" as never);
+
   for (const tk of TAI_KHOAN_MAU) {
     let userId: string | undefined;
     let trangThai = "đã tạo";
@@ -50,17 +54,31 @@ async function main() {
       userId = taoMoi.user.id;
     }
 
-    const khoId = tk.maKho ? (khoTheoMa.get(tk.maKho) ?? null) : null;
-    if (tk.maKho && !khoId) {
-      throw new Error(`Không tìm thấy kho có mã ${tk.maKho}. Chạy npm run db:push trước.`);
+    const khoIds: string[] = [];
+    for (const ma of tk.maKho) {
+      const id = khoTheoMa.get(ma);
+      if (!id) {
+        throw new Error(`Không tìm thấy kho có mã ${ma}. Chạy npm run db:push trước.`);
+      }
+      khoIds.push(id);
     }
 
     const { error: loiHoSo } = await supabase
       .from("nguoi_dung")
-      .upsert({ id: userId, ho_ten: tk.hoTen, vai_tro: tk.vaiTro, kho_id: khoId }, { onConflict: "id" });
+      .upsert({ id: userId, ho_ten: tk.hoTen, vai_tro: tk.vaiTro }, { onConflict: "id" });
     if (loiHoSo) throw loiHoSo;
 
-    ketQua.push({ email: tk.email, vaiTro: tk.vaiTro, kho: tk.maKho ?? "—", trangThai });
+    const { error: loiXoaKho } = await nguoiDungKho().delete().eq("nguoi_dung_id", userId);
+    if (loiXoaKho) throw loiXoaKho;
+
+    if (khoIds.length > 0) {
+      const { error: loiThemKho } = await nguoiDungKho().insert(
+        khoIds.map((khoId) => ({ nguoi_dung_id: userId, kho_id: khoId })) as never,
+      );
+      if (loiThemKho) throw loiThemKho;
+    }
+
+    ketQua.push({ email: tk.email, vaiTro: tk.vaiTro, kho: tk.maKho.length ? tk.maKho.join("+") : "—", trangThai });
   }
 
   console.log("\nTài khoản mẫu:\n");

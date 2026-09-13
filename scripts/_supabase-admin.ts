@@ -45,10 +45,11 @@ export function taoAnonClient(): SupabaseClient<Database> {
 }
 
 export const TAI_KHOAN_MAU = [
-  { email: "quanly@khominhvu.local",   hoTen: "Quản lý demo",   vaiTro: "quan_ly"   as const, maKho: null },
-  { email: "vanphong@khominhvu.local", hoTen: "Văn phòng demo", vaiTro: "van_phong" as const, maKho: null },
-  { email: "thukho1@khominhvu.local",  hoTen: "Thủ kho K1",     vaiTro: "thu_kho"   as const, maKho: "K1" },
-  { email: "chixem@khominhvu.local",   hoTen: "Chỉ xem demo",   vaiTro: "chi_xem"   as const, maKho: null },
+  { email: "quanly@khominhvu.local",   hoTen: "Quản lý demo",    vaiTro: "quan_ly"   as const, maKho: [] as string[] },
+  { email: "vanphong@khominhvu.local", hoTen: "Văn phòng demo",  vaiTro: "van_phong" as const, maKho: [] as string[] },
+  { email: "thukho1@khominhvu.local",  hoTen: "Thủ kho K1",      vaiTro: "thu_kho"   as const, maKho: ["K1"] },
+  { email: "thukho2@khominhvu.local",  hoTen: "Thủ kho K1 + K2", vaiTro: "thu_kho"   as const, maKho: ["K1", "K2"] },
+  { email: "chixem@khominhvu.local",   hoTen: "Chỉ xem demo",    vaiTro: "chi_xem"   as const, maKho: [] as string[] },
 ];
 
 export function matKhauMau(): string {

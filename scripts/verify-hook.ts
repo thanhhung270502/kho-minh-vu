@@ -13,7 +13,7 @@
  */
 import { taoAnonClient, taoAdminClient, TAI_KHOAN_MAU, matKhauMau } from "./_supabase-admin";
 
-type Claims = { vai_tro?: string; kho_id?: string; sub?: string };
+type Claims = { vai_tro?: string; kho_id?: string[] | string; sub?: string };
 
 function giaiMaPayload(accessToken: string): Claims {
   const payload = accessToken.split(".")[1];
@@ -52,19 +52,26 @@ async function main() {
       loi.push(`vai_tro sai (nhận ${claims.vai_tro}, cần ${tk.vaiTro})`);
     }
 
-    if (tk.maKho) {
-      if (!claims.kho_id) {
-        loi.push("thiếu kho_id");
-      } else if (maTheoKhoId.get(claims.kho_id) !== tk.maKho) {
-        loi.push(`kho_id trỏ sai kho (cần ${tk.maKho})`);
+    const khoIdClaim = claims.kho_id;
+    const khoIdMang = Array.isArray(khoIdClaim) ? khoIdClaim : khoIdClaim ? [khoIdClaim] : [];
+    const maTuClaim = khoIdMang.map((id) => maTheoKhoId.get(id) ?? id).sort();
+    const maMongDoi = [...tk.maKho].sort();
+
+    if (tk.maKho.length > 0) {
+      if (!Array.isArray(khoIdClaim)) {
+        loi.push(`kho_id phải là mảng (nhận ${khoIdClaim ? "chuỗi" : "vắng mặt"})`);
+      } else if (JSON.stringify(maTuClaim) !== JSON.stringify(maMongDoi)) {
+        loi.push(`kho_id sai (nhận ${maTuClaim.join(",") || "—"}, cần ${maMongDoi.join(",")})`);
       }
+    } else if (khoIdMang.length > 0) {
+      loi.push(`kho_id phải rỗng (nhận ${maTuClaim.join(",")})`);
     }
 
     if (loi.length) hong++;
     dong.push({
       email: tk.email,
       vai_tro: claims.vai_tro ?? "—",
-      kho_id: claims.kho_id ? (maTheoKhoId.get(claims.kho_id) ?? claims.kho_id) : "—",
+      kho_id: maTuClaim.length ? maTuClaim.join("+") : "—",
       ket_qua: loi.length ? `✗ ${loi.join("; ")}` : "✓",
     });
 
