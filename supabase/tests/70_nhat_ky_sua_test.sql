@@ -1,6 +1,12 @@
 -- =============================================================================
 -- D-20 — Nhật ký sửa append-only cho san_pham / doi_tac / nguoi_dung.
 -- Mã test dùng tiền tố NKS-ZQX- (không khớp dữ liệu thật, an toàn cho assertion đếm).
+--
+-- Bảng nhat_ky_sua bị REVOKE ALL khỏi anon/authenticated (đọc duy nhất qua RPC
+-- lich_su_sua) — mọi lần đọc trực tiếp để KIỂM TRA kết quả trong file này phải
+-- chạy dưới role postgres (chủ bảng, không bị REVOKE ràng buộc), không phải
+-- dưới authenticated. Chỉ các bước UPDATE thật (để trigger bắt) và bước kiểm
+-- REVOKE (assertion H) mới cần đang ở role authenticated.
 -- =============================================================================
 begin;
 select plan(12);
@@ -48,12 +54,6 @@ returns uuid language sql stable as $helper$
   select id from public.kho where ma = p_ma;
 $helper$;
 
--- Tra sẵn id thật của tài khoản mẫu dưới role postgres — tránh false-pass 42501
--- khi đọc auth.users lúc role đã là authenticated (bài học pgtap-va-test.md #1).
-create temp table t_id as
-select (select id from auth.users where email = 'vanphong@khominhvu.local') as vanphong;
-grant select on t_id to authenticated;
-
 -- ─── 1. Tạo mới sinh một dòng _tao_moi (dưới postgres) ─────────────────────
 select pg_temp.sp_test('NKS-ZQX-001');
 select is(
@@ -64,9 +64,12 @@ select is(
   'tạo mới sinh một dòng _tao_moi'
 );
 
--- ─── 2. Sửa hai trường sinh hai dòng ────────────────────────────────────────
+-- ─── Ghi (as vanphong) rồi quay lại postgres để kiểm ────────────────────────
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 update public.san_pham set ten_hang = 'Tên mới', ghi_chu = 'gc' where ma_hang = 'NKS-ZQX-001';
+select pg_temp.dang_xuat();
+
+-- ─── 2. Sửa hai trường sinh hai dòng ────────────────────────────────────────
 select is(
   (select count(*) from public.nhat_ky_sua
     where ban_ghi_id = (select id from public.san_pham where ma_hang = 'NKS-ZQX-001')
@@ -89,7 +92,7 @@ select is(
   (select nguoi_sua_id from public.nhat_ky_sua
     where ban_ghi_id = (select id from public.san_pham where ma_hang = 'NKS-ZQX-001')
       and truong = 'ten_hang'),
-  (select vanphong from t_id),
+  (select id from auth.users where email = 'vanphong@khominhvu.local'),
   'ghi đúng người sửa'
 );
 
@@ -102,37 +105,51 @@ select is(
   'nguồn mặc định là form khi có người dùng'
 );
 
--- ─── 6. Update không đổi giá trị không sinh nhật ký mới ────────────────────
+-- ─── Ghi lại (không đổi giá trị), rồi quay lại postgres để kiểm ─────────────
+select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 update public.san_pham set ten_hang = 'Tên mới' where ma_hang = 'NKS-ZQX-001';
+select pg_temp.dang_xuat();
+
+-- ─── 6. Update không đổi giá trị không sinh nhật ký mới ────────────────────
+-- Tổng lũy kế tới đây: 1 (_tao_moi) + 2 (ten_hang, ghi_chu) = 3, không đổi.
 select is(
   (select count(*) from public.nhat_ky_sua
     where ban_ghi_id = (select id from public.san_pham where ma_hang = 'NKS-ZQX-001')),
-  2::bigint,
+  3::bigint,
   'update không đổi giá trị nào không sinh thêm nhật ký'
 );
 
--- ─── 7. app.nguon_sua ghi đúng nguồn ────────────────────────────────────────
+-- ─── Ghi với nguồn import, rồi kiểm ngay lớp REVOKE trong khi vẫn authenticated ──
+select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select set_config('app.nguon_sua', 'import', true);
 update public.san_pham set ghi_chu = 'gc2' where ma_hang = 'NKS-ZQX-001';
-select is(
-  (select nguon from public.nhat_ky_sua
-    where ban_ghi_id = (select id from public.san_pham where ma_hang = 'NKS-ZQX-001')
-      and truong = 'ghi_chu'
-    order by sua_luc desc limit 1),
-  'import',
-  'nguồn ghi vào nhật ký theo app.nguon_sua'
-);
 
 -- ─── 8. authenticated không sửa được nhật ký (REVOKE — lớp 1) ──────────────
+-- Kiểm trong lúc CÒN authenticated — đúng đối tượng cần chứng minh.
 select throws_ok(
   $$update public.nhat_ky_sua set nguon = 'x'$$,
   '42501',
   null,
   'authenticated không sửa được nhật ký'
 );
+select pg_temp.dang_xuat();
+
+-- ─── 7. app.nguon_sua ghi đúng nguồn (kiểm dưới postgres) ──────────────────
+-- Không sắp theo sua_luc: cả file chạy trong một transaction nên now() không
+-- đổi giữa các insert (transaction timestamp), "order by sua_luc desc" không
+-- phân biệt được hai dòng cùng truong — kiểm theo đúng giá trị mới ('gc2') thay vì "mới nhất".
+select ok(
+  exists (
+    select 1 from public.nhat_ky_sua
+    where ban_ghi_id = (select id from public.san_pham where ma_hang = 'NKS-ZQX-001')
+      and truong = 'ghi_chu'
+      and nguon = 'import'
+      and gia_tri_moi = to_jsonb('gc2'::text)
+  ),
+  'nguồn ghi vào nhật ký theo app.nguon_sua'
+);
 
 -- ─── 9. Kể cả postgres cũng không xóa được (trigger — lớp 2) ───────────────
-select pg_temp.dang_xuat();
 select throws_ok(
   $$delete from public.nhat_ky_sua$$,
   '23514',
