@@ -5,10 +5,11 @@ lại PROJECT.md, CLAUDE.md hay code.
 
 ## Trạng thái
 
-- **Phase 1 — Nền dữ liệu:** xong, UAT 5/6 đạt + 1 lỗi nhỏ (dữ liệu kho sai cột).
-- Database: Supabase cloud `kho-vu-tru` (ap-southeast-1), 24 migration.
+- **Phase 1 — Nền dữ liệu:** xong, UAT 6/6 đạt (lỗi dữ liệu kho sai cột đã sửa ở 0025).
+- Database: Supabase cloud `kho-vu-tru` (ap-southeast-1), 25 migration.
 - Dữ liệu thật đã nạp: 3.266 sản phẩm, 90 nhóm, 23 NCC, 594 + 4.732 dòng lưu trữ.
-- Test: 79 pgTAP + test đồng thời + verify:hook, xanh trên dữ liệu thật.
+- Kho mặc định của sản phẩm ở `san_pham.kho_mac_dinh_id`, KHÔNG ở `vi_tri_ke`.
+- Test: 89 pgTAP + test đồng thời + verify:hook, xanh trên dữ liệu thật.
 
 ## Patterns
 

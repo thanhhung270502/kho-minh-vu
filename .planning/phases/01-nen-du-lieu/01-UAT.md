@@ -45,10 +45,15 @@ observations:
 
 ### 3. Sản phẩm biết thuộc kho nào
 expected: Mỗi mã hàng gắn đúng kho nó nằm — 3.240 mã Kho 1, 26 mã Kho 2
-result: issue
-verified_by: dữ liệu
-reported: "Dữ liệu kho đúng (3.240 Kho 1 / 26 Kho 2, Kho 2 trùng khít Nhóm 122B) nhưng nằm sai cột: đang ở san_pham.vi_tri_ke, là cột dành cho dãy/kệ/tầng."
+result: pass
+verified_by: dữ liệu (sau khi sửa)
+reported: "Lần kiểm đầu: dữ liệu kho đúng nhưng nằm sai cột san_pham.vi_tri_ke (cột dành cho dãy/kệ/tầng)."
 severity: minor
+resolution: |
+  Người dùng chọn phương án A. Sửa ở migration 0025 + script import, viết test trước (đỏ → xanh).
+  Sau sửa: kho_mac_dinh_id Kho 1 = 3.240, Kho 2 = 26, không mã nào NULL; vi_tri_ke sạch cả 3.266 dòng.
+  Chạy import lại lần nữa: kho_mac_dinh_id giữ nguyên, không bị ghi đè thành NULL.
+  60_kho_mac_dinh_test.sql 10/10, toàn bộ 89/89 pgTAP xanh.
 
 ### 4. Quy đổi hàng đơn vị CẶP
 expected: 148 mã đơn vị CẶP (vd. bố thắng đùm) có quy_doi = 1, tức 1 CẶP là 1 đơn vị tồn kho
@@ -89,15 +94,18 @@ evidence: |
 ## Summary
 
 total: 6
-passed: 5
-issues: 1
+passed: 6
+issues: 0
 pending: 0
 skipped: 0
+note: "Lần kiểm đầu 5 đạt / 1 lỗi. Lỗi bài 3 đã sửa và kiểm lại — xem resolution."
 
 ## Gaps
 
 - truth: "Mỗi mã hàng gắn đúng kho nó nằm, lưu ở chỗ các phase sau đọc được đúng nghĩa"
-  status: failed
+  status: resolved
+  fixed_in: "supabase/migrations/0025_kho_mac_dinh.sql, scripts/import-kiotviet/kiem-tra.ts, scripts/import-kiotviet/nap-du-lieu.ts"
+  chosen_fix: "A"
   reason: "Dữ liệu kho (Kho 1 / Kho 2) nằm trong san_pham.vi_tri_ke — cột dành cho dãy/kệ/tầng"
   severity: minor
   test: 3

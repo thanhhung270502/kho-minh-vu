@@ -41,7 +41,8 @@ Giữ nguyên tên đầy đủ, mã = slug.
 - Họ `BAGA` (baga, cảng, inox, sắt…): phụ kiện kim loại, phần lớn mua ngoài.
 
 **Cột "Vị trí" là KHO, không phải kệ:** Kho 1 = 3.240 mã, Kho 2 = 26 mã.
-Kho 2 trùng khít `Nhóm 122B` (26 mã).
+Kho 2 trùng khít `Nhóm 122B` (26 mã). Nạp vào `san_pham.kho_mac_dinh_id` (không phải
+`vi_tri_ke`) — script import gửi dưới tên `ten_kho_mac_dinh`, RPC tra `kho.ten`.
 
 **Quy đổi = 1 cho mọi mã, kể cả 148 mã CẶP.** CẶP là đơn vị gốc: hóa đơn ghi ĐVT = CẶP,
 bán ra số lẻ (1, 3, 5, 7 — 83 dòng). **1 CẶP = 1 đơn vị tồn.**

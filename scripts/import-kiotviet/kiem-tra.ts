@@ -48,7 +48,7 @@ export const SanPhamSchema = z.object({
   gia_ban: z.number().nonnegative("Giá bán không được âm"),
   ton_toi_thieu: z.number().nonnegative(),
   ton_toi_da: z.number().nonnegative().nullable(),
-  vi_tri: z.string().nullable(),
+  ten_kho: z.string().nullable(),
   hinh_anh_url: z.string().nullable(),
   dang_kinh_doanh: z.boolean(),
   ton_kiotviet: z.number().nullable(),
@@ -104,7 +104,9 @@ export function kiemTraSanPham(dong: DongTho[], tenFile: string): KetQuaKiemTra<
       gia_ban: doSo(d.o["gia_ban"]) ?? 0,
       ton_toi_thieu: doSo(d.o["ton_nho_nhat"]) ?? 0,
       ton_toi_da: toiDa === null || toiDa >= KHONG_GIOI_HAN ? null : toiDa,
-      vi_tri: doChuoi(d.o["vi_tri"]),
+      // Cột "Vị trí" của KiotViet chứa TÊN KHO ("Kho 1" / "Kho 2"), không phải
+      // dãy/kệ/tầng. Bản đầu nạp nhầm vào vi_tri_ke — lỗi UAT Phase 1, bài 3.
+      ten_kho: doChuoi(d.o["vi_tri"]),
       // Cột chứa nhiều URL cách nhau dấu phẩy; lấy ảnh đầu tiên.
       hinh_anh_url: hinh ? (hinh.split(",")[0]?.trim() || null) : null,
       dang_kinh_doanh: doChuoi(d.o["dang_kinh_doanh"]) !== "0",

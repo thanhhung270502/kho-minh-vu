@@ -96,7 +96,10 @@ export async function napDuLieu(dauVao: DauVaoNap): Promise<KetQuaNap & { dungDo
         gia_ban: s.duLieu.gia_ban,
         ton_toi_thieu: s.duLieu.ton_toi_thieu,
         ton_toi_da: s.duLieu.ton_toi_da,
-        vi_tri_ke: s.duLieu.vi_tri,
+        // RPC đổi tên kho thành kho_mac_dinh_id (migration 0025).
+        // PHẢI gửi ten_kho_mac_dinh: nếu thiếu, bước upsert ghi đè kho_mac_dinh_id
+        // thành NULL trên toàn bộ sản phẩm. Không gửi vi_tri_ke nữa — RPC bỏ qua nó.
+        ten_kho_mac_dinh: s.duLieu.ten_kho,
         hinh_anh_url: s.duLieu.hinh_anh_url,
         dang_kinh_doanh: s.duLieu.dang_kinh_doanh,
         ghi_chu: s.duLieu.ghi_chu,

@@ -706,6 +706,7 @@ export type Database = {
           gia_von: number
           hinh_anh_url: string | null
           id: string
+          kho_mac_dinh_id: string | null
           lan_phat_sinh_cuoi: string | null
           ma_hang: string
           nhom_hang_id: string | null
@@ -727,6 +728,7 @@ export type Database = {
           gia_von?: number
           hinh_anh_url?: string | null
           id?: string
+          kho_mac_dinh_id?: string | null
           lan_phat_sinh_cuoi?: string | null
           ma_hang: string
           nhom_hang_id?: string | null
@@ -748,6 +750,7 @@ export type Database = {
           gia_von?: number
           hinh_anh_url?: string | null
           id?: string
+          kho_mac_dinh_id?: string | null
           lan_phat_sinh_cuoi?: string | null
           ma_hang?: string
           nhom_hang_id?: string | null
@@ -771,6 +774,13 @@ export type Database = {
             columns: ["dvt_id"]
             isOneToOne: false
             referencedRelation: "don_vi_tinh"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "san_pham_kho_mac_dinh_id_fkey"
+            columns: ["kho_mac_dinh_id"]
+            isOneToOne: false
+            referencedRelation: "kho"
             referencedColumns: ["id"]
           },
           {
@@ -978,6 +988,7 @@ export type Database = {
           gia_von: number
           hinh_anh_url: string | null
           id: string
+          kho_mac_dinh_id: string | null
           lan_phat_sinh_cuoi: string | null
           ma_hang: string
           nhom_hang_id: string | null

@@ -1,18 +1,18 @@
 # Việc còn mở sau Phase 1
 
-Cập nhật: 2026-09-13, sau UAT Phase 1 (5/6 đạt, 1 lỗi nhỏ).
+Cập nhật: 2026-09-13, sau UAT Phase 1 — 6/6 đạt (lỗi bài 3 đã sửa).
 
 ---
 
-## Lỗi UAT
+## Lỗi UAT — đã đóng
 
-### [minor] Dữ liệu kho nằm sai cột
-`san_pham.vi_tri_ke` đang chứa `Kho 1` / `Kho 2` — cột dành cho dãy/kệ/tầng.
-Không làm hỏng yêu cầu nào hiện tại, nhưng làm bẩn cột kệ và Phase 3–4 có thể cần kho
-mặc định để điền sẵn khi tạo phiếu.
-- **A.** Thêm `san_pham.kho_mac_dinh_id`, chuyển dữ liệu sang, xóa `vi_tri_ke`.
-- **B.** Xóa trắng `vi_tri_ke`.
-Chi tiết: `.planning/phases/01-nen-du-lieu/01-UAT.md` mục Gaps.
+### ~~[minor] Dữ liệu kho nằm sai cột~~ — sửa ở migration 0025
+Dữ liệu kho giờ ở `san_pham.kho_mac_dinh_id` (Kho 1 = 3.240, Kho 2 = 26), `vi_tri_ke` sạch.
+Phase 3–4 dùng `kho_mac_dinh_id` để điền sẵn kho khi tạo phiếu. `vi_tri_ke` để trống chờ
+vị trí dãy/kệ/tầng thật.
+
+**Bẫy còn lại:** script import PHẢI gửi `ten_kho_mac_dinh`. Thiếu trường này thì upsert
+ghi đè `kho_mac_dinh_id` thành NULL trên cả 3.266 mã.
 
 ---
 
@@ -43,4 +43,7 @@ Chi tiết: `.planning/phases/01-nen-du-lieu/01-UAT.md` mục Gaps.
 ## Trước go-live
 
 - Xóa hoặc đổi mật khẩu 4 tài khoản demo (`*@khominhvu.local`).
+- **Bật Leaked Password Protection** (Security Advisor cảnh báo): Dashboard → Authentication
+  → chặn mật khẩu đã lộ qua HaveIBeenPwned. Công tắc Dashboard, CLI/MCP không bật được.
+  Có thể cần gói Pro.
 - `DATABASE_URL` trong `.env.local` chứa mật khẩu DB — chỉ dùng cho `test:dong-thoi`.
