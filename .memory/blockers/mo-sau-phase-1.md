@@ -36,7 +36,10 @@ ghi đè `kho_mac_dinh_id` thành NULL trên cả 3.266 mã.
   (`/san-xuat`, `/bao-cao`) — viết lại khi dựng app shell.
 - **`src/shared/lib/errors.ts`** còn chữ "xưởng" trong thông báo lỗi — đổi thành "kho".
 - **Đổi vai trò phải thu hồi phiên:** hook chỉ chạy khi cấp token mới (TTL 3600s).
-  Màn Cài đặt (CDAT-01) gọi `auth.admin.signOut(userId, 'others')` sau khi đổi vai trò.
+  Màn Cài đặt (CDAT-01) phải thu hồi phiên sau khi đổi vai trò. **Chưa kiểm chứng:** ghi chú cũ
+  `auth.admin.signOut(userId, 'others')` nhiều khả năng sai chữ ký (supabase-js nhận JWT, không
+  nhận userId) — research Phase 2 chốt cơ chế thật (02-CONTEXT D-05).
+- **Phase 2 đổi quyết định Phase 1:** thủ kho gắn nhiều kho (D-06) — hook/RLS/test 30 phải sửa.
 
 ---
 
