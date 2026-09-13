@@ -63,7 +63,7 @@ Cài đặt.
   3. Tạo và sửa mã hàng với `dvt` và `cong_doan` là hai trường độc lập kèm `quy_doi`; xem chi tiết một mã hàng kèm thẻ kho; import danh mục từ Excel báo rõ dòng lỗi và không nạp nửa vời; export danh mục đang lọc ra Excel
   4. Xem NCC và khách hàng trong cùng một danh sách lọc được theo loại; tạo và sửa đối tác với loại NCC/KHACH/CA_HAI; xem lịch sử giao dịch của một đối tác — danh sách khách hàng đã có tên thật (QUỲNH, NGỌC, TỐT...) trích từ ô Ghi chú thay vì gộp chung một mã khách
   5. Quản lý được người dùng & vai trò, danh sách kho, nhóm hàng/đơn vị tính/công đoạn, và quy tắc đánh số chứng từ theo từng loại qua màn Cài đặt
-**Plans**: 2/21 plans executed
+**Plans**: 4/21 plans executed
 **UI hint**: yes
 
 ### Phase 3: Phiếu nhập

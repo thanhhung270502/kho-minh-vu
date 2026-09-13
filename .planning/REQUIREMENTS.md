@@ -34,7 +34,7 @@
 - [ ] **DMUC-02**: Lọc danh mục theo nhóm hàng, công đoạn, đơn vị tính và trạng thái tồn
 - [ ] **DMUC-03**: Tìm bằng một ô duy nhất theo cả mã và tên, gõ không dấu vẫn ra kết quả
 - [x] **DMUC-04**: Tạo và sửa mã hàng với `dvt` và `cong_doan` là hai trường độc lập, kèm `quy_doi`
-- [ ] **DMUC-05**: Xem chi tiết một mã hàng kèm thẻ kho của mã đó
+- [x] **DMUC-05**: Xem chi tiết một mã hàng kèm thẻ kho của mã đó
 - [ ] **DMUC-06**: Import danh mục từ file Excel, báo rõ dòng nào lỗi và lỗi gì, không nạp nửa vời
 - [ ] **DMUC-07**: Export danh mục đang lọc ra file Excel
 
@@ -180,7 +180,7 @@
 | DMUC-02 | Phase 2 | Pending |
 | DMUC-03 | Phase 2 | Pending |
 | DMUC-04 | Phase 2 | Complete |
-| DMUC-05 | Phase 2 | Pending |
+| DMUC-05 | Phase 2 | Complete |
 | DMUC-06 | Phase 2 | Pending |
 | DMUC-07 | Phase 2 | Pending |
 | DTAC-01 | Phase 2 | Pending |

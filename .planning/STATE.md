@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 02-03-PLAN.md
-last_updated: "2026-09-13T15:29:39.421Z"
+stopped_at: Completed 02-04-PLAN.md
+last_updated: "2026-09-13T16:29:59.103Z"
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 36
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 ## Current Position
 
 Phase: 02 (khung-ung-dung) — EXECUTING
-Plan: 4 of 21
+Plan: 5 of 21
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Plan: 4 of 21
 | Phase 02 P01 | 30 | 3 tasks | 11 files |
 | Phase 02 P02 | 25 | 1 tasks | 2 files |
 | Phase 02 P03 | 15 | 1 tasks | 2 files |
+| Phase 02 P04 | 25 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,8 @@ Recent decisions affecting current work:
 - [Phase 02]: pgTAP trong một transaction: now() không đổi giữa các insert — không dùng order by cot_thoi_gian desc để phân biệt bản ghi mới nhất, kiểm theo nội dung cụ thể
 - [Phase 02]: Cấu hình đánh số chứng từ (cau_hinh_so_ct) sửa được tiền tố/số chữ số theo loại; trigger chặn giảm số chữ số dưới độ dài số đang chạy năm nay
 - [Phase 02]: Không nhúng mẫu DO raise-exception-để-rollback (pgtap-va-test.md mục 6) vào file migration — migration cần commit khi đúng, khác ngữ cảnh script kiểm tra độc lập
+- [Phase 02]: D-16 chọn REVOKE SELECT mức bảng + GRANT lại theo cột (Phương án A) thay vì view CASE WHEN — bàn giao đã có SELECT mức bảng cho authenticated/anon nên REVOKE riêng một cột không đủ, phải revoke bảng rồi grant cột (khác REVOKE UPDATE/INSERT ở 0015 vốn đã revoke mức bảng từ đầu). Giá vốn chỉ đọc qua RPC gia_von_san_pham, kể cả quản lý.
+- [Phase 02]: select 1 from bang / count(*) from bang không cần quyền cột nào trong Postgres — chỉ câu lệnh tham chiếu cột cụ thể mới bị kiểm quyền cột. Xác nhận bằng transaction rollback trên cloud trước khi sửa test, tránh sửa nhầm assertion không cần sửa.
 
 ### Pending Todos
 
@@ -77,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-13T15:29:39.418Z
-Stopped at: Completed 02-03-PLAN.md
+Last session: 2026-09-13T16:29:59.101Z
+Stopped at: Completed 02-04-PLAN.md
 Resume file: None
