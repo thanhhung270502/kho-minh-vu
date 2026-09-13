@@ -7,16 +7,18 @@ select plan(18);
 
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
-declare v_id uuid; v_nd public.nguoi_dung;
+declare v_id uuid; v_nd public.nguoi_dung; v_kho jsonb;
 begin
   select id into v_id from auth.users where email = p_email;
   if v_id is null then
     raise exception 'Không có tài khoản mẫu %. Chạy `npm run seed:users` trước.', p_email;
   end if;
   select * into v_nd from public.nguoi_dung where id = v_id;
-  perform set_config('request.jwt.claims', json_build_object(
+  select coalesce(jsonb_agg(kho_id), '[]'::jsonb) into v_kho
+  from public.nguoi_dung_kho where nguoi_dung_id = v_id;
+  perform set_config('request.jwt.claims', jsonb_build_object(
     'sub', v_id::text, 'role', 'authenticated',
-    'vai_tro', v_nd.vai_tro::text, 'kho_id', coalesce(v_nd.kho_id::text, '')
+    'vai_tro', v_nd.vai_tro::text, 'kho_id', v_kho
   )::text, true);
   perform set_config('role', 'authenticated', true);
 end $helper$;
