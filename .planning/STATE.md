@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-09-13T15:19:25.748Z"
+stopped_at: Completed 02-03-PLAN.md
+last_updated: "2026-09-13T15:29:39.421Z"
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 36
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 ## Current Position
 
 Phase: 02 (khung-ung-dung) — EXECUTING
-Plan: 3 of 21
+Plan: 4 of 21
 
 ## Performance Metrics
 
@@ -48,6 +48,7 @@ Plan: 3 of 21
 *Updated after each plan completion*
 | Phase 02 P01 | 30 | 3 tasks | 11 files |
 | Phase 02 P02 | 25 | 1 tasks | 2 files |
+| Phase 02 P03 | 15 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -63,6 +64,8 @@ Recent decisions affecting current work:
 - [Phase 02]: Tổng pgTAP toàn dự án là 98, không phải 97 (plan(26) thay vì plan(25) ở 30_rls_test.sql)
 - [Phase 02]: Trigger generic ghi_nhat_ky_sua bắt mọi sửa qua to_jsonb(old)/to_jsonb(new) trừ mảng cột loại trừ — thay vì trigger riêng từng bảng
 - [Phase 02]: pgTAP trong một transaction: now() không đổi giữa các insert — không dùng order by cot_thoi_gian desc để phân biệt bản ghi mới nhất, kiểm theo nội dung cụ thể
+- [Phase 02]: Cấu hình đánh số chứng từ (cau_hinh_so_ct) sửa được tiền tố/số chữ số theo loại; trigger chặn giảm số chữ số dưới độ dài số đang chạy năm nay
+- [Phase 02]: Không nhúng mẫu DO raise-exception-để-rollback (pgtap-va-test.md mục 6) vào file migration — migration cần commit khi đúng, khác ngữ cảnh script kiểm tra độc lập
 
 ### Pending Todos
 
@@ -74,6 +77,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-13T15:19:25.745Z
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-09-13T15:29:39.418Z
+Stopped at: Completed 02-03-PLAN.md
 Resume file: None

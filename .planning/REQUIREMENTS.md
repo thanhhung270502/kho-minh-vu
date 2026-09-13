@@ -103,7 +103,7 @@
 - [x] **CDAT-01**: Quản lý người dùng và gán vai trò
 - [ ] **CDAT-02**: Quản lý danh sách kho
 - [ ] **CDAT-03**: Quản lý nhóm hàng, đơn vị tính và công đoạn
-- [ ] **CDAT-04**: Cấu hình quy tắc đánh số chứng từ theo loại
+- [x] **CDAT-04**: Cấu hình quy tắc đánh số chứng từ theo loại
 
 ### Chuyển dữ liệu (DLIEU)
 
@@ -190,7 +190,7 @@
 | CDAT-01 | Phase 2 | Complete |
 | CDAT-02 | Phase 2 | Pending |
 | CDAT-03 | Phase 2 | Pending |
-| CDAT-04 | Phase 2 | Pending |
+| CDAT-04 | Phase 2 | Complete |
 | NHAP-01 | Phase 3 | Pending |
 | NHAP-02 | Phase 3 | Pending |
 | NHAP-03 | Phase 3 | Pending |
