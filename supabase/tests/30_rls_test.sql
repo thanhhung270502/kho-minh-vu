@@ -6,7 +6,7 @@
 -- báo lỗi rõ ràng ngay ở assertion đầu chứ không âm thầm xanh.
 -- =============================================================================
 begin;
-select plan(25);
+select plan(26);
 
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
@@ -66,7 +66,8 @@ end $helper$;
 create temp table t_id as
 select pg_temp.sp_test('RLS-001') as sp,
        pg_temp.kho_id('K1')       as k1,
-       pg_temp.kho_id('K2')       as k2;
+       pg_temp.kho_id('K2')       as k2,
+       (select id from auth.users where email = 'thukho1@khominhvu.local') as thukho1;
 
 -- Bảng tạm thuộc sở hữu postgres. Không GRANT thì mọi truy vấn đọc nó dưới
 -- role authenticated sẽ ném 42501 — TRÙNG mã lỗi với "RLS từ chối", nên
@@ -84,15 +85,15 @@ select k2, sp, 20, 100 from t_id;
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 
 select isnt_empty(
-  'select 1 from public.ton_kho tk where tk.kho_id = any((select public.kho_hien_tai()))',
+  'select 1 from public.ton_kho tk where tk.kho_id = any((select public.kho_hien_tai())::uuid[])',
   'thủ kho đọc được tồn kho của mình'
 );
 select is_empty(
-  'select 1 from public.ton_kho tk where not (tk.kho_id = any((select public.kho_hien_tai())))',
+  'select 1 from public.ton_kho tk where not (tk.kho_id = any((select public.kho_hien_tai())::uuid[]))',
   'thủ kho KHÔNG đọc được tồn của kho khác'
 );
 select is_empty(
-  'select 1 from public.kho_movement mv where not (mv.kho_id = any((select public.kho_hien_tai())))',
+  'select 1 from public.kho_movement mv where not (mv.kho_id = any((select public.kho_hien_tai())::uuid[]))',
   'thủ kho KHÔNG đọc được sổ cái của kho khác'
 );
 select isnt_empty(
@@ -268,9 +269,16 @@ select ok(
 );
 
 -- (g) Thủ kho không lưu được hồ sơ người dùng.
+-- Lấy id từ t_id (đã tra dưới quyền postgres lúc dựng bảng tạm), KHÔNG tra
+-- trực tiếp auth.users ở đây — role đang là authenticated, không có quyền đọc
+-- auth.users, và lỗi "permission denied" đó trùng luôn mã 42501 với lỗi
+-- nghiệp vụ đang muốn kiểm (false pass y hệt bài học ở đầu file).
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 select throws_ok(
-  $$select public.luu_ho_so_nguoi_dung((select id from auth.users where email='thukho1@khominhvu.local'), 'Thủ kho K1', 'thukho1', 'thu_kho', '{}'::uuid[], false)$$,
+  format(
+    $$select public.luu_ho_so_nguoi_dung(%L::uuid, 'Thủ kho K1', 'thukho1', 'thu_kho', '{}'::uuid[], false)$$,
+    (select thukho1 from t_id)
+  ),
   '42501', null,
   'thủ kho không lưu được hồ sơ người dùng'
 );
@@ -279,7 +287,10 @@ select pg_temp.dang_xuat();
 -- (h) Thủ kho phải có ít nhất một kho.
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 select throws_ok(
-  $$select public.luu_ho_so_nguoi_dung((select id from auth.users where email='thukho1@khominhvu.local'), 'Thủ kho K1', 'thukho1', 'thu_kho', '{}'::uuid[], false)$$,
+  format(
+    $$select public.luu_ho_so_nguoi_dung(%L::uuid, 'Thủ kho K1', 'thukho1', 'thu_kho', '{}'::uuid[], false)$$,
+    (select thukho1 from t_id)
+  ),
   '23514', null,
   'thủ kho phải có ít nhất một kho'
 );
