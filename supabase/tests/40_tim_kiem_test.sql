@@ -1,8 +1,11 @@
 -- =============================================================================
 -- DATA-07 — Tìm sản phẩm không dấu, ưu tiên mã phát sinh gần đây
+--
+-- Chạy được cả khi bảng san_pham đã có 3.266 mã thật: mọi assertion đếm tổng
+-- đều dùng từ khóa "zqx" không khớp dữ liệu thật nào.
 -- =============================================================================
 begin;
-select plan(12);
+select plan(14);
 
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
@@ -46,82 +49,108 @@ returns uuid language sql stable as $helper$
 $helper$;
 
 
-create temp table t_sp as
-select pg_temp.sp_test('BD-001') as bd1,
-       pg_temp.sp_test('BD-002') as bd2,
-       pg_temp.sp_test('OC-001') as oc1;
+-- Từ khóa "zqx" KHÔNG khớp sản phẩm thật nào (đã kiểm trên 3.266 mã).
+-- Test chỉ đếm tổng khi truy vấn chứa "zqx"; mọi truy vấn khác kiểm CÓ MẶT chứ
+-- không kiểm TỔNG SỐ — vì bảng có dữ liệu thật, "bd" khớp 37 mã thật.
+-- Lần chạy đầu sau khi nạp dữ liệu, assertion `tim_san_pham('bd') = 2` ra 20
+-- (chạm giới hạn) — test đã ngầm giả định bảng chỉ có hàng test.
 
+create temp table t_sp as
+select pg_temp.sp_test('ZQX-001') as sp1,
+       pg_temp.sp_test('ZQX-002') as sp2,
+       pg_temp.sp_test('ZQX-OC1') as sp3;
 grant select on t_sp to authenticated;
 
-update public.san_pham set ten_hang = 'Bạc đạn 6202', lan_phat_sinh_cuoi = now()
-  where ma_hang = 'BD-001';
-update public.san_pham set ten_hang = 'Bạc đạn 6203', lan_phat_sinh_cuoi = now() - interval '30 days'
-  where ma_hang = 'BD-002';
-update public.san_pham set ten_hang = 'Ốc vít M6', lan_phat_sinh_cuoi = null
-  where ma_hang = 'OC-001';
+update public.san_pham set ten_hang = 'Bạc đạn Zqx 6202', lan_phat_sinh_cuoi = now()
+  where ma_hang = 'ZQX-001';
+update public.san_pham set ten_hang = 'Bạc đạn Zqx 6203', lan_phat_sinh_cuoi = now() - interval '30 days'
+  where ma_hang = 'ZQX-002';
+update public.san_pham set ten_hang = 'Ốc vít Zqx M6', lan_phat_sinh_cuoi = null
+  where ma_hang = 'ZQX-OC1';
 
-select isnt_empty(
-  'select 1 from public.tim_san_pham(''bac dan'')',
-  'gõ KHÔNG DẤU vẫn tìm được hàng có tên CÓ DẤU'
+-- ─── Nhánh 1: chuỗi con (ILIKE) ─────────────────────────────────────────
+select is(
+  (select count(*) from public.tim_san_pham('zqx')),
+  3::bigint,
+  'từ khóa duy nhất "zqx" ra đúng 3 hàng test'
 );
 select is(
-  (select ma_hang from public.tim_san_pham('bac dan') limit 1),
-  'BD-001',
-  'mã phát sinh gần đây xếp trước mã lâu không luân chuyển'
+  (select count(*) from public.tim_san_pham('bac dan zqx')),
+  2::bigint,
+  'gõ KHÔNG DẤU "bac dan zqx" ra 2 hàng có tên CÓ DẤU "Bạc đạn Zqx"'
 );
-select isnt_empty(
-  'select 1 from public.tim_san_pham(''Bạc đạn'')',
-  'gõ CÓ DẤU cũng ra kết quả'
+select is(
+  (select count(*) from public.tim_san_pham('Bạc đạn Zqx')),
+  2::bigint,
+  'gõ CÓ DẤU cũng ra đúng 2 hàng'
 );
-select isnt_empty(
-  'select 1 from public.tim_san_pham(''BD-001'')',
+select ok(
+  exists (select 1 from public.tim_san_pham('ZQX-001') where ma_hang = 'ZQX-001'),
   'tìm được theo mã hàng, không chỉ theo tên'
 );
+select ok(
+  (select count(*) from public.tim_san_pham('zq', 100) where ma_hang like 'ZQX-%') = 3,
+  'gõ 2 ký tự "zq" vẫn ra cả 3 hàng test — ca dùng chính của thủ kho'
+);
+
+-- ─── Thứ tự: mã phát sinh gần đây lên trước ────────────────────────────
+select is(
+  (select ma_hang from public.tim_san_pham('bac dan zqx') limit 1),
+  'ZQX-001',
+  'mã phát sinh gần đây xếp trước mã lâu không luân chuyển'
+);
+select is(
+  (select ma_hang from public.tim_san_pham('zqx') offset 2 limit 1),
+  'ZQX-OC1',
+  'mã chưa từng phát sinh (lan_phat_sinh_cuoi NULL) xếp cuối'
+);
+
+-- ─── Nhánh 2: gõ sai chính tả (word_similarity, ngưỡng 0.6) ────────────
+-- "bac dna" vs "Bac dan Zqx 6202": word_similarity = 0.625, trên ngưỡng.
+-- KHÔNG dùng "bac dna zqx" — ra đúng 0.600, sát ngưỡng, chập chờn.
+select ok(
+  exists (select 1 from public.tim_san_pham('bac dna', 100) where ma_hang = 'ZQX-001'),
+  'gõ sai "bac dna" vẫn tìm được "Bạc đạn" — nhánh word_similarity'
+);
+
+-- GIỚI HẠN ĐÃ BIẾT, ghi thành test để không ai kỳ vọng sai:
+-- gõ sai MỘT ký tự trong mã NGẮN (3 ký tự) cho word_similarity 0.5, dưới ngưỡng.
+-- Trigram chịu gõ sai tốt với từ dài, kém với mã ngắn. Thủ kho gõ nhầm mã hàng
+-- ngắn sẽ ra rỗng. Nếu sau này hạ ngưỡng, assertion này đỏ — đó là tín hiệu
+-- phải đánh giá lại số kết quả nhiễu.
+select is(
+  (select count(*) from public.tim_san_pham('zqz') where ma_hang like 'ZQX-%'),
+  0::bigint,
+  'GIỚI HẠN: gõ sai 1 ký tự của mã 3 ký tự "zqz" không tìm ra "zqx"'
+);
+
+-- ─── Biên ──────────────────────────────────────────────────────────────
 select is_empty(
-  'select 1 from public.tim_san_pham(''xyzkhongcogithat'')',
-  'từ khóa không khớp gì trả về rỗng'
-);
-select is(
-  (select count(*) from public.tim_san_pham('bac dan', 1)),
-  1::bigint,
-  'tôn trọng tham số giới hạn'
-);
-
-
-select is(
-  (select count(*) from pg_indexes
-    where schemaname = 'public' and indexname = 'idx_san_pham_tim_kiem'),
-  1::bigint,
-  'index GIN trigram tồn tại (xem supabase/README.md để kiểm planner có dùng)'
-);
-
--- Các ca dưới đây đã kiểm chứng thật trên cloud sau migration 0022.
--- Trước 0022, ca "gõ vài ký tự" trả về RỖNG — toán tử % đo độ giống toàn chuỗi.
-select is(
-  (select count(*) from public.tim_san_pham('bd')),
-  2::bigint,
-  'gõ 2 ký tự "bd" ra cả BD-001 và BD-002 — ca dùng chính của thủ kho'
-);
-select isnt_empty(
-  'select 1 from public.tim_san_pham(''bac dna'')',
-  'gõ sai chính tả "bac dna" vẫn tìm được — nhánh word_similarity'
-);
-select isnt_empty(
-  'select 1 from public.tim_san_pham(''oc vit'')',
-  'tìm được "Ốc vít M6" khi gõ "oc vit"'
+  'select 1 from public.tim_san_pham(''xyzkhongcogithatzqq'')',
+  'từ khóa vô nghĩa trả về rỗng'
 );
 select is_empty(
   'select 1 from public.tim_san_pham('''')',
   'từ khóa rỗng trả về rỗng, không quét cả bảng'
 );
-
--- Để CUỐI CÙNG: tắt BD-002 rồi mới kiểm. Đặt sớm hơn sẽ làm mọi assertion
--- phía sau thiếu mất một kết quả — đúng lỗi đã gặp ở lần chạy đầu.
-update public.san_pham set dang_kinh_doanh = false where ma_hang = 'BD-002';
 select is(
-  (select count(*) from public.tim_san_pham('bac dan') where ma_hang = 'BD-002'),
+  (select count(*) from public.tim_san_pham('zqx', 1)),
+  1::bigint,
+  'tôn trọng tham số giới hạn'
+);
+select is(
+  (select count(*) from pg_indexes where schemaname = 'public' and indexname = 'idx_san_pham_tim_kiem'),
+  1::bigint,
+  'index GIN trigram tồn tại'
+);
+
+-- Để CUỐI: tắt một mã rồi mới kiểm. Đặt sớm hơn sẽ làm các assertion phía
+-- trên thiếu một kết quả.
+update public.san_pham set dang_kinh_doanh = false where ma_hang = 'ZQX-002';
+select is(
+  (select count(*) from public.tim_san_pham('zqx') where ma_hang = 'ZQX-002'),
   0::bigint,
-  'hàng đã ngừng kinh doanh không xuất hiện trong kết quả'
+  'hàng ngừng kinh doanh không xuất hiện trong kết quả'
 );
 
 select * from finish();

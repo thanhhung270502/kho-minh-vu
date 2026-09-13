@@ -12,7 +12,11 @@
  * "một cặp là mấy cái" cùng lúc.
  */
 
-/** Nếu vận hành xác nhận 1 CẶP không phải 2 CÁI thì đổi đúng hằng số này. */
+/**
+ * CHỈ dùng làm gợi ý khi file KHÔNG có cột "Quy đổi". File export KiotViet thật
+ * CÓ cột này (giá trị 1 cho cả 148 mã CẶP), và nap-du-lieu.ts nạp đúng số trong
+ * file. Đổi hằng số này KHÔNG ảnh hưởng tới dữ liệu đã nạp.
+ */
 export const QUY_DOI_CAP = 2;
 
 const CONG_DOAN = new Map<string, string>([

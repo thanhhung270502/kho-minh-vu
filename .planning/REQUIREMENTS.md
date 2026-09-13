@@ -107,9 +107,9 @@
 
 ### Chuyển dữ liệu (DLIEU)
 
-- [ ] **DLIEU-01**: Nạp 3.266 mã hàng, 90 nhóm, 25 đối tác và 2 kho từ file export KiotViet
-- [ ] **DLIEU-02**: Khi nạp, tách trường ĐVT cũ thành `dvt` và `cong_doan`
-- [ ] **DLIEU-03**: Gán công đoạn cho 1.826 mã không suy được từ ĐVT cũ
+- [x] **DLIEU-01**: Nạp 3.266 mã hàng, 90 nhóm, 25 đối tác và 2 kho từ file export KiotViet
+- [x] **DLIEU-02**: Khi nạp, tách trường ĐVT cũ thành `dvt` và `cong_doan`
+- [x] **DLIEU-03**: Gán công đoạn cho 1.826 mã không suy được từ ĐVT cũ
 - [ ] **DLIEU-04**: Trích và chuẩn hóa danh sách khách hàng thật từ ô Ghi chú của 4.732 dòng bán
 - [ ] **DLIEU-05**: Nạp giá vốn khởi đầu một lần từ file Excel
 - [ ] **DLIEU-06**: Set tồn đầu kỳ từ kết quả kiểm kê thực tế, không bê số 389.671 từ KiotViet
@@ -170,9 +170,9 @@
 | AUTH-04 | Phase 1 | Pending |
 | AUTH-05 | Phase 1 | Pending |
 | AUTH-06 | Phase 1 | Pending |
-| DLIEU-01 | Phase 1 | Pending |
-| DLIEU-02 | Phase 1 | Pending |
-| DLIEU-03 | Phase 1 | Pending |
+| DLIEU-01 | Phase 1 | Complete |
+| DLIEU-02 | Phase 1 | Complete |
+| DLIEU-03 | Phase 1 | Complete |
 | AUTH-01 | Phase 2 | Pending |
 | AUTH-02 | Phase 2 | Pending |
 | AUTH-07 | Phase 2 | Pending |

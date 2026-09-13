@@ -1,13 +1,9 @@
 /**
- * Ghi danh mục vào database qua RPC `nap_danh_muc_kiotviet`.
- *
- * Gọi MỘT rpc() thay vì nhiều lệnh rời rạc: supabase-js không mở transaction
- * nhiều lệnh được, nên toàn bộ upsert phải nằm trong một hàm Postgres để đạt
- * "toàn bộ hoặc không gì cả". Đây cũng chính là nguyên tắc đã áp cho ghi sổ —
- * không có lý do gì nới lỏng ở đây.
+ * Ghi danh mục vào database qua RPC `nap_danh_muc_kiotviet` (một transaction).
  */
 import { taoAdminClient } from "../_supabase-admin";
-import { tachDvtCongDoan } from "./tach-dvt-cong-doan";
+import { doChuoi, doNgayExcel, doSo, type DongTho } from "./doc-file";
+import { chuanHoa, tachDvtCongDoan } from "./tach-dvt-cong-doan";
 import type { DoiTac, SanPham } from "./kiem-tra";
 
 export type DauVaoNap = {
@@ -23,27 +19,53 @@ export type KetQuaNap = {
   san_pham: number;
 };
 
-/** "NẠ - 75" → { ma: "75", ten: "NẠ" }. Không tách được thì dùng slug của tên. */
-export function tachMaNhomHang(ten: string): { ma: string; ten: string } {
-  const m = ten.match(/^(.+?)\s*-\s*(\S+)$/);
-  if (m && m[2] && m[1]) return { ma: m[2].trim(), ten: m[1].trim() };
-  return {
-    ma: ten.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Za-z0-9]+/g, "_").toUpperCase().slice(0, 40),
-    ten,
-  };
+/**
+ * Mã nhóm hàng = slug của TÊN ĐẦY ĐỦ. KHÔNG tách "X - Y" thành tên–mã.
+ *
+ * Lý do, phát hiện trên dữ liệu thật:
+ *   "Hàng Hãng - L5/6"  (1.135 mã) → tách ra mã "L5/6"
+ *   "Hàng Ngoài - L5/6" (189 mã)   → tách ra mã "L5/6"   ← ĐỤNG
+ *   "DÈ CON - 35" và "DÈ TRƯỚC - 35"                     ← cũng đụng
+ * Upsert theo mã thì nhóm sau ghi đè nhóm trước, 1.324 sản phẩm dồn vào một
+ * nhóm, âm thầm. " - " trong KiotViet lúc là tên–mã, lúc là cha–con, không nhất
+ * quán nên không suy được cấu trúc. Giữ nguyên tên để không bịa dữ liệu; dựng
+ * cây nhóm (parent_id) là việc làm tay ở màn Cài đặt sau.
+ */
+export function taoMaNhomHang(ten: string): string {
+  return chuanHoa(ten).replace(/[^A-Z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 60) || "KHONG_TEN";
 }
 
-export async function napDuLieu(dauVao: DauVaoNap): Promise<KetQuaNap> {
-  const supabase = taoAdminClient();
+export function dungNhomHang(sanPham: DauVaoNap["sanPham"]) {
+  const theoTen = new Map<string, { ma: string; ten: string }>();
+  const maDaDung = new Map<string, string>(); // ma -> tên đầu tiên dùng mã đó
+  const dungDo: string[] = [];
 
-  const nhomTheoTen = new Map<string, { ma: string; ten: string }>();
-  for (const sp of dauVao.sanPham) {
+  for (const sp of sanPham) {
     const ten = sp.duLieu.ten_nhom_hang;
-    if (ten && !nhomTheoTen.has(ten)) nhomTheoTen.set(ten, tachMaNhomHang(ten));
+    if (!ten || theoTen.has(ten)) continue;
+
+    let ma = taoMaNhomHang(ten);
+    const chuTruoc = maDaDung.get(ma);
+    if (chuTruoc !== undefined && chuTruoc !== ten) {
+      // Hai tên khác nhau ra cùng slug (khác nhau chỉ ở dấu hoặc ký tự đặc biệt).
+      let n = 2;
+      while (maDaDung.has(`${ma}_${n}`)) n++;
+      dungDo.push(`"${ten}" và "${chuTruoc}" cùng ra mã ${ma} → đổi thành ${ma}_${n}`);
+      ma = `${ma}_${n}`;
+    }
+    maDaDung.set(ma, ten);
+    theoTen.set(ten, { ma, ten });
   }
 
+  return { theoTen, dungDo };
+}
+
+export async function napDuLieu(dauVao: DauVaoNap): Promise<KetQuaNap & { dungDoNhom: string[] }> {
+  const supabase = taoAdminClient();
+  const { theoTen, dungDo } = dungNhomHang(dauVao.sanPham);
+
   const payload = {
-    nhom_hang: [...nhomTheoTen.values()],
+    nhom_hang: [...theoTen.values()],
     don_vi_tinh: [] as Array<{ ma: string; ten: string }>,
     cong_doan: [] as Array<{ ma: string; ten: string }>,
     doi_tac: dauVao.doiTac.map((d) => ({
@@ -53,55 +75,115 @@ export async function napDuLieu(dauVao: DauVaoNap): Promise<KetQuaNap> {
       dien_thoai: d.duLieu.dien_thoai,
       email: d.duLieu.email,
       dia_chi: d.duLieu.dia_chi,
-      khu_vuc: null,
-      phuong_xa: null,
+      khu_vuc: d.duLieu.khu_vuc,
+      phuong_xa: d.duLieu.phuong_xa,
       ma_so_thue: d.duLieu.ma_so_thue,
       ghi_chu: d.duLieu.ghi_chu,
     })),
     san_pham: dauVao.sanPham.map((s) => {
       const tach = tachDvtCongDoan(s.duLieu.dvt_goc);
-      const nhom = s.duLieu.ten_nhom_hang ? nhomTheoTen.get(s.duLieu.ten_nhom_hang) : null;
+      const nhom = s.duLieu.ten_nhom_hang ? theoTen.get(s.duLieu.ten_nhom_hang) : undefined;
       return {
         ma_hang: s.duLieu.ma_hang,
         ten_hang: s.duLieu.ten_hang,
-        barcode: s.duLieu.barcode,
+        barcode: null,
         ma_nhom_hang: nhom?.ma ?? null,
         ma_dvt: tach.maDvt,
         ma_cong_doan: tach.maCongDoan,
-        quy_doi: tach.quyDoi,
-        gia_ban: s.duLieu.gia_ban ?? 0,
-        ton_toi_thieu: s.duLieu.ton_toi_thieu ?? 0,
+        // Số THẬT trong file, không tự suy từ ĐVT. File ghi 1 cho cả 148 mã
+        // CẶP; đặt 2 theo phỏng đoán sẽ đổi âm thầm cách tính tồn.
+        quy_doi: s.duLieu.quy_doi,
+        gia_ban: s.duLieu.gia_ban,
+        ton_toi_thieu: s.duLieu.ton_toi_thieu,
+        ton_toi_da: s.duLieu.ton_toi_da,
+        vi_tri_ke: s.duLieu.vi_tri,
+        hinh_anh_url: s.duLieu.hinh_anh_url,
+        dang_kinh_doanh: s.duLieu.dang_kinh_doanh,
         ghi_chu: s.duLieu.ghi_chu,
-        // ton_kiotviet CỐ Ý không gửi lên. Tồn đầu kỳ set từ kiểm kê thực tế ở
-        // Phase 6 — tồn khởi điểm sai thì cả hệ thống sai từ ngày đầu.
-        // gia_von cũng không gửi: chỉ trigger giá vốn ghi cột đó.
+        // KHÔNG gửi ton_kiotviet: tồn đầu kỳ set từ kiểm kê thực tế ở Phase 6.
+        // KHÔNG gửi gia_von: chỉ trigger giá vốn ghi cột đó.
       };
     }),
   };
 
   const { data, error } = await supabase.rpc("nap_danh_muc_kiotviet", { p_du_lieu: payload });
   if (error) throw error;
-  return data as unknown as KetQuaNap;
+  return { ...(data as unknown as KetQuaNap), dungDoNhom: dungDo };
 }
 
-/** Lưu trữ chứng từ cũ để tra cứu. Không nạp vào chung_tu. */
-export async function napLuuTru(
-  bang: "luu_tru_nhap_kiotviet" | "luu_tru_hoa_don_kiotviet",
-  dong: Array<{ duLieuGoc: Record<string, unknown> }>,
-): Promise<number> {
-  const supabase = taoAdminClient();
-  if (dong.length === 0) return 0;
+/** Làm phẳng giá trị ô để jsonb gọn và đọc được, không lẫn object richText. */
+function lamPhang(o: Record<string, unknown>): Record<string, string | null> {
+  const ra: Record<string, string | null> = {};
+  for (const [k, v] of Object.entries(o)) ra[k] = doChuoi(v);
+  return ra;
+}
 
-  // Xoá rồi nạp lại: bảng lưu trữ không có khóa nghiệp vụ để upsert, và đây là
-  // ảnh chụp một lần của file export chứ không phải dữ liệu sống.
-  const { error: loiXoa } = await supabase.from(bang).delete().neq("id", "00000000-0000-0000-0000-000000000000");
+/**
+ * Lưu trữ chứng từ cũ để tra cứu. KHÔNG nạp vào chung_tu: lịch sử cũ có đơn giá
+ * bằng 0 trên mọi dòng, bê vào sổ cái sẽ làm bẩn dữ liệu từ ngày đầu.
+ *
+ * Xoá rồi nạp lại: bảng lưu trữ không có khóa nghiệp vụ để upsert, và đây là ảnh
+ * chụp một lần của file export. Không nằm trong transaction — lỗi giữa chừng thì
+ * chạy lại là đủ, vì bước xoá đầu tiên đưa bảng về rỗng.
+ */
+export async function napLuuTruNhap(dong: DongTho[]): Promise<number> {
+  const supabase = taoAdminClient();
+  const { error: loiXoa } = await supabase
+    .from("luu_tru_nhap_kiotviet")
+    .delete()
+    .not("id", "is", null);
   if (loiXoa) throw loiXoa;
 
+  const hang = dong.map((d) => ({
+    ma_phieu: doChuoi(d.o["ma_nhap_hang"]),
+    ngay: doNgayExcel(d.o["thoi_gian"]),
+    nha_cung_cap: [doChuoi(d.o["ma_nha_cung_cap"]), doChuoi(d.o["ten_nha_cung_cap"])].filter(Boolean).join(" "),
+    ma_hang: doChuoi(d.o["ma_hang"]),
+    ten_hang: doChuoi(d.o["ten_hang"]),
+    so_luong: doSo(d.o["so_luong"]),
+    don_gia: null, // file chi tiết nhập hàng KHÔNG có cột đơn giá
+    thanh_tien: null,
+    ghi_chu: doChuoi(d.o["ghi_chu"]),
+    du_lieu_goc: lamPhang(d.o),
+  }));
+  return chenTheoLo("luu_tru_nhap_kiotviet", hang);
+}
+
+export async function napLuuTruHoaDon(dong: DongTho[]): Promise<number> {
+  const supabase = taoAdminClient();
+  const { error: loiXoa } = await supabase
+    .from("luu_tru_hoa_don_kiotviet")
+    .delete()
+    .not("id", "is", null);
+  if (loiXoa) throw loiXoa;
+
+  const hang = dong.map((d) => ({
+    ma_hoa_don: doChuoi(d.o["ma_hoa_don"]),
+    ngay: doNgayExcel(d.o["thoi_gian"]),
+    khach_hang: doChuoi(d.o["ten_khach_hang"]),
+    ma_hang: doChuoi(d.o["ma_hang"]),
+    ten_hang: doChuoi(d.o["ten_hang"]),
+    so_luong: doSo(d.o["so_luong"]),
+    don_gia: doSo(d.o["don_gia"]),
+    thanh_tien: doSo(d.o["thanh_tien"]),
+    // Tên khách hàng THẬT nằm ở đây (QUỲNH, NGỌC, TỐT...). Phase 2 (DLIEU-04)
+    // quét cột này để dựng danh sách khách hàng.
+    ghi_chu: doChuoi(d.o["ghi_chu"]),
+    du_lieu_goc: lamPhang(d.o),
+  }));
+  return chenTheoLo("luu_tru_hoa_don_kiotviet", hang);
+}
+
+async function chenTheoLo(
+  bang: "luu_tru_nhap_kiotviet" | "luu_tru_hoa_don_kiotviet",
+  hang: Record<string, unknown>[],
+): Promise<number> {
+  const supabase = taoAdminClient();
   const LO = 500;
   let tong = 0;
-  for (let i = 0; i < dong.length; i += LO) {
-    const lo = dong.slice(i, i + LO).map((d) => ({ du_lieu_goc: d.duLieuGoc as never }));
-    const { error } = await supabase.from(bang).insert(lo);
+  for (let i = 0; i < hang.length; i += LO) {
+    const lo = hang.slice(i, i + LO);
+    const { error } = await supabase.from(bang).insert(lo as never);
     if (error) throw error;
     tong += lo.length;
   }

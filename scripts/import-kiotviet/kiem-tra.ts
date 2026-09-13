@@ -1,8 +1,8 @@
 /**
  * Validate từng dòng và GOM HẾT LỖI, không dừng ở lỗi đầu tiên.
  *
- * Đây là toàn bộ giá trị của chế độ thử: người dùng sửa một lượt thay vì chạy
- * lại bốn mươi lần.
+ * Ánh xạ cột dựa trên file export THẬT của KiotViet (12/09/2026), không phải
+ * phỏng đoán. Xem cấu trúc bằng: npx tsx scripts/import-kiotviet/xem-cot.ts
  */
 import { z } from "zod";
 
@@ -18,22 +18,39 @@ export type KetQuaKiemTra<T> = {
   canhBao: CanhBao[];
 };
 
-/** Số dòng kỳ vọng, lấy từ PROJECT.md. Lệch thì cảnh báo chứ không coi là lỗi. */
+/** Số dòng kỳ vọng từ PROJECT.md. Lệch thì cảnh báo, không coi là lỗi. */
 export const SO_DONG_KY_VONG: Record<string, number> = {
-  "DanhSachSanPham": 3266,
-  "DanhSachNhaCungCap": 25,
-  "ChiTietNhapHang": 594,
-  "ChiTietHoaDon": 4732,
+  DanhSachSanPham: 3266,
+  DanhSachNhaCungCap: 25,
+  DanhSachChiTietNhapHang: 594,
+  DanhSachChiTietHoaDon: 4732,
 };
+
+/**
+ * Nhà cung cấp ẢO — KiotViet dùng làm mẹo để giả lập nghiệp vụ không có trường
+ * chứa. Hệ mới có loại chứng từ riêng cho các nghiệp vụ này nên không nạp.
+ */
+export const NCC_AO = new Map<string, string>([
+  ["NB001", "trả hàng giả lập bằng phiếu nhập — hệ mới dùng chứng từ TRA_KHACH"],
+  ["NB002", "nhập bù tồn nội bộ — hệ mới dùng chứng từ DIEU_CHINH / KIEM_KE"],
+]);
+
+/** KiotViet dùng 999999999 nghĩa là "không giới hạn". */
+const KHONG_GIOI_HAN = 999_999_999;
 
 export const SanPhamSchema = z.object({
   ma_hang: z.string().min(1, "Thiếu mã hàng"),
   ten_hang: z.string().min(1, "Thiếu tên hàng"),
-  barcode: z.string().nullable(),
+  loai_hang: z.string().nullable(),
   ten_nhom_hang: z.string().nullable(),
   dvt_goc: z.string().nullable(),
-  gia_ban: z.number().nonnegative("Giá bán không được âm").nullable(),
-  ton_toi_thieu: z.number().nonnegative().nullable(),
+  quy_doi: z.number().positive("Quy đổi phải lớn hơn 0"),
+  gia_ban: z.number().nonnegative("Giá bán không được âm"),
+  ton_toi_thieu: z.number().nonnegative(),
+  ton_toi_da: z.number().nonnegative().nullable(),
+  vi_tri: z.string().nullable(),
+  hinh_anh_url: z.string().nullable(),
+  dang_kinh_doanh: z.boolean(),
   ton_kiotviet: z.number().nullable(),
   ghi_chu: z.string().nullable(),
 });
@@ -45,14 +62,18 @@ export const DoiTacSchema = z.object({
   dien_thoai: z.string().nullable(),
   email: z.string().nullable(),
   dia_chi: z.string().nullable(),
+  khu_vuc: z.string().nullable(),
+  phuong_xa: z.string().nullable(),
   ma_so_thue: z.string().nullable(),
   ghi_chu: z.string().nullable(),
 });
 export type DoiTac = z.infer<typeof DoiTacSchema>;
 
-function lay(o: Record<string, unknown>, ...khoa: string[]): unknown {
-  for (const k of khoa) if (k in o) return o[k];
-  return null;
+function ghiLoi(loi: Loi[], soDong: number, kq: z.ZodSafeParseError<unknown>, tho: Record<string, unknown>) {
+  for (const issue of kq.error.issues) {
+    const truong = issue.path.join(".") || "(dòng)";
+    loi.push({ soDong, truong, lyDo: issue.message, giaTri: tho[issue.path[0] as string] });
+  }
 }
 
 export function kiemTraSanPham(dong: DongTho[], tenFile: string): KetQuaKiemTra<SanPham> {
@@ -62,32 +83,38 @@ export function kiemTraSanPham(dong: DongTho[], tenFile: string): KetQuaKiemTra<
 
   const daThay = new Map<string, number>();
   const dvtLa = new Map<string, number[]>();
-  let chuaSuyDuocCongDoan = 0;
+  let suyDuoc = 0;
+  let chuaSuyDuoc = 0;
+  let dvtRong = 0;
   let soCap = 0;
+  let soCombo = 0;
+  let tonAm = 0;
 
   for (const d of dong) {
+    const toiDa = doSo(d.o["ton_lon_nhat"]);
+    const hinh = doChuoi(d.o["hinh_anh_url1_url2"]);
+
     const tho = {
-      ma_hang: doChuoi(lay(d.o, "ma_hang", "ma", "ma_hang_hoa")),
-      ten_hang: doChuoi(lay(d.o, "ten_hang", "ten", "ten_hang_hoa")),
-      barcode: doChuoi(lay(d.o, "barcode", "ma_vach")),
-      ten_nhom_hang: doChuoi(lay(d.o, "nhom_hang", "ten_nhom_hang", "nhom")),
-      dvt_goc: doChuoi(lay(d.o, "dvt", "don_vi_tinh", "dvt_goc")),
-      gia_ban: doSo(lay(d.o, "gia_ban", "gia")),
-      ton_toi_thieu: doSo(lay(d.o, "ton_toi_thieu", "dinh_muc_toi_thieu")),
-      ton_kiotviet: doSo(lay(d.o, "ton_kho", "ton", "so_luong_ton")),
-      ghi_chu: doChuoi(lay(d.o, "ghi_chu", "mo_ta")),
+      ma_hang: doChuoi(d.o["ma_hang"]),
+      ten_hang: doChuoi(d.o["ten_hang"]),
+      loai_hang: doChuoi(d.o["loai_hang"]),
+      ten_nhom_hang: doChuoi(d.o["nhom_hang_3_cap"]),
+      dvt_goc: doChuoi(d.o["dvt"]),
+      quy_doi: doSo(d.o["quy_doi"]) ?? 1,
+      gia_ban: doSo(d.o["gia_ban"]) ?? 0,
+      ton_toi_thieu: doSo(d.o["ton_nho_nhat"]) ?? 0,
+      ton_toi_da: toiDa === null || toiDa >= KHONG_GIOI_HAN ? null : toiDa,
+      vi_tri: doChuoi(d.o["vi_tri"]),
+      // Cột chứa nhiều URL cách nhau dấu phẩy; lấy ảnh đầu tiên.
+      hinh_anh_url: hinh ? (hinh.split(",")[0]?.trim() || null) : null,
+      dang_kinh_doanh: doChuoi(d.o["dang_kinh_doanh"]) !== "0",
+      ton_kiotviet: doSo(d.o["ton_kho"]),
+      ghi_chu: doChuoi(d.o["mo_ta"]),
     };
 
     const kq = SanPhamSchema.safeParse(tho);
     if (!kq.success) {
-      for (const issue of kq.error.issues) {
-        loi.push({
-          soDong: d.soDong,
-          truong: issue.path.join(".") || "(dòng)",
-          lyDo: issue.message,
-          giaTri: tho[issue.path[0] as keyof typeof tho],
-        });
-      }
+      ghiLoi(loi, d.soDong, kq, tho);
       continue;
     }
 
@@ -95,19 +122,23 @@ export function kiemTraSanPham(dong: DongTho[], tenFile: string): KetQuaKiemTra<
     if (truoc !== undefined) {
       canhBao.push({
         soDong: d.soDong,
-        lyDo: `Trùng mã hàng "${kq.data.ma_hang}" — đã xuất hiện ở dòng ${truoc}. Dòng sau ghi đè dòng trước.`,
+        lyDo: `Trùng mã hàng "${kq.data.ma_hang}" với dòng ${truoc}. Dòng sau ghi đè dòng trước.`,
       });
     }
     daThay.set(kq.data.ma_hang, d.soDong);
 
     const tach = tachDvtCongDoan(kq.data.dvt_goc);
-    if (!tach.suyDuoc) chuaSuyDuocCongDoan++;
+    if (tach.suyDuoc) suyDuoc++;
+    else chuaSuyDuoc++;
+    if (!kq.data.dvt_goc) dvtRong++;
     if (tach.maDvt === "CAP") soCap++;
-    if (tach.giaTriLa) {
+    if (tach.giaTriLa && kq.data.dvt_goc) {
       const ds = dvtLa.get(tach.giaTriLa) ?? [];
       ds.push(d.soDong);
       dvtLa.set(tach.giaTriLa, ds);
     }
+    if (kq.data.loai_hang && kq.data.loai_hang !== "Hàng hóa") soCombo++;
+    if ((kq.data.ton_kiotviet ?? 0) < 0) tonAm++;
 
     hopLe.push({ soDong: d.soDong, duLieu: kq.data, duLieuGoc: d.o });
   }
@@ -116,28 +147,42 @@ export function kiemTraSanPham(dong: DongTho[], tenFile: string): KetQuaKiemTra<
   if (kyVong && dong.length !== kyVong) {
     canhBao.push({
       soDong: null,
-      lyDo: `Đọc được ${dong.length} dòng, PROJECT.md ghi ${kyVong}. Có thể là file export khác kỳ — cần người xác nhận, không phải lỗi.`,
+      lyDo: `Đọc được ${dong.length} dòng, PROJECT.md ghi ${kyVong}. Có thể là file export khác kỳ — cần xác nhận.`,
     });
   }
 
-  if (chuaSuyDuocCongDoan > 0) {
-    canhBao.push({
-      soDong: null,
-      lyDo: `${chuaSuyDuocCongDoan} mã chưa suy được công đoạn từ ô ĐVT cũ, tạm gán MUA_NGOAI. Cần rà theo nhóm hàng — tài liệu dự kiến con số này là 1.826.`,
-    });
-  }
+  canhBao.push({
+    soDong: null,
+    lyDo:
+      `Công đoạn: suy được từ ĐVT cũ ${suyDuoc} mã, chưa suy được ${chuaSuyDuoc} mã (tạm gán MUA_NGOAI, cần rà theo nhóm hàng).` +
+      (dvtRong ? ` Trong đó ${dvtRong} mã có ô ĐVT RỖNG.` : ""),
+  });
 
   if (soCap > 0) {
     canhBao.push({
       soDong: null,
-      lyDo: `${soCap} mã có đơn vị CẶP, script đặt quy_doi = 2. XÁC NHẬN: 1 CẶP có đúng bằng 2 CÁI không? Nếu không, sửa QUY_DOI_CAP trong tach-dvt-cong-doan.ts.`,
+      lyDo: `${soCap} mã đơn vị CẶP nhưng file ghi quy_doi = 1. Nạp đúng số trong file. XÁC NHẬN: 1 CẶP có phải là 1 đơn vị tồn kho không, hay là 2 CÁI?`,
+    });
+  }
+
+  if (soCombo > 0) {
+    canhBao.push({
+      soDong: null,
+      lyDo: `${soCombo} mã là "Combo - đóng gói". Hệ mới chưa mô hình hóa combo — nạp như hàng thường.`,
+    });
+  }
+
+  if (tonAm > 0) {
+    canhBao.push({
+      soDong: null,
+      lyDo: `${tonAm} mã đang tồn ÂM trên KiotViet. Tồn KHÔNG được nạp — chỉ để biết trước khi kiểm kê.`,
     });
   }
 
   for (const [gt, ds] of dvtLa) {
     canhBao.push({
       soDong: ds[0] ?? null,
-      lyDo: `Giá trị ĐVT lạ "${gt}" ở ${ds.length} dòng (dòng đầu: ${ds[0]}). Tạm gán CAI/MUA_NGOAI.`,
+      lyDo: `ĐVT lạ "${gt}" ở ${ds.length} dòng (dòng đầu ${ds[0]}). Tạm gán CAI / MUA_NGOAI.`,
     });
   }
 
@@ -149,42 +194,45 @@ export function kiemTraDoiTac(dong: DongTho[], tenFile: string): KetQuaKiemTra<D
   const loi: Loi[] = [];
   const canhBao: CanhBao[] = [];
   const daThay = new Map<string, number>();
+  let soThuTu = 900_000; // mã sinh cho NCC bị ghi nhầm MST vào ô mã — dải riêng, không đụng mã thật
 
   for (const d of dong) {
-    let ma = doChuoi(lay(d.o, "ma_ncc", "ma", "ma_nha_cung_cap", "ma_doi_tac"));
-    let mst = doChuoi(lay(d.o, "ma_so_thue", "mst"));
+    let ma = doChuoi(d.o["ma_nha_cung_cap"]);
+    let mst = doChuoi(d.o["ma_so_thue"]);
+    const ten = doChuoi(d.o["ten_nha_cung_cap"]);
 
-    // Dữ liệu thật lẫn NCC000023 với mã số thuế 0317415317 ở cùng cột.
-    // Toàn số và dài 10-13 ký tự thì coi là mã số thuế.
+    if (ma && NCC_AO.has(ma)) {
+      canhBao.push({ soDong: d.soDong, lyDo: `Bỏ qua NCC ảo ${ma} "${ten}": ${NCC_AO.get(ma)}.` });
+      continue;
+    }
+
+    // Dữ liệu thật: "0317415317" nằm ở ô MÃ nhà cung cấp — là mã số thuế.
     if (ma && /^\d{10,13}$/.test(ma)) {
       mst = mst ?? ma;
-      ma = null;
+      soThuTu++;
+      const maMoi = `NCC${soThuTu}`;
       canhBao.push({
         soDong: d.soDong,
-        lyDo: `Cột mã chứa mã số thuế (${mst}) thay vì mã NCC. Script sẽ sinh mã tuần tự NCC######.`,
+        lyDo: `Ô mã chứa mã số thuế (${ma}) — chuyển sang ma_so_thue, sinh mã mới ${maMoi}. Phiếu nhập cũ tham chiếu mã ${ma} vẫn tra được trong bảng lưu trữ.`,
       });
+      ma = maMoi;
     }
 
     const tho = {
-      ma: ma ?? `NCC${String(d.soDong).padStart(6, "0")}`,
-      ten: doChuoi(lay(d.o, "ten_ncc", "ten", "ten_nha_cung_cap", "ten_doi_tac")),
-      dien_thoai: doChuoi(lay(d.o, "dien_thoai", "sdt", "so_dien_thoai")),
-      email: doChuoi(lay(d.o, "email")),
-      dia_chi: doChuoi(lay(d.o, "dia_chi")),
+      ma,
+      ten,
+      dien_thoai: doChuoi(d.o["dien_thoai"]),
+      email: doChuoi(d.o["email"]),
+      dia_chi: doChuoi(d.o["dia_chi"]),
+      khu_vuc: doChuoi(d.o["khu_vuc"]),
+      phuong_xa: doChuoi(d.o["phuong_xa"]),
       ma_so_thue: mst,
-      ghi_chu: doChuoi(lay(d.o, "ghi_chu")),
+      ghi_chu: doChuoi(d.o["ghi_chu"]),
     };
 
     const kq = DoiTacSchema.safeParse(tho);
     if (!kq.success) {
-      for (const issue of kq.error.issues) {
-        loi.push({
-          soDong: d.soDong,
-          truong: issue.path.join(".") || "(dòng)",
-          lyDo: issue.message,
-          giaTri: tho[issue.path[0] as keyof typeof tho],
-        });
-      }
+      ghiLoi(loi, d.soDong, kq, tho);
       continue;
     }
 
@@ -193,16 +241,12 @@ export function kiemTraDoiTac(dong: DongTho[], tenFile: string): KetQuaKiemTra<D
       canhBao.push({ soDong: d.soDong, lyDo: `Trùng mã đối tác "${kq.data.ma}" với dòng ${truoc}.` });
     }
     daThay.set(kq.data.ma, d.soDong);
-
     hopLe.push({ soDong: d.soDong, duLieu: kq.data, duLieuGoc: d.o });
   }
 
   const kyVong = SO_DONG_KY_VONG[tenFile];
   if (kyVong && dong.length !== kyVong) {
-    canhBao.push({
-      soDong: null,
-      lyDo: `Đọc được ${dong.length} dòng, PROJECT.md ghi ${kyVong}. Lưu ý tài liệu nói có 2 NCC ảo cần bỏ.`,
-    });
+    canhBao.push({ soDong: null, lyDo: `Đọc được ${dong.length} dòng, PROJECT.md ghi ${kyVong}.` });
   }
 
   return { hopLe, loi, canhBao };

@@ -77,39 +77,80 @@ export async function docSheet(duongDan: string): Promise<DongTho[]> {
     );
   }
 
-  const wb = new ExcelJS.Workbook();
-  await wb.xlsx.readFile(duongDan);
-  const ws = wb.worksheets[0];
-  if (!ws) throw new Error(`File ${duongDan} không có sheet nào.`);
-
-  const tenCot: string[] = [];
-  ws.getRow(1).eachCell({ includeEmpty: true }, (cell, i) => {
-    tenCot[i] = chuanHoaTenCot(doChuoi(cell.value) ?? `cot_${i}`);
+  // BẮT BUỘC dùng reader dạng STREAM với styles: "ignore".
+  // Reader thường (`workbook.xlsx.readFile`) CRASH trên file export KiotViet:
+  //   TypeError: Cannot read properties of undefined (reading 'styles')
+  // vì phần styles.xml lệch chuẩn. Đây là lỗi đã biết của exceljs với xlsx do
+  // công cụ không phải Excel sinh ra. Stream reader bỏ qua styles hoàn toàn,
+  // và còn nhẹ bộ nhớ hơn với file hóa đơn 1,1 MB.
+  const reader = new ExcelJS.stream.xlsx.WorkbookReader(duongDan, {
+    sharedStrings: "cache",
+    hyperlinks: "ignore",
+    styles: "ignore",
+    worksheets: "emit",
   });
 
   const ketQua: DongTho[] = [];
 
-  ws.eachRow({ includeEmpty: false }, (row, soDong) => {
-    if (soDong === 1) return;
+  for await (const ws of reader) {
+    let tenCot: string[] = [];
+    let soDong = 0;
 
-    const o: Record<string, unknown> = {};
-    let rong = true;
-    row.eachCell({ includeEmpty: true }, (cell, i) => {
-      const khoa = tenCot[i];
-      if (!khoa) return;
-      const gt = cell.value;
-      o[khoa] = gt;
-      if (gt !== null && gt !== undefined && gt !== "") rong = false;
-    });
+    for await (const row of ws) {
+      soDong++;
+      const values = (row.values as unknown[]) ?? [];
 
-    if (rong) return;
+      if (soDong === 1) {
+        tenCot = values.map((v, i) => (i === 0 ? "" : chuanHoaTenCot(doChuoi(v) ?? `cot_${i}`)));
+        continue;
+      }
 
-    // Bỏ dòng tổng ở cuối sheet.
-    const oDau = chuanHoa(doChuoi(Object.values(o)[0]) ?? "").toLowerCase();
-    if (TU_KHOA_DONG_TONG.some((k) => oDau === k || oDau.startsWith(k + " "))) return;
+      const o: Record<string, unknown> = {};
+      let rong = true;
+      values.forEach((gt, i) => {
+        const khoa = tenCot[i];
+        if (!khoa) return;
+        o[khoa] = gt;
+        if (gt !== null && gt !== undefined && gt !== "") rong = false;
+      });
 
-    ketQua.push({ soDong, o });
-  });
+      if (rong) continue;
+
+      const oDau = chuanHoa(doChuoi(Object.values(o)[0]) ?? "").toLowerCase();
+      if (TU_KHOA_DONG_TONG.some((k) => oDau === k || oDau.startsWith(k + " "))) continue;
+
+      ketQua.push({ soDong: row.number ?? soDong, o });
+    }
+
+    break; // chỉ đọc sheet đầu tiên
+  }
 
   return ketQua;
+}
+
+/**
+ * Ngày của KiotViet xuất ra dạng số sê-ri Excel: 46277.65498746528.
+ *
+ * Số sê-ri Excel KHÔNG có múi giờ — nó là GIỜ TREO TƯỜNG. KiotViet là hệ thống
+ * Việt Nam nên đó là giờ ICT (UTC+7). Phiên bản đầu gắn nhãn "Z" (UTC) → lệch
+ * 7 tiếng: hóa đơn tạo lúc 15:43 bị ghi thành 15:43 UTC, tức 22:43 giờ VN.
+ *
+ * Trả chuỗi ISO có offset tường minh +07:00 để không ai phải đoán.
+ * Mốc 1899-12-30 (Excel coi 1900 là năm nhuận nên mốc lùi một ngày).
+ */
+export function doNgayExcel(v: unknown): string | null {
+  const n = doSo(v);
+  if (n === null || n < 1) return doChuoi(v);
+
+  // Đọc sê-ri như thể là UTC để lấy đúng các thành phần giờ treo tường,
+  // rồi gắn offset +07:00 thay vì Z.
+  const ms = Math.round((n - 25569) * 86400 * 1000);
+  const d = new Date(ms);
+  if (Number.isNaN(d.getTime())) return doChuoi(v);
+
+  const p2 = (x: number) => String(x).padStart(2, "0");
+  return (
+    `${d.getUTCFullYear()}-${p2(d.getUTCMonth() + 1)}-${p2(d.getUTCDate())}` +
+    `T${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())}:${p2(d.getUTCSeconds())}+07:00`
+  );
 }

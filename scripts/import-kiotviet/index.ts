@@ -8,11 +8,12 @@
  * MẶC ĐỊNH AN TOÀN: không có cờ nào thì chạy như --dry-run. Không để người dùng
  * vô tình ghi đè dữ liệu bằng một lệnh gõ thiếu.
  */
+import { existsSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
 import { docSheet, type DongTho } from "./doc-file";
 import { kiemTraSanPham, kiemTraDoiTac, type CanhBao, type Loi } from "./kiem-tra";
-import { napDuLieu, napLuuTru } from "./nap-du-lieu";
+import { napDuLieu, napLuuTruHoaDon, napLuuTruNhap } from "./nap-du-lieu";
 
 const co = new Set(process.argv.slice(2));
 const GHI = co.has("--ghi");
@@ -22,19 +23,49 @@ const THU_MUC = MAU
   ? path.join("scripts", "import-kiotviet", "du-lieu-mau")
   : path.join("data", "kiotviet");
 
+// KiotViet xuất file kèm timestamp, ví dụ:
+//   DanhSachSanPham_KV12092026-153850-575.xlsx
+// nên khớp theo TIỀN TỐ chứ không theo tên chính xác. README dặn người dùng
+// giữ nguyên tên KiotViet xuất ra — giả định "tên chính xác" ban đầu là sai.
 const FILE = {
   sanPham: "DanhSachSanPham",
   doiTac: "DanhSachNhaCungCap",
-  nhapHang: "ChiTietNhapHang",
-  hoaDon: "ChiTietHoaDon",
+  nhapHang: "DanhSachChiTietNhapHang",
+  hoaDon: "DanhSachChiTietHoaDon",
 };
 
-function duongDan(ten: string) {
-  return path.join(THU_MUC, `${ten}.xlsx`);
+function duongDan(tienTo: string): string {
+  const chinhXac = path.join(THU_MUC, `${tienTo}.xlsx`);
+  if (existsSync(chinhXac)) return chinhXac;
+
+  let ungVien: string[] = [];
+  try {
+    ungVien = readdirSync(THU_MUC)
+      .filter((f) => f.toLowerCase().endsWith(".xlsx") && !f.startsWith("~$"))
+      .filter((f) => f.toLowerCase().startsWith(tienTo.toLowerCase()));
+  } catch {
+    return chinhXac; // để docSheet ném lỗi có hướng xử lý
+  }
+
+  if (ungVien.length === 0) return chinhXac;
+
+  if (ungVien.length > 1) {
+    // Nhiều bản export cùng loại — lấy bản mới nhất theo thời gian sửa file,
+    // và nói rõ để người dùng biết bản nào đang được dùng.
+    ungVien.sort(
+      (a, b) =>
+        statSync(path.join(THU_MUC, b)).mtimeMs - statSync(path.join(THU_MUC, a)).mtimeMs,
+    );
+    console.warn(
+      `  ⚠ Có ${ungVien.length} file khớp "${tienTo}". Dùng bản mới nhất: ${ungVien[0]}`,
+    );
+  }
+
+  return path.join(THU_MUC, ungVien[0]!);
 }
 
 function inKhoi(ten: string, soDong: number, hopLe: number, loi: Loi[], canhBao: CanhBao[]) {
-  console.log(`\n${ten}.xlsx`);
+  console.log(`\n${path.basename(duongDan(ten))}`);
   console.log(`  Đọc được   ${String(soDong).padStart(6)} dòng`);
   console.log(`  Hợp lệ     ${String(hopLe).padStart(6)} dòng`);
   console.log(`  Lỗi        ${String(loi.length).padStart(6)}`);
@@ -87,8 +118,8 @@ async function main() {
 
   inKhoi(FILE.sanPham, thoSanPham.length, kqSanPham.hopLe.length, kqSanPham.loi, kqSanPham.canhBao);
   inKhoi(FILE.doiTac, thoDoiTac.length, kqDoiTac.hopLe.length, kqDoiTac.loi, kqDoiTac.canhBao);
-  console.log(`\n${FILE.nhapHang}.xlsx  ${thoNhap.length} dòng → bảng lưu trữ (không vào chung_tu)`);
-  console.log(`${FILE.hoaDon}.xlsx  ${thoHoaDon.length} dòng → bảng lưu trữ`);
+  console.log(`\n${path.basename(duongDan(FILE.nhapHang))}\n  ${thoNhap.length} dòng → bảng lưu trữ (không vào chung_tu)`);
+  console.log(`${path.basename(duongDan(FILE.hoaDon))}\n  ${thoHoaDon.length} dòng → bảng lưu trữ`);
 
   const tongLoi = kqSanPham.loi.length + kqDoiTac.loi.length;
 
@@ -109,8 +140,8 @@ async function main() {
 
   console.log("Đang nạp...");
   const kq = await napDuLieu({ sanPham: kqSanPham.hopLe, doiTac: kqDoiTac.hopLe });
-  const soNhap = await napLuuTru("luu_tru_nhap_kiotviet", thoNhap.map((d) => ({ duLieuGoc: d.o })));
-  const soHoaDon = await napLuuTru("luu_tru_hoa_don_kiotviet", thoHoaDon.map((d) => ({ duLieuGoc: d.o })));
+  const soNhap = await napLuuTruNhap(thoNhap);
+  const soHoaDon = await napLuuTruHoaDon(thoHoaDon);
 
   console.log("\nĐã nạp:");
   console.table({
@@ -121,10 +152,12 @@ async function main() {
     "lưu trữ hóa đơn": soHoaDon,
   });
 
-  const tongTon = thoSanPham.reduce((s, d) => {
-    const v = Number(d.o["ton_kho"] ?? d.o["ton"] ?? 0);
-    return s + (Number.isFinite(v) ? v : 0);
-  }, 0);
+  if (kq.dungDoNhom.length) {
+    console.log("\nMã nhóm hàng bị đụng, đã tự đổi:");
+    for (const x of kq.dungDoNhom) console.log(`  ${x}`);
+  }
+
+  const tongTon = thoSanPham.reduce((s, d) => s + (Number(d.o["ton_kho"]) || 0), 0);
   console.log(`\nTồn từ KiotViet (KHÔNG nạp, chỉ để đối chiếu): ${tongTon.toLocaleString("vi-VN")} đơn vị`);
   console.log("Chạy lại lệnh này lần nữa phải cho đúng những con số trên (idempotent).\n");
 }
