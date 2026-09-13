@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-09-13T14:55:49.105Z"
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-09-13T15:19:25.748Z"
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 36
-  completed_plans: 2
+  completed_plans: 3
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 ## Current Position
 
 Phase: 02 (khung-ung-dung) — EXECUTING
-Plan: 2 of 21
+Plan: 3 of 21
 
 ## Performance Metrics
 
@@ -47,6 +47,7 @@ Plan: 2 of 21
 
 *Updated after each plan completion*
 | Phase 02 P01 | 30 | 3 tasks | 11 files |
+| Phase 02 P02 | 25 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -60,6 +61,8 @@ Recent decisions affecting current work:
 - [Roadmap]: DLIEU-05/06/07 (giá vốn khởi đầu, tồn đầu kỳ, lưu trữ chứng từ cũ) dồn vào Phase 6 vì đều là hoạt động chốt số liệu một lần ngay trước go-live, không phải năng lực màn hình.
 - [Phase 02]: kho_id = any((select kho_hien_tai())) cần ép kiểu ::uuid[] — Postgres phân giải any((select ...)) thành ANY(subquery), không phải ANY(array)
 - [Phase 02]: Tổng pgTAP toàn dự án là 98, không phải 97 (plan(26) thay vì plan(25) ở 30_rls_test.sql)
+- [Phase 02]: Trigger generic ghi_nhat_ky_sua bắt mọi sửa qua to_jsonb(old)/to_jsonb(new) trừ mảng cột loại trừ — thay vì trigger riêng từng bảng
+- [Phase 02]: pgTAP trong một transaction: now() không đổi giữa các insert — không dùng order by cot_thoi_gian desc để phân biệt bản ghi mới nhất, kiểm theo nội dung cụ thể
 
 ### Pending Todos
 
@@ -71,6 +74,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-13T14:55:49.102Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-09-13T15:19:25.745Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None

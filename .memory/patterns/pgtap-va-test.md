@@ -95,6 +95,17 @@ Kiểm bằng `npx supabase db push --dry-run` → phải báo "up to date".
 
 ---
 
+## 8. `now()` là hằng số suốt một transaction pgTAP — đừng ORDER BY nó để tìm "dòng mới nhất"
+
+**Đã gặp:** test nhật ký sửa (Phase 2) chèn hai dòng cùng `truong` ở hai câu UPDATE
+khác nhau trong cùng file, rồi `order by sua_luc desc limit 1` để lấy dòng mới nhất
+— sai ngẫu nhiên vì `now()` trả về giờ BẮT ĐẦU TRANSACTION, giống hệt nhau cho mọi
+dòng chèn trong cùng file `begin; ... rollback;`. Không có thứ tự để `ORDER BY` phân biệt.
+
+**Áp dụng:** không dùng cột timestamp mặc định `now()` để suy luận "mới nhất" trong
+pgTAP. Kiểm bằng NỘI DUNG cụ thể của dòng cần tìm (`exists (... and cot = 'gia_tri_vua_ghi')`)
+thay vì thứ tự thời gian.
+
 ## Bộ lệnh kiểm chứng đầy đủ
 
 ```bash

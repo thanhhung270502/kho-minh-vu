@@ -33,7 +33,7 @@
 - [ ] **DMUC-01**: Xem bảng 3.266 mã hàng với phân trang, sắp xếp và lọc chạy phía server
 - [ ] **DMUC-02**: Lọc danh mục theo nhóm hàng, công đoạn, đơn vị tính và trạng thái tồn
 - [ ] **DMUC-03**: Tìm bằng một ô duy nhất theo cả mã và tên, gõ không dấu vẫn ra kết quả
-- [ ] **DMUC-04**: Tạo và sửa mã hàng với `dvt` và `cong_doan` là hai trường độc lập, kèm `quy_doi`
+- [x] **DMUC-04**: Tạo và sửa mã hàng với `dvt` và `cong_doan` là hai trường độc lập, kèm `quy_doi`
 - [ ] **DMUC-05**: Xem chi tiết một mã hàng kèm thẻ kho của mã đó
 - [ ] **DMUC-06**: Import danh mục từ file Excel, báo rõ dòng nào lỗi và lỗi gì, không nạp nửa vời
 - [ ] **DMUC-07**: Export danh mục đang lọc ra file Excel
@@ -41,7 +41,7 @@
 ### Đối tác (DTAC)
 
 - [ ] **DTAC-01**: Xem nhà cung cấp và khách hàng trong cùng một danh sách, lọc được theo loại
-- [ ] **DTAC-02**: Tạo và sửa đối tác với loại thuộc (NCC, KHACH, CA_HAI)
+- [x] **DTAC-02**: Tạo và sửa đối tác với loại thuộc (NCC, KHACH, CA_HAI)
 - [ ] **DTAC-03**: Xem lịch sử giao dịch của một đối tác
 
 ### Phiếu nhập (NHAP)
@@ -179,12 +179,12 @@
 | DMUC-01 | Phase 2 | Pending |
 | DMUC-02 | Phase 2 | Pending |
 | DMUC-03 | Phase 2 | Pending |
-| DMUC-04 | Phase 2 | Pending |
+| DMUC-04 | Phase 2 | Complete |
 | DMUC-05 | Phase 2 | Pending |
 | DMUC-06 | Phase 2 | Pending |
 | DMUC-07 | Phase 2 | Pending |
 | DTAC-01 | Phase 2 | Pending |
-| DTAC-02 | Phase 2 | Pending |
+| DTAC-02 | Phase 2 | Complete |
 | DTAC-03 | Phase 2 | Pending |
 | DLIEU-04 | Phase 2 | Pending |
 | CDAT-01 | Phase 2 | Complete |
