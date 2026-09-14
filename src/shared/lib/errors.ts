@@ -34,11 +34,39 @@ const MA_VI_PHAM_RANG_BUOC = "23514";
 /**
  * Chuyển lỗi kỹ thuật thành thông báo người dùng đọc được.
  *
- * Cấm trả về "Có lỗi xảy ra": người vận hành tại xưởng phải biết nên bấm
+ * Cấm trả về "Có lỗi xảy ra": người vận hành tại kho phải biết nên bấm
  * thử lại, gọi quản trị, hay sửa lại số liệu vừa nhập.
  */
 export function dienGiaiLoi(error: unknown): LoiDaDien {
   if (error instanceof AuthError) {
+    if (error.code === "invalid_credentials") {
+      return {
+        loai: "du-lieu-khong-hop-le",
+        tieuDe: "Sai tên đăng nhập hoặc mật khẩu",
+        huongXuLy:
+          "Kiểm tra lại, chú ý bộ gõ tiếng Việt và phím Caps Lock.",
+        maGoc: error.code,
+      };
+    }
+
+    if (error.code === "user_banned") {
+      return {
+        loai: "khong-du-quyen",
+        tieuDe: "Tài khoản đã bị vô hiệu hóa",
+        huongXuLy: "Liên hệ quản lý để mở lại tài khoản.",
+        maGoc: error.code,
+      };
+    }
+
+    if (error.code === "weak_password") {
+      return {
+        loai: "du-lieu-khong-hop-le",
+        tieuDe: "Mật khẩu quá yếu",
+        huongXuLy: "Dùng ít nhất 8 ký tự, có cả chữ và số.",
+        maGoc: error.code,
+      };
+    }
+
     return {
       loai: "het-phien",
       tieuDe: "Phiên đăng nhập đã hết hạn",
@@ -62,7 +90,7 @@ export function dienGiaiLoi(error: unknown): LoiDaDien {
         loai: "khong-du-quyen",
         tieuDe: "Tài khoản không có quyền với dữ liệu này",
         huongXuLy:
-          "Tài khoản của bạn chỉ thao tác được trên xưởng được phân công. Liên hệ quản trị hệ thống nếu cần mở thêm quyền.",
+          "Tài khoản của bạn chỉ thao tác được trên kho được phân công. Liên hệ quản trị hệ thống nếu cần mở thêm quyền.",
         maGoc: error.code,
       };
     }
@@ -72,7 +100,7 @@ export function dienGiaiLoi(error: unknown): LoiDaDien {
         loai: "khong-tim-thay",
         tieuDe: "Không tìm thấy bản ghi",
         huongXuLy:
-          "Bản ghi có thể đã bị xoá, hoặc không thuộc xưởng bạn được phân quyền. Quay lại danh sách và chọn lại.",
+          "Bản ghi có thể đã bị xoá, hoặc không thuộc kho bạn được phân quyền. Quay lại danh sách và chọn lại.",
         maGoc: error.code,
       };
     }
@@ -95,7 +123,7 @@ export function dienGiaiLoi(error: unknown): LoiDaDien {
         loai: "du-lieu-khong-hop-le",
         tieuDe: "Dữ liệu không hợp lệ",
         huongXuLy:
-          "Một số trường tham chiếu tới bản ghi không tồn tại hoặc vi phạm ràng buộc. Kiểm tra lại lô, xưởng và số lượng vừa nhập.",
+          "Một số trường tham chiếu tới bản ghi không tồn tại hoặc vi phạm ràng buộc. Kiểm tra lại mã hàng, kho và số lượng vừa nhập.",
         maGoc: error.code,
       };
     }
