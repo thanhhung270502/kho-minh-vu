@@ -20,13 +20,13 @@
 
 ### Đăng nhập & phân quyền (AUTH)
 
-- [ ] **AUTH-01**: Người dùng đăng nhập bằng email và mật khẩu, phiên giữ nguyên qua refresh trang
-- [ ] **AUTH-02**: Chưa đăng nhập mà vào route nội bộ thì bị đẩy về `/dang-nhap`, đăng nhập xong quay lại đúng trang định vào
+- [x] **AUTH-01**: Người dùng đăng nhập bằng email và mật khẩu, phiên giữ nguyên qua refresh trang
+- [x] **AUTH-02**: Chưa đăng nhập mà vào route nội bộ thì bị đẩy về `/dang-nhap`, đăng nhập xong quay lại đúng trang định vào
 - [ ] **AUTH-03**: Vai trò và kho của người dùng nằm trong JWT claims; RLS policy đọc từ claims, không truy vấn bảng theo từng dòng
 - [ ] **AUTH-04**: Thủ kho chỉ đọc được tồn và chứng từ của kho mình, không thấy kho còn lại
 - [ ] **AUTH-05**: Văn phòng sửa được danh mục nhưng không sửa được giá vốn và giá bán
 - [ ] **AUTH-06**: Vai trò "chỉ xem" không tạo được chứng từ — bị chặn ở database, không chỉ ẩn nút
-- [ ] **AUTH-07**: Người dùng đăng xuất được từ bất kỳ trang nào
+- [x] **AUTH-07**: Người dùng đăng xuất được từ bất kỳ trang nào
 
 ### Danh mục hàng hóa (DMUC)
 
@@ -173,9 +173,9 @@
 | DLIEU-01 | Phase 1 | Complete |
 | DLIEU-02 | Phase 1 | Complete |
 | DLIEU-03 | Phase 1 | Complete |
-| AUTH-01 | Phase 2 | Pending |
-| AUTH-02 | Phase 2 | Pending |
-| AUTH-07 | Phase 2 | Pending |
+| AUTH-01 | Phase 2 | Complete |
+| AUTH-02 | Phase 2 | Complete |
+| AUTH-07 | Phase 2 | Complete |
 | DMUC-01 | Phase 2 | Pending |
 | DMUC-02 | Phase 2 | Pending |
 | DMUC-03 | Phase 2 | Pending |
