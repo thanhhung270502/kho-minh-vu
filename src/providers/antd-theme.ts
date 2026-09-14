@@ -13,8 +13,8 @@ export const antdTheme: ThemeConfig = {
     colorWarning: "#f59e0b",
     colorError: "#dc2626",
     borderRadius: 6,
-    // Màn hình theo dõi sản xuất chủ yếu là bảng số liệu dày đặc,
-    // cỡ chữ 14 dễ đọc trên máy văn phòng lẫn máy tính bảng tại xưởng.
+    // Màn hình kho chủ yếu là bảng số liệu dày đặc, cỡ chữ 14 dễ đọc trên
+    // máy văn phòng lẫn điện thoại thủ kho.
     fontSize: 14,
   },
   components: {

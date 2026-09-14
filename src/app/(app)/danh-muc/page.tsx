@@ -3,24 +3,23 @@ import type { Metadata } from "next";
 import { ChuaTrienKhai } from "@/shared/components/chua-trien-khai";
 import { PageHeader } from "@/shared/components/page-header";
 
-export const metadata: Metadata = { title: "Danh mục" };
+export const metadata: Metadata = { title: "Danh mục hàng" };
 
 export default function DanhMucPage() {
   return (
     <>
       <PageHeader
-        tieuDe="Danh mục"
+        tieuDe="Danh mục hàng"
         moTa="Dữ liệu nền ít thay đổi, khai báo một lần rồi dùng lại."
       />
 
       <ChuaTrienKhai
         seCo={[
-          "Xưởng và công đoạn của từng xưởng",
-          "Sản phẩm, mã hàng, định mức nguyên vật liệu",
-          "Khuôn và máy ép, gắn với sản phẩm chạy được",
-          "Mã lỗi phế phẩm dùng chung cho cả 5 xưởng",
-          "Người dùng và phân quyền theo xưởng",
+          "Danh mục sản phẩm, mã hàng, nhóm hàng, ĐVT",
+          "Import/rà soát dữ liệu từ KiotViet",
+          "Ẩn giá vốn theo vai trò khi xem",
         ]}
+        phuThuoc="thiết kế bảng danh mục (plan 16)"
       />
     </>
   );

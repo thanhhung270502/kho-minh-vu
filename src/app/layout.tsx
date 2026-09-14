@@ -14,11 +14,11 @@ const fontSans = Be_Vietnam_Pro({
 
 export const metadata: Metadata = {
   title: {
-    default: "Hệ thống theo dõi sản xuất & tồn kho",
-    template: "%s · Theo dõi sản xuất",
+    default: "Kho Minh Vũ",
+    template: "%s · Kho Minh Vũ",
   },
   description:
-    "Theo dõi lô sản xuất qua 5 xưởng (ép nhựa, sơn, carbon, xi mạ, đóng gói) và tồn kho nguyên vật liệu, bán thành phẩm, thành phẩm.",
+    "Quản lý xuất nhập tồn phụ tùng xe máy cho CTY TNHH SX-TM P.Tùng Xe Máy Minh Vũ.",
 };
 
 export default function RootLayout({

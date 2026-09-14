@@ -19,14 +19,13 @@ Quy tắc:
   khi có ít nhất 2 feature dùng thật.
 - Route trong `src/app/` chỉ gọi component của feature, không chứa logic.
 
-Feature dự kiến theo luồng sản xuất:
+Feature dự kiến theo luồng xuất nhập tồn (D-37):
 
-| Thư mục      | Phạm vi                                                           |
-| ------------ | ----------------------------------------------------------------- |
-| `san-xuat`   | lệnh sản xuất, theo dõi lô qua công đoạn của 5 xưởng              |
-| `kho`        | nhập/xuất/tồn 3 nhóm: nguyên vật liệu, phôi chờ xử lý, thành phẩm |
-| `bao-cao`    | sản lượng, tỷ lệ phế phẩm, FTY, biến động tồn, xuất Excel         |
-| `danh-muc`   | xưởng, công đoạn, sản phẩm, khuôn, máy ép, mã lỗi                 |
-| `nguoi-dung` | đăng nhập, phân quyền theo xưởng                                  |
+| Thư mục     | Phạm vi                                                        |
+| ----------- | --------------------------------------------------------------- |
+| `xac-thuc`  | đăng nhập bằng tên đăng nhập, chặn route theo phiên, phân quyền |
+| `danh-muc`  | sản phẩm, mã hàng, nhóm hàng, ĐVT                               |
+| `doi-tac`   | nhà cung cấp + khách hàng, lịch sử giao dịch                     |
+| `cai-dat`   | người dùng & vai trò, kho, nhóm hàng/ĐVT, quy tắc đánh số chứng từ |
 
 Chi tiết quy trình xem `CLAUDE.md` ở thư mục gốc.
