@@ -1,0 +1,76 @@
+"use client";
+
+import { App, Dropdown } from "antd";
+import { useState } from "react";
+
+import { ghiBoLocRaUrl, type BoLocSanPham } from "../schemas/bo-loc.schema";
+
+type Props = {
+  boLoc: BoLocSanPham;
+  soMa: number;
+  /** Chỉ truyền khi người dùng có quyền sửa — plan 20 nối màn nhập vào đây. */
+  onMoNhap?: () => void;
+};
+
+/** Tải một file từ route trả blob; lỗi thì đọc JSON để hiện câu tiếng Việt. */
+async function tai(url: string): Promise<{ ok: true } | { ok: false; loi: string }> {
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    try {
+      const j = (await res.json()) as { tieuDe?: string; huongXuLy?: string };
+      return { ok: false, loi: `${j.tieuDe ?? "Không tải được file"}. ${j.huongXuLy ?? ""}` };
+    } catch {
+      return { ok: false, loi: "Không tải được file. Thử lại sau ít phút." };
+    }
+  }
+
+  const blob = await res.blob();
+  const ten =
+    /filename="([^"]+)"/.exec(res.headers.get("Content-Disposition") ?? "")?.[1] ??
+    "danh-muc.xlsx";
+
+  const diaChi = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = diaChi;
+  a.download = ten;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  // Thu hồi ngay sau khi trình duyệt nhận lệnh tải, không giữ blob trong bộ nhớ.
+  URL.revokeObjectURL(diaChi);
+
+  return { ok: true };
+}
+
+export function NutExcel({ boLoc, soMa, onMoNhap }: Props) {
+  const { message } = App.useApp();
+  const [dangTai, setDangTai] = useState(false);
+
+  async function chay(url: string) {
+    setDangTai(true);
+    const kq = await tai(url);
+    setDangTai(false);
+    if (!kq.ok) message.error(kq.loi);
+  }
+
+  return (
+    <Dropdown.Button
+      loading={dangTai}
+      title={`Xuất ${soMa.toLocaleString("vi-VN")} mã đang lọc`}
+      onClick={() => void chay(`/api/danh-muc/xuat-excel?${ghiBoLocRaUrl(boLoc)}`)}
+      menu={{
+        items: [
+          { key: "mau", label: "Tải file mẫu trống" },
+          ...(onMoNhap ? [{ key: "nhap", label: "Nhập từ Excel…" }] : []),
+        ],
+        onClick: ({ key }) => {
+          if (key === "mau") void chay("/api/danh-muc/mau-excel");
+          if (key === "nhap") onMoNhap?.();
+        },
+      }}
+    >
+      Xuất Excel
+    </Dropdown.Button>
+  );
+}

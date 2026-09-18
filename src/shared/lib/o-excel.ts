@@ -80,9 +80,82 @@ const TU_KHOA_DONG_TONG = ["tong", "tong cong", "cong", "total"];
  * vì phần styles.xml lệch chuẩn. Đây cũng là lý do KHÔNG đọc Excel ở trình duyệt:
  * bản exceljs cho browser chỉ có `.load()`, không có tùy chọn bỏ qua styles.
  */
-export async function docSheetDau(
-  nguon: string | Buffer,
-): Promise<{ tenCot: string[]; tenCotGoc: string[]; dong: DongTho[] }> {
+export type SheetDaDoc = { tenCot: string[]; tenCotGoc: string[]; dong: DongTho[] };
+
+/** Gom mảng ô thô của một dòng thành object theo tên cột đã chuẩn hóa. */
+function gomDong(
+  values: unknown[],
+  tenCot: string[],
+  soDong: number,
+): DongTho | null {
+  const o: Record<string, unknown> = {};
+  let rong = true;
+
+  values.forEach((gt, i) => {
+    const khoa = tenCot[i];
+    if (!khoa) return;
+    o[khoa] = gt;
+    if (gt !== null && gt !== undefined && gt !== "") rong = false;
+  });
+
+  if (rong) return null;
+
+  const oDau = chuanHoa(doChuoi(Object.values(o)[0]) ?? "").toLowerCase();
+  if (TU_KHOA_DONG_TONG.some((k) => oDau === k || oDau.startsWith(k + " "))) return null;
+
+  return { soDong, o };
+}
+
+/**
+ * Đường dự phòng: đọc cả workbook vào bộ nhớ.
+ *
+ * Reader dạng stream của exceljs giả định các mục trong file zip đến theo đúng
+ * thứ tự (workbook.xml trước worksheets). File do CHÍNH exceljs ghi ra lại
+ * không luôn theo thứ tự đó — tùy kích thước, worksheet đến trước và reader ném
+ * "Cannot read properties of undefined (reading 'sheets')". Đo được: 50 dòng
+ * đọc ổn, 100–1200 dòng hỏng, 1600 dòng lại ổn.
+ *
+ * Reader thường không kén thứ tự nhưng lại chết trên styles lệch chuẩn của
+ * KiotViet — nên dùng nó làm ĐƯỜNG DỰ PHÒNG kèm `ignoreNodes: ["styles"]`,
+ * chứ không thay thế.
+ */
+async function docBangWorkbook(nguon: string | Buffer): Promise<SheetDaDoc> {
+  const wb = new ExcelJS.Workbook();
+
+  if (typeof nguon === "string") {
+    await wb.xlsx.readFile(nguon);
+  } else {
+    // Kiểu `Buffer` trong .d.ts của exceljs là interface riêng của nó, không
+    // phải `Buffer` của Node — cùng một object lúc chạy.
+    await wb.xlsx.load(nguon as unknown as Parameters<typeof wb.xlsx.load>[0], {
+      ignoreNodes: ["styles"],
+    });
+  }
+
+  const ws = wb.worksheets[0];
+  if (!ws) return { tenCot: [], tenCotGoc: [], dong: [] };
+
+  let tenCot: string[] = [];
+  let tenCotGoc: string[] = [];
+  const ketQua: DongTho[] = [];
+
+  ws.eachRow({ includeEmpty: false }, (row, soDong) => {
+    const values = (row.values as unknown[]) ?? [];
+
+    if (soDong === 1) {
+      tenCotGoc = values.map((v, i) => (i === 0 ? "" : (doChuoi(v) ?? `cot_${i}`)));
+      tenCot = values.map((v, i) => (i === 0 ? "" : chuanHoaTenCot(doChuoi(v) ?? `cot_${i}`)));
+      return;
+    }
+
+    const dong = gomDong(values, tenCot, row.number ?? soDong);
+    if (dong) ketQua.push(dong);
+  });
+
+  return { tenCot: tenCot.filter(Boolean), tenCotGoc, dong: ketQua };
+}
+
+async function docBangStream(nguon: string | Buffer): Promise<SheetDaDoc> {
   const reader = new ExcelJS.stream.xlsx.WorkbookReader(
     typeof nguon === "string" ? nguon : Readable.from(nguon),
     {
@@ -113,27 +186,27 @@ export async function docSheetDau(
         continue;
       }
 
-      const o: Record<string, unknown> = {};
-      let rong = true;
-      values.forEach((gt, i) => {
-        const khoa = tenCot[i];
-        if (!khoa) return;
-        o[khoa] = gt;
-        if (gt !== null && gt !== undefined && gt !== "") rong = false;
-      });
-
-      if (rong) continue;
-
-      const oDau = chuanHoa(doChuoi(Object.values(o)[0]) ?? "").toLowerCase();
-      if (TU_KHOA_DONG_TONG.some((k) => oDau === k || oDau.startsWith(k + " "))) continue;
-
-      ketQua.push({ soDong: row.number ?? soDong, o });
+      const dong = gomDong(values, tenCot, row.number ?? soDong);
+      if (dong) ketQua.push(dong);
     }
 
     break; // chỉ đọc sheet đầu tiên
   }
 
   return { tenCot: tenCotChuan, tenCotGoc, dong: ketQua };
+}
+
+export async function docSheetDau(nguon: string | Buffer): Promise<SheetDaDoc> {
+  try {
+    return await docBangStream(nguon);
+  } catch (loiStream) {
+    try {
+      return await docBangWorkbook(nguon);
+    } catch {
+      // Ném lỗi của reader chính: nó sát nguyên nhân thật hơn.
+      throw loiStream;
+    }
+  }
 }
 
 /**

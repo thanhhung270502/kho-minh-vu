@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Table, Typography } from "antd";
+import { Alert, Badge, Button, Table, Typography } from "antd";
 import type { SorterResult } from "antd/es/table/interface";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -19,7 +19,10 @@ import {
 } from "../schemas/bo-loc.schema";
 import type { DongSanPham } from "../types";
 import { taoCot } from "./cot-san-pham";
+import { GoiYCongDoan } from "./goi-y-cong-doan";
 import { NganKeoSanPham } from "./ngan-keo-san-pham";
+import { NutExcel } from "./nut-excel";
+import { ThanhGanHangLoat } from "./thanh-gan-hang-loat";
 import { ThanhLocSanPham } from "./thanh-loc-san-pham";
 
 export type QuyenDanhMuc = {
@@ -51,13 +54,37 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
     mo: false,
     id: null,
   });
+  const [chon, setChon] = useState<string[]>([]);
+  const [goiYMo, setGoiYMo] = useState(false);
 
-  const doiBoLoc = useCallback(
+  // Badge "Cần rà": lấy tổng từ chính RPC danh sách, không thêm RPC mới.
+  const demCanRa = useDanhSachSanPham({
+    ...BO_LOC_MAC_DINH,
+    canRa: true,
+    kinhDoanh: "tat_ca",
+    kichThuoc: 10,
+  });
+
+  const dieuHuong = useCallback(
     (b: BoLocSanPham) => {
       const sp = ghiBoLocRaUrl(b).toString();
       router.replace(sp ? `${pathname}?${sp}` : pathname, { scroll: false });
     },
     [router, pathname],
+  );
+
+  /**
+   * Người dùng đổi bộ lọc thì tập đang chọn không còn nghĩa — bỏ chọn để không
+   * gán hàng loạt nhầm sang những mã họ không còn nhìn thấy. Tách khỏi
+   * `dieuHuong` vì việc tự về trang 1 (trong effect bên dưới) không được phép
+   * setState.
+   */
+  const doiBoLoc = useCallback(
+    (b: BoLocSanPham) => {
+      setChon([]);
+      dieuHuong(b);
+    },
+    [dieuHuong],
   );
 
   const dong = danhSach.data?.dong ?? [];
@@ -66,7 +93,7 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
   // Trang cuối rỗng sau khi lọc lại — quay về trang 1 thay vì hiện "không có gì".
   useEffect(() => {
     if (danhSach.isPending || danhSach.isFetching) return;
-    if (boLoc.trang > 1 && dong.length === 0) doiBoLoc({ ...boLoc, trang: 1 });
+    if (boLoc.trang > 1 && dong.length === 0) dieuHuong({ ...boLoc, trang: 1 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [danhSach.isPending, danhSach.isFetching, dong.length, boLoc.trang]);
 
@@ -95,6 +122,19 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
         boLoc={boLoc}
         danhMucPhu={danhMucPhu.data}
         onDoi={doiBoLoc}
+        hanhDongPhu={
+          <>
+            <Badge count={demCanRa.data?.tong ?? 0} overflowCount={9999} size="small">
+              <Button
+                type={boLoc.canRa ? "primary" : "default"}
+                onClick={() => doiBoLoc({ ...boLoc, canRa: !boLoc.canRa, trang: 1 })}
+              >
+                Cần rà
+              </Button>
+            </Badge>
+            <NutExcel boLoc={boLoc} soMa={tong} />
+          </>
+        }
         nutThem={
           quyen.sua ? (
             <Button type="primary" onClick={() => setNganKeo({ mo: true, id: null })}>
@@ -103,6 +143,31 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
           ) : null
         }
       />
+
+      {boLoc.canRa ? (
+        <Alert
+          className="mb-3"
+          type="warning"
+          showIcon
+          message="Mã mua ngoài chưa rõ công đoạn và các mã có ô ĐVT mâu thuẫn"
+          description="Gán lại công đoạn, hoặc chọn rồi bấm “Xác nhận đã rà” nếu hiện tại đã đúng."
+          action={
+            quyen.sua ? (
+              <Button size="small" onClick={() => setGoiYMo(true)}>
+                Gợi ý theo đuôi mã
+              </Button>
+            ) : null
+          }
+        />
+      ) : null}
+
+      {quyen.sua ? (
+        <ThanhGanHangLoat
+          ids={chon}
+          danhMucPhu={danhMucPhu.data}
+          onXong={() => setChon([])}
+        />
+      ) : null}
 
       <QueryState
         query={danhSach}
@@ -133,8 +198,20 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
                   boLoc,
                   xemGiaVon: quyen.xemGiaVon,
                   sua: quyen.sua,
+                  danhMucPhu: danhMucPhu.data,
                   onSua: (id) => setNganKeo({ mo: true, id }),
                 })}
+                rowSelection={
+                  quyen.sua
+                    ? {
+                        selectedRowKeys: chon,
+                        onChange: (keys) => setChon(keys as string[]),
+                        // Chọn ở trang 1, sang trang 2 chọn tiếp: antd v6 chỉ
+                        // giữ được khóa ngoài trang hiện tại khi bật cờ này.
+                        preserveSelectedRowKeys: true,
+                      }
+                    : undefined
+                }
                 dataSource={d.dong}
                 loading={danhSach.isFetching && !danhSach.isPending}
                 scroll={{ x: 1100 }}
@@ -159,6 +236,8 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
           </>
         )}
       </QueryState>
+
+      <GoiYCongDoan open={goiYMo} onDong={() => setGoiYMo(false)} />
 
       <NganKeoSanPham
         id={nganKeo.id}
