@@ -21,7 +21,8 @@ const matKhau = z
   .regex(/[A-Za-z]/, "Mật khẩu phải có ít nhất một chữ")
   .regex(/[0-9]/, "Mật khẩu phải có ít nhất một số");
 
-const hoSo = z
+/** Phần hồ sơ dùng chung cho cả tạo, sửa và form giao diện. */
+export const hoSoNguoiDungSchema = z
   .object({
     hoTen: z.string().trim().min(2, "Nhập họ tên"),
     vaiTro: z.enum(VAI_TRO),
@@ -34,9 +35,19 @@ const hoSo = z
 
 export const taoNguoiDungSchema = z
   .object({ tenDangNhap, matKhauTam: matKhau })
-  .and(hoSo);
+  .and(hoSoNguoiDungSchema);
 
-export const capNhatNguoiDungSchema = z.object({ id: z.string().uuid() }).and(hoSo);
+export const capNhatNguoiDungSchema = z
+  .object({ id: z.string().uuid() })
+  .and(hoSoNguoiDungSchema);
+
+/**
+ * Schema cho FORM giao diện: form sửa không có `id` (id lấy từ dòng bảng) và
+ * không có ô mật khẩu. Ghép từ cùng `hoSoNguoiDungSchema` nên luật vai trò/kho
+ * chỉ khai một chỗ.
+ */
+export const formTaoNguoiDungSchema = taoNguoiDungSchema;
+export const formSuaNguoiDungSchema = hoSoNguoiDungSchema;
 
 export const datLaiMatKhauSchema = z.object({
   id: z.string().uuid(),
