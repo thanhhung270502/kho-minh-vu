@@ -31,9 +31,9 @@ result: pass
 
 ### 5. Tạo và sửa mã hàng
 expected: Bấm "Thêm mã hàng" mở ngăn kéo bên phải. ĐVT và Công đoạn là HAI ô riêng. Tạo mã mới xong tìm thấy ngay. Với `vanphong`, ô Giá bán bị khóa kèm chữ "Chỉ quản lý đặt giá bán"; với `quanly` sửa được.
-result: issue
-reported: "Mã trùng hiện Alert đỏ chung chung "Không tải được dữ liệu. Bấm Thử lại…" thay vì lỗi "Mã hàng đã tồn tại" dưới ô Mã. Dữ liệu đã nhập vẫn giữ."
-severity: major
+result: pass
+ban_dau: issue (major) — mã trùng hiện Alert chung chung "Không tải được dữ liệu" thay vì lỗi dưới ô Mã
+sau_khi_sua: "Mã trùng hiện “Mã hàng đã tồn tại. Dùng mã khác.” ngay dưới ô Mã, dữ liệu đã nhập giữ nguyên."
 
 ### 6. Chi tiết mã hàng và thẻ kho
 expected: Bấm mã hàng mở trang chi tiết: thông tin, tồn theo kho, tab Thẻ kho có dòng lịch sử KiotViet (nguồn "KiotViet · bán"/"KiotViet · nhập"), tab Lịch sử sửa hiện các lần sửa kèm tên người sửa.
@@ -66,21 +66,19 @@ result: pass
 
 ### 13. Cài đặt → Người dùng
 expected: Quản lý tạo tài khoản (chọn vai trò có mô tả từng dòng; thủ kho bắt buộc tick kho), đặt lại mật khẩu (sinh ngẫu nhiên + copy), vô hiệu hóa (có cảnh báo nhân viên bị đăng xuất). Không tự hạ quyền mình khi là quản lý duy nhất.
-result: blocked
-reason: "Cần đăng nhập bằng quanly; Claude không nhập mật khẩu vào ô đăng nhập."
-blocked_by: other
+result: pass
+ghi_chu: "Quản lý thấy đủ 6 tab; bảng 5 tài khoản có tag Bạn, kho gán hiện đúng (Thủ kho K1+K2 → Kho 1, Kho 2); lọc Đã vô hiệu hóa ra test.uat/Kho 1, khớp script plan 14. Ngăn kéo: vai trò có mô tả từng dòng; gõ Kiểm Tra.UAT hiện trước sẽ lưu thành kiemtra.uat; bỏ trống kho báo Thủ kho phải được gán ít nhất một kho; đổi sang Văn phòng thì ô Kho ẩn. Không tạo tài khoản nào."
 
 ### 14. Cài đặt → Kho, nhóm hàng, ĐVT, công đoạn
 expected: Thêm/sửa được ở cả 4 tab. Kho chỉ ngừng hoạt động, không có nút Xóa. Xóa nhóm hàng đang có mã dùng → báo "Đang có mã hàng dùng…". Mã hệ thống (CAI, SON, CARBON…) có nhãn "Hệ thống", không đổi mã và không xóa được.
-result: issue
-reported: "Xóa nhóm hàng đang có mã dùng bị chặn ĐÚNG nhưng thông báo sai: hiện "Không tải được dữ liệu" thay vì "Đang có mã hàng dùng nhóm hàng này…"."
-severity: major
+result: pass
+ban_dau: issue (major) — chặn xóa đúng nhưng thông báo là câu chung chung
+sau_khi_sua: "Hiện “Đang có mã hàng dùng nhóm hàng này — đổi các mã đó sang nhóm hàng khác trước khi xóa.” Mã hệ thống có nhãn Hệ thống và không có nút Xóa."
 
 ### 15. Cài đặt → Số chứng từ
 expected: Hiện 7 loại với tiền tố, số chữ số, số đã phát, ví dụ số kế tiếp (PN26-000001). Sửa tiền tố → ví dụ đổi ngay khi gõ. Đặt trùng tiền tố loại khác → báo lỗi dưới ô. `vanphong` vào tab này bị chặn.
-result: blocked
-reason: "Cần đăng nhập bằng quanly."
-blocked_by: other
+result: pass
+ghi_chu: "Đủ 7 loại, Alert giải thích, nút Lưu mờ khi chưa đổi. Gõ PN → PNX thì Số kế tiếp đổi ngay thành PNX26-000001 và chỉ dòng đó bật Lưu. Đặt trùng PX báo “Tiền tố đã dùng cho Phiếu xuất.” ngay dưới ô, không gửi request. Đã trả về PN; 7 dòng cấu hình nguyên trạng."
 
 ### 16. Gõ thẳng URL không lách được quyền
 expected: Đăng nhập `thukho1` rồi gõ thẳng /cai-dat/nguoi-dung → bị đẩy sang trang "Không đủ quyền", không hiện dữ liệu. Đăng xuất rồi gõ /danh-muc → về /dang-nhap, đăng nhập xong quay lại đúng /danh-muc.
