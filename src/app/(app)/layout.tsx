@@ -28,5 +28,9 @@ export default async function AppLayout({
     redirect("/dang-nhap");
   }
 
+  // Mật khẩu tạm chỉ dùng để vào đặt mật khẩu riêng, không dùng app (D-03).
+  // Đọc cờ từ BẢNG chứ không từ claim: đổi xong là hết chặn ngay, không chờ token mới.
+  if (nd.phaiDoiMatKhau) redirect("/doi-mat-khau");
+
   return <AppShell nguoiDung={nd}>{children}</AppShell>;
 }

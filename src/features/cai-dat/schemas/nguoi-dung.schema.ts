@@ -1,0 +1,56 @@
+import { z } from "zod";
+
+import { chuanHoaTenDangNhap } from "@/shared/lib/chuan-hoa";
+
+export const VAI_TRO = ["quan_ly", "van_phong", "thu_kho", "chi_xem"] as const;
+
+const tenDangNhap = z
+  .string()
+  .trim()
+  .min(3, "Tên đăng nhập tối thiểu 3 ký tự")
+  .max(32, "Tên đăng nhập tối đa 32 ký tự")
+  .transform(chuanHoaTenDangNhap)
+  .refine(
+    (v) => /^[a-z0-9._-]{3,32}$/.test(v),
+    "Chỉ dùng chữ không dấu, số, dấu chấm, gạch dưới, gạch ngang",
+  );
+
+const matKhau = z
+  .string()
+  .min(8, "Mật khẩu tối thiểu 8 ký tự")
+  .regex(/[A-Za-z]/, "Mật khẩu phải có ít nhất một chữ")
+  .regex(/[0-9]/, "Mật khẩu phải có ít nhất một số");
+
+const hoSo = z
+  .object({
+    hoTen: z.string().trim().min(2, "Nhập họ tên"),
+    vaiTro: z.enum(VAI_TRO),
+    khoIds: z.array(z.string().uuid()).default([]),
+  })
+  .refine((v) => v.vaiTro !== "thu_kho" || v.khoIds.length > 0, {
+    path: ["khoIds"],
+    message: "Thủ kho phải được gán ít nhất một kho",
+  });
+
+export const taoNguoiDungSchema = z
+  .object({ tenDangNhap, matKhauTam: matKhau })
+  .and(hoSo);
+
+export const capNhatNguoiDungSchema = z.object({ id: z.string().uuid() }).and(hoSo);
+
+export const datLaiMatKhauSchema = z.object({
+  id: z.string().uuid(),
+  matKhauTam: matKhau,
+});
+
+export const doiMatKhauSchema = z
+  .object({ matKhauMoi: matKhau, nhapLai: z.string() })
+  .refine((v) => v.matKhauMoi === v.nhapLai, {
+    path: ["nhapLai"],
+    message: "Hai mật khẩu không khớp",
+  });
+
+export type TaoNguoiDungInput = z.input<typeof taoNguoiDungSchema>;
+export type CapNhatNguoiDungInput = z.input<typeof capNhatNguoiDungSchema>;
+export type DatLaiMatKhauInput = z.input<typeof datLaiMatKhauSchema>;
+export type DoiMatKhauInput = z.input<typeof doiMatKhauSchema>;
