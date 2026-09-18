@@ -7,6 +7,13 @@ import assert from "node:assert/strict";
 import { boDau, chuanHoaTenDangNhap, tenDangNhapThanhEmail } from "../src/shared/lib/chuan-hoa";
 import { coQuyen } from "../src/shared/lib/quyen";
 import { tiepTucAnToan } from "../src/shared/lib/tiep-tuc";
+import {
+  BO_LOC_MAC_DINH,
+  docBoLocTuUrl,
+  ghiBoLocRaUrl,
+  thamSoRpc,
+  type BoLocSanPham,
+} from "../src/features/danh-muc/schemas/bo-loc.schema";
 
 assert.equal(boDau("Đặng Thị Ngọc"), "Dang Thi Ngoc");
 assert.equal(chuanHoaTenDangNhap("  Kim.Chi "), "kim.chi");
@@ -38,5 +45,34 @@ assert.equal(coQuyen("van_phong", "sua_gia_ban"), false);
 assert.equal(coQuyen("van_phong", "cai_dat_danh_muc_phu"), true);
 assert.equal(coQuyen("van_phong", "cai_dat_nguoi_dung"), false);
 assert.equal(coQuyen("chi_xem", "xem_gia_von"), false);
+
+const boLocMau: BoLocSanPham = {
+  q: "op po",
+  nhomHangId: "11111111-1111-4111-8111-111111111111",
+  congDoanId: null,
+  dvtId: null,
+  trangThaiTon: "duoi_dinh_muc",
+  kinhDoanh: "ngung",
+  canRa: true,
+  sapXep: "tong_ton",
+  huong: "desc",
+  trang: 3,
+  kichThuoc: 100,
+};
+
+assert.deepEqual(docBoLocTuUrl(ghiBoLocRaUrl(boLocMau)), boLocMau, "bộ lọc quay vòng qua URL không mất giá trị");
+assert.equal(ghiBoLocRaUrl(BO_LOC_MAC_DINH).toString(), "", "bộ lọc mặc định không ghi gì vào URL");
+assert.deepEqual(docBoLocTuUrl(new URLSearchParams("")), BO_LOC_MAC_DINH);
+assert.equal(docBoLocTuUrl(new URLSearchParams("trang=-5")).trang, 1, "trang âm về 1");
+assert.equal(docBoLocTuUrl(new URLSearchParams("kich_thuoc=99999")).kichThuoc, 200, "kích thước trang bị chặn trần");
+assert.equal(docBoLocTuUrl(new URLSearchParams("sap_xep=drop")).sapXep, null, "cột sắp xếp lạ bị bỏ");
+assert.equal(docBoLocTuUrl(new URLSearchParams("nhom=khong-phai-uuid")).nhomHangId, null, "nhóm không phải uuid bị bỏ");
+assert.equal(
+  thamSoRpc({ ...BO_LOC_MAC_DINH, kinhDoanh: "tat_ca" }).p_dang_kinh_doanh,
+  null,
+  "lọc tất cả gửi null tường minh, không bỏ trống",
+);
+assert.equal(thamSoRpc(BO_LOC_MAC_DINH).p_dang_kinh_doanh, true);
+assert.equal(thamSoRpc({ ...BO_LOC_MAC_DINH, canRa: false }).p_can_ra, undefined);
 
 console.log("✓ hàm thuần: tất cả assert đạt");
