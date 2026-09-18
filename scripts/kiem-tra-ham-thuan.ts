@@ -8,6 +8,7 @@ import { boDau, chuanHoaTenDangNhap, tenDangNhapThanhEmail } from "../src/shared
 import { coQuyen } from "../src/shared/lib/quyen";
 import { tiepTucAnToan } from "../src/shared/lib/tiep-tuc";
 import { goiYTenKhach, tachSoDienThoai } from "../src/features/doi-tac/lib/ghi-chu";
+import { taoCsvLoi, tenFileLoi } from "../src/features/danh-muc/lib/file-loi";
 import {
   BO_LOC_MAC_DINH,
   docBoLocTuUrl,
@@ -89,4 +90,31 @@ assert.equal(
 );
 assert.equal(tachSoDienThoai("NGỌC"), null, "ghi chú không có số thì trả null");
 
-console.log("✓ hàm thuần: tất cả assert đạt");
+// tsx biên dịch ra CJS nên KHÔNG có top-level await — bọc phần bất đồng bộ lại.
+async function kiemCsvLoi() {
+  // CSV lỗi: Excel trên Windows cần BOM, và dấu nháy trong thông báo phải nhân đôi.
+  const blob = taoCsvLoi([
+    { dong: 12, cot: "dvt", thong_bao: 'Không có đơn vị tính "Thùng", kiểm tra' },
+  ]);
+
+  // Kiểm BYTE chứ không kiểm chuỗi: `blob.text()` giải mã UTF-8 theo chuẩn
+  // WHATWG và chuẩn đó NUỐT BOM. Thứ Excel đọc là byte tải về, nên phải soi byte.
+  const byte = new Uint8Array(await blob.arrayBuffer());
+  assert.deepEqual(
+    [...byte.slice(0, 3)],
+    [0xef, 0xbb, 0xbf],
+    "CSV mở đầu bằng BOM UTF-8 để Excel đọc đúng tiếng Việt",
+  );
+
+  const csv = await blob.text();
+  assert.ok(
+    csv.includes('"Không có đơn vị tính ""Thùng"", kiểm tra"'),
+    "nháy kép trong thông báo được nhân đôi",
+  );
+  assert.ok(csv.includes("Đơn vị tính"), "tên cột hiển thị bằng tiêu đề tiếng Việt");
+  assert.equal(tenFileLoi("danh-muc-20260918-1030.xlsx"), "danh-muc-20260918-1030-loi.csv");
+}
+
+void kiemCsvLoi().then(() => {
+  console.log("✓ hàm thuần: tất cả assert đạt");
+});

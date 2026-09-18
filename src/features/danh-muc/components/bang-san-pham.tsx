@@ -21,6 +21,7 @@ import type { DongSanPham } from "../types";
 import { taoCot } from "./cot-san-pham";
 import { GoiYCongDoan } from "./goi-y-cong-doan";
 import { NganKeoSanPham } from "./ngan-keo-san-pham";
+import { NhapExcel } from "./nhap-excel";
 import { NutExcel } from "./nut-excel";
 import { ThanhGanHangLoat } from "./thanh-gan-hang-loat";
 import { ThanhLocSanPham } from "./thanh-loc-san-pham";
@@ -56,6 +57,7 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
   });
   const [chon, setChon] = useState<string[]>([]);
   const [goiYMo, setGoiYMo] = useState(false);
+  const [nhapMo, setNhapMo] = useState(false);
 
   // Badge "Cần rà": lấy tổng từ chính RPC danh sách, không thêm RPC mới.
   const demCanRa = useDanhSachSanPham({
@@ -132,7 +134,11 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
                 Cần rà
               </Button>
             </Badge>
-            <NutExcel boLoc={boLoc} soMa={tong} />
+            <NutExcel
+              boLoc={boLoc}
+              soMa={tong}
+              onMoNhap={quyen.sua ? () => setNhapMo(true) : undefined}
+            />
           </>
         }
         nutThem={
@@ -238,6 +244,15 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
       </QueryState>
 
       <GoiYCongDoan open={goiYMo} onDong={() => setGoiYMo(false)} />
+
+      <NhapExcel
+        open={nhapMo}
+        onDong={() => setNhapMo(false)}
+        onXemMoiSua={() => {
+          setNhapMo(false);
+          doiBoLoc({ ...BO_LOC_MAC_DINH, sapXep: "updated_at", huong: "desc" });
+        }}
+      />
 
       <NganKeoSanPham
         id={nganKeo.id}
