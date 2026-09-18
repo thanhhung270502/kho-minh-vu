@@ -108,3 +108,56 @@ Hàm trigger thu hồi sạch khỏi `public, anon, authenticated` — trigger k
    ghi ở `supabase/README.md`. Cảnh báo **mới** ngoài danh sách thì phải xem.
 2. Chạy thử hàm vừa đổi trên dữ liệu thật trong khối `DO` ném lỗi ở cuối để rollback.
 3. `npm run db:test:linked` và `npm run verify:hook`.
+
+---
+
+## 6. REVOKE một cột KHÔNG gỡ được quyền đã cấp ở mức bảng
+
+Phase 2 (D-16) cần giấu `san_pham.gia_von` khỏi thủ kho. Cách đầu tiên nghĩ ra —
+`revoke select (gia_von) on san_pham from authenticated` — **không chặn được gì**:
+Postgres coi quyền mức bảng và quyền mức cột là hai lớp riêng, revoke cột không
+đụng tới grant bảng. Kiểm bằng `has_column_privilege` mới thấy vẫn `true`.
+
+Cách đúng (migration `0029`):
+
+```sql
+revoke select on public.san_pham from anon, authenticated;
+grant select (<liệt kê MỌI cột trừ gia_von>) on public.san_pham to authenticated;
+```
+
+Hệ quả phải nhớ khi viết code:
+
+- `.select('*')` và `.select()` trống sau `insert`/`update` (PostgREST
+  `return=representation`) **lỗi 42501 cho MỌI vai trò**, kể cả quản lý. Luôn liệt
+  kê cột.
+- **Cột mới thêm sau này phải tự `grant select (<cột>)`** — 0030 quên là màn danh
+  mục chết. Khối `DO` tự kiểm cuối 0029 so `information_schema.columns` với
+  `has_column_privilege` và ném lỗi ngay khi push nếu thiếu.
+- Hàm SECURITY INVOKER trả `setof <bảng>` cũng vỡ theo (`tim_san_pham` phải đổi
+  sang `returns table` liệt kê cột). Sau mỗi lần thu quyền cột, grep
+  `select \*` và `setof public.<bảng>` trong toàn bộ migration.
+
+## 7. Thu hồi quyền tức thời mà vẫn đọc claim từ JWT
+
+Không thu hồi được một access token đã phát (xác nhận bởi chính Supabase). Thay vì
+viết lại hàng chục policy, Phase 2 sửa **hai helper**: chúng vẫn đọc claim nhưng
+đối chiếu với bảng trong cùng một lượt tra.
+
+```sql
+-- vai trò: claim phải khớp bảng VÀ người dùng phải đang hoạt động
+select nd.vai_tro from public.nguoi_dung nd
+where nd.id = auth.uid() and nd.dang_hoat_dong
+  and nd.vai_tro::text = (auth.jwt() ->> 'vai_tro');
+
+-- kho: GIAO của claim với bảng nguoi_dung_kho
+```
+
+- Hạ quyền, gỡ kho, vô hiệu hóa → **hiệu lực ngay câu lệnh kế tiếp**.
+- Nâng quyền, thêm kho → chờ token làm mới (client gọi `refreshSession()` khi gặp
+  42501, hoặc tối đa `jwt_expiry`).
+- Chi phí vẫn là **một lần mỗi câu lệnh** vì policy bọc `(select helper())` →
+  Postgres biến thành InitPlan. "Đọc bảng trong policy thì chậm" chỉ đúng khi
+  KHÔNG bọc `select`.
+- Đổi kiểu trả về của helper (`uuid` → `uuid[]`) phải DROP policy phụ thuộc trước,
+  và mọi so sánh đổi thành `kho_id = any((select public.kho_hien_tai())::uuid[])`
+  — thiếu `::uuid[]` thì Postgres hiểu `any(subquery)` và ném `uuid = uuid[]`.
