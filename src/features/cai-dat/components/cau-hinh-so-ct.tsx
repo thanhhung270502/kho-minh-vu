@@ -2,12 +2,11 @@
 
 import { Alert, App, Button, Input, InputNumber, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { PostgrestError } from "@supabase/supabase-js";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { QueryState } from "@/shared/components/query-state";
-import { dienGiaiLoi } from "@/shared/lib/errors";
+import { dienGiaiLoi, laLoiPostgrest } from "@/shared/lib/errors";
 
 import {
   layCauHinhSoCt,
@@ -82,7 +81,7 @@ export function CauHinhSoCt() {
       });
       message.success(`Đã lưu quy tắc số ${NHAN_LOAI_CT[d.loai_ct]}`);
     } catch (e) {
-      if (e instanceof PostgrestError && (e.code === "23505" || e.code === "23514")) {
+      if (laLoiPostgrest(e) && (e.code === "23505" || e.code === "23514")) {
         setLoi((s) => ({
           ...s,
           [d.loai_ct]:
@@ -172,7 +171,7 @@ export function CauHinhSoCt() {
         className="mb-3"
         type="info"
         showIcon
-        message="Đổi tiền tố chỉ áp cho chứng từ tạo sau. Số đã phát giữ nguyên. Số thứ tự tự đặt lại về 1 vào đầu năm."
+        title="Đổi tiền tố chỉ áp cho chứng từ tạo sau. Số đã phát giữ nguyên. Số thứ tự tự đặt lại về 1 vào đầu năm."
       />
 
       <QueryState query={danhSach} moTaRong="Chưa có cấu hình đánh số nào.">

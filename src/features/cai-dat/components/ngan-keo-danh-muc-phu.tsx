@@ -2,13 +2,12 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Alert, App, ColorPicker, Form, Input, Select, Switch } from "antd";
-import { PostgrestError } from "@supabase/supabase-js";
 import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { NganKeoForm } from "@/shared/components/ngan-keo-form";
-import { dienGiaiLoi } from "@/shared/lib/errors";
+import { dienGiaiLoi, laLoiPostgrest, maLoi } from "@/shared/lib/errors";
 
 import {
   CAU_HINH_DANH_MUC_PHU,
@@ -103,11 +102,11 @@ export function NganKeoDanhMucPhu({ bang, muc, open, danhSach, onDong }: Props) 
       message.success(muc ? `Đã lưu ${cauHinh.nhan}` : `Đã thêm ${cauHinh.nhan}`);
       onDong();
     } catch (e) {
-      if (e instanceof PostgrestError && e.code === "23505") {
+      if (maLoi(e) === "23505") {
         setError("ma", { message: "Mã này đã có. Dùng mã khác." });
         return;
       }
-      if (e instanceof PostgrestError && e.code === "23514") {
+      if (laLoiPostgrest(e) && e.code === "23514") {
         setError("ma", { message: e.message });
         return;
       }
@@ -128,7 +127,7 @@ export function NganKeoDanhMucPhu({ bang, muc, open, danhSach, onDong }: Props) 
     >
       <Form layout="vertical" onFinish={() => void onLuu()}>
         {errors.root ? (
-          <Alert className="mb-4" type="error" showIcon message={errors.root.message} />
+          <Alert className="mb-4" type="error" showIcon title={errors.root.message} />
         ) : null}
 
         <Form.Item

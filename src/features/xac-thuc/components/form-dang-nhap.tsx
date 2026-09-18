@@ -55,7 +55,7 @@ export function FormDangNhap() {
         <Alert
           type="warning"
           showIcon
-          message="Tài khoản đã bị vô hiệu hóa. Liên hệ quản lý để mở lại."
+          title="Tài khoản đã bị vô hiệu hóa. Liên hệ quản lý để mở lại."
           className="mb-4"
         />
       ) : null}
@@ -64,7 +64,7 @@ export function FormDangNhap() {
         <Alert
           type="error"
           showIcon
-          message={errors.root.message}
+          title={errors.root.message}
           className="mb-4"
         />
       ) : null}

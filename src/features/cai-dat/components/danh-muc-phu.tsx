@@ -2,11 +2,10 @@
 
 import { App, Button, Popconfirm, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { PostgrestError } from "@supabase/supabase-js";
 import { useMemo, useState } from "react";
 
 import { QueryState } from "@/shared/components/query-state";
-import { dienGiaiLoi } from "@/shared/lib/errors";
+import { dienGiaiLoi, laLoiPostgrest, maLoi } from "@/shared/lib/errors";
 
 import {
   CAU_HINH_DANH_MUC_PHU,
@@ -38,13 +37,15 @@ export function DanhMucPhu({ bang }: { bang: BangDanhMucPhu }) {
       await xoa.mutateAsync(muc.id);
       message.success(`Đã xóa ${cauHinh.nhan} ${muc.ma}`);
     } catch (e) {
-      if (e instanceof PostgrestError && e.code === "23503") {
+      if (maLoi(e) === "23503") {
         message.error(
           `Đang có mã hàng dùng ${cauHinh.nhan} này — đổi các mã đó sang ${cauHinh.nhan} khác trước khi xóa.`,
         );
         return;
       }
-      if (e instanceof PostgrestError && e.code === "23514") {
+      // 23514 là mã hệ thống bị trigger 0040 chặn — câu tiếng Việt do chính
+      // migration soạn, hiện nguyên văn.
+      if (laLoiPostgrest(e) && e.code === "23514") {
         message.error(e.message);
         return;
       }

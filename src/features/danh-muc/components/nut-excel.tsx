@@ -1,6 +1,6 @@
 "use client";
 
-import { App, Dropdown } from "antd";
+import { App, Button, Dropdown, Space } from "antd";
 import { useState } from "react";
 
 import { ghiBoLocRaUrl, type BoLocSanPham } from "../schemas/bo-loc.schema";
@@ -55,22 +55,29 @@ export function NutExcel({ boLoc, soMa, onMoNhap }: Props) {
   }
 
   return (
-    <Dropdown.Button
-      loading={dangTai}
-      title={`Xuất ${soMa.toLocaleString("vi-VN")} mã đang lọc`}
-      onClick={() => void chay(`/api/danh-muc/xuat-excel?${ghiBoLocRaUrl(boLoc)}`)}
-      menu={{
-        items: [
-          { key: "mau", label: "Tải file mẫu trống" },
-          ...(onMoNhap ? [{ key: "nhap", label: "Nhập từ Excel…" }] : []),
-        ],
-        onClick: ({ key }) => {
-          if (key === "mau") void chay("/api/danh-muc/mau-excel");
-          if (key === "nhap") onMoNhap?.();
-        },
-      }}
-    >
-      Xuất Excel
-    </Dropdown.Button>
+    // `Dropdown.Button` đã bị antd v6 bỏ — ghép tay đúng khuyến nghị của nó.
+    <Space.Compact>
+      <Button
+        loading={dangTai}
+        title={`Xuất ${soMa.toLocaleString("vi-VN")} mã đang lọc`}
+        onClick={() => void chay(`/api/danh-muc/xuat-excel?${ghiBoLocRaUrl(boLoc)}`)}
+      >
+        Xuất Excel
+      </Button>
+      <Dropdown
+        menu={{
+          items: [
+            { key: "mau", label: "Tải file mẫu trống" },
+            ...(onMoNhap ? [{ key: "nhap", label: "Nhập từ Excel…" }] : []),
+          ],
+          onClick: ({ key }) => {
+            if (key === "mau") void chay("/api/danh-muc/mau-excel");
+            if (key === "nhap") onMoNhap?.();
+          },
+        }}
+      >
+        <Button aria-label="Thêm lựa chọn Excel">⋯</Button>
+      </Dropdown>
+    </Space.Compact>
   );
 }

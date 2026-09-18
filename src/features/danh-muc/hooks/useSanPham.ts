@@ -36,6 +36,9 @@ export function useChiTietSanPham(id: string) {
   return useQuery({
     queryKey: khoaSanPham.chiTiet(id),
     queryFn: () => layChiTietSanPham(id),
+    // Ngăn kéo "Thêm mã hàng" truyền id rỗng — không chặn ở đây thì mỗi lần mở
+    // trang danh mục bắn một RPC uuid rỗng và nhận 400 (UAT Phase 2).
+    enabled: id !== "",
   });
 }
 

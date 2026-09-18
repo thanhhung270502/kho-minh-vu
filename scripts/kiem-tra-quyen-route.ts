@@ -20,10 +20,13 @@ const BASE_URL = process.env.BASE_URL ?? "http://localhost:3000";
 type VaiTroTest = "quanly" | "vanphong" | "thukho1" | "chixem" | "khach";
 
 /** "200" = tải được; "quyen" = bị đẩy sang /khong-du-quyen; "dangnhap" = về đăng nhập; "401" = JSON 401. */
-type KyVong = "200" | "quyen" | "dangnhap" | "401" | "goc";
+type KyVong = "200" | "quyen" | "dangnhap" | "401" | "goc" | `→${string}`;
 
 const MA_TRAN: Array<{ route: string; ky_vong: Record<VaiTroTest, KyVong> }> = [
   { route: "/", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
+  // /cai-dat chỉ redirect sang tab đầu tiên theo quyền. UAT Phase 2 bắt được
+  // lỗi trang này crash vì gọi hàm client từ server — ma trận cũ thiếu đúng nó.
+  { route: "/cai-dat", ky_vong: { quanly: "→/cai-dat/nguoi-dung", vanphong: "→/cai-dat/nhom-hang", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/danh-muc", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/doi-tac", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/doi-tac/ra-ghi-chu", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },

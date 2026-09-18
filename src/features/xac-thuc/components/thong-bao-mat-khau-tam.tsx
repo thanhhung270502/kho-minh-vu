@@ -9,7 +9,7 @@ export function ThongBaoMatKhauTam() {
       className="mb-4"
       type="info"
       showIcon
-      message="Bạn đang dùng mật khẩu tạm"
+      title="Bạn đang dùng mật khẩu tạm"
       description="Quản lý vừa cấp hoặc đặt lại mật khẩu cho tài khoản này. Đặt mật khẩu riêng để tiếp tục dùng hệ thống."
     />
   );

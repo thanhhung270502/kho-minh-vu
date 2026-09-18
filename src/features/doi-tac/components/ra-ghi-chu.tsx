@@ -214,7 +214,7 @@ export function RaGhiChu() {
           showIcon
           closable
           onClose={dongMeo}
-          message="Hóa đơn không ghi tên đã tự gắn vào Khách lẻ. Tên ngắn như NGỌC, TỐT… có thể là khách hoặc người bán — hỏi người biết chuyện nếu chưa chắc, cứ để lại chưa rà."
+          title="Hóa đơn không ghi tên đã tự gắn vào Khách lẻ. Tên ngắn như NGỌC, TỐT… có thể là khách hoặc người bán — hỏi người biết chuyện nếu chưa chắc, cứ để lại chưa rà."
         />
       )}
 

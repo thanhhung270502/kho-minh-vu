@@ -130,7 +130,7 @@ export function NhapExcel({ open, onDong, onXemMoiSua }: Props) {
       title="Nhập danh mục từ Excel"
       width={900}
       closable={!t.dangGui}
-      maskClosable={!t.dangGui}
+      mask={{ closable: !t.dangGui }}
       onCancel={dong}
       footer={
         t.buoc === 1 ? (
@@ -176,7 +176,7 @@ export function NhapExcel({ open, onDong, onXemMoiSua }: Props) {
           className="mb-3"
           type="error"
           showIcon
-          message={t.loi.tieuDe}
+          title={t.loi.tieuDe}
           description={t.loi.huongXuLy}
           action={
             t.file ? (
@@ -199,7 +199,7 @@ export function NhapExcel({ open, onDong, onXemMoiSua }: Props) {
           className="mb-3"
           type="warning"
           showIcon
-          message="Dữ liệu đã thay đổi từ lúc xem trước — kiểm tra lại các lỗi dưới đây. Chưa có gì được nạp."
+          title="Dữ liệu đã thay đổi từ lúc xem trước — kiểm tra lại các lỗi dưới đây. Chưa có gì được nạp."
         />
       ) : null}
 

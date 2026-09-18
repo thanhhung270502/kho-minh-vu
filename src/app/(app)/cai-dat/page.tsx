@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { tabDauTien } from "@/features/cai-dat/components/tab-cai-dat";
+import { tabDauTien } from "@/features/cai-dat/lib/tab-cai-dat";
 import { yeuCauQuyen } from "@/features/xac-thuc/api/nguoi-dung-hien-tai.server";
 
 export const metadata: Metadata = { title: "Cài đặt" };

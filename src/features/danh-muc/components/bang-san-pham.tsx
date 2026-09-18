@@ -155,7 +155,7 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
           className="mb-3"
           type="warning"
           showIcon
-          message="Mã mua ngoài chưa rõ công đoạn và các mã có ô ĐVT mâu thuẫn"
+          title="Mã mua ngoài chưa rõ công đoạn và các mã có ô ĐVT mâu thuẫn"
           description="Gán lại công đoạn, hoặc chọn rồi bấm “Xác nhận đã rà” nếu hiện tại đã đúng."
           action={
             quyen.sua ? (

@@ -46,7 +46,7 @@ export function QueryState<TData>({
       <Alert
         type="error"
         showIcon
-        message={loi.tieuDe}
+        title={loi.tieuDe}
         description={
           <div className="flex flex-col items-start gap-3">
             <span>{loi.huongXuLy}</span>

@@ -1,4 +1,32 @@
-import { AuthError, PostgrestError } from "@supabase/supabase-js";
+import { AuthError } from "@supabase/supabase-js";
+
+/**
+ * Hình dạng lỗi PostgREST trả về.
+ *
+ * KHÔNG dùng `instanceof PostgrestError`: supabase-js chỉ dựng instance của lớp
+ * đó khi truy vấn gọi `.throwOnError()`. Dự án dùng `const { error } = await …;
+ * if (error) throw error`, nên thứ ném ra là OBJECT THƯỜNG parse từ JSON —
+ * `instanceof` luôn false và mọi lỗi nghiệp vụ rơi xuống câu chung chung.
+ * (Phát hiện khi UAT Phase 2: "mã trùng" hiện "Không tải được dữ liệu".)
+ */
+export type LoiPostgrest = {
+  code: string;
+  message: string;
+  details?: string | null;
+  hint?: string | null;
+};
+
+export function laLoiPostgrest(e: unknown): e is LoiPostgrest {
+  if (!e || typeof e !== "object") return false;
+
+  const o = e as Record<string, unknown>;
+  return typeof o.code === "string" && typeof o.message === "string";
+}
+
+/** Mã lỗi để so sánh trực tiếp trong component: `maLoi(e) === "23505"`. */
+export function maLoi(e: unknown): string | null {
+  return laLoiPostgrest(e) ? e.code : null;
+}
 
 export type LoaiLoi =
   /** Hết phiên đăng nhập — phải đăng nhập lại (tương đương HTTP 401). */
@@ -75,7 +103,7 @@ export function dienGiaiLoi(error: unknown): LoiDaDien {
     };
   }
 
-  if (error instanceof PostgrestError) {
+  if (laLoiPostgrest(error)) {
     if (MA_HET_PHIEN.has(error.code)) {
       return {
         loai: "het-phien",

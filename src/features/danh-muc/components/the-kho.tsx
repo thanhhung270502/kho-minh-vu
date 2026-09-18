@@ -24,10 +24,12 @@ export function TheKho({
   sanPhamId: string;
   xemGiaVon: boolean;
 }) {
-  const [khoId, setKhoId] = useState<string | null>(null);
+  // antd cảnh báo khi option có `value: null` — dùng chuỗi rỗng làm "tất cả",
+  // đổi về null ngay khi gọi API.
+  const [khoId, setKhoId] = useState<string>("");
   const [trang, setTrang] = useState(1);
   const danhMucPhu = useDanhMucPhu();
-  const theKho = useTheKho(sanPhamId, khoId, trang);
+  const theKho = useTheKho(sanPhamId, khoId || null, trang);
 
   const cot: ColumnsType<DongTheKho> = [
     {
@@ -95,7 +97,7 @@ export function TheKho({
             setTrang(1);
           }}
           options={[
-            { value: null, label: "Tất cả kho" },
+            { value: "", label: "Tất cả kho" },
             ...(danhMucPhu.data?.kho ?? []).map((k) => ({ value: k.id, label: k.ten })),
           ]}
         />
@@ -106,7 +108,7 @@ export function TheKho({
           className="mb-3"
           type="info"
           showIcon
-          message="Dữ liệu KiotViet cũ không gắn kho nên chỉ hiện khi xem “Tất cả kho”."
+          title="Dữ liệu KiotViet cũ không gắn kho nên chỉ hiện khi xem “Tất cả kho”."
         />
       ) : null}
 

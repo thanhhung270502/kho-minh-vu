@@ -2,12 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { App, Alert, Form, Input, Radio, Skeleton, Switch } from "antd";
-import { PostgrestError } from "@supabase/supabase-js";
 import { useEffect } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { NganKeoForm } from "@/shared/components/ngan-keo-form";
-import { dienGiaiLoi } from "@/shared/lib/errors";
+import { dienGiaiLoi, maLoi } from "@/shared/lib/errors";
 
 import { useChiTietDoiTac, useGoiYMaDoiTac, useLuuDoiTac } from "../hooks/useDoiTac";
 import { doiTacSchema, type DoiTacForm, type DoiTacLuu } from "../schemas/doi-tac.schema";
@@ -88,7 +87,7 @@ export function NganKeoDoiTac({ id, open, onDong }: Props) {
       message.success(taoMoi ? "Đã tạo đối tác" : "Đã lưu đối tác");
       onDong();
     } catch (e) {
-      if (e instanceof PostgrestError && e.code === "23505") {
+      if (maLoi(e) === "23505") {
         setError("ma", { message: "Mã này đã có. Dùng mã khác." });
         return;
       }
@@ -110,7 +109,7 @@ export function NganKeoDoiTac({ id, open, onDong }: Props) {
       ) : (
         <Form layout="vertical" onFinish={() => void onLuu()}>
           {errors.root ? (
-            <Alert className="mb-4" type="error" showIcon message={errors.root.message} />
+            <Alert className="mb-4" type="error" showIcon title={errors.root.message} />
           ) : null}
 
           <Form.Item label="Loại đối tác">

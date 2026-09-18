@@ -2,12 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Alert, App, Checkbox, Form, Input, InputNumber, Select, Skeleton, Switch } from "antd";
-import { PostgrestError } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { NganKeoForm } from "@/shared/components/ngan-keo-form";
-import { dienGiaiLoi } from "@/shared/lib/errors";
+import { dienGiaiLoi, laLoiPostgrest } from "@/shared/lib/errors";
 
 import { useChiTietSanPham, useDanhMucPhu, useLuuSanPham } from "../hooks/useSanPham";
 import { sanPhamSchema, type SanPhamForm } from "../schemas/san-pham.schema";
@@ -137,7 +136,7 @@ export function NganKeoSanPham({ id, open, quyen, onDong }: Props) {
       }
       onDong();
     } catch (e) {
-      if (e instanceof PostgrestError) {
+      if (laLoiPostgrest(e)) {
         if (e.code === "23505") {
           setError("ma_hang", { message: "Mã hàng đã tồn tại. Dùng mã khác." });
           return;
@@ -182,7 +181,7 @@ export function NganKeoSanPham({ id, open, quyen, onDong }: Props) {
       ) : (
         <Form layout="vertical" onFinish={() => void onLuu()}>
           {errors.root ? (
-            <Alert className="mb-4" type="error" showIcon message={errors.root.message} />
+            <Alert className="mb-4" type="error" showIcon title={errors.root.message} />
           ) : null}
 
           {canRa ? (
@@ -190,7 +189,7 @@ export function NganKeoSanPham({ id, open, quyen, onDong }: Props) {
               className="mb-4"
               type="warning"
               showIcon
-              message="Mã này đang trong danh sách Cần rà"
+              title="Mã này đang trong danh sách Cần rà"
               description="Kiểm tra lại đơn vị tính và công đoạn. Lưu ở đây KHÔNG tự gỡ cờ — gỡ bằng nút “Xác nhận đã rà” ngoài bảng."
             />
           ) : null}

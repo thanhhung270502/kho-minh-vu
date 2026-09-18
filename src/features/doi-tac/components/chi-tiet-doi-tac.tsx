@@ -119,9 +119,11 @@ export function ChiTietDoiTac({
                 },
                 { key: "em", label: "Email", children: d.email ?? "—" },
                 { key: "kv", label: "Khu vực", children: d.khu_vuc ?? "—" },
-                { key: "dc", label: "Địa chỉ", children: d.dia_chi ?? "—", span: 2 },
+                { key: "dc", label: "Địa chỉ", children: d.dia_chi ?? "—" },
                 { key: "mst", label: "Mã số thuế", children: d.ma_so_thue ?? "—" },
-                { key: "gc", label: "Ghi chú", children: d.ghi_chu ?? "—", span: 3 },
+                // KHÔNG đặt `span` cố định: lưới đổi theo breakpoint (1/2/3 cột)
+                // nên span 3 làm vỡ tổng span ở màn 2 cột, antd cảnh báo.
+                { key: "gc", label: "Ghi chú", children: d.ghi_chu ?? "—" },
               ]}
             />
 

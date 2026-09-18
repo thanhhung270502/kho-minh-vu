@@ -157,7 +157,7 @@ export function NganKeoNguoiDung({ open, nguoiDung, onDong }: Props) {
     >
       <Form layout="vertical" onFinish={() => void onLuu()}>
         {errors.root ? (
-          <Alert className="mb-4" type="error" showIcon message={errors.root.message} />
+          <Alert className="mb-4" type="error" showIcon title={errors.root.message} />
         ) : null}
 
         <Form.Item

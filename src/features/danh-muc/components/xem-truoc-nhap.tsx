@@ -75,7 +75,7 @@ export function XemTruocNhap({
           className="mb-3"
           type="info"
           showIcon
-          message="File KiotViet: công đoạn chỉ cập nhật cho mã suy được từ ô ĐVT (Carbon, Sơn, Xi mạ, Ép, Nano). Mã “CÁI/CẶP/BỘ” giữ nguyên công đoạn đã rà; mã mới nhận Mua ngoài."
+          title="File KiotViet: công đoạn chỉ cập nhật cho mã suy được từ ô ĐVT (Carbon, Sơn, Xi mạ, Ép, Nano). Mã “CÁI/CẶP/BỘ” giữ nguyên công đoạn đã rà; mã mới nhận Mua ngoài."
         />
       ) : null}
 

@@ -64,7 +64,7 @@ export function HopDatLaiMatKhau({ nguoiDung, onDong }: Props) {
         </div>
       ) : (
         <div className="flex flex-col gap-2">
-          {loi ? <Alert type="error" showIcon message={loi} /> : null}
+          {loi ? <Alert type="error" showIcon title={loi} /> : null}
           <OMatKhauTam value={matKhau} onChange={setMatKhau} autoFocus />
           <Typography.Text type="secondary">
             Tối thiểu 8 ký tự, có cả chữ và số. Nhân viên phải đổi ở lần đăng nhập đầu.
