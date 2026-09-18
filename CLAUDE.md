@@ -229,6 +229,8 @@ Chạy `npm run check` (typecheck + lint + build). Sau đó đọc lại diff v�
 - [ ] Đã chạy `npm run db:types` nếu có đổi schema
 - [ ] Không còn file, import, biến thừa
 - [ ] Biến môi trường mới đã thêm vào `.env.example`
+- [ ] **Đã mở màn hình mới trên trình duyệt và xem console** — `npm run check` xanh
+      KHÔNG chứng minh giao diện chạy (xem bẫy 8–11)
 
 Báo cáo cuối nêu rõ: đã tạo/sửa file nào, **giả định nào đã đặt ra** khi yêu cầu
 chưa rõ, và phần nào chưa làm.
@@ -306,6 +308,62 @@ một kho khỏi thủ kho là mất quyền ngay lập tức; thêm kho thì ph
 đường chính vì reader thường chết trên styles lệch chuẩn của KiotViet; nhưng reader stream
 lại hỏng với chính file exceljs ghi ra ở cỡ 100–1200 dòng, nên có đường dự phòng bằng
 reader thường. Đừng bỏ một trong hai.
+
+### 8. Lỗi PostgREST KHÔNG phải instance của `PostgrestError`
+
+supabase-js chỉ dựng instance lớp đó khi truy vấn gọi `.throwOnError()`. Dự án
+dùng `const { data, error } = await …; if (error) throw error` nên thứ ném ra là
+**object thường** parse từ JSON.
+
+```ts
+// SAI — luôn false, mọi lỗi nghiệp vụ rơi xuống câu chung chung
+if (e instanceof PostgrestError && e.code === "23505") …
+
+// ĐÚNG
+import { laLoiPostgrest, maLoi } from "@/shared/lib/errors";
+if (maLoi(e) === "23505") …                      // so mã
+if (laLoiPostgrest(e) && e.code === "23514") …   // cần đọc e.message
+```
+
+Lần vấp: "mã trùng" và "nhóm đang có mã hàng dùng" đều hiện *"Không tải được dữ
+liệu"*, và `nenThuLai()` cho TanStack Query thử lại lỗi 400 hai lần (3 request).
+`AuthError` thì ngược lại — auth-js dựng instance thật, `instanceof` dùng được.
+
+### 9. Hàm export từ file `"use client"` không gọi được ở Server Component
+
+Mặt kia của bẫy 1. `tabDauTien()` để trong `components/tab-cai-dat.tsx` rồi
+`app/(app)/cai-dat/page.tsx` gọi → *"Attempted to call tabDauTien() from the server
+but tabDauTien is on the client"*, bấm menu Cài đặt ra trang lỗi.
+
+**Quy tắc: hằng số và hàm thuần để ở `features/<x>/lib/*.ts` (không `"use client"`),
+cả hai phía cùng import.** Component client chỉ giữ phần JSX.
+
+### 10. Hook đọc một bản ghi phải có `enabled`
+
+`useChiTietSanPham(id ?? "")` trong ngăn kéo "Thêm mã hàng" bắn RPC với uuid rỗng
+mỗi lần mở trang danh mục → HTTP 400. Query nhận id có thể null thì luôn kèm
+`enabled: id !== ""`.
+
+### 11. antd v6 bỏ prop của v5 — chỉ cảnh báo lúc CHẠY, build vẫn xanh
+
+Đã vấp đủ năm cái:
+
+| v5 (đã bỏ) | v6 |
+|---|---|
+| `<Alert message=…>` | `title` |
+| `<Modal maskClosable>` | `mask={{ closable }}` |
+| `<Drawer width=…>` | `size` |
+| `<Dropdown.Button>` | `Space.Compact` + `Dropdown` + `Button` |
+| `<Select options=[{ value: null }]>` | dùng `""` làm "tất cả", đổi sang null khi gọi API |
+| `<Descriptions items=[{ span: 3 }]>` trong lưới responsive | bỏ `span` cố định |
+
+Viết component antd mới thì **mở console một lần** trước khi báo xong.
+
+### 12. Chốt chặn hồi quy quyền route
+
+`scripts/kiem-tra-quyen-route.ts` phải liệt kê **mọi route thật**, kể cả route chỉ
+redirect như `/cai-dat`. Thêm màn mới thì thêm dòng vào ma trận — lần trước thiếu
+đúng `/cai-dat` nên script báo 45/45 xanh trong khi trang đó crash.
 
 ---
 

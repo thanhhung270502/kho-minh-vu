@@ -46,3 +46,8 @@ Gặp đủ 5 cái: `Dropdown.Button`, `Modal.maskClosable`, `Select` option `va
 
 `scripts/kiem-tra-quyen-route.ts` phải có **mọi route thật**, kể cả route chỉ redirect
 (`/cai-dat`). Ma trận cũ thiếu đúng nó nên 45/45 vẫn xanh trong khi trang crash.
+
+---
+
+**Bản rút gọn để dùng khi code nằm ở `CLAUDE.md` mục "Bẫy đã gặp" số 8–12** (file đó nạp
+vào context mỗi phiên). File này giữ phần bối cảnh và cách phát hiện.
