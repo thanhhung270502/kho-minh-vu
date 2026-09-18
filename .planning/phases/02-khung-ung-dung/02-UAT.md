@@ -83,7 +83,8 @@ ghi_chu: "Đủ 7 loại, Alert giải thích, nút Lưu mờ khi chưa đổi. 
 ### 16. Gõ thẳng URL không lách được quyền
 expected: Đăng nhập `thukho1` rồi gõ thẳng /cai-dat/nguoi-dung → bị đẩy sang trang "Không đủ quyền", không hiện dữ liệu. Đăng xuất rồi gõ /danh-muc → về /dang-nhap, đăng nhập xong quay lại đúng /danh-muc.
 result: pass
-ghi_chu: "Sau khi sửa: mã trùng hiện “Mã hàng đã tồn tại. Dùng mã khác.” ngay dưới ô Mã, dữ liệu đã nhập giữ nguyên."
+ban_dau: issue (blocker) — /cai-dat crash vì Server Component gọi hàm client tabDauTien()
+sau_khi_sua: "Ma trận quyền route 50/50 ô trên server đang chạy, có cả /cai-dat: quản lý → /cai-dat/nguoi-dung, văn phòng → /cai-dat/nhom-hang, thủ kho và chỉ xem → /khong-du-quyen, chưa đăng nhập → /dang-nhap?tiep_tuc=…"
 
 ## Summary
 
