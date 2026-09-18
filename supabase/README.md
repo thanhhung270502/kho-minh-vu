@@ -117,6 +117,14 @@ Chạy `get_advisors(type: security)` sau mỗi lần đổi DDL. Lần quét đ
 | `vai_tro_hien_tai`, `kho_hien_tai` | RLS policy cần `authenticated` gọi được. Chúng chỉ đọc JWT của **chính người gọi**, không lộ gì của người khác. |
 | `rls_auto_enable` | **Hàm nền tảng của Supabase**, không phải của dự án. Event trigger tự bật RLS cho bảng mới. Gọi ngoài ngữ cảnh event trigger sẽ lỗi ngay. Không đụng vào. |
 
+### Bổ sung sau Phase 2 (quét ngày 2026-09-18)
+
+| Cảnh báo | Vì sao giữ nguyên |
+|---|---|
+| 13 RPC mới của Phase 2 gọi được bởi `authenticated` (`danh_sach_san_pham`, `chi_tiet_san_pham`, `the_kho_san_pham`, `gia_von_san_pham`, `co_quyen_xem_gia_von`, `lich_su_sua`, `danh_sach_ghi_chu_kiotviet`, `quyet_ghi_chu`, `bo_quyet_ghi_chu`, `lich_su_giao_dich_doi_tac`, `da_doi_mat_khau`, …) | SECURITY DEFINER là bắt buộc vì `0029` đã thu quyền đọc cột `gia_von`/`gia_von_tai_thoi_diem` của `authenticated`. **Mỗi hàm tự kiểm vai trò ở dòng đầu** (`vai_tro_hien_tai() is null` → 42501; RPC nhạy cảm giới hạn `quan_ly`/`van_phong`) và tự áp phạm vi kho cho thủ kho. pgTAP 41/42/51/61/62/90 chứng minh từng ca. |
+| `nhat_ky_sua` bật RLS nhưng không có policy (INFO) | **Cố ý.** Client không đọc/ghi thẳng bảng này; đọc qua `lich_su_sua` (có kiểm vai trò), ghi chỉ bằng trigger. Bật RLS mà không policy = chặn sạch, đúng ý đồ. |
+| `auth_leaked_password_protection` | Công tắc Dashboard, làm trước go-live (xem `.memory/blockers/mo-sau-phase-1.md`). |
+
 Advisor không biết ý đồ nên vẫn cảnh báo. Cảnh báo **mới** ngoài danh sách này
 thì phải xem xét, đừng bỏ qua cả cụm.
 
@@ -154,6 +162,32 @@ Hoặc dùng lệnh chính chủ: `npx supabase migration repair --status applie
 
 Kiểm bằng `select version, name from supabase_migrations.schema_migrations order by version;`
 — danh sách phải khớp **chính xác** tên file trong `supabase/migrations/`.
+
+---
+
+## Migration của Phase 2 (0026–0036)
+
+| File | Nội dung |
+|---|---|
+| `0026_nguoi_dung_nhieu_kho.sql` | Bảng nối `nguoi_dung_kho`, cờ `phai_doi_mat_khau`, `ten_dang_nhap`; helper `vai_tro_hien_tai`/`kho_hien_tai` đối chiếu claim với bảng; `thu_hoi_phien_nguoi_dung` |
+| `0027_nhat_ky_sua.sql` | Nhật ký sửa append-only + trigger cho `san_pham`, `doi_tac`, `nguoi_dung`, `nguoi_dung_kho` |
+| `0028_cau_hinh_so_ct.sql` | Bảng cấu hình tiền tố/số chữ số, `sinh_so_ct` đọc cấu hình |
+| `0029_an_gia_von.sql` | Thu quyền đọc bảng `san_pham`/`kho_movement`, cấp lại theo cột; `gia_von_san_pham` |
+| `0030_danh_sach_san_pham.sql` | Cột `can_ra_dvt`/`da_xac_nhan_ra`, `la_can_ra`, `danh_sach_san_pham`, `chi_tiet_san_pham`, `xac_nhan_da_ra` |
+| `0031_the_kho_san_pham.sql` | Thẻ kho gộp dòng KiotViet cũ |
+| `0032_doi_tac.sql` | Khách lẻ, `sinh_ma_doi_tac`, `danh_sach_doi_tac` |
+| `0033_ra_ghi_chu_lich_su.sql` | `chuan_hoa_ghi_chu`, `anh_xa_ghi_chu_kiotviet`, 4 RPC rà ghi chú + lịch sử giao dịch |
+| `0034_import_danh_muc.sql` | `khop_danh_muc`, `nhap_danh_muc` |
+| `0035_ra_hang_loat.sql` | `gan_hang_loat`, gợi ý công đoạn theo đuôi mã |
+| `0036_sua_search_path.sql` | Khóa `search_path` + khối tự kiểm |
+
+**Thứ tự push bắt buộc:** 0026 trước 0027 (trigger nhật ký gắn vào `nguoi_dung_kho`).
+
+**0030–0036 được dựng lại từ database** (2026-09-18): một phiên làm việc khác đã áp chúng
+lên cloud nhưng không để lại file. Nội dung trích từ `pg_get_functiondef` + catalog, đã nạp
+thử trong transaction rollback. Nếu còn phiên nào khác đang chạy cùng project, **thống nhất
+một phiên duy nhất được `db push`** — hai phiên ghi song song sẽ làm lịch sử migration lệch
+khỏi repo lần nữa.
 
 ---
 
