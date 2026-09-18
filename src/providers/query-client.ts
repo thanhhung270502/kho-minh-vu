@@ -52,7 +52,7 @@ function taoQueryClient(): QueryClient {
   const queryClient: QueryClient = new QueryClient({
     defaultOptions: {
       queries: {
-        // Dữ liệu sản xuất thay đổi liên tục nhưng không theo từng giây.
+        // Danh mục và tồn kho đổi liên tục nhưng không theo từng giây.
         // 30s đủ để khỏi gọi lại thừa khi chuyển qua lại giữa các màn hình.
         staleTime: 30_000,
         retry: nenThuLai,

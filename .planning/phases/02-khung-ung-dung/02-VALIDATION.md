@@ -1,9 +1,9 @@
 ---
 phase: 2
 slug: khung-ung-dung
-status: draft
+status: complete
 nyquist_compliant: true
-wave_0_complete: false
+wave_0_complete: true
 created: 2026-09-13
 ---
 
@@ -45,27 +45,43 @@ bằng `npm run db:push`. Không bao giờ `db reset` trên cloud.
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 02-01-01 | 01 | 1 | CDAT-01 | pgTAP | `npx supabase test db --linked supabase/tests/30_rls_test.sql` | ✅ sửa | ⬜ |
-| 02-01-02 | 01 | 1 | CDAT-01 | pgTAP | `npm run db:test:linked` (helper mới trong mọi file) | ✅ sửa | ⬜ |
-| 02-01-03 | 01 | 1 | CDAT-01 | script | `npm run seed:users && npm run verify:hook` | ✅ sửa | ⬜ |
-| 02-02-01 | 02 | 2 | DMUC-04, DTAC-02 | pgTAP | `npx supabase test db --linked supabase/tests/70_nhat_ky_sua_test.sql` | ❌ W0 | ⬜ |
-| 02-03-01 | 03 | 1 | CDAT-04 | pgTAP | `npx supabase test db --linked supabase/tests/80_cau_hinh_so_ct_test.sql` + `20_chung_tu_test.sql` | ❌ W0 | ⬜ |
-| 02-04-01 | 04 | 1 | DMUC-05 (D-16) | pgTAP | `npx supabase test db --linked supabase/tests/90_gia_von_test.sql` + `40_tim_kiem_test.sql` | ❌ W0 | ⬜ |
-| 02-05-01 | 05 | 1 | AUTH-02 | tsx | `npx tsx scripts/kiem-tra-ham-thuan.ts` | ❌ W0 | ⬜ |
-| 02-05-02 | 05 | 1 | AUTH-01, AUTH-07 | build | `npm run check` | ✅ | ⬜ |
-| 02-06-01 | 06 | 2 | DMUC-01..03 | pgTAP | `npx supabase test db --linked supabase/tests/41_danh_sach_san_pham_test.sql` | ❌ W0 | ⬜ |
-| 02-06-02 | 06 | 2 | DMUC-05 | pgTAP | `npx supabase test db --linked supabase/tests/42_the_kho_test.sql` | ❌ W0 | ⬜ |
-| 02-07-01 | 07 | 3 | DLIEU-04, DTAC-01, DTAC-03 | pgTAP | `npx supabase test db --linked supabase/tests/51_doi_tac_ghi_chu_test.sql` | ❌ W0 | ⬜ |
-| 02-08-01 | 08 | 3 | DMUC-06 | pgTAP | `npx supabase test db --linked supabase/tests/61_import_danh_muc_test.sql` | ❌ W0 | ⬜ |
-| 02-08-02 | 08 | 3 | DMUC-04 | pgTAP | `npx supabase test db --linked supabase/tests/62_ra_hang_loat_test.sql` | ❌ W0 | ⬜ |
-| 02-09-01 | 09 | 4 | tất cả DB | full | `npm run db:test:linked && npm run verify:hook` | ✅ | ⬜ |
-| 02-09-02 | 09 | 4 | — | build | `npm run db:types && npm run check` | ✅ | ⬜ |
-| 02-10-xx | 10 | 5 | AUTH-01, CDAT-01 | build + script | `npm run check` + `npx tsx scripts/kiem-tra-tai-khoan.ts` | ❌ W0 | ⬜ |
-| 02-11-xx | 11 | 5 | DMUC-01..05 | build | `npm run check` | ✅ | ⬜ |
-| 02-12-xx | 12 | 5 | DMUC-06, DMUC-07 | tsx (file KiotViet thật) | `npx tsx scripts/kiem-tra-doc-excel.ts` | ❌ W0 | ⬜ |
-| 02-13..21 | 13–21 | 5–9 | UI | build | `npm run check` | ✅ | ⬜ |
+| 02-01-01 | 01 | 1 | CDAT-01 | pgTAP | `npx supabase test db --linked supabase/tests/30_rls_test.sql` | ✅ | ✅ |
+| 02-01-02 | 01 | 1 | CDAT-01 | pgTAP | `npm run db:test:linked` (helper mới trong mọi file) | ✅ | ✅ |
+| 02-01-03 | 01 | 1 | CDAT-01 | script | `npm run seed:users && npm run verify:hook` | ✅ | ✅ |
+| 02-02-01 | 02 | 2 | DMUC-04, DTAC-02 | pgTAP | `npx supabase test db --linked supabase/tests/70_nhat_ky_sua_test.sql` | ✅ | ✅ |
+| 02-03-01 | 03 | 1 | CDAT-04 | pgTAP | `npx supabase test db --linked supabase/tests/80_cau_hinh_so_ct_test.sql` + `20_chung_tu_test.sql` | ✅ | ✅ |
+| 02-04-01 | 04 | 1 | DMUC-05 (D-16) | pgTAP | `npx supabase test db --linked supabase/tests/90_gia_von_test.sql` + `40_tim_kiem_test.sql` | ✅ | ✅ |
+| 02-05-01 | 05 | 1 | AUTH-02 | tsx | `npx tsx scripts/kiem-tra-ham-thuan.ts` | ✅ | ✅ |
+| 02-05-02 | 05 | 1 | AUTH-01, AUTH-07 | build | `npm run check` | ✅ | ✅ |
+| 02-06-01 | 06 | 2 | DMUC-01..03 | pgTAP | `npx supabase test db --linked supabase/tests/41_danh_sach_san_pham_test.sql` | ✅ | ✅ |
+| 02-06-02 | 06 | 2 | DMUC-05 | pgTAP | `npx supabase test db --linked supabase/tests/42_the_kho_test.sql` | ✅ | ✅ |
+| 02-07-01 | 07 | 3 | DLIEU-04, DTAC-01, DTAC-03 | pgTAP | `npx supabase test db --linked supabase/tests/51_doi_tac_ghi_chu_test.sql` | ✅ | ✅ |
+| 02-08-01 | 08 | 3 | DMUC-06 | pgTAP | `npx supabase test db --linked supabase/tests/61_import_danh_muc_test.sql` | ✅ | ✅ |
+| 02-08-02 | 08 | 3 | DMUC-04 | pgTAP | `npx supabase test db --linked supabase/tests/62_ra_hang_loat_test.sql` | ✅ | ✅ |
+| 02-09-01 | 09 | 4 | tất cả DB | full | `npm run db:test:linked && npm run verify:hook` | ✅ | ✅ |
+| 02-09-02 | 09 | 4 | — | build | `npm run db:types && npm run check` | ✅ | ✅ |
+| 02-10-xx | 10 | 5 | AUTH-01, CDAT-01 | build + script | `npm run check` + `npx tsx scripts/kiem-tra-tai-khoan.ts` | ✅ | ✅ |
+| 02-11-xx | 11 | 5 | DMUC-01..05 | build | `npm run check` | ✅ | ✅ |
+| 02-12-xx | 12 | 5 | DMUC-06, DMUC-07 | tsx (file KiotViet thật) | `npx tsx scripts/kiem-tra-doc-excel.ts` | ✅ | ✅ |
+| 02-13..21 | 13–21 | 5–9 | UI | build | `npm run check` | ✅ | ✅ |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+
+**Chốt ngày 2026-09-18 (hết plan 21).** Toàn bộ dòng trên đã xanh. Bằng chứng:
+
+```
+pgTAP trên cloud — 15 file, 199 assert, 0 lỗi
+  10:18  20:18  30:26  40:14  41:16  42:7  50:12  51:17
+  60:10  61:14  62:8   63:6   70:12  80:10 90:11
+npm run verify:hook                      ✓ 4/4 tài khoản có vai_tro (+kho_id)
+npx tsx scripts/kiem-tra-ham-thuan.ts    ✓
+npx tsx scripts/kiem-tra-doc-excel.ts    ✓ (file KiotViet thật 3.266 dòng)
+npx tsx scripts/kiem-tra-quyen-route.ts  ✓ 45/45 ô đúng (9 route × 5 vai trò)
+npm run check                            exit 0
+```
+
+Bộ kiểm bổ sung so với bản nháp: `63_danh_muc_phu_test.sql` (plan 15) và
+`scripts/kiem-tra-quyen-route.ts` (plan 21).
 
 ---
 

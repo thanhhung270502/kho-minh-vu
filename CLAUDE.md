@@ -59,6 +59,10 @@ npm run db:push          # áp migration lên cloud
 npm run db:test:linked   # chạy pgTAP trên cloud
 npm run seed:users       # tạo 4 tài khoản mẫu
 npm run verify:hook      # xác nhận JWT có vai_tro/kho_id
+
+npx tsx scripts/kiem-tra-ham-thuan.ts     # hàm thuần: bộ lọc URL, tên khách, CSV lỗi
+npx tsx scripts/kiem-tra-doc-excel.ts     # đọc file KiotViet thật + quay vòng xuất/nhập
+npx tsx scripts/kiem-tra-quyen-route.ts   # ma trận quyền route × 4 vai trò (cần npm run dev)
 npm run import:kiotviet -- --mau   # thử nạp dữ liệu trên file mẫu
 ```
 
@@ -279,6 +283,29 @@ nhưng Next.js cảnh báo deprecated.
 bằng `npm audit fix` vì nó hạ exceljs xuống bản 3.x. Đã kiểm tra: exceljs chỉ gọi
 `uuid.v4()` không truyền `buf`, còn advisory chỉ ảnh hưởng `v3/v5/v6` khi có
 tham số `buf` — đường code đó không bao giờ chạy. Cứ để nguyên, đừng hạ cấp.
+
+### 5. `san_pham` và `kho_movement` không có quyền SELECT mức bảng
+
+Migration 0029 thu `select` trên hai bảng này rồi cấp lại **theo từng cột** để giấu
+`gia_von`. Hệ quả:
+
+- Cấm `select("*")` và cấm `.select()` trống sau `insert`/`update` — PostgREST sẽ đòi
+  đọc mọi cột và trả 42501 `permission denied for table san_pham`.
+- Cột mới thêm vào hai bảng này phải kèm `grant select (<cột>)` trong chính migration đó,
+  nếu không nó vô hình với mọi truy vấn có liệt kê cột.
+
+### 6. Quyền mở rộng cần token mới, quyền thu hẹp có hiệu lực ngay
+
+Helper RLS đối chiếu claim trong JWT **giao** với bảng `nguoi_dung`/`nguoi_dung_kho`. Bỏ
+một kho khỏi thủ kho là mất quyền ngay lập tức; thêm kho thì phải chờ token làm mới (tối đa
+60 phút, hoặc người dùng tải lại trang). Giao diện phải nói đúng điều này thay vì hứa "đã áp dụng".
+
+### 7. Đọc Excel chỉ ở server
+
+`src/shared/lib/o-excel.ts` dùng `node:stream`. Reader dạng stream (`styles: "ignore"`) là
+đường chính vì reader thường chết trên styles lệch chuẩn của KiotViet; nhưng reader stream
+lại hỏng với chính file exceljs ghi ra ở cỡ 100–1200 dòng, nên có đường dự phòng bằng
+reader thường. Đừng bỏ một trong hai.
 
 ---
 

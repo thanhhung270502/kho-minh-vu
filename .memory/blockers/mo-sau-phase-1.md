@@ -1,6 +1,6 @@
 # Việc còn mở sau Phase 1
 
-Cập nhật: 2026-09-13, sau UAT Phase 1 — 6/6 đạt (lỗi bài 3 đã sửa).
+Cập nhật: 2026-09-18, hết Phase 2 (plan 21).
 
 ---
 
@@ -18,28 +18,33 @@ ghi đè `kho_mac_dinh_id` thành NULL trên cả 3.266 mã.
 
 ## Cần người dùng quyết
 
-1. **Văn phòng tạo mã hàng có được đặt giá bán không.** Hiện chặn — phải để 0.
-2. **8 mã ô ĐVT mâu thuẫn tên/đuôi mã.** Ô ĐVT nhập sai, hay là sơn vân carbon (CTS 1022–1024)?
-   Danh sách ở `01-UAT.md` mục "Cần người quyết".
-3. **8 tên trong ô Ghi chú là khách sỉ hay nhân viên sale ngoài.** Chặn DLIEU-04 (Phase 2).
+1. ~~**Văn phòng tạo mã hàng có được đặt giá bán không.**~~ — Phase 2 chốt: **chặn**, quản lý
+   đặt giá sau (D-17). Chặn bằng trigger 0015, không chỉ bằng giao diện.
+2. **8 mã ô ĐVT mâu thuẫn tên/đuôi mã.** Phase 2 đã cho vào danh sách "Cần rà" và có công cụ;
+   **việc quyết từng mã vẫn cần người biết hàng** (ô ĐVT nhập sai, hay sơn vân carbon?).
+3. **8 tên trong ô Ghi chú là khách sỉ hay nhân viên sale ngoài.** Màn Rà ghi chú đã có lựa
+   chọn "Là sale" / "Khách + sale"; vẫn cần người biết chuyện quyết.
 
 ---
 
-## Chuyển sang Phase 2
+## Chuyển sang Phase 2 — đã đóng
 
-- **DLIEU-04** — trích khách hàng từ `luu_tru_hoa_don_kiotviet.ghi_chu` (3.505 dòng, index sẵn).
-- **Gán công đoạn cho 1.825 mã `MUA_NGOAI`.** Không phải rà tay hết:
-  - 1.324 mã `Hàng Hãng` / `Hàng Ngoài` → đã đúng là mua ngoài.
-  - 145 mã có đuôi `-CB`/`-X`/`-S`/`-N` → gán tự động theo quy ước đuôi mã (~95%).
-  - Còn khoảng **356 mã** cần người xem.
-- **`CLAUDE.md` và `src/shared/components/app-shell.tsx`** còn menu phạm vi cũ
-  (`/san-xuat`, `/bao-cao`) — viết lại khi dựng app shell.
-- **`src/shared/lib/errors.ts`** còn chữ "xưởng" trong thông báo lỗi — đổi thành "kho".
-- **Đổi vai trò phải thu hồi phiên:** hook chỉ chạy khi cấp token mới (TTL 3600s).
-  Màn Cài đặt (CDAT-01) phải thu hồi phiên sau khi đổi vai trò. **Chưa kiểm chứng:** ghi chú cũ
-  `auth.admin.signOut(userId, 'others')` nhiều khả năng sai chữ ký (supabase-js nhận JWT, không
-  nhận userId) — research Phase 2 chốt cơ chế thật (02-CONTEXT D-05).
-- **Phase 2 đổi quyết định Phase 1:** thủ kho gắn nhiều kho (D-06) — hook/RLS/test 30 phải sửa.
+- ~~**DLIEU-04**~~ — màn `/doi-tac/ra-ghi-chu` (plan 18) rà **150 giá trị** ghi chú.
+  Công cụ xong; **việc rà thật vẫn chờ người văn phòng** (xem mục dưới).
+- ~~**Gán công đoạn cho mã `MUA_NGOAI`**~~ — có 3 công cụ: gợi ý theo đuôi mã (145 mã),
+  gán hàng loạt, sửa ô tại chỗ. Số mã "Cần rà" thật đo được: **364**.
+- ~~**Menu phạm vi cũ trong `app-shell.tsx` / `CLAUDE.md`**~~ — đã viết lại (plan 05, 21).
+- ~~**Chữ "xưởng" trong `errors.ts`**~~ — đã đổi.
+- ~~**Thu hồi phiên khi đổi vai trò**~~ — giải bằng RPC `thu_hoi_phien_nguoi_dung` (0026);
+  helper RLS đối chiếu claim với bảng nên **thu hẹp quyền có hiệu lực ngay**, mở rộng chờ
+  token mới. Ghi chú cũ về `auth.admin.signOut(userId, 'others')` đúng là sai chữ ký.
+- ~~**Thủ kho nhiều kho (D-06)**~~ — bảng `nguoi_dung_kho`, test 30 đã sửa.
+
+## Việc người dùng phải làm trên dữ liệu thật (chưa xong)
+
+- **Rà 150 giá trị ô Ghi chú KiotViet** tại `/doi-tac/ra-ghi-chu`. Hệ thống không tự đoán.
+- **Rà 364 mã "Cần rà"** tại `/danh-muc` (bật nút Cần rà). Trong đó 145 mã có thể gán bằng
+  nút "Gợi ý theo đuôi mã" sau khi xem lại.
 
 ---
 
@@ -49,4 +54,8 @@ ghi đè `kho_mac_dinh_id` thành NULL trên cả 3.266 mã.
 - **Bật Leaked Password Protection** (Security Advisor cảnh báo): Dashboard → Authentication
   → chặn mật khẩu đã lộ qua HaveIBeenPwned. Công tắc Dashboard, CLI/MCP không bật được.
   Có thể cần gói Pro.
-- `DATABASE_URL` trong `.env.local` chứa mật khẩu DB — chỉ dùng cho `test:dong-thoi`.
+- `DATABASE_URL` trong `.env.local` chứa mật khẩu DB — chỉ dùng cho `test:dong-thoi` và chạy pgTAP.
+- **Hỏi người dùng có xóa cột `nguoi_dung.kho_id` không** — từ 0026 quyền kho đọc ở bảng
+  `nguoi_dung_kho`, cột cũ còn lại để tương thích ngược và chưa ai dùng.
+- Tài khoản `test.uat` (tạo khi thử plan 14) đang ở trạng thái vô hiệu hóa — xóa hẳn hoặc
+  để nguyên tùy người dùng.
