@@ -1,26 +1,33 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import { ChuaTrienKhai } from "@/shared/components/chua-trien-khai";
+import { BangSanPham } from "@/features/danh-muc/components/bang-san-pham";
+import { yeuCauQuyen } from "@/features/xac-thuc/api/nguoi-dung-hien-tai.server";
 import { PageHeader } from "@/shared/components/page-header";
+import { coQuyen } from "@/shared/lib/quyen";
 
 export const metadata: Metadata = { title: "Danh mục hàng" };
 
-export default function DanhMucPage() {
+export default async function DanhMucPage() {
+  const nd = await yeuCauQuyen("xem_danh_muc");
+
   return (
     <>
       <PageHeader
         tieuDe="Danh mục hàng"
-        moTa="Dữ liệu nền ít thay đổi, khai báo một lần rồi dùng lại."
+        moTa="Tìm theo mã hoặc tên, gõ không dấu cũng được."
       />
 
-      <ChuaTrienKhai
-        seCo={[
-          "Danh mục sản phẩm, mã hàng, nhóm hàng, ĐVT",
-          "Import/rà soát dữ liệu từ KiotViet",
-          "Ẩn giá vốn theo vai trò khi xem",
-        ]}
-        phuThuoc="thiết kế bảng danh mục (plan 16)"
-      />
+      {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}
+      <Suspense fallback={null}>
+        <BangSanPham
+          quyen={{
+            sua: coQuyen(nd.vaiTro, "sua_danh_muc"),
+            xemGiaVon: coQuyen(nd.vaiTro, "xem_gia_von"),
+            suaGiaBan: coQuyen(nd.vaiTro, "sua_gia_ban"),
+          }}
+        />
+      </Suspense>
     </>
   );
 }
