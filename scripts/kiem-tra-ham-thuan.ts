@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 import { boDau, chuanHoaTenDangNhap, tenDangNhapThanhEmail } from "../src/shared/lib/chuan-hoa";
 import { coQuyen } from "../src/shared/lib/quyen";
 import { tiepTucAnToan } from "../src/shared/lib/tiep-tuc";
+import { goiYTenKhach, tachSoDienThoai } from "../src/features/doi-tac/lib/ghi-chu";
 import {
   BO_LOC_MAC_DINH,
   docBoLocTuUrl,
@@ -74,5 +75,18 @@ assert.equal(
 );
 assert.equal(thamSoRpc(BO_LOC_MAC_DINH).p_dang_kinh_doanh, true);
 assert.equal(thamSoRpc({ ...BO_LOC_MAC_DINH, canRa: false }).p_can_ra, undefined);
+
+// Ghi chú KiotViet thật: dòng 1 là tên + địa chỉ, dòng 2 là SĐT.
+assert.equal(
+  goiYTenKhach("TIẾN DŨNG 602 QUANG TRUNG\nSĐT 0909"),
+  "Tiến Dũng 602 Quang Trung",
+  "tên đề xuất chỉ lấy dòng đầu, viết hoa chữ cái đầu",
+);
+assert.equal(
+  tachSoDienThoai("HUY HOÀNG 5 \nPHƯỚC HẬU 0966116224"),
+  "0966116224",
+  "lấy được SĐT nằm ở dòng sau",
+);
+assert.equal(tachSoDienThoai("NGỌC"), null, "ghi chú không có số thì trả null");
 
 console.log("✓ hàm thuần: tất cả assert đạt");
