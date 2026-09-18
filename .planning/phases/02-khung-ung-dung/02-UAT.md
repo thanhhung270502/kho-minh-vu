@@ -1,5 +1,5 @@
 ---
-status: partial
+status: complete
 phase: 02-khung-ung-dung
 source: [02-01-SUMMARY.md, 02-02-SUMMARY.md, 02-03-SUMMARY.md, 02-04-SUMMARY.md, 02-05-SUMMARY.md, 02-06-SUMMARY.md, 02-07-SUMMARY.md, 02-08-SUMMARY.md, 02-09-SUMMARY.md, 02-10-SUMMARY.md, 02-11-SUMMARY.md, 02-12-SUMMARY.md, 02-13-SUMMARY.md, 02-14-SUMMARY.md, 02-15-SUMMARY.md, 02-16-SUMMARY.md, 02-17-SUMMARY.md, 02-18-SUMMARY.md, 02-19-SUMMARY.md, 02-20-SUMMARY.md, 02-21-SUMMARY.md]
 started: 2026-09-18T00:00:00Z
@@ -90,11 +90,11 @@ ghi_chu: "Sau khi sửa: mã trùng hiện “Mã hàng đã tồn tại. Dùng 
 ## Summary
 
 total: 16
-passed: 12
+passed: 14
 issues: 0
 pending: 0
 skipped: 1
-blocked: 2
+blocked: 0
 partial: 1
 
 Ba bài lỗi (5, 14, 16) đã sửa và kiểm lại trên trình duyệt — xem mục "Đã sửa" dưới.
@@ -149,9 +149,8 @@ quyền route **50/50**, `npm run check` exit 0.
 
 ## Còn lại
 
-- Bài 13 (Cài đặt → Người dùng) và 15 (Số chứng từ) cần phiên `quanly`; Claude không nhập
-  mật khẩu vào ô đăng nhập nên chưa xem được giao diện hai màn này. Lớp dữ liệu và guard
-  quyền của chúng đã kiểm bằng script (plan 14, 15) và HTML server render không crash.
+- Bài 13 và 15 đã kiểm xong sau khi người dùng đăng nhập `quanly` vào khung trình duyệt.
+  Console sạch trên cả hai màn; không để lại tài khoản hay cấu hình thử nào.
 - Bài 9: chưa tải file lên được từ khung trình duyệt; luồng nạp đã kiểm bằng script trên
   file KiotViet thật (plan 20).
 - Dữ liệu thử: mã `UAT-VERIFY-01` để ở trạng thái **ngừng kinh doanh** (không xóa).
