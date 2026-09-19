@@ -14,13 +14,17 @@ import {
 import { useReducer } from "react";
 
 import { productKeys } from "../api/product.keys";
-import type { CostImportResultPayload } from "../lib/cost-template";
+import {
+  toCostImportResult,
+  type CostImportResult,
+  type CostImportResultPayload,
+} from "../lib/cost-template";
 import { MAX_FILE_MB } from "../lib/excel-template";
 
 type State = {
   step: 0 | 1 | 2;
   file: File | null;
-  result: CostImportResultPayload | null;
+  result: CostImportResult | null;
   error: { title: string; action: string } | null;
   submitting: boolean;
 };
@@ -28,8 +32,8 @@ type State = {
 type Action =
   | { type: "select-file"; file: File }
   | { type: "submitting" }
-  | { type: "preview"; result: CostImportResultPayload }
-  | { type: "committed"; result: CostImportResultPayload }
+  | { type: "preview"; result: CostImportResult }
+  | { type: "committed"; result: CostImportResult }
   | { type: "error"; title: string; action: string }
   | { type: "reset" };
 
@@ -93,10 +97,10 @@ export function CostImport({ open, onClose }: { open: boolean; onClose: () => vo
 
       if (mode === "nap") {
         void queryClient.invalidateQueries({ queryKey: productKeys.all });
-        dispatch({ type: "committed", result: body.ketQua });
+        dispatch({ type: "committed", result: toCostImportResult(body.ketQua) });
         return;
       }
-      dispatch({ type: "preview", result: body.ketQua });
+      dispatch({ type: "preview", result: toCostImportResult(body.ketQua) });
     } catch {
       dispatch({
         type: "error",
@@ -150,14 +154,14 @@ export function CostImport({ open, onClose }: { open: boolean; onClose: () => vo
                 key="commit"
                 type="primary"
                 loading={state.submitting}
-                disabled={(result?.dat ?? 0) === 0}
+                disabled={(result?.applied ?? 0) === 0}
                 onClick={() => {
                   if (!state.file) return;
                   dispatch({ type: "submitting" });
                   void submit(state.file, "nap");
                 }}
               >
-                Đặt giá vốn cho {result?.dat ?? 0} mã
+                Đặt giá vốn cho {result?.applied ?? 0} mã
               </Button>,
             ]
           : state.step === 2
@@ -216,53 +220,53 @@ export function CostImport({ open, onClose }: { open: boolean; onClose: () => vo
           <div className="mb-3 flex flex-wrap gap-8">
             <Statistic
               title="Sẽ đặt"
-              value={result.dat}
+              value={result.applied}
               valueStyle={{ color: "#389e0d" }}
             />
-            <Statistic title="Bỏ qua (đã có giá vốn)" value={result.bo_qua} />
+            <Statistic title="Bỏ qua (đã có giá vốn)" value={result.skipped} />
             <Statistic
               title="Lỗi"
-              value={result.so_loi}
-              valueStyle={result.so_loi ? { color: "#cf1322" } : undefined}
+              value={result.errorCount}
+              valueStyle={result.errorCount ? { color: "#cf1322" } : undefined}
             />
           </div>
 
           <div className="max-h-[50vh] overflow-auto">
-            {result.chi_tiet_bo_qua.length > 0 ? (
+            {result.skippedRows.length > 0 ? (
               <>
                 <Typography.Text strong>Bỏ qua</Typography.Text>
                 <Table
                   className="mb-3"
-                  rowKey="ma_hang"
+                  rowKey="code"
                   size="small"
                   pagination={false}
-                  dataSource={result.chi_tiet_bo_qua}
+                  dataSource={result.skippedRows}
                   columns={[
-                    { title: "Mã hàng", dataIndex: "ma_hang", width: 180 },
+                    { title: "Mã hàng", dataIndex: "code", width: 180 },
                     {
                       title: "Giá vốn hiện tại",
-                      dataIndex: "gia_von_hien_tai",
+                      dataIndex: "currentCost",
                       width: 150,
                       align: "right",
                       render: (value: number) => Number(value).toLocaleString("vi-VN"),
                     },
-                    { title: "Lý do", dataIndex: "ly_do" },
+                    { title: "Lý do", dataIndex: "reason" },
                   ]}
                 />
               </>
             ) : null}
 
-            {result.loi.length > 0 ? (
+            {result.errors.length > 0 ? (
               <>
                 <Typography.Text strong>Lỗi</Typography.Text>
                 <Table
-                  rowKey={(row) => `${row.ma_hang}-${row.ly_do}`}
+                  rowKey={(row) => `${row.code}-${row.reason}`}
                   size="small"
                   pagination={false}
-                  dataSource={result.loi}
+                  dataSource={result.errors}
                   columns={[
-                    { title: "Mã hàng", dataIndex: "ma_hang", width: 180 },
-                    { title: "Lý do", dataIndex: "ly_do" },
+                    { title: "Mã hàng", dataIndex: "code", width: 180 },
+                    { title: "Lý do", dataIndex: "reason" },
                   ]}
                 />
               </>
@@ -276,8 +280,8 @@ export function CostImport({ open, onClose }: { open: boolean; onClose: () => vo
           className="mt-3"
           type="success"
           showIcon
-          title={`Đã đặt giá vốn cho ${result.dat} mã`}
-          description={`${result.bo_qua} mã bỏ qua vì đã có giá vốn.`}
+          title={`Đã đặt giá vốn cho ${result.applied} mã`}
+          description={`${result.skipped} mã bỏ qua vì đã có giá vốn.`}
         />
       ) : null}
     </Modal>
