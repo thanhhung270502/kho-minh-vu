@@ -1200,6 +1200,10 @@ export type Database = {
           updated_at: string
         }[]
       }
+      dat_gia_von_dau_ky: {
+        Args: { p_chi_kiem_tra?: boolean; p_du_lieu: Json }
+        Returns: Json
+      }
       doi_chieu_ton: {
         Args: never
         Returns: {
