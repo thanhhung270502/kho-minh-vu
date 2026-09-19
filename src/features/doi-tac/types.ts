@@ -32,3 +32,11 @@ export const BO_LOC_DOI_TAC_MAC_DINH: BoLocDoiTac = {
   hoatDong: "dang",
   trang: 1,
 };
+
+/** Đếm điều kiện đang bật, KHÔNG tính ô tìm kiếm (ô tìm nằm ngoài panel). */
+export function demDieuKienDoiTac(b: BoLocDoiTac): number {
+  let dem = 0;
+  if (b.loai !== null) dem++;
+  if (b.hoatDong !== BO_LOC_DOI_TAC_MAC_DINH.hoatDong) dem++;
+  return dem;
+}

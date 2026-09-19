@@ -6,14 +6,22 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+import { BoCucDanhSach } from "@/shared/components/bo-cuc-danh-sach";
+import { HangTongCong } from "@/shared/components/hang-tong-cong";
 import { QueryState } from "@/shared/components/query-state";
 
 import { docBoLocDoiTac, ghiBoLocDoiTac } from "../api/doi-tac.api";
 import { useDanhSachDoiTac } from "../hooks/useDoiTac";
 import type { BoLocDoiTac, DongDoiTac } from "../types";
-import { BO_LOC_DOI_TAC_MAC_DINH, MAU_LOAI_DOI_TAC, NHAN_LOAI_DOI_TAC } from "../types";
+import {
+  BO_LOC_DOI_TAC_MAC_DINH,
+  demDieuKienDoiTac,
+  MAU_LOAI_DOI_TAC,
+  NHAN_LOAI_DOI_TAC,
+} from "../types";
 import { NganKeoDoiTac } from "./ngan-keo-doi-tac";
-import { ThanhLocDoiTac } from "./thanh-loc-doi-tac";
+import { PanelLocDoiTac } from "./panel-loc-doi-tac";
+import { ThanhCongCuDoiTac } from "./thanh-cong-cu-doi-tac";
 
 const KICH_THUOC_TRANG = 50;
 
@@ -71,7 +79,9 @@ export function BangDoiTac({ coQuyenSua }: { coQuyenSua: boolean }) {
       dataIndex: "loai",
       width: 130,
       render: (loai: DongDoiTac["loai"]) => (
-        <Tag color={MAU_LOAI_DOI_TAC[loai]}>{NHAN_LOAI_DOI_TAC[loai]}</Tag>
+        <Tag bordered={false} color={MAU_LOAI_DOI_TAC[loai]}>
+          {NHAN_LOAI_DOI_TAC[loai]}
+        </Tag>
       ),
     },
     { title: "Điện thoại", dataIndex: "dien_thoai", width: 130 },
@@ -80,8 +90,9 @@ export function BangDoiTac({ coQuyenSua }: { coQuyenSua: boolean }) {
       title: "Trạng thái",
       dataIndex: "dang_hoat_dong",
       width: 110,
-      render: (hoatDong: boolean) =>
-        hoatDong ? <Tag color="green">Đang dùng</Tag> : <Tag>Ngừng</Tag>,
+      render: (hoatDong: boolean) => (
+        <Tag bordered={false}>{hoatDong ? "Đang dùng" : "Ngừng"}</Tag>
+      ),
     },
     ...(coQuyenSua
       ? [
@@ -107,31 +118,35 @@ export function BangDoiTac({ coQuyenSua }: { coQuyenSua: boolean }) {
 
   return (
     <>
-      <ThanhLocDoiTac
-        boLoc={boLoc}
-        coQuyenSua={coQuyenSua}
-        onDoi={doiBoLoc}
-        onThem={() => setNganKeo({ mo: true, id: null })}
-      />
-
-      <QueryState
-        query={danhSach}
-        laRong={(d) => d.dong.length === 0}
-        moTaRong={
-          coLoc(boLoc) ? (
-            <div className="flex flex-col items-center gap-3">
-              <span>Không có đối tác khớp bộ lọc. Xóa bớt điều kiện tìm.</span>
-              <Button size="small" onClick={() => dieuHuong(BO_LOC_DOI_TAC_MAC_DINH)}>
-                Xóa bộ lọc
-              </Button>
-            </div>
-          ) : (
-            "Chưa có đối tác nào. Bấm “Thêm đối tác” để tạo nhà cung cấp hoặc khách hàng đầu tiên."
-          )
+      <BoCucDanhSach
+        panelLoc={<PanelLocDoiTac boLoc={boLoc} onDoi={doiBoLoc} />}
+        thanhCongCu={
+          <ThanhCongCuDoiTac
+            boLoc={boLoc}
+            coQuyenSua={coQuyenSua}
+            onDoi={doiBoLoc}
+            onThem={() => setNganKeo({ mo: true, id: null })}
+          />
         }
+        soDieuKien={demDieuKienDoiTac(boLoc)}
       >
-        {(d) => (
-          <div className="overflow-x-auto">
+        <QueryState
+          query={danhSach}
+          laRong={(d) => d.dong.length === 0}
+          moTaRong={
+            coLoc(boLoc) ? (
+              <div className="flex flex-col items-center gap-3">
+                <span>Không có đối tác khớp bộ lọc. Xóa bớt điều kiện tìm.</span>
+                <Button size="small" onClick={() => dieuHuong(BO_LOC_DOI_TAC_MAC_DINH)}>
+                  Xóa bộ lọc
+                </Button>
+              </div>
+            ) : (
+              "Chưa có đối tác nào. Bấm “Thêm đối tác” để tạo nhà cung cấp hoặc khách hàng đầu tiên."
+            )
+          }
+        >
+          {(d) => (
             <Table<DongDoiTac>
               rowKey="id"
               size="small"
@@ -139,6 +154,13 @@ export function BangDoiTac({ coQuyenSua }: { coQuyenSua: boolean }) {
               dataSource={d.dong}
               loading={danhSach.isFetching}
               scroll={{ x: 900 }}
+              summary={() => (
+                <HangTongCong
+                  cot={cot}
+                  coChon={false}
+                  nhan={`Tổng cộng — ${tong.toLocaleString("vi-VN")} đối tác`}
+                />
+              )}
               pagination={{
                 current: boLoc.trang,
                 pageSize: KICH_THUOC_TRANG,
@@ -148,9 +170,9 @@ export function BangDoiTac({ coQuyenSua }: { coQuyenSua: boolean }) {
                 onChange: (trang) => dieuHuong({ ...boLoc, trang }),
               }}
             />
-          </div>
-        )}
-      </QueryState>
+          )}
+        </QueryState>
+      </BoCucDanhSach>
 
       <NganKeoDoiTac
         id={nganKeo.id}

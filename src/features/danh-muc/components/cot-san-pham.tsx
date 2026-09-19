@@ -118,6 +118,7 @@ export function taoCot({
       key: "tong_ton",
       width: 100,
       align: "right",
+      className: "tabular-nums",
       sorter: true,
       sortOrder: huongSap(boLoc, "tong_ton"),
       render: (ton: number) =>
@@ -127,7 +128,14 @@ export function taoCot({
           soVn(ton)
         ),
     },
-    { title: "Giá bán", dataIndex: "gia_ban", width: 110, align: "right", render: soVn },
+    {
+      title: "Giá bán",
+      dataIndex: "gia_ban",
+      width: 110,
+      align: "right",
+      className: "tabular-nums",
+      render: soVn,
+    },
     ...(xemGiaVon
       ? [
           {
@@ -135,6 +143,7 @@ export function taoCot({
             dataIndex: "gia_von",
             width: 110,
             align: "right" as const,
+            className: "tabular-nums",
             render: soVn,
           },
         ]

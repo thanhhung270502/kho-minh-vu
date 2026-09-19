@@ -41,3 +41,9 @@ export type SanPhamInput = Pick<
 >;
 
 export type TonTheoKho = { kho_id: string; ten_kho: string; so_luong: number };
+
+export type QuyenDanhMuc = {
+  sua: boolean;
+  xemGiaVon: boolean;
+  suaGiaBan: boolean;
+};

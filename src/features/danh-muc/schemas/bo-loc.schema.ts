@@ -38,6 +38,18 @@ export const BO_LOC_MAC_DINH: BoLocSanPham = {
 
 export const KICH_THUOC_TRANG = [20, 50, 100, 200] as const;
 
+/** Đếm điều kiện đang bật, KHÔNG tính ô tìm kiếm (ô tìm nằm ngoài panel). */
+export function demDieuKien(b: BoLocSanPham): number {
+  let dem = 0;
+  if (b.nhomHangId !== null) dem++;
+  if (b.congDoanId !== null) dem++;
+  if (b.dvtId !== null) dem++;
+  if (b.trangThaiTon !== null) dem++;
+  if (b.canRa) dem++;
+  if (b.kinhDoanh !== BO_LOC_MAC_DINH.kinhDoanh) dem++;
+  return dem;
+}
+
 const uuid = z.string().uuid();
 
 function docUuid(v: string | null): string | null {

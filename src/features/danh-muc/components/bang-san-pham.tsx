@@ -1,36 +1,31 @@
 "use client";
 
-import { Alert, Badge, Button, Table, Typography } from "antd";
-import type { SorterResult } from "antd/es/table/interface";
+import { Button } from "antd";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { BoCucDanhSach } from "@/shared/components/bo-cuc-danh-sach";
 import { QueryState } from "@/shared/components/query-state";
 
 import { useDanhMucPhu, useDanhSachSanPham } from "../hooks/useSanPham";
 import {
   BO_LOC_MAC_DINH,
-  COT_SAP_XEP,
+  demDieuKien,
   docBoLocTuUrl,
   ghiBoLocRaUrl,
-  KICH_THUOC_TRANG,
   type BoLocSanPham,
-  type CotSapXep,
 } from "../schemas/bo-loc.schema";
-import type { DongSanPham } from "../types";
+import type { QuyenDanhMuc } from "../types";
+import { AlertCanRa } from "./alert-can-ra";
 import { taoCot } from "./cot-san-pham";
-import { GoiYCongDoan } from "./goi-y-cong-doan";
-import { NganKeoSanPham } from "./ngan-keo-san-pham";
-import { NhapExcel } from "./nhap-excel";
-import { NutExcel } from "./nut-excel";
+import { HanhDongCanRa } from "./hanh-dong-can-ra";
+import { ModalsSanPham } from "./modals-san-pham";
+import { NoiDungBangSanPham } from "./noi-dung-bang-san-pham";
+import { PanelLocSanPham } from "./panel-loc-san-pham";
+import { ThanhCongCuSanPham } from "./thanh-cong-cu-san-pham";
 import { ThanhGanHangLoat } from "./thanh-gan-hang-loat";
-import { ThanhLocSanPham } from "./thanh-loc-san-pham";
 
-export type QuyenDanhMuc = {
-  sua: boolean;
-  xemGiaVon: boolean;
-  suaGiaBan: boolean;
-};
+export type { QuyenDanhMuc };
 
 function coLoc(b: BoLocSanPham): boolean {
   return (
@@ -99,166 +94,105 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [danhSach.isPending, danhSach.isFetching, dong.length, boLoc.trang]);
 
-  function onBangDoi(
-    trang: { current?: number; pageSize?: number },
-    sorter: SorterResult<DongSanPham> | SorterResult<DongSanPham>[],
-  ) {
-    const s = Array.isArray(sorter) ? sorter[0] : sorter;
-    const cot = s?.columnKey as CotSapXep | undefined;
-    const hopLe = cot && COT_SAP_XEP.includes(cot);
-
-    doiBoLoc({
-      ...boLoc,
-      trang: trang.current ?? 1,
-      kichThuoc: trang.pageSize ?? boLoc.kichThuoc,
-      sapXep: hopLe && s?.order ? cot : null,
-      huong: s?.order === "descend" ? "desc" : "asc",
-    });
-  }
-
-  const moiTonBang0 = dong.length > 0 && dong.every((d) => Number(d.tong_ton) === 0);
+  const cot = taoCot({
+    boLoc,
+    xemGiaVon: quyen.xemGiaVon,
+    sua: quyen.sua,
+    danhMucPhu: danhMucPhu.data,
+    onSua: (id) => setNganKeo({ mo: true, id }),
+  });
 
   return (
     <>
-      <ThanhLocSanPham
-        boLoc={boLoc}
-        danhMucPhu={danhMucPhu.data}
-        onDoi={doiBoLoc}
-        hanhDongPhu={
-          <>
-            <Badge count={demCanRa.data?.tong ?? 0} overflowCount={9999} size="small">
-              <Button
-                type={boLoc.canRa ? "primary" : "default"}
-                onClick={() => doiBoLoc({ ...boLoc, canRa: !boLoc.canRa, trang: 1 })}
-              >
-                Cần rà
-              </Button>
-            </Badge>
-            <NutExcel
-              boLoc={boLoc}
-              soMa={tong}
-              onMoNhap={quyen.sua ? () => setNhapMo(true) : undefined}
-            />
-          </>
+      <BoCucDanhSach
+        panelLoc={
+          <PanelLocSanPham boLoc={boLoc} danhMucPhu={danhMucPhu.data} onDoi={doiBoLoc} />
         }
-        nutThem={
-          quyen.sua ? (
-            <Button type="primary" onClick={() => setNganKeo({ mo: true, id: null })}>
-              Thêm mã hàng
-            </Button>
-          ) : null
-        }
-      />
-
-      {boLoc.canRa ? (
-        <Alert
-          className="mb-3"
-          type="warning"
-          showIcon
-          title="Mã mua ngoài chưa rõ công đoạn và các mã có ô ĐVT mâu thuẫn"
-          description="Gán lại công đoạn, hoặc chọn rồi bấm “Xác nhận đã rà” nếu hiện tại đã đúng."
-          action={
-            quyen.sua ? (
-              <Button size="small" onClick={() => setGoiYMo(true)}>
-                Gợi ý theo đuôi mã
-              </Button>
-            ) : null
-          }
-        />
-      ) : null}
-
-      {quyen.sua ? (
-        <ThanhGanHangLoat
-          ids={chon}
-          danhMucPhu={danhMucPhu.data}
-          onXong={() => setChon([])}
-        />
-      ) : null}
-
-      <QueryState
-        query={danhSach}
-        laRong={(d) => d.dong.length === 0}
-        moTaRong={
-          boLoc.q ? (
-            `Không có mã khớp “${boLoc.q}”. Thử gõ ít chữ hơn hoặc bỏ dấu.`
-          ) : coLoc(boLoc) ? (
-            <div className="flex flex-col items-center gap-3">
-              <span>Không có mã nào khớp bộ lọc. Xóa bớt điều kiện.</span>
-              <Button size="small" onClick={() => doiBoLoc(BO_LOC_MAC_DINH)}>
-                Xóa bộ lọc
-              </Button>
-            </div>
-          ) : (
-            "Chưa có mã hàng nào. Bấm “Thêm mã hàng” hoặc nhập từ Excel."
-          )
-        }
-      >
-        {(d) => (
-          <>
-            <div className="overflow-x-auto">
-              <Table<DongSanPham>
-                rowKey="id"
-                size="small"
-                sticky
-                columns={taoCot({
-                  boLoc,
-                  xemGiaVon: quyen.xemGiaVon,
-                  sua: quyen.sua,
-                  danhMucPhu: danhMucPhu.data,
-                  onSua: (id) => setNganKeo({ mo: true, id }),
-                })}
-                rowSelection={
-                  quyen.sua
-                    ? {
-                        selectedRowKeys: chon,
-                        onChange: (keys) => setChon(keys as string[]),
-                        // Chọn ở trang 1, sang trang 2 chọn tiếp: antd v6 chỉ
-                        // giữ được khóa ngoài trang hiện tại khi bật cờ này.
-                        preserveSelectedRowKeys: true,
-                      }
-                    : undefined
-                }
-                dataSource={d.dong}
-                loading={danhSach.isFetching && !danhSach.isPending}
-                scroll={{ x: 1100 }}
-                onChange={(p, _f, s) => onBangDoi(p, s)}
-                pagination={{
-                  current: boLoc.trang,
-                  pageSize: boLoc.kichThuoc,
-                  total: tong,
-                  showSizeChanger: true,
-                  pageSizeOptions: [...KICH_THUOC_TRANG],
-                  showTotal: (t) => `${t.toLocaleString("vi-VN")} mã`,
-                }}
+        thanhCongCu={
+          <ThanhCongCuSanPham
+            boLoc={boLoc}
+            onDoi={doiBoLoc}
+            hanhDongPhu={
+              <HanhDongCanRa
+                boLoc={boLoc}
+                tong={tong}
+                demCanRa={demCanRa.data?.tong ?? 0}
+                quyenSua={quyen.sua}
+                onDoiBoLoc={doiBoLoc}
+                onMoNhap={() => setNhapMo(true)}
               />
-            </div>
+            }
+            nutThem={
+              quyen.sua ? (
+                <Button type="primary" onClick={() => setNganKeo({ mo: true, id: null })}>
+                  Thêm mã hàng
+                </Button>
+              ) : null
+            }
+          />
+        }
+        soDieuKien={demDieuKien(boLoc)}
+      >
+        <AlertCanRa
+          hien={boLoc.canRa}
+          choPhepSua={quyen.sua}
+          onGoiY={() => setGoiYMo(true)}
+        />
 
-            {moiTonBang0 ? (
-              <Typography.Text type="secondary" className="mt-2 block text-xs">
-                Tồn đang bằng 0 cho mọi mã vì chưa có phiếu nhập — tồn thật được đặt khi
-                kiểm kê đầu kỳ.
-              </Typography.Text>
-            ) : null}
-          </>
-        )}
-      </QueryState>
+        {quyen.sua ? (
+          <ThanhGanHangLoat
+            ids={chon}
+            danhMucPhu={danhMucPhu.data}
+            onXong={() => setChon([])}
+          />
+        ) : null}
 
-      <GoiYCongDoan open={goiYMo} onDong={() => setGoiYMo(false)} />
+        <QueryState
+          query={danhSach}
+          laRong={(d) => d.dong.length === 0}
+          moTaRong={
+            boLoc.q ? (
+              `Không có mã khớp “${boLoc.q}”. Thử gõ ít chữ hơn hoặc bỏ dấu.`
+            ) : coLoc(boLoc) ? (
+              <div className="flex flex-col items-center gap-3">
+                <span>Không có mã nào khớp bộ lọc. Xóa bớt điều kiện.</span>
+                <Button size="small" onClick={() => doiBoLoc(BO_LOC_MAC_DINH)}>
+                  Xóa bộ lọc
+                </Button>
+              </div>
+            ) : (
+              "Chưa có mã hàng nào. Bấm “Thêm mã hàng” hoặc nhập từ Excel."
+            )
+          }
+        >
+          {(d) => (
+            <NoiDungBangSanPham
+              cot={cot}
+              dong={d.dong}
+              tong={tong}
+              boLoc={boLoc}
+              coChon={quyen.sua}
+              chon={chon}
+              onChonDoi={setChon}
+              dangTai={danhSach.isFetching && !danhSach.isPending}
+              onDoiBoLoc={doiBoLoc}
+            />
+          )}
+        </QueryState>
+      </BoCucDanhSach>
 
-      <NhapExcel
-        open={nhapMo}
-        onDong={() => setNhapMo(false)}
+      <ModalsSanPham
+        quyen={quyen}
+        goiYMo={goiYMo}
+        onDongGoiY={() => setGoiYMo(false)}
+        nhapMo={nhapMo}
+        onDongNhap={() => setNhapMo(false)}
         onXemMoiSua={() => {
           setNhapMo(false);
           doiBoLoc({ ...BO_LOC_MAC_DINH, sapXep: "updated_at", huong: "desc" });
         }}
-      />
-
-      <NganKeoSanPham
-        id={nganKeo.id}
-        open={nganKeo.mo}
-        quyen={quyen}
-        onDong={() => setNganKeo((s) => ({ ...s, mo: false }))}
+        nganKeo={nganKeo}
+        onDongNganKeo={() => setNganKeo((s) => ({ ...s, mo: false }))}
       />
     </>
   );
