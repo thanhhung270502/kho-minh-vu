@@ -206,6 +206,7 @@ export type Database = {
           don_gia: number
           ghi_chu: string | null
           id: string
+          kho_id: string | null
           san_pham_id: string
           so_luong: number
           so_luong_he_thong: number | null
@@ -217,6 +218,7 @@ export type Database = {
           don_gia?: number
           ghi_chu?: string | null
           id?: string
+          kho_id?: string | null
           san_pham_id: string
           so_luong: number
           so_luong_he_thong?: number | null
@@ -228,6 +230,7 @@ export type Database = {
           don_gia?: number
           ghi_chu?: string | null
           id?: string
+          kho_id?: string | null
           san_pham_id?: string
           so_luong?: number
           so_luong_he_thong?: number | null
@@ -239,6 +242,13 @@ export type Database = {
             columns: ["chung_tu_id"]
             isOneToOne: false
             referencedRelation: "chung_tu"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chung_tu_dong_kho_id_fkey"
+            columns: ["kho_id"]
+            isOneToOne: false
+            referencedRelation: "kho"
             referencedColumns: ["id"]
           },
           {
@@ -1335,6 +1345,10 @@ export type Database = {
       nhap_danh_muc: {
         Args: { p_chi_kiem_tra?: boolean; p_dong: Json }
         Returns: Json
+      }
+      phieu_co_dong_thuoc_kho_hien_tai: {
+        Args: { p_chung_tu_id: string }
+        Returns: boolean
       }
       quyet_ghi_chu: {
         Args: {
