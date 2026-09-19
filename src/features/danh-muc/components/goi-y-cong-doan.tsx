@@ -5,8 +5,8 @@ import type { ColumnsType } from "antd/es/table";
 import { useMemo, useState } from "react";
 
 import { QueryState } from "@/shared/components/query-state";
-import { boDau } from "@/shared/lib/chuan-hoa";
-import { dienGiaiLoi } from "@/shared/lib/errors";
+import { removeDiacritics } from "@/shared/lib/text";
+import { explainError } from "@/shared/lib/errors";
 
 import { useApDungGoiY, useGoiYCongDoan } from "../hooks/useSanPham";
 import type { GoiYCongDoan as DongGoiY } from "../types";
@@ -23,16 +23,16 @@ const TU_CONG_DOAN: Record<string, string[]> = {
 };
 
 function canKiemTra(d: DongGoiY): boolean {
-  const ten = boDau(d.ten_hang).toLowerCase();
+  const ten = removeDiacritics(d.ten_hang).toLowerCase();
 
   return Object.entries(TU_CONG_DOAN).some(
     ([ma, tu]) => ma !== d.ma_cong_doan_de_xuat && tu.some((t) => ten.includes(t)),
   );
 }
 
-type Props = { open: boolean; onDong: () => void };
+type Props = { open: boolean; onClose: () => void };
 
-export function GoiYCongDoan({ open, onDong }: Props) {
+export function GoiYCongDoan({ open, onClose }: Props) {
   const { message } = App.useApp();
   const goiY = useGoiYCongDoan(open);
   const apDung = useApDungGoiY();
@@ -75,10 +75,10 @@ export function GoiYCongDoan({ open, onDong }: Props) {
           : `Đã gán công đoạn cho ${so}/${daChon.length} mã — số còn lại vừa được người khác sửa.`,
       );
       setBoTick(new Set());
-      onDong();
+      onClose();
     } catch (e) {
-      const loi = dienGiaiLoi(e);
-      message.error(`${loi.tieuDe}. ${loi.huongXuLy}`);
+      const loi = explainError(e);
+      message.error(`${loi.title}. ${loi.action}`);
     }
   }
 
@@ -112,7 +112,7 @@ export function GoiYCongDoan({ open, onDong }: Props) {
       okButtonProps={{ disabled: daChon.length === 0, loading: apDung.isPending }}
       cancelText="Đóng"
       onOk={() => void ap()}
-      onCancel={onDong}
+      onCancel={onClose}
     >
       <Typography.Paragraph type="secondary">
         Quy ước đuôi mã đã kiểm trên 1.441 mã: <code>-CB</code> → Carbon (97%),{" "}
@@ -122,7 +122,7 @@ export function GoiYCongDoan({ open, onDong }: Props) {
 
       <QueryState
         query={goiY}
-        moTaRong="Không còn mã mua ngoài nào có đuôi -CB / -X / -S / -N."
+        emptyDescription="Không còn mã mua ngoài nào có đuôi -CB / -X / -S / -N."
       >
         {() => (
           <Collapse

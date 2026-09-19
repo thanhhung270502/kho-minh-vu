@@ -4,7 +4,7 @@ import { Table, Typography } from "antd";
 import type { TableColumnsType } from "antd";
 import type { SorterResult } from "antd/es/table/interface";
 
-import { HangTongCong } from "@/shared/components/hang-tong-cong";
+import { SummaryRow } from "@/shared/components/summary-row";
 
 import { COT_SAP_XEP, KICH_THUOC_TRANG, type BoLocSanPham, type CotSapXep } from "../schemas/bo-loc.schema";
 import type { DongSanPham } from "../types";
@@ -14,7 +14,7 @@ type Props = {
   dong: DongSanPham[];
   tong: number;
   boLoc: BoLocSanPham;
-  coChon: boolean;
+  hasSelection: boolean;
   chon: string[];
   onChonDoi: (keys: string[]) => void;
   dangTai: boolean;
@@ -27,7 +27,7 @@ export function NoiDungBangSanPham({
   dong,
   tong,
   boLoc,
-  coChon,
+  hasSelection,
   chon,
   onChonDoi,
   dangTai,
@@ -60,7 +60,7 @@ export function NoiDungBangSanPham({
         sticky
         columns={cot}
         rowSelection={
-          coChon
+          hasSelection
             ? {
                 selectedRowKeys: chon,
                 onChange: (keys) => onChonDoi(keys as string[]),
@@ -75,11 +75,11 @@ export function NoiDungBangSanPham({
         scroll={{ x: 1100 }}
         onChange={(p, _f, s) => onBangDoi(p, s)}
         summary={() => (
-          <HangTongCong
-            cot={cot}
-            coChon={coChon}
-            nhan={`Tổng cộng — ${tong.toLocaleString("vi-VN")} mã`}
-            cong={{ tong_ton: dong.reduce((s, r) => s + Number(r.tong_ton ?? 0), 0) }}
+          <SummaryRow
+            columns={cot}
+            hasSelection={hasSelection}
+            label={`Tổng cộng — ${tong.toLocaleString("vi-VN")} mã`}
+            totals={{ tong_ton: dong.reduce((s, r) => s + Number(r.tong_ton ?? 0), 0) }}
           />
         )}
         pagination={{

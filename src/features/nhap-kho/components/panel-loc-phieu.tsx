@@ -15,10 +15,10 @@ import {
 } from "../schemas/phieu-nhap.schema";
 import { NHAN_NGUON_NHAP, NHAN_TRANG_THAI } from "../types";
 
-function NhomLoc({ nhan, children }: { nhan: string; children: ReactNode }) {
+function NhomLoc({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <label className="mb-1 block text-[13px] text-chu-phu">{nhan}</label>
+      <label className="mb-1 block text-[13px] text-chu-phu">{label}</label>
       {children}
     </div>
   );
@@ -42,7 +42,7 @@ export function PanelLocPhieu({
 
   return (
     <div className="flex flex-col gap-3">
-      <NhomLoc nhan="Trạng thái">
+      <NhomLoc label="Trạng thái">
         <Select
           allowClear
           className="w-full"
@@ -56,7 +56,7 @@ export function PanelLocPhieu({
         />
       </NhomLoc>
 
-      <NhomLoc nhan="Nhà cung cấp">
+      <NhomLoc label="Nhà cung cấp">
         <Select
           allowClear
           showSearch
@@ -70,7 +70,7 @@ export function PanelLocPhieu({
         />
       </NhomLoc>
 
-      <NhomLoc nhan="Nguồn nhập">
+      <NhomLoc label="Nguồn nhập">
         <Select
           allowClear
           className="w-full"
@@ -84,7 +84,7 @@ export function PanelLocPhieu({
         />
       </NhomLoc>
 
-      <NhomLoc nhan="Kho">
+      <NhomLoc label="Kho">
         <Select
           allowClear
           className="w-full"
@@ -95,7 +95,7 @@ export function PanelLocPhieu({
         />
       </NhomLoc>
 
-      <NhomLoc nhan="Khoảng ngày">
+      <NhomLoc label="Khoảng ngày">
         <DatePicker.RangePicker
           className="w-full"
           format="DD/MM/YYYY"

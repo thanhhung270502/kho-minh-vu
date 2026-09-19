@@ -2,8 +2,8 @@ import { z } from "zod";
 
 // KHÔNG dùng `z.coerce.number()`: nó để kiểu đầu vào là `unknown`, làm mọi ô
 // `InputNumber` mất kiểu `value`. Ô số của antd đã trả về number|null sẵn.
-const soKhongAm = (nhan: string) =>
-  z.number({ message: `${nhan} phải là số` }).min(0, `${nhan} không được âm`);
+const soKhongAm = (label: string) =>
+  z.number({ message: `${label} phải là số` }).min(0, `${label} không được âm`);
 
 export const sanPhamSchema = z
   .object({

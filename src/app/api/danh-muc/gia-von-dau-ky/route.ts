@@ -2,25 +2,25 @@ import ExcelJS from "exceljs";
 
 import { COT_GIA_VON, type DongGiaVon } from "@/features/danh-muc/lib/mau-gia-von";
 import { GIOI_HAN_FILE_MB } from "@/features/danh-muc/lib/mau-excel";
-import { layNguoiDungHienTai } from "@/features/xac-thuc/api/nguoi-dung-hien-tai.server";
+import { getCurrentUser } from "@/features/auth/api/current-user.server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { doChuoi, docSheetDau, doSo } from "@/shared/lib/o-excel";
-import { dienGiaiLoi } from "@/shared/lib/errors";
+import { readString, readFirstSheet, readNumber } from "@/shared/lib/excel-cell";
+import { explainError } from "@/shared/lib/errors";
 import type { Json } from "@/types/database.types";
 
 export const runtime = "nodejs";
 
-function loi(tieuDe: string, huongXuLy: string, status: number) {
-  return Response.json({ tieuDe, huongXuLy }, { status });
+function loi(title: string, action: string, status: number) {
+  return Response.json({ title, action }, { status });
 }
 
 /** Giá vốn đầu kỳ là việc một lần của quản lý, không phải việc hằng ngày. */
 async function gacQuanLy() {
-  const nd = await layNguoiDungHienTai();
+  const nd = await getCurrentUser();
   if (!nd) {
     return loi("Phiên đăng nhập đã hết hạn", "Đăng nhập lại rồi thử lần nữa.", 401);
   }
-  if (nd.vaiTro !== "quan_ly") {
+  if (nd.role !== "quan_ly") {
     return loi(
       "Chỉ quản lý đặt được giá vốn đầu kỳ",
       "Giá vốn ảnh hưởng mọi báo cáo lãi lỗ. Nhờ quản lý thao tác giúp.",
@@ -37,7 +37,7 @@ export async function GET() {
   const wb = new ExcelJS.Workbook();
   wb.creator = "Kho Minh Vũ";
   const ws = wb.addWorksheet("Giá vốn đầu kỳ");
-  ws.columns = COT_GIA_VON.map((c) => ({ header: c.tieuDe, key: c.khoa, width: c.rong }));
+  ws.columns = COT_GIA_VON.map((c) => ({ header: c.title, key: c.khoa, width: c.rong }));
   ws.getRow(1).font = { bold: true };
 
   const hd = wb.addWorksheet("Hướng dẫn");
@@ -86,17 +86,17 @@ export async function POST(request: Request) {
 
   let dong: DongGiaVon[];
   try {
-    const doc = await docSheetDau(Buffer.from(await file.arrayBuffer()));
-    if (!doc.tenCot.includes("ma_hang") || !doc.tenCot.includes("gia_von")) {
+    const doc = await readFirstSheet(Buffer.from(await file.arrayBuffer()));
+    if (!doc.headers.includes("ma_hang") || !doc.headers.includes("gia_von")) {
       return loi(
         "Không thấy hai cột bắt buộc",
         "File cần đúng hai cột: Mã hàng và Giá vốn. Tải file mẫu để đối chiếu.",
         422,
       );
     }
-    dong = doc.dong.map((d) => ({
-      ma_hang: doChuoi(d.o["ma_hang"]),
-      gia_von: doSo(d.o["gia_von"]),
+    dong = doc.rows.map((d) => ({
+      ma_hang: readString(d.cells["ma_hang"]),
+      gia_von: readNumber(d.cells["gia_von"]),
     }));
   } catch (e) {
     return loi(
@@ -114,8 +114,8 @@ export async function POST(request: Request) {
   });
 
   if (error) {
-    const dien = dienGiaiLoi(error);
-    return loi(dien.tieuDe, dien.huongXuLy, dien.loai === "khong-du-quyen" ? 403 : 500);
+    const dien = explainError(error);
+    return loi(dien.title, dien.action, dien.kind === "forbidden" ? 403 : 500);
   }
 
   return Response.json({ ketQua: data });

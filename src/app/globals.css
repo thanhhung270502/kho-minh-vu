@@ -91,10 +91,10 @@ body {
 }
 
 /* Vỏ ứng dụng không được in ra giấy: trang in phiếu chỉ có nội dung phiếu.
-   Đánh dấu bằng data-khong-in thay vì liệt kê selector — thêm thanh mới sau
+   Đánh dấu bằng data-no-print thay vì liệt kê selector — thêm thanh mới sau
    này chỉ cần gắn thuộc tính. (Lỗi UAT Phase 3 bài 9.) */
 @media print {
-  [data-khong-in] {
+  [data-no-print] {
     display: none !important;
   }
 }

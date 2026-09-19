@@ -239,8 +239,8 @@ export function RaGhiChu() {
 
       <QueryState
         query={danhSach}
-        laRong={(d) => d.dong.length === 0}
-        moTaRong={
+        isEmpty={(d) => d.dong.length === 0}
+        emptyDescription={
           boLoc.q
             ? `Không có giá trị nào khớp “${boLoc.q}”.`
             : daRa

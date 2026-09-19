@@ -4,7 +4,7 @@ import { Button } from "antd";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { BoCucDanhSach } from "@/shared/components/bo-cuc-danh-sach";
+import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
 
 import { useDanhMucPhu, useDanhSachSanPham } from "../hooks/useSanPham";
@@ -105,11 +105,11 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
 
   return (
     <>
-      <BoCucDanhSach
-        panelLoc={
+      <ListLayout
+        filterPanel={
           <PanelLocSanPham boLoc={boLoc} danhMucPhu={danhMucPhu.data} onDoi={doiBoLoc} />
         }
-        thanhCongCu={
+        toolbar={
           <ThanhCongCuSanPham
             boLoc={boLoc}
             onDoi={doiBoLoc}
@@ -133,7 +133,7 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
             }
           />
         }
-        soDieuKien={demDieuKien(boLoc)}
+        activeFilterCount={demDieuKien(boLoc)}
       >
         <AlertCanRa
           hien={boLoc.canRa}
@@ -151,8 +151,8 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
 
         <QueryState
           query={danhSach}
-          laRong={(d) => d.dong.length === 0}
-          moTaRong={
+          isEmpty={(d) => d.dong.length === 0}
+          emptyDescription={
             boLoc.q ? (
               `Không có mã khớp “${boLoc.q}”. Thử gõ ít chữ hơn hoặc bỏ dấu.`
             ) : coLoc(boLoc) ? (
@@ -173,7 +173,7 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
               dong={d.dong}
               tong={tong}
               boLoc={boLoc}
-              coChon={quyen.sua}
+              hasSelection={quyen.sua}
               chon={chon}
               onChonDoi={setChon}
               dangTai={danhSach.isFetching && !danhSach.isPending}
@@ -181,7 +181,7 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
             />
           )}
         </QueryState>
-      </BoCucDanhSach>
+      </ListLayout>
 
       <ModalsSanPham
         giaVonMo={giaVonMo}

@@ -4,7 +4,7 @@ import { Button, Descriptions, Statistic, Tabs, Tag } from "antd";
 import Link from "next/link";
 import { useState } from "react";
 
-import { LichSuSua } from "@/shared/components/lich-su-sua";
+import { AuditLog } from "@/shared/components/audit-log";
 import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
 
@@ -44,7 +44,7 @@ function taoHienGiaTri(dm: DanhMucPhu | undefined) {
   return (truong: string, v: unknown) => {
     if (typeof v !== "string" || !dm) return undefined;
 
-    const bang =
+    const table =
       truong === "nhom_hang_id"
         ? dm.nhomHang
         : truong === "dvt_id"
@@ -55,7 +55,7 @@ function taoHienGiaTri(dm: DanhMucPhu | undefined) {
               ? dm.kho
               : null;
 
-    return bang?.find((m) => m.id === v)?.ten;
+    return table?.find((m) => m.id === v)?.ten;
   };
 }
 
@@ -68,8 +68,8 @@ export function ChiTietSanPham({ id, quyen }: { id: string; quyen: QuyenChiTiet 
   return (
     <QueryState
       query={chiTiet}
-      laRong={(d) => d === null}
-      moTaRong={
+      isEmpty={(d) => d === null}
+      emptyDescription={
         <div className="flex flex-col items-center gap-3">
           <span>Không tìm thấy mã hàng này — có thể đã bị đổi mã.</span>
           <Link href="/danh-muc">
@@ -88,9 +88,9 @@ export function ChiTietSanPham({ id, quyen }: { id: string; quyen: QuyenChiTiet 
             </Link>
 
             <PageHeader
-              tieuDe={d.ma_hang}
-              moTa={d.ten_hang}
-              hanhDong={
+              title={d.ma_hang}
+              description={d.ten_hang}
+              actions={
                 quyen.sua ? (
                   <Button type="primary" onClick={() => setSuaMo(true)}>
                     Sửa
@@ -145,7 +145,7 @@ export function ChiTietSanPham({ id, quyen }: { id: string; quyen: QuyenChiTiet 
               <h3 className="mb-2 text-sm font-medium">Tồn theo kho</h3>
               <QueryState
                 query={tonTheoKho}
-                moTaRong="Chưa có tồn — chưa có chứng từ nào cho mã này."
+                emptyDescription="Chưa có tồn — chưa có chứng từ nào cho mã này."
               >
                 {(ton) => (
                   <div className="flex flex-wrap gap-6">
@@ -176,11 +176,11 @@ export function ChiTietSanPham({ id, quyen }: { id: string; quyen: QuyenChiTiet 
                         key: "lich-su",
                         label: "Lịch sử sửa",
                         children: (
-                          <LichSuSua
-                            bang="san_pham"
+                          <AuditLog
+                            table="san_pham"
                             id={id}
-                            nhanTruong={NHAN_TRUONG}
-                            hienGiaTri={taoHienGiaTri(danhMucPhu.data)}
+                            fieldLabels={NHAN_TRUONG}
+                            renderValue={taoHienGiaTri(danhMucPhu.data)}
                           />
                         ),
                       },
@@ -193,7 +193,7 @@ export function ChiTietSanPham({ id, quyen }: { id: string; quyen: QuyenChiTiet 
               id={id}
               open={suaMo}
               quyen={quyen}
-              onDong={() => setSuaMo(false)}
+              onClose={() => setSuaMo(false)}
             />
           </>
         );

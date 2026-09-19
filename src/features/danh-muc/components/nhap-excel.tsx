@@ -13,7 +13,7 @@ type TrangThai = {
   buoc: 0 | 1 | 2;
   file: File | null;
   phanHoi: PhanHoiNhap | null;
-  loi: { tieuDe: string; huongXuLy: string } | null;
+  loi: { title: string; action: string } | null;
   /** Server thấy lỗi mới lúc nạp → quay lại xem trước, chưa nạp gì. */
   doiDuLieu: boolean;
   dangGui: boolean;
@@ -24,7 +24,7 @@ type HanhDong =
   | { kieu: "dang_gui" }
   | { kieu: "xem_truoc"; phanHoi: PhanHoiNhap }
   | { kieu: "da_nap"; phanHoi: PhanHoiNhap }
-  | { kieu: "loi"; tieuDe: string; huongXuLy: string }
+  | { kieu: "loi"; title: string; action: string }
   | { kieu: "lam_lai" };
 
 const BAN_DAU: TrangThai = {
@@ -55,15 +55,15 @@ function rut(t: TrangThai, h: HanhDong): TrangThai {
     case "da_nap":
       return { ...t, buoc: 2, phanHoi: h.phanHoi, dangGui: false, loi: null, doiDuLieu: false };
     case "loi":
-      return { ...t, dangGui: false, loi: { tieuDe: h.tieuDe, huongXuLy: h.huongXuLy } };
+      return { ...t, dangGui: false, loi: { title: h.title, action: h.action } };
     case "lam_lai":
       return BAN_DAU;
   }
 }
 
-type Props = { open: boolean; onDong: () => void; onXemMoiSua: () => void };
+type Props = { open: boolean; onClose: () => void; onXemMoiSua: () => void };
 
-export function NhapExcel({ open, onDong, onXemMoiSua }: Props) {
+export function NhapExcel({ open, onClose, onXemMoiSua }: Props) {
   const queryClient = useQueryClient();
   const [t, gui] = useReducer(rut, BAN_DAU);
 
@@ -81,13 +81,13 @@ export function NhapExcel({ open, onDong, onXemMoiSua }: Props) {
       gui({ kieu: "xem_truoc", phanHoi });
     } catch (e) {
       if (e instanceof LoiNhapExcel) {
-        gui({ kieu: "loi", tieuDe: e.tieuDe, huongXuLy: e.huongXuLy });
+        gui({ kieu: "loi", title: e.title, action: e.action });
         return;
       }
       gui({
         kieu: "loi",
-        tieuDe: "Không gửi được file",
-        huongXuLy: "Kiểm tra kết nối mạng rồi bấm Kiểm tra lại.",
+        title: "Không gửi được file",
+        action: "Kiểm tra kết nối mạng rồi bấm Kiểm tra lại.",
       });
     }
   }
@@ -96,16 +96,16 @@ export function NhapExcel({ open, onDong, onXemMoiSua }: Props) {
     if (!file.name.toLowerCase().endsWith(".xlsx")) {
       gui({
         kieu: "loi",
-        tieuDe: "File không phải .xlsx",
-        huongXuLy: "Mở bằng Excel rồi Lưu thành .xlsx, sau đó chọn lại.",
+        title: "File không phải .xlsx",
+        action: "Mở bằng Excel rồi Lưu thành .xlsx, sau đó chọn lại.",
       });
       return false;
     }
     if (file.size > GIOI_HAN_FILE_MB * 1024 * 1024) {
       gui({
         kieu: "loi",
-        tieuDe: `File lớn hơn ${GIOI_HAN_FILE_MB}MB`,
-        huongXuLy: "Chia nhỏ file rồi nhập từng phần.",
+        title: `File lớn hơn ${GIOI_HAN_FILE_MB}MB`,
+        action: "Chia nhỏ file rồi nhập từng phần.",
       });
       return false;
     }
@@ -118,7 +118,7 @@ export function NhapExcel({ open, onDong, onXemMoiSua }: Props) {
   function dong() {
     if (t.dangGui) return;
     gui({ kieu: "lam_lai" });
-    onDong();
+    onClose();
   }
 
   const kq = t.phanHoi?.ketQua;
@@ -176,8 +176,8 @@ export function NhapExcel({ open, onDong, onXemMoiSua }: Props) {
           className="mb-3"
           type="error"
           showIcon
-          title={t.loi.tieuDe}
-          description={t.loi.huongXuLy}
+          title={t.loi.title}
+          description={t.loi.action}
           action={
             t.file ? (
               <Button

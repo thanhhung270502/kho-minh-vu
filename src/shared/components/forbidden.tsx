@@ -3,7 +3,7 @@
 import { Button, Result } from "antd";
 import Link from "next/link";
 
-export function KhongDuQuyen() {
+export function Forbidden() {
   return (
     <Result
       status="403"

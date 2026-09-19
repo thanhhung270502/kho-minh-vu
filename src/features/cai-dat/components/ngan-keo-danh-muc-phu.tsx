@@ -6,8 +6,8 @@ import { useEffect, useMemo } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { NganKeoForm } from "@/shared/components/ngan-keo-form";
-import { dienGiaiLoi, laLoiPostgrest, maLoi } from "@/shared/lib/errors";
+import { FormDrawer } from "@/shared/components/form-drawer";
+import { explainError, isPostgrestError, errorCode } from "@/shared/lib/errors";
 
 import {
   CAU_HINH_DANH_MUC_PHU,
@@ -45,17 +45,17 @@ const MAC_DINH: FormDanhMucPhu = {
 };
 
 type Props = {
-  bang: BangDanhMucPhu;
+  table: BangDanhMucPhu;
   muc: MucDanhMucPhu | null;
   open: boolean;
   danhSach: MucDanhMucPhu[];
-  onDong: () => void;
+  onClose: () => void;
 };
 
-export function NganKeoDanhMucPhu({ bang, muc, open, danhSach, onDong }: Props) {
+export function NganKeoDanhMucPhu({ table, muc, open, danhSach, onClose }: Props) {
   const { message } = App.useApp();
-  const cauHinh = CAU_HINH_DANH_MUC_PHU[bang];
-  const luu = useLuuDanhMucPhu(bang);
+  const cauHinh = CAU_HINH_DANH_MUC_PHU[table];
+  const luu = useLuuDanhMucPhu(table);
 
   const {
     control,
@@ -90,7 +90,7 @@ export function NganKeoDanhMucPhu({ bang, muc, open, danhSach, onDong }: Props) 
     [danhSach, muc?.id],
   );
 
-  const onLuu = handleSubmit(async (v) => {
+  const onSave = handleSubmit(async (v) => {
     const giaTri: GiaTriDanhMucPhu = { ma: v.ma, ten: v.ten };
     if (cauHinh.coCha) giaTri.parent_id = v.parent_id;
     if (cauHinh.coMau) giaTri.mau_hien_thi = v.mau_hien_thi;
@@ -99,33 +99,33 @@ export function NganKeoDanhMucPhu({ bang, muc, open, danhSach, onDong }: Props) 
 
     try {
       await luu.mutateAsync({ id: muc?.id ?? null, giaTri });
-      message.success(muc ? `Đã lưu ${cauHinh.nhan}` : `Đã thêm ${cauHinh.nhan}`);
-      onDong();
+      message.success(muc ? `Đã lưu ${cauHinh.label}` : `Đã thêm ${cauHinh.label}`);
+      onClose();
     } catch (e) {
-      if (maLoi(e) === "23505") {
+      if (errorCode(e) === "23505") {
         setError("ma", { message: "Mã này đã có. Dùng mã khác." });
         return;
       }
-      if (laLoiPostgrest(e) && e.code === "23514") {
+      if (isPostgrestError(e) && e.code === "23514") {
         setError("ma", { message: e.message });
         return;
       }
-      const loi = dienGiaiLoi(e);
-      setError("root", { message: `${loi.tieuDe}. ${loi.huongXuLy}` });
+      const loi = explainError(e);
+      setError("root", { message: `${loi.title}. ${loi.action}` });
     }
   });
 
-  const khoaMa = Boolean(muc && laMaHeThong(bang, muc.ma));
+  const khoaMa = Boolean(muc && laMaHeThong(table, muc.ma));
 
   return (
-    <NganKeoForm
+    <FormDrawer
       open={open}
-      tieuDe={`${muc ? "Sửa" : "Thêm"} ${cauHinh.nhan}`}
-      dangLuu={luu.isPending}
-      onDong={onDong}
-      onLuu={() => void onLuu()}
+      title={`${muc ? "Sửa" : "Thêm"} ${cauHinh.label}`}
+      saving={luu.isPending}
+      onClose={onClose}
+      onSave={() => void onSave()}
     >
-      <Form layout="vertical" onFinish={() => void onLuu()}>
+      <Form layout="vertical" onFinish={() => void onSave()}>
         {errors.root ? (
           <Alert className="mb-4" type="error" showIcon title={errors.root.message} />
         ) : null}
@@ -214,6 +214,6 @@ export function NganKeoDanhMucPhu({ bang, muc, open, danhSach, onDong }: Props) 
           </Form.Item>
         ) : null}
       </Form>
-    </NganKeoForm>
+    </FormDrawer>
   );
 }

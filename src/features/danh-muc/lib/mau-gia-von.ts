@@ -3,8 +3,8 @@
  * Client Component dùng được để hiện tên cột trong bảng lỗi.
  */
 export const COT_GIA_VON = [
-  { khoa: "ma_hang", tieuDe: "Mã hàng", rong: 22 },
-  { khoa: "gia_von", tieuDe: "Giá vốn", rong: 16 },
+  { khoa: "ma_hang", title: "Mã hàng", rong: 22 },
+  { khoa: "gia_von", title: "Giá vốn", rong: 16 },
 ] as const;
 
 export type DongGiaVon = { ma_hang: string | null; gia_von: number | null };

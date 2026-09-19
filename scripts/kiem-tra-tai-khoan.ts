@@ -10,46 +10,46 @@ import assert from "node:assert/strict";
 
 import {
   capNhatNguoiDungSchema,
-  doiMatKhauSchema,
+  changePasswordSchema,
   taoNguoiDungSchema,
 } from "../src/features/cai-dat/schemas/nguoi-dung.schema";
 
 const hopLe = {
-  hoTen: "Nguyễn Văn A",
-  vaiTro: "van_phong" as const,
+  fullName: "Nguyễn Văn A",
+  role: "van_phong" as const,
   khoIds: [],
-  tenDangNhap: "Ngọc Ánh",
-  matKhauTam: "matkhau123",
+  username: "Ngọc Ánh",
+  tempPassword: "matkhau123",
 };
 
 const tao = taoNguoiDungSchema.safeParse(hopLe);
 assert.ok(tao.success, "hồ sơ hợp lệ phải qua được schema");
-assert.equal(tao.data.tenDangNhap, "ngocanh", "tên đăng nhập chuẩn hóa bỏ dấu, viết thường");
+assert.equal(tao.data.username, "ngocanh", "tên đăng nhập chuẩn hóa bỏ dấu, viết thường");
 
 const thuKhoThieuKho = taoNguoiDungSchema.safeParse({
   ...hopLe,
-  vaiTro: "thu_kho",
-  tenDangNhap: "kim.chi",
+  role: "thu_kho",
+  username: "kim.chi",
 });
 assert.ok(!thuKhoThieuKho.success, "thủ kho không kho phải bị chặn");
 assert.equal(thuKhoThieuKho.error.issues[0]?.path[0], "khoIds");
 
-const matKhauChiSo = taoNguoiDungSchema.safeParse({ ...hopLe, matKhauTam: "12345678" });
+const matKhauChiSo = taoNguoiDungSchema.safeParse({ ...hopLe, tempPassword: "12345678" });
 assert.ok(!matKhauChiSo.success, "mật khẩu chỉ có số phải bị chặn");
 
-const matKhauNgan = taoNguoiDungSchema.safeParse({ ...hopLe, matKhauTam: "abc123" });
+const matKhauNgan = taoNguoiDungSchema.safeParse({ ...hopLe, tempPassword: "abc123" });
 assert.ok(!matKhauNgan.success, "mật khẩu dưới 8 ký tự phải bị chặn");
 
 const capNhat = capNhatNguoiDungSchema.safeParse({
   id: "11111111-1111-4111-8111-111111111111",
-  hoTen: "Nguyễn Văn A",
-  vaiTro: "thu_kho",
+  fullName: "Nguyễn Văn A",
+  role: "thu_kho",
   khoIds: ["22222222-2222-4222-8222-222222222222"],
 });
 assert.ok(capNhat.success, "cập nhật thủ kho có kho phải qua được");
 
-const lechNhau = doiMatKhauSchema.safeParse({ matKhauMoi: "matkhau123", nhapLai: "matkhau124" });
+const lechNhau = changePasswordSchema.safeParse({ newPassword: "matkhau123", confirmPassword: "matkhau124" });
 assert.ok(!lechNhau.success, "hai mật khẩu khác nhau phải bị chặn");
-assert.equal(lechNhau.error.issues[0]?.path[0], "nhapLai");
+assert.equal(lechNhau.error.issues[0]?.path[0], "confirmPassword");
 
 console.log("✓ schema tài khoản: tất cả assert đạt");

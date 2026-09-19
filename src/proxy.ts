@@ -1,15 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { updateSession } from "@/lib/supabase/middleware";
-import { tiepTucAnToan } from "@/shared/lib/tiep-tuc";
+import { safeRedirectPath } from "@/shared/lib/redirect-path";
 
-const DUONG_CONG_KHAI = ["/dang-nhap"];
+const PUBLIC_PATHS = ["/dang-nhap"];
 
 /** Chép cookie phiên vừa làm mới sang response redirect, không thì phiên vừa refresh sẽ mất. */
-function chuyenHuong(url: URL, response: NextResponse): NextResponse {
-  const r = NextResponse.redirect(url);
-  response.cookies.getAll().forEach((c) => r.cookies.set(c));
-  return r;
+function redirectWithCookies(url: URL, response: NextResponse): NextResponse {
+  const redirect = NextResponse.redirect(url);
+  response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+  return redirect;
 }
 
 /**
@@ -19,28 +19,29 @@ function chuyenHuong(url: URL, response: NextResponse): NextResponse {
 export async function proxy(request: NextRequest) {
   const { response, user } = await updateSession(request);
   const { pathname, search } = request.nextUrl;
-  const laCongKhai = DUONG_CONG_KHAI.some(
-    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  const isPublic = PUBLIC_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
   );
 
   if (!user && pathname.startsWith("/api/")) {
     return NextResponse.json(
-      { loai: "het-phien", thongBao: "Phiên đăng nhập đã hết hạn" },
+      { kind: "session-expired", message: "Phiên đăng nhập đã hết hạn" },
       { status: 401 },
     );
   }
 
-  if (!user && !laCongKhai) {
+  if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/dang-nhap";
     url.search = "";
-    url.searchParams.set("tiep_tuc", tiepTucAnToan(`${pathname}${search}`));
-    return chuyenHuong(url, response);
+    // Tên tham số `tiep_tuc` giữ tiếng Việt: nó hiện trên thanh địa chỉ.
+    url.searchParams.set("tiep_tuc", safeRedirectPath(`${pathname}${search}`));
+    return redirectWithCookies(url, response);
   }
 
   if (user && pathname === "/dang-nhap") {
-    const dich = tiepTucAnToan(request.nextUrl.searchParams.get("tiep_tuc"));
-    return chuyenHuong(new URL(dich, request.url), response);
+    const target = safeRedirectPath(request.nextUrl.searchParams.get("tiep_tuc"));
+    return redirectWithCookies(new URL(target, request.url), response);
   }
 
   return response;

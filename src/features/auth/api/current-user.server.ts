@@ -3,18 +3,18 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { coQuyen, type Quyen, type VaiTro } from "@/shared/lib/quyen";
+import { hasPermission, type Permission, type Role } from "@/shared/lib/permissions";
 
-export type NguoiDungHienTai = {
+export type CurrentUser = {
   id: string;
-  hoTen: string;
-  vaiTro: VaiTro;
+  fullName: string;
+  role: Role;
   /** Mật khẩu hiện tại là mật khẩu tạm do quản lý cấp — phải đổi trước khi dùng app (D-03). */
-  phaiDoiMatKhau: boolean;
+  mustChangePassword: boolean;
 };
 
 /** Đọc vai trò từ BẢNG (không từ claim) để giao diện khớp RLS ngay sau khi quản lý đổi quyền. */
-export async function layNguoiDungHienTai(): Promise<NguoiDungHienTai | null> {
+export async function getCurrentUser(): Promise<CurrentUser | null> {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -33,17 +33,17 @@ export async function layNguoiDungHienTai(): Promise<NguoiDungHienTai | null> {
 
   return {
     id: data.id,
-    hoTen: data.ho_ten,
-    vaiTro: data.vai_tro,
-    phaiDoiMatKhau: data.phai_doi_mat_khau,
+    fullName: data.ho_ten,
+    role: data.vai_tro,
+    mustChangePassword: data.phai_doi_mat_khau,
   };
 }
 
-export async function yeuCauQuyen(quyen: Quyen): Promise<NguoiDungHienTai> {
-  const nd = await layNguoiDungHienTai();
+export async function requirePermission(permission: Permission): Promise<CurrentUser> {
+  const user = await getCurrentUser();
 
-  if (!nd) redirect("/dang-nhap");
-  if (!coQuyen(nd.vaiTro, quyen)) redirect("/khong-du-quyen");
+  if (!user) redirect("/dang-nhap");
+  if (!hasPermission(user.role, permission)) redirect("/khong-du-quyen");
 
-  return nd;
+  return user;
 }

@@ -5,7 +5,7 @@ import type { ColumnsType } from "antd/es/table";
 import { useMemo, useState } from "react";
 
 import { QueryState } from "@/shared/components/query-state";
-import { dienGiaiLoi, laLoiPostgrest, maLoi } from "@/shared/lib/errors";
+import { explainError, isPostgrestError, errorCode } from "@/shared/lib/errors";
 
 import {
   CAU_HINH_DANH_MUC_PHU,
@@ -16,11 +16,11 @@ import {
 import { useDanhMucPhu, useXoaDanhMucPhu } from "../hooks/useDanhMucPhu";
 import { NganKeoDanhMucPhu } from "./ngan-keo-danh-muc-phu";
 
-export function DanhMucPhu({ bang }: { bang: BangDanhMucPhu }) {
+export function DanhMucPhu({ table }: { table: BangDanhMucPhu }) {
   const { message } = App.useApp();
-  const cauHinh = CAU_HINH_DANH_MUC_PHU[bang];
-  const danhSach = useDanhMucPhu(bang);
-  const xoa = useXoaDanhMucPhu(bang);
+  const cauHinh = CAU_HINH_DANH_MUC_PHU[table];
+  const danhSach = useDanhMucPhu(table);
+  const xoa = useXoaDanhMucPhu(table);
   const [nganKeo, setNganKeo] = useState<{ mo: boolean; muc: MucDanhMucPhu | null }>({
     mo: false,
     muc: null,
@@ -35,22 +35,22 @@ export function DanhMucPhu({ bang }: { bang: BangDanhMucPhu }) {
   async function xoaMuc(muc: MucDanhMucPhu) {
     try {
       await xoa.mutateAsync(muc.id);
-      message.success(`Đã xóa ${cauHinh.nhan} ${muc.ma}`);
+      message.success(`Đã xóa ${cauHinh.label} ${muc.ma}`);
     } catch (e) {
-      if (maLoi(e) === "23503") {
+      if (errorCode(e) === "23503") {
         message.error(
-          `Đang có mã hàng dùng ${cauHinh.nhan} này — đổi các mã đó sang ${cauHinh.nhan} khác trước khi xóa.`,
+          `Đang có mã hàng dùng ${cauHinh.label} này — đổi các mã đó sang ${cauHinh.label} khác trước khi xóa.`,
         );
         return;
       }
       // 23514 là mã hệ thống bị trigger 0040 chặn — câu tiếng Việt do chính
       // migration soạn, hiện nguyên văn.
-      if (laLoiPostgrest(e) && e.code === "23514") {
+      if (isPostgrestError(e) && e.code === "23514") {
         message.error(e.message);
         return;
       }
-      const loi = dienGiaiLoi(e);
-      message.error(`${loi.tieuDe}. ${loi.huongXuLy}`);
+      const loi = explainError(e);
+      message.error(`${loi.title}. ${loi.action}`);
     }
   }
 
@@ -62,7 +62,7 @@ export function DanhMucPhu({ bang }: { bang: BangDanhMucPhu }) {
       render: (ma: string) => (
         <Space size={6}>
           <span className="font-medium">{ma}</span>
-          {laMaHeThong(bang, ma) ? <Tag color="gold">Hệ thống</Tag> : null}
+          {laMaHeThong(table, ma) ? <Tag color="gold">Hệ thống</Tag> : null}
         </Space>
       ),
     },
@@ -118,9 +118,9 @@ export function DanhMucPhu({ bang }: { bang: BangDanhMucPhu }) {
           >
             Sửa
           </Button>
-          {cauHinh.xoaDuoc && !laMaHeThong(bang, d.ma) ? (
+          {cauHinh.xoaDuoc && !laMaHeThong(table, d.ma) ? (
             <Popconfirm
-              title={`Xóa ${cauHinh.nhan} “${d.ten}”?`}
+              title={`Xóa ${cauHinh.label} “${d.ten}”?`}
               description="Không khôi phục được. Mã hàng đang dùng sẽ chặn xóa."
               okText="Xóa"
               okButtonProps={{ danger: true, loading: xoa.isPending }}
@@ -141,13 +141,13 @@ export function DanhMucPhu({ bang }: { bang: BangDanhMucPhu }) {
     <>
       <div className="mb-3 flex justify-end">
         <Button type="primary" onClick={() => setNganKeo({ mo: true, muc: null })}>
-          Thêm {cauHinh.nhan}
+          Thêm {cauHinh.label}
         </Button>
       </div>
 
       <QueryState
         query={danhSach}
-        moTaRong={`Chưa có ${cauHinh.nhan} nào. Bấm “Thêm ${cauHinh.nhan}” để tạo.`}
+        emptyDescription={`Chưa có ${cauHinh.label} nào. Bấm “Thêm ${cauHinh.label}” để tạo.`}
       >
         {(d) => (
           <div className="overflow-x-auto">
@@ -165,11 +165,11 @@ export function DanhMucPhu({ bang }: { bang: BangDanhMucPhu }) {
       </QueryState>
 
       <NganKeoDanhMucPhu
-        bang={bang}
+        table={table}
         muc={nganKeo.muc}
         open={nganKeo.mo}
         danhSach={dong}
-        onDong={() => setNganKeo((s) => ({ ...s, mo: false }))}
+        onClose={() => setNganKeo((s) => ({ ...s, mo: false }))}
       />
     </>
   );

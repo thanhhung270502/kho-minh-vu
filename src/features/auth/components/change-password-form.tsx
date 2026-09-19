@@ -6,13 +6,13 @@ import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 
 import {
-  doiMatKhauSchema,
-  type DoiMatKhauInput,
+  changePasswordSchema,
+  type ChangePasswordInput,
 } from "@/features/cai-dat/schemas/nguoi-dung.schema";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { dienGiaiLoi } from "@/shared/lib/errors";
+import { explainError } from "@/shared/lib/errors";
 
-export function FormDoiMatKhau() {
+export function ChangePasswordForm() {
   const router = useRouter();
   const { message } = App.useApp();
   const {
@@ -20,24 +20,24 @@ export function FormDoiMatKhau() {
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<DoiMatKhauInput>({
-    resolver: zodResolver(doiMatKhauSchema),
-    defaultValues: { matKhauMoi: "", nhapLai: "" },
+  } = useForm<ChangePasswordInput>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: { newPassword: "", confirmPassword: "" },
   });
 
-  const onSubmit = async (v: DoiMatKhauInput) => {
+  const onSubmit = async (v: ChangePasswordInput) => {
     const sb = getSupabaseBrowserClient();
 
-    const { error } = await sb.auth.updateUser({ password: v.matKhauMoi });
+    const { error } = await sb.auth.updateUser({ password: v.newPassword });
     if (error) {
-      setError("matKhauMoi", { message: dienGiaiLoi(error).tieuDe });
+      setError("newPassword", { message: explainError(error).title });
       return;
     }
 
     // Gỡ cờ ở bảng: RLS không cho người dùng tự sửa hồ sơ nên phải qua RPC.
-    const { error: loiCo } = await sb.rpc("da_doi_mat_khau");
-    if (loiCo) {
-      setError("root", { message: dienGiaiLoi(loiCo).huongXuLy });
+    const { error: flagError } = await sb.rpc("da_doi_mat_khau");
+    if (flagError) {
+      setError("root", { message: explainError(flagError).action });
       return;
     }
 
@@ -50,11 +50,11 @@ export function FormDoiMatKhau() {
     <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
       <Form.Item
         label="Mật khẩu mới"
-        validateStatus={errors.matKhauMoi ? "error" : undefined}
-        help={errors.matKhauMoi?.message}
+        validateStatus={errors.newPassword ? "error" : undefined}
+        help={errors.newPassword?.message}
       >
         <Controller
-          name="matKhauMoi"
+          name="newPassword"
           control={control}
           render={({ field }) => (
             <Input.Password {...field} autoComplete="new-password" autoFocus size="large" />
@@ -64,11 +64,11 @@ export function FormDoiMatKhau() {
 
       <Form.Item
         label="Nhập lại mật khẩu mới"
-        validateStatus={errors.nhapLai ? "error" : undefined}
-        help={errors.nhapLai?.message}
+        validateStatus={errors.confirmPassword ? "error" : undefined}
+        help={errors.confirmPassword?.message}
       >
         <Controller
-          name="nhapLai"
+          name="confirmPassword"
           control={control}
           render={({ field }) => (
             <Input.Password {...field} autoComplete="new-password" size="large" />

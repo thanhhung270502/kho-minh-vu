@@ -3,7 +3,7 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 
 import { env } from "@/lib/env";
-import { layEnvServer } from "@/lib/env-server";
+import { getServerEnv } from "@/lib/env-server";
 import type { Database } from "@/types/database.types";
 
 /**
@@ -20,7 +20,7 @@ import type { Database } from "@/types/database.types";
 export function createSupabaseAdminClient() {
   return createClient<Database>(
     env.SUPABASE_URL,
-    layEnvServer().SUPABASE_SECRET_KEY,
+    getServerEnv().SUPABASE_SECRET_KEY,
     { auth: { autoRefreshToken: false, persistSession: false } },
   );
 }

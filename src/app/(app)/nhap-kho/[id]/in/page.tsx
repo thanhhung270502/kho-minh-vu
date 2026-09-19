@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { TrangInPhieu } from "@/features/nhap-kho/components/trang-in-phieu";
-import { yeuCauQuyen } from "@/features/xac-thuc/api/nguoi-dung-hien-tai.server";
+import { requirePermission } from "@/features/auth/api/current-user.server";
 
 export const metadata: Metadata = { title: "In phiếu nhập" };
 
@@ -16,7 +16,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const { id } = await params;
   if (!UUID.test(id)) notFound();
 
-  await yeuCauQuyen("xem_danh_muc");
+  await requirePermission("view-catalog");
 
   return <TrangInPhieu id={id} />;
 }

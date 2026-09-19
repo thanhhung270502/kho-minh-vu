@@ -1,8 +1,8 @@
 /**
  * Ma trận quyền route × 4 vai trò, kiểm bằng HTTP thật trên phiên thật.
  *
- * Vì sao cần: `src/shared/lib/quyen.ts` chỉ ẩn/hiện nút. Thứ chặn thật là
- * `yeuCauQuyen()` trong Server Component và `proxy.ts`. Gõ tay URL là cách người
+ * Vì sao cần: `src/shared/lib/permissions.ts` chỉ ẩn/hiện nút. Thứ chặn thật là
+ * `requirePermission()` trong Server Component và `proxy.ts`. Gõ tay URL là cách người
  * dùng (và người tò mò) vượt giao diện — script này gõ hộ, cho cả 4 vai trò.
  *
  * Chạy: `npm run dev` ở một cửa sổ, rồi `npx tsx scripts/kiem-tra-quyen-route.ts`.
@@ -47,7 +47,7 @@ const MA_TRAN: Dong[] = [
   { route: "/cai-dat/so-chung-tu", ky_vong: { quanly: "200", vanphong: "quyen", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/api/danh-muc/mau-excel", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "401" } },
   // Mở /dang-nhap khi đã đăng nhập phải quay về trang gốc, và `tiep_tuc` trỏ ra
-  // ngoài miền thì bị vứt (tiepTucAnToan) chứ không được chuyển hướng theo.
+  // ngoài miền thì bị vứt (safeRedirectPath) chứ không được chuyển hướng theo.
   { route: "/dang-nhap?tiep_tuc=//evil.com", ky_vong: { quanly: "goc", vanphong: "goc", thukho1: "goc", chixem: "goc", khach: "200" } },
 ];
 
@@ -171,12 +171,12 @@ async function main() {
     console.warn("⚠ chưa có phiếu nhập nào — bỏ qua 2 route chi tiết");
   }
 
-  const vaiTro = Object.keys(cookie) as VaiTroTest[];
+  const role = Object.keys(cookie) as VaiTroTest[];
   const lech: string[] = [];
   let tong = 0;
 
   for (const dong of MA_TRAN) {
-    for (const vt of vaiTro) {
+    for (const vt of role) {
       tong++;
       const thuc = await doMot(dong.route, cookie[vt]);
       const mong = dong.ky_vong[vt];

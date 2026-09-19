@@ -4,9 +4,9 @@
  */
 import assert from "node:assert/strict";
 
-import { boDau, chuanHoaTenDangNhap, tenDangNhapThanhEmail } from "../src/shared/lib/chuan-hoa";
-import { coQuyen } from "../src/shared/lib/quyen";
-import { tiepTucAnToan } from "../src/shared/lib/tiep-tuc";
+import { removeDiacritics, normalizeUsername, usernameToEmail } from "../src/shared/lib/text";
+import { hasPermission } from "../src/shared/lib/permissions";
+import { safeRedirectPath } from "../src/shared/lib/redirect-path";
 import { goiYTenKhach, tachSoDienThoai } from "../src/features/doi-tac/lib/ghi-chu";
 import { taoCsvLoi, tenFileLoi } from "../src/features/danh-muc/lib/file-loi";
 import {
@@ -25,16 +25,16 @@ import {
   type BoLocSanPham,
 } from "../src/features/danh-muc/schemas/bo-loc.schema";
 
-assert.equal(boDau("Đặng Thị Ngọc"), "Dang Thi Ngoc");
-assert.equal(chuanHoaTenDangNhap("  Kim.Chi "), "kim.chi");
-assert.equal(chuanHoaTenDangNhap("Ngọc Ánh"), "ngocanh");
-assert.equal(tenDangNhapThanhEmail("thukho1"), "thukho1@khominhvu.local");
+assert.equal(removeDiacritics("Đặng Thị Ngọc"), "Dang Thi Ngoc");
+assert.equal(normalizeUsername("  Kim.Chi "), "kim.chi");
+assert.equal(normalizeUsername("Ngọc Ánh"), "ngocanh");
+assert.equal(usernameToEmail("thukho1"), "thukho1@khominhvu.local");
 assert.equal(
-  tenDangNhapThanhEmail("thukho1@khominhvu.local"),
+  usernameToEmail("thukho1@khominhvu.local"),
   "thukho1@khominhvu.local",
 );
 
-assert.equal(tiepTucAnToan("/danh-muc?nhom=a"), "/danh-muc?nhom=a");
+assert.equal(safeRedirectPath("/danh-muc?nhom=a"), "/danh-muc?nhom=a");
 for (const xau of [
   null,
   "",
@@ -45,16 +45,16 @@ for (const xau of [
   "/x://y",
   "/dang-nhap",
 ]) {
-  assert.equal(tiepTucAnToan(xau), "/");
+  assert.equal(safeRedirectPath(xau), "/");
 }
 
-assert.equal(coQuyen("thu_kho", "xem_danh_muc"), true);
-assert.equal(coQuyen("thu_kho", "sua_danh_muc"), false);
-assert.equal(coQuyen("van_phong", "xem_gia_von"), true);
-assert.equal(coQuyen("van_phong", "sua_gia_ban"), false);
-assert.equal(coQuyen("van_phong", "cai_dat_danh_muc_phu"), true);
-assert.equal(coQuyen("van_phong", "cai_dat_nguoi_dung"), false);
-assert.equal(coQuyen("chi_xem", "xem_gia_von"), false);
+assert.equal(hasPermission("thu_kho", "view-catalog"), true);
+assert.equal(hasPermission("thu_kho", "edit-catalog"), false);
+assert.equal(hasPermission("van_phong", "view-cost"), true);
+assert.equal(hasPermission("van_phong", "edit-sale-price"), false);
+assert.equal(hasPermission("van_phong", "manage-lookups"), true);
+assert.equal(hasPermission("van_phong", "manage-users"), false);
+assert.equal(hasPermission("chi_xem", "view-cost"), false);
 
 const boLocMau: BoLocSanPham = {
   q: "op po",

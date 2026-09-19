@@ -3,7 +3,7 @@
 import { Alert } from "antd";
 
 /** antd chỉ chạy trong Client Component (bẫy #1 CLAUDE.md). */
-export function ThongBaoMatKhauTam() {
+export function TempPasswordNotice() {
   return (
     <Alert
       className="mb-4"

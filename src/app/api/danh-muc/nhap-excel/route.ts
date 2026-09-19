@@ -1,24 +1,24 @@
-import { layNguoiDungHienTai } from "@/features/xac-thuc/api/nguoi-dung-hien-tai.server";
+import { getCurrentUser } from "@/features/auth/api/current-user.server";
 import { docFileDanhMuc } from "@/features/danh-muc/lib/doc-file-danh-muc.server";
 import { GIOI_HAN_FILE_MB } from "@/features/danh-muc/lib/mau-excel";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { dienGiaiLoi } from "@/shared/lib/errors";
-import { coQuyen } from "@/shared/lib/quyen";
+import { explainError } from "@/shared/lib/errors";
+import { hasPermission } from "@/shared/lib/permissions";
 import type { Json } from "@/types/database.types";
 
 /** exceljs cần Node (stream, zip) — Edge runtime không chạy được. */
 export const runtime = "nodejs";
 
-function loi(tieuDe: string, huongXuLy: string, status: number) {
-  return Response.json({ tieuDe, huongXuLy }, { status });
+function loi(title: string, action: string, status: number) {
+  return Response.json({ title, action }, { status });
 }
 
 export async function POST(request: Request) {
-  const nd = await layNguoiDungHienTai();
+  const nd = await getCurrentUser();
   if (!nd) {
     return loi("Phiên đăng nhập đã hết hạn", "Đăng nhập lại rồi tải file lên lần nữa.", 401);
   }
-  if (!coQuyen(nd.vaiTro, "sua_danh_muc")) {
+  if (!hasPermission(nd.role, "edit-catalog")) {
     return loi(
       "Tài khoản không có quyền nhập danh mục",
       "Chỉ quản lý và văn phòng nhập được danh mục. Liên hệ quản lý nếu bạn cần quyền.",
@@ -68,10 +68,10 @@ export async function POST(request: Request) {
   });
 
   if (error) {
-    const dien = dienGiaiLoi(error);
+    const dien = explainError(error);
     const status =
-      dien.loai === "khong-du-quyen" ? 403 : dien.loai === "du-lieu-khong-hop-le" ? 422 : 500;
-    return loi(dien.tieuDe, dien.huongXuLy, status);
+      dien.kind === "forbidden" ? 403 : dien.kind === "invalid-data" ? 422 : 500;
+    return loi(dien.title, dien.action, status);
   }
 
   return Response.json({ dinhDang: doc.dinhDang, ketQua: data });

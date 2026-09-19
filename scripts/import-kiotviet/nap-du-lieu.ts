@@ -2,8 +2,8 @@
  * Ghi danh mục vào database qua RPC `nap_danh_muc_kiotviet` (một transaction).
  */
 import { taoAdminClient } from "../_supabase-admin";
-import { doChuoi, doNgayExcel, doSo, type DongTho } from "./doc-file";
-import { chuanHoa, tachDvtCongDoan } from "./tach-dvt-cong-doan";
+import { readString, readExcelDate, readNumber, type RawRow } from "./doc-file";
+import { normalizeCode, splitUnitStage } from "./tach-dvt-cong-doan";
 import type { DoiTac, SanPham } from "./kiem-tra";
 
 export type DauVaoNap = {
@@ -32,7 +32,7 @@ export type KetQuaNap = {
  * cây nhóm (parent_id) là việc làm tay ở màn Cài đặt sau.
  */
 export function taoMaNhomHang(ten: string): string {
-  return chuanHoa(ten).replace(/[^A-Z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 60) || "KHONG_TEN";
+  return normalizeCode(ten).replace(/[^A-Z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 60) || "KHONG_TEN";
 }
 
 export function dungNhomHang(sanPham: DauVaoNap["sanPham"]) {
@@ -81,15 +81,15 @@ export async function napDuLieu(dauVao: DauVaoNap): Promise<KetQuaNap & { dungDo
       ghi_chu: d.duLieu.ghi_chu,
     })),
     san_pham: dauVao.sanPham.map((s) => {
-      const tach = tachDvtCongDoan(s.duLieu.dvt_goc);
+      const tach = splitUnitStage(s.duLieu.dvt_goc);
       const nhom = s.duLieu.ten_nhom_hang ? theoTen.get(s.duLieu.ten_nhom_hang) : undefined;
       return {
         ma_hang: s.duLieu.ma_hang,
         ten_hang: s.duLieu.ten_hang,
         barcode: null,
         ma_nhom_hang: nhom?.ma ?? null,
-        ma_dvt: tach.maDvt,
-        ma_cong_doan: tach.maCongDoan,
+        ma_dvt: tach.unitCode,
+        ma_cong_doan: tach.stageCode,
         // Số THẬT trong file, không tự suy từ ĐVT. File ghi 1 cho cả 148 mã
         // CẶP; đặt 2 theo phỏng đoán sẽ đổi âm thầm cách tính tồn.
         quy_doi: s.duLieu.quy_doi,
@@ -117,7 +117,7 @@ export async function napDuLieu(dauVao: DauVaoNap): Promise<KetQuaNap & { dungDo
 /** Làm phẳng giá trị ô để jsonb gọn và đọc được, không lẫn object richText. */
 function lamPhang(o: Record<string, unknown>): Record<string, string | null> {
   const ra: Record<string, string | null> = {};
-  for (const [k, v] of Object.entries(o)) ra[k] = doChuoi(v);
+  for (const [k, v] of Object.entries(o)) ra[k] = readString(v);
   return ra;
 }
 
@@ -129,7 +129,7 @@ function lamPhang(o: Record<string, unknown>): Record<string, string | null> {
  * chụp một lần của file export. Không nằm trong transaction — lỗi giữa chừng thì
  * chạy lại là đủ, vì bước xoá đầu tiên đưa bảng về rỗng.
  */
-export async function napLuuTruNhap(dong: DongTho[]): Promise<number> {
+export async function napLuuTruNhap(dong: RawRow[]): Promise<number> {
   const supabase = taoAdminClient();
   const { error: loiXoa } = await supabase
     .from("luu_tru_nhap_kiotviet")
@@ -138,21 +138,21 @@ export async function napLuuTruNhap(dong: DongTho[]): Promise<number> {
   if (loiXoa) throw loiXoa;
 
   const hang = dong.map((d) => ({
-    ma_phieu: doChuoi(d.o["ma_nhap_hang"]),
-    ngay: doNgayExcel(d.o["thoi_gian"]),
-    nha_cung_cap: [doChuoi(d.o["ma_nha_cung_cap"]), doChuoi(d.o["ten_nha_cung_cap"])].filter(Boolean).join(" "),
-    ma_hang: doChuoi(d.o["ma_hang"]),
-    ten_hang: doChuoi(d.o["ten_hang"]),
-    so_luong: doSo(d.o["so_luong"]),
+    ma_phieu: readString(d.cells["ma_nhap_hang"]),
+    ngay: readExcelDate(d.cells["thoi_gian"]),
+    nha_cung_cap: [readString(d.cells["ma_nha_cung_cap"]), readString(d.cells["ten_nha_cung_cap"])].filter(Boolean).join(" "),
+    ma_hang: readString(d.cells["ma_hang"]),
+    ten_hang: readString(d.cells["ten_hang"]),
+    so_luong: readNumber(d.cells["so_luong"]),
     don_gia: null, // file chi tiết nhập hàng KHÔNG có cột đơn giá
     thanh_tien: null,
-    ghi_chu: doChuoi(d.o["ghi_chu"]),
-    du_lieu_goc: lamPhang(d.o),
+    ghi_chu: readString(d.cells["ghi_chu"]),
+    du_lieu_goc: lamPhang(d.cells),
   }));
   return chenTheoLo("luu_tru_nhap_kiotviet", hang);
 }
 
-export async function napLuuTruHoaDon(dong: DongTho[]): Promise<number> {
+export async function napLuuTruHoaDon(dong: RawRow[]): Promise<number> {
   const supabase = taoAdminClient();
   const { error: loiXoa } = await supabase
     .from("luu_tru_hoa_don_kiotviet")
@@ -161,24 +161,24 @@ export async function napLuuTruHoaDon(dong: DongTho[]): Promise<number> {
   if (loiXoa) throw loiXoa;
 
   const hang = dong.map((d) => ({
-    ma_hoa_don: doChuoi(d.o["ma_hoa_don"]),
-    ngay: doNgayExcel(d.o["thoi_gian"]),
-    khach_hang: doChuoi(d.o["ten_khach_hang"]),
-    ma_hang: doChuoi(d.o["ma_hang"]),
-    ten_hang: doChuoi(d.o["ten_hang"]),
-    so_luong: doSo(d.o["so_luong"]),
-    don_gia: doSo(d.o["don_gia"]),
-    thanh_tien: doSo(d.o["thanh_tien"]),
+    ma_hoa_don: readString(d.cells["ma_hoa_don"]),
+    ngay: readExcelDate(d.cells["thoi_gian"]),
+    khach_hang: readString(d.cells["ten_khach_hang"]),
+    ma_hang: readString(d.cells["ma_hang"]),
+    ten_hang: readString(d.cells["ten_hang"]),
+    so_luong: readNumber(d.cells["so_luong"]),
+    don_gia: readNumber(d.cells["don_gia"]),
+    thanh_tien: readNumber(d.cells["thanh_tien"]),
     // Tên khách hàng THẬT nằm ở đây (QUỲNH, NGỌC, TỐT...). Phase 2 (DLIEU-04)
     // quét cột này để dựng danh sách khách hàng.
-    ghi_chu: doChuoi(d.o["ghi_chu"]),
-    du_lieu_goc: lamPhang(d.o),
+    ghi_chu: readString(d.cells["ghi_chu"]),
+    du_lieu_goc: lamPhang(d.cells),
   }));
   return chenTheoLo("luu_tru_hoa_don_kiotviet", hang);
 }
 
 async function chenTheoLo(
-  bang: "luu_tru_nhap_kiotviet" | "luu_tru_hoa_don_kiotviet",
+  table: "luu_tru_nhap_kiotviet" | "luu_tru_hoa_don_kiotviet",
   hang: Record<string, unknown>[],
 ): Promise<number> {
   const supabase = taoAdminClient();
@@ -186,7 +186,7 @@ async function chenTheoLo(
   let tong = 0;
   for (let i = 0; i < hang.length; i += LO) {
     const lo = hang.slice(i, i + LO);
-    const { error } = await supabase.from(bang).insert(lo as never);
+    const { error } = await supabase.from(table).insert(lo as never);
     if (error) throw error;
     tong += lo.length;
   }

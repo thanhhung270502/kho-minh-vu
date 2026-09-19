@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { LichSuSua } from "@/shared/components/lich-su-sua";
+import { AuditLog } from "@/shared/components/audit-log";
 import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
 
@@ -66,8 +66,8 @@ export function ChiTietDoiTac({
   return (
     <QueryState
       query={chiTiet}
-      laRong={(d) => d === null}
-      moTaRong={
+      isEmpty={(d) => d === null}
+      emptyDescription={
         <div className="flex flex-col items-center gap-3">
           <span>Không tìm thấy đối tác này.</span>
           <Link href="/doi-tac">
@@ -86,15 +86,15 @@ export function ChiTietDoiTac({
             </Link>
 
             <PageHeader
-              tieuDe={d.ten}
-              moTa={
+              title={d.ten}
+              description={
                 <span className="flex items-center gap-2">
                   <Tag color={MAU_LOAI_DOI_TAC[d.loai]}>{NHAN_LOAI_DOI_TAC[d.loai]}</Tag>
                   <span className="font-mono">{d.ma}</span>
                   {d.dang_hoat_dong ? null : <Tag>Ngừng hoạt động</Tag>}
                 </span>
               }
-              hanhDong={
+              actions={
                 quyen.sua ? (
                   <Button type="primary" onClick={() => setSuaMo(true)}>
                     Sửa
@@ -152,7 +152,7 @@ export function ChiTietDoiTac({
                         key: "lich-su",
                         label: "Lịch sử sửa",
                         children: (
-                          <LichSuSua bang="doi_tac" id={id} nhanTruong={NHAN_TRUONG} />
+                          <AuditLog table="doi_tac" id={id} fieldLabels={NHAN_TRUONG} />
                         ),
                       },
                     ]
@@ -160,7 +160,7 @@ export function ChiTietDoiTac({
               ]}
             />
 
-            <NganKeoDoiTac id={id} open={suaMo} onDong={() => setSuaMo(false)} />
+            <NganKeoDoiTac id={id} open={suaMo} onClose={() => setSuaMo(false)} />
           </>
         );
       }}

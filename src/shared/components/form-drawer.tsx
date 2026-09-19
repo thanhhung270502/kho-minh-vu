@@ -3,14 +3,14 @@
 import { Button, Drawer, Grid, Space } from "antd";
 import type { ReactNode } from "react";
 
-type NganKeoFormProps = {
+type FormDrawerProps = {
   open: boolean;
-  tieuDe: string;
-  phuDe?: ReactNode;
-  dangLuu: boolean;
-  onDong: () => void;
-  onLuu: () => void;
-  nhanLuu?: string;
+  title: string;
+  extra?: ReactNode;
+  saving: boolean;
+  onClose: () => void;
+  onSave: () => void;
+  saveLabel?: string;
   children: ReactNode;
 };
 
@@ -21,39 +21,39 @@ type NganKeoFormProps = {
  * antd v6 đổi `width` thành `size` (nhận cả số px) và `maskClosable` thành
  * `mask.closable` — đừng chép mẫu v5.
  */
-export function NganKeoForm({
+export function FormDrawer({
   open,
-  tieuDe,
-  phuDe,
-  dangLuu,
-  onDong,
-  onLuu,
-  nhanLuu = "Lưu",
+  title,
+  extra,
+  saving,
+  onClose,
+  onSave,
+  saveLabel = "Lưu",
   children,
-}: NganKeoFormProps) {
-  const manHinh = Grid.useBreakpoint();
-  const toanManHinh = !manHinh.sm;
+}: FormDrawerProps) {
+  const screens = Grid.useBreakpoint();
+  const fullScreen = !screens.sm;
 
   return (
     <Drawer
       open={open}
-      onClose={onDong}
-      title={tieuDe}
+      onClose={onClose}
+      title={title}
       placement="right"
-      size={toanManHinh ? "100%" : 560}
+      size={fullScreen ? "100%" : 560}
       destroyOnHidden
       // Đang lưu thì không cho đóng: đóng giữa chừng làm người dùng tưởng đã hủy.
-      closable={!dangLuu}
-      keyboard={!dangLuu}
-      mask={{ closable: !dangLuu }}
-      extra={phuDe}
+      closable={!saving}
+      keyboard={!saving}
+      mask={{ closable: !saving }}
+      extra={extra}
       footer={
         <Space className="flex justify-end">
-          <Button onClick={onDong} disabled={dangLuu}>
+          <Button onClick={onClose} disabled={saving}>
             Hủy
           </Button>
-          <Button type="primary" onClick={onLuu} loading={dangLuu}>
-            {nhanLuu}
+          <Button type="primary" onClick={onSave} loading={saving}>
+            {saveLabel}
           </Button>
         </Space>
       }

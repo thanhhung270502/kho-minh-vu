@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 
 import { DanhMucPhu } from "@/features/cai-dat/components/danh-muc-phu";
-import { yeuCauQuyen } from "@/features/xac-thuc/api/nguoi-dung-hien-tai.server";
+import { requirePermission } from "@/features/auth/api/current-user.server";
 
 export const metadata: Metadata = { title: "Đơn vị tính" };
 
 export default async function Page() {
-  await yeuCauQuyen("cai_dat_danh_muc_phu");
+  await requirePermission("manage-lookups");
 
-  return <DanhMucPhu bang="don_vi_tinh" />;
+  return <DanhMucPhu table="don_vi_tinh" />;
 }

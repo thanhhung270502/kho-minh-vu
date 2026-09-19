@@ -6,7 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useTransition } from "react";
 
 import { QueryState } from "@/shared/components/query-state";
-import { NHAN_VAI_TRO } from "@/shared/lib/quyen";
+import { ROLE_LABELS } from "@/shared/lib/permissions";
 
 import { doiTrangThaiNguoiDung } from "../actions/nguoi-dung.actions";
 import {
@@ -82,7 +82,7 @@ export function BangNguoiDung({ nguoiDungHienTaiId }: { nguoiDungHienTaiId: stri
       title: "Vai trò",
       dataIndex: "vai_tro",
       width: 120,
-      render: (v: DongNguoiDung["vai_tro"]) => NHAN_VAI_TRO[v],
+      render: (v: DongNguoiDung["vai_tro"]) => ROLE_LABELS[v],
     },
     {
       title: "Kho",
@@ -172,7 +172,7 @@ export function BangNguoiDung({ nguoiDungHienTaiId }: { nguoiDungHienTaiId: stri
 
       <QueryState
         query={danhSach}
-        moTaRong="Chưa có tài khoản nào khác. Bấm “Thêm tài khoản” để cấp cho nhân viên."
+        emptyDescription="Chưa có tài khoản nào khác. Bấm “Thêm tài khoản” để cấp cho nhân viên."
       >
         {(d) => {
           // Vài chục dòng — lọc ngay ở client, không cần thêm tham số server.
@@ -201,11 +201,11 @@ export function BangNguoiDung({ nguoiDungHienTaiId }: { nguoiDungHienTaiId: stri
 
       <NganKeoNguoiDung
         open={nganKeo.mo}
-        nguoiDung={nganKeo.nd}
-        onDong={() => setNganKeo((s) => ({ ...s, mo: false }))}
+        user={nganKeo.nd}
+        onClose={() => setNganKeo((s) => ({ ...s, mo: false }))}
       />
 
-      <HopDatLaiMatKhau nguoiDung={datLai} onDong={() => setDatLai(null)} />
+      <HopDatLaiMatKhau user={datLai} onClose={() => setDatLai(null)} />
     </>
   );
 }

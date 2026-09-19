@@ -48,8 +48,8 @@ async function main() {
 
     if (!claims.vai_tro) {
       loi.push("thiếu vai_tro");
-    } else if (claims.vai_tro !== tk.vaiTro) {
-      loi.push(`vai_tro sai (nhận ${claims.vai_tro}, cần ${tk.vaiTro})`);
+    } else if (claims.vai_tro !== tk.role) {
+      loi.push(`vai_tro sai (nhận ${claims.vai_tro}, cần ${tk.role})`);
     }
 
     const khoIdClaim = claims.kho_id;

@@ -25,32 +25,32 @@ export type KhoaCot =
 
 export type CotMau = {
   khoa: KhoaCot;
-  tieuDe: string;
+  title: string;
   rong: number;
   /** Cột chỉ để xem khi xuất; nhập vào bị bỏ qua. */
   chiXuat?: boolean;
 };
 
 export const COT_MAU: readonly CotMau[] = [
-  { khoa: "ma_hang", tieuDe: "Mã hàng", rong: 22 },
-  { khoa: "ten_hang", tieuDe: "Tên hàng", rong: 48 },
-  { khoa: "nhom_hang", tieuDe: "Nhóm hàng", rong: 28 },
-  { khoa: "dvt", tieuDe: "Đơn vị tính", rong: 14 },
-  { khoa: "cong_doan", tieuDe: "Công đoạn", rong: 14 },
-  { khoa: "quy_doi", tieuDe: "Quy đổi", rong: 10 },
-  { khoa: "kho_mac_dinh", tieuDe: "Kho mặc định", rong: 14 },
-  { khoa: "ton_toi_thieu", tieuDe: "Tồn tối thiểu", rong: 14 },
-  { khoa: "ton_toi_da", tieuDe: "Tồn tối đa", rong: 12 },
-  { khoa: "gia_ban", tieuDe: "Giá bán", rong: 14 },
-  { khoa: "dang_kinh_doanh", tieuDe: "Đang kinh doanh", rong: 16 },
-  { khoa: "barcode", tieuDe: "Barcode", rong: 16 },
-  { khoa: "ghi_chu", tieuDe: "Ghi chú", rong: 30 },
-  { khoa: "tong_ton", tieuDe: "Tồn hiện tại", rong: 13, chiXuat: true },
-  { khoa: "gia_von", tieuDe: "Giá vốn", rong: 14, chiXuat: true },
+  { khoa: "ma_hang", title: "Mã hàng", rong: 22 },
+  { khoa: "ten_hang", title: "Tên hàng", rong: 48 },
+  { khoa: "nhom_hang", title: "Nhóm hàng", rong: 28 },
+  { khoa: "dvt", title: "Đơn vị tính", rong: 14 },
+  { khoa: "cong_doan", title: "Công đoạn", rong: 14 },
+  { khoa: "quy_doi", title: "Quy đổi", rong: 10 },
+  { khoa: "kho_mac_dinh", title: "Kho mặc định", rong: 14 },
+  { khoa: "ton_toi_thieu", title: "Tồn tối thiểu", rong: 14 },
+  { khoa: "ton_toi_da", title: "Tồn tối đa", rong: 12 },
+  { khoa: "gia_ban", title: "Giá bán", rong: 14 },
+  { khoa: "dang_kinh_doanh", title: "Đang kinh doanh", rong: 16 },
+  { khoa: "barcode", title: "Barcode", rong: 16 },
+  { khoa: "ghi_chu", title: "Ghi chú", rong: 30 },
+  { khoa: "tong_ton", title: "Tồn hiện tại", rong: 13, chiXuat: true },
+  { khoa: "gia_von", title: "Giá vốn", rong: 14, chiXuat: true },
 ];
 
 export const NHAN_COT: Record<string, string> = Object.fromEntries(
-  COT_MAU.map((c) => [c.khoa, c.tieuDe]),
+  COT_MAU.map((c) => [c.khoa, c.title]),
 );
 
 /** Tên cột tiếng Việt cho những khóa không nằm trong mẫu (RPC trả về). */

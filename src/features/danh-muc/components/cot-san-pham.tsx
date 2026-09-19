@@ -80,7 +80,7 @@ export function taoCot({
           truong="nhom_hang_id"
           choPhep={sua}
           tuyChon={chonNhom}
-          nhan={ten ?? <span className="text-gray-400">(không nhóm)</span>}
+          label={ten ?? <span className="text-gray-400">(không nhóm)</span>}
         />
       ),
     },
@@ -94,7 +94,7 @@ export function taoCot({
           truong="dvt_id"
           choPhep={sua}
           tuyChon={chonDvt}
-          nhan={ten}
+          label={ten}
         />
       ),
     },
@@ -108,7 +108,7 @@ export function taoCot({
           truong="cong_doan_id"
           choPhep={sua}
           tuyChon={chonCongDoan}
-          nhan={ten ? <Tag color={d.mau_cong_doan || undefined}>{ten}</Tag> : "—"}
+          label={ten ? <Tag color={d.mau_cong_doan || undefined}>{ten}</Tag> : "—"}
         />
       ),
     },

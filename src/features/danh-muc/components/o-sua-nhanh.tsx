@@ -6,14 +6,14 @@ import { useState, type ReactNode } from "react";
 
 import { ganHangLoat } from "../api/san-pham.api";
 import { khoaSanPham } from "../api/san-pham.keys";
-import { dienGiaiLoi } from "@/shared/lib/errors";
+import { explainError } from "@/shared/lib/errors";
 
 type Truong = "cong_doan_id" | "nhom_hang_id" | "dvt_id";
 
 type Props = {
   sanPhamId: string;
   truong: Truong;
-  nhan: ReactNode;
+  label: ReactNode;
   tuyChon: Array<{ value: string; label: ReactNode }>;
   choPhep: boolean;
 };
@@ -22,13 +22,13 @@ type Props = {
  * Sửa một ô ngay trên bảng. Cập nhật lạc quan: dòng đổi ngay, lỗi thì trả lại
  * giá trị cũ — rà 356 mã mà mỗi lần chờ round-trip thì không ai rà nổi.
  */
-export function OSuaNhanh({ sanPhamId, truong, nhan, tuyChon, choPhep }: Props) {
+export function OSuaNhanh({ sanPhamId, truong, label, tuyChon, choPhep }: Props) {
   const { message } = App.useApp();
   const queryClient = useQueryClient();
   const [mo, setMo] = useState(false);
-  const [dangLuu, setDangLuu] = useState(false);
+  const [saving, setDangLuu] = useState(false);
 
-  if (!choPhep) return <>{nhan}</>;
+  if (!choPhep) return <>{label}</>;
 
   async function luu(giaTri: string) {
     setMo(false);
@@ -41,8 +41,8 @@ export function OSuaNhanh({ sanPhamId, truong, nhan, tuyChon, choPhep }: Props) 
       await ganHangLoat([sanPhamId], { [truong]: giaTri || null }, "sua_o");
     } catch (e) {
       for (const [khoa, dl] of anhChup) queryClient.setQueryData(khoa, dl);
-      const loi = dienGiaiLoi(e);
-      message.error(`${loi.tieuDe}. ${loi.huongXuLy}`);
+      const loi = explainError(e);
+      message.error(`${loi.title}. ${loi.action}`);
     } finally {
       setDangLuu(false);
       void queryClient.invalidateQueries({ queryKey: khoaSanPham.tatCa });
@@ -61,7 +61,7 @@ export function OSuaNhanh({ sanPhamId, truong, nhan, tuyChon, choPhep }: Props) 
           if (e.key === "Enter") setMo(true);
         }}
       >
-        {dangLuu ? "…" : nhan}
+        {saving ? "…" : label}
       </span>
     );
   }

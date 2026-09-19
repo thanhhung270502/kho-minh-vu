@@ -11,13 +11,13 @@ import {
 
 export const khoaDanhMucPhu = {
   tatCa: ["danh-muc-phu"] as const,
-  bang: (b: BangDanhMucPhu) => ["danh-muc-phu", b] as const,
+  table: (b: BangDanhMucPhu) => ["danh-muc-phu", b] as const,
 };
 
-export function useDanhMucPhu(bang: BangDanhMucPhu) {
+export function useDanhMucPhu(table: BangDanhMucPhu) {
   return useQuery({
-    queryKey: khoaDanhMucPhu.bang(bang),
-    queryFn: () => layDanhMucPhu(bang),
+    queryKey: khoaDanhMucPhu.table(table),
+    queryFn: () => layDanhMucPhu(table),
   });
 }
 
@@ -26,23 +26,23 @@ function dungKhoaCu(queryClient: ReturnType<typeof useQueryClient>) {
   void queryClient.invalidateQueries({ queryKey: khoaDanhMucPhu.tatCa });
 }
 
-export function useLuuDanhMucPhu(bang: BangDanhMucPhu) {
+export function useLuuDanhMucPhu(table: BangDanhMucPhu) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (v: { id: string | null; giaTri: GiaTriDanhMucPhu }) =>
       v.id
-        ? capNhatMucDanhMucPhu(bang, v.id, v.giaTri)
-        : taoMucDanhMucPhu(bang, v.giaTri),
+        ? capNhatMucDanhMucPhu(table, v.id, v.giaTri)
+        : taoMucDanhMucPhu(table, v.giaTri),
     onSuccess: () => dungKhoaCu(queryClient),
   });
 }
 
-export function useXoaDanhMucPhu(bang: BangDanhMucPhu) {
+export function useXoaDanhMucPhu(table: BangDanhMucPhu) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => xoaMucDanhMucPhu(bang, id),
+    mutationFn: (id: string) => xoaMucDanhMucPhu(table, id),
     onSuccess: () => dungKhoaCu(queryClient),
   });
 }

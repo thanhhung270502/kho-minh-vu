@@ -5,57 +5,59 @@ import { Drawer } from "antd";
 import Link from "next/link";
 import { useState } from "react";
 
-import { soCotTabDay, type MucDieuHuong } from "@/shared/lib/dieu-huong";
+import { bottomTabColumns, type NavItem } from "@/shared/lib/navigation";
 
-import { ICON_DIEU_HUONG } from "./icon-dieu-huong";
+import { NAV_ICONS } from "./nav-icons";
 
-type ThanhTabDayProps = {
-  chinh: MucDieuHuong[];
-  khac: MucDieuHuong[];
-  dangMo: string;
+type BottomTabBarProps = {
+  primary: NavItem[];
+  overflow: NavItem[];
+  activeHref: string;
 };
 
 /**
  * Thanh tab cố định đáy cho màn hình dưới 992px — người dùng đã loại phương
  * án drawer hamburger (thủ kho cầm điện thoại một tay).
  */
-export function ThanhTabDay({ chinh, khac, dangMo }: ThanhTabDayProps) {
-  const [moKhac, setMoKhac] = useState(false);
-  const soCot = soCotTabDay(chinh, khac);
-  const dangMoOKhac = khac.some((m) => m.duongDan === dangMo);
+export function BottomTabBar({ primary, overflow, activeHref }: BottomTabBarProps) {
+  const [overflowOpen, setOverflowOpen] = useState(false);
+  const columns = bottomTabColumns(primary, overflow);
+  const activeIsInOverflow = overflow.some((item) => item.href === activeHref);
 
   return (
     <>
       <nav
-        data-khong-in
+        data-no-print
         className="fixed inset-x-0 bottom-0 z-30 border-t border-vien bg-nen-the lg:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div
           className="grid"
-          style={{ gridTemplateColumns: `repeat(${soCot}, minmax(0,1fr))` }}
+          style={{ gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))` }}
         >
-          {chinh.map((m) => (
+          {primary.map((item) => (
             <Link
-              key={m.duongDan}
-              href={m.duongDan}
+              key={item.href}
+              href={item.href}
               className={[
                 "flex flex-col items-center gap-0.5 py-2 text-center",
-                m.duongDan === dangMo ? "font-medium text-brand-600" : "text-chu-phu",
+                item.href === activeHref
+                  ? "font-medium text-brand-600"
+                  : "text-chu-phu",
               ].join(" ")}
             >
-              <span className="text-xl leading-none">{ICON_DIEU_HUONG[m.icon]}</span>
-              <span className="text-[11px] leading-none">{m.nhanNgan}</span>
+              <span className="text-xl leading-none">{NAV_ICONS[item.icon]}</span>
+              <span className="text-[11px] leading-none">{item.shortLabel}</span>
             </Link>
           ))}
 
-          {khac.length > 0 ? (
+          {overflow.length > 0 ? (
             <button
               type="button"
-              onClick={() => setMoKhac(true)}
+              onClick={() => setOverflowOpen(true)}
               className={[
                 "flex flex-col items-center gap-0.5 py-2 text-center",
-                dangMoOKhac ? "font-medium text-brand-600" : "text-chu-phu",
+                activeIsInOverflow ? "font-medium text-brand-600" : "text-chu-phu",
               ].join(" ")}
             >
               <span className="text-xl leading-none">
@@ -67,27 +69,29 @@ export function ThanhTabDay({ chinh, khac, dangMo }: ThanhTabDayProps) {
         </div>
       </nav>
 
-      {khac.length > 0 ? (
+      {overflow.length > 0 ? (
         <Drawer
           title="Khác"
           placement="bottom"
           size="default"
-          open={moKhac}
-          onClose={() => setMoKhac(false)}
+          open={overflowOpen}
+          onClose={() => setOverflowOpen(false)}
         >
           <div className="flex flex-col gap-1">
-            {khac.map((m) => (
+            {overflow.map((item) => (
               <Link
-                key={m.duongDan}
-                href={m.duongDan}
-                onClick={() => setMoKhac(false)}
+                key={item.href}
+                href={item.href}
+                onClick={() => setOverflowOpen(false)}
                 className={[
                   "flex items-center gap-3 rounded-the px-3 py-2.5 text-base",
-                  m.duongDan === dangMo ? "font-medium text-brand-600" : "text-chu-chinh",
+                  item.href === activeHref
+                    ? "font-medium text-brand-600"
+                    : "text-chu-chinh",
                 ].join(" ")}
               >
-                {ICON_DIEU_HUONG[m.icon]}
-                {m.nhan}
+                {NAV_ICONS[item.icon]}
+                {item.label}
               </Link>
             ))}
           </div>

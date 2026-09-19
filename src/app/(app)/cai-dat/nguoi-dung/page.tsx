@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 
 import { BangNguoiDung } from "@/features/cai-dat/components/bang-nguoi-dung";
-import { yeuCauQuyen } from "@/features/xac-thuc/api/nguoi-dung-hien-tai.server";
+import { requirePermission } from "@/features/auth/api/current-user.server";
 
 export const metadata: Metadata = { title: "Người dùng" };
 
 export default async function Page() {
-  const nd = await yeuCauQuyen("cai_dat_nguoi_dung");
+  const nd = await requirePermission("manage-users");
 
   return <BangNguoiDung nguoiDungHienTaiId={nd.id} />;
 }

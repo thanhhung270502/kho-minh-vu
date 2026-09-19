@@ -11,10 +11,10 @@ import { useDanhMucPhu, useTheKho } from "../hooks/useSanPham";
 import type { DongTheKho } from "../types";
 import { soVn } from "./cot-san-pham";
 
-const NHAN_NGUON: Record<string, { nhan: string; mau?: string }> = {
-  HE_THONG: { nhan: "Hệ thống", mau: "green" },
-  KIOTVIET_NHAP: { nhan: "KiotViet · nhập" },
-  KIOTVIET_BAN: { nhan: "KiotViet · bán" },
+const NHAN_NGUON: Record<string, { label: string; mau?: string }> = {
+  HE_THONG: { label: "Hệ thống", mau: "green" },
+  KIOTVIET_NHAP: { label: "KiotViet · nhập" },
+  KIOTVIET_BAN: { label: "KiotViet · bán" },
 };
 
 export function TheKho({
@@ -43,8 +43,8 @@ export function TheKho({
       dataIndex: "nguon",
       width: 140,
       render: (v: string) => {
-        const n = NHAN_NGUON[v] ?? { nhan: v };
-        return <Tag color={n.mau}>{n.nhan}</Tag>;
+        const n = NHAN_NGUON[v] ?? { label: v };
+        return <Tag color={n.mau}>{n.label}</Tag>;
       },
     },
     { title: "Số phiếu", dataIndex: "so_ct", width: 140 },
@@ -114,8 +114,8 @@ export function TheKho({
 
       <QueryState
         query={theKho}
-        laRong={(d) => d.dong.length === 0}
-        moTaRong={
+        isEmpty={(d) => d.dong.length === 0}
+        emptyDescription={
           khoId
             ? "Kho này chưa có biến động."
             : "Chưa có biến động nào. Thẻ kho ghi nhận từ phiếu nhập/xuất đầu tiên."

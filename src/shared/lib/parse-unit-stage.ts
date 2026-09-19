@@ -1,4 +1,4 @@
-import { boDau } from "./chuan-hoa";
+import { removeDiacritics } from "./text";
 
 /**
  * Tách ô ĐVT của KiotViet thành hai khái niệm độc lập.
@@ -16,12 +16,13 @@ import { boDau } from "./chuan-hoa";
 
 /**
  * CHỈ dùng làm gợi ý khi file KHÔNG có cột "Quy đổi". File export KiotViet thật
- * CÓ cột này (giá trị 1 cho cả 148 mã CẶP), và nap-du-lieu.ts nạp đúng số trong
+ * CÓ cột này (giá trị 1 cho cả 148 mã CẶP), và load-data.ts nạp đúng số trong
  * file. Đổi hằng số này KHÔNG ảnh hưởng tới dữ liệu đã nạp.
  */
-export const QUY_DOI_CAP = 2;
+export const PAIR_CONVERSION = 2;
 
-const CONG_DOAN = new Map<string, string>([
+/** Khóa và giá trị là mã trong database — không dịch. */
+const STAGE_CODES = new Map<string, string>([
   ["EP", "EP"],
   ["SON", "SON"],
   ["CARBON", "CARBON"],
@@ -30,7 +31,7 @@ const CONG_DOAN = new Map<string, string>([
   ["NANO", "NANO"],
 ]);
 
-const DON_VI_TINH = new Map<string, string>([
+const UNIT_CODES = new Map<string, string>([
   ["CAI", "CAI"],
   ["CAP", "CAP"],
   ["BO", "BO"],
@@ -40,47 +41,47 @@ const DON_VI_TINH = new Map<string, string>([
   ["PC", "PC"],
 ]);
 
-export function chuanHoa(v: string | null | undefined): string {
-  if (!v) return "";
-  return boDau(v).toUpperCase().replace(/\s+/g, " ").trim();
+export function normalizeCode(value: string | null | undefined): string {
+  if (!value) return "";
+  return removeDiacritics(value).toUpperCase().replace(/\s+/g, " ").trim();
 }
 
-export type KetQuaTach = {
-  maDvt: string;
-  maCongDoan: string;
-  quyDoi: number;
+export type UnitStageSplit = {
+  unitCode: string;
+  stageCode: string;
+  conversion: number;
   /** false = công đoạn chỉ là mặc định tạm, CẦN người rà lại. */
-  suyDuoc: boolean;
+  inferred: boolean;
   /** Giá trị gốc không nhận ra, để báo cáo liệt kê. */
-  giaTriLa?: string;
+  unknownValue?: string;
 };
 
-export function tachDvtCongDoan(dvtGoc: string | null | undefined): KetQuaTach {
-  const chuan = chuanHoa(dvtGoc);
+export function splitUnitStage(rawUnit: string | null | undefined): UnitStageSplit {
+  const normalized = normalizeCode(rawUnit);
 
-  const congDoan = CONG_DOAN.get(chuan);
-  if (congDoan) {
+  const stage = STAGE_CODES.get(normalized);
+  if (stage) {
     // Hàng qua xử lý bề mặt đếm theo cái. Công đoạn suy được chắc chắn.
-    return { maDvt: "CAI", maCongDoan: congDoan, quyDoi: 1, suyDuoc: true };
+    return { unitCode: "CAI", stageCode: stage, conversion: 1, inferred: true };
   }
 
-  const dvt = DON_VI_TINH.get(chuan);
-  if (dvt) {
+  const unit = UNIT_CODES.get(normalized);
+  if (unit) {
     // Biết đơn vị tính nhưng KHÔNG biết công đoạn. MUA_NGOAI chỉ là mặc định
     // tạm để không chặn việc nạp — 1.571 mã "CÁI" rơi vào nhánh này.
     return {
-      maDvt: dvt,
-      maCongDoan: "MUA_NGOAI",
-      quyDoi: dvt === "CAP" ? QUY_DOI_CAP : 1,
-      suyDuoc: false,
+      unitCode: unit,
+      stageCode: "MUA_NGOAI",
+      conversion: unit === "CAP" ? PAIR_CONVERSION : 1,
+      inferred: false,
     };
   }
 
   return {
-    maDvt: "CAI",
-    maCongDoan: "MUA_NGOAI",
-    quyDoi: 1,
-    suyDuoc: false,
-    giaTriLa: chuan || "(rỗng)",
+    unitCode: "CAI",
+    stageCode: "MUA_NGOAI",
+    conversion: 1,
+    inferred: false,
+    unknownValue: normalized || "(rỗng)",
   };
 }

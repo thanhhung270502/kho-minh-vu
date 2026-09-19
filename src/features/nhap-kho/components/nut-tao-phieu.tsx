@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useDanhMucPhu } from "@/features/danh-muc/hooks/useSanPham";
 import { useDanhSachDoiTac } from "@/features/doi-tac/hooks/useDoiTac";
 import { BO_LOC_DOI_TAC_MAC_DINH } from "@/features/doi-tac/types";
-import { dienGiaiLoi, maLoi } from "@/shared/lib/errors";
+import { explainError, errorCode } from "@/shared/lib/errors";
 
 import { useTaoPhieu } from "../hooks/usePhieuNhap";
 import { NHAN_NGUON_NHAP, type NguonNhap } from "../types";
@@ -15,7 +15,7 @@ import { NHAN_NGUON_NHAP, type NguonNhap } from "../types";
 /** Mã NCC của nhà máy Vũ Trụ L.An — chọn nó thì gợi ý nguồn "Nhà máy". */
 const MA_NHA_MAY = "NCC000001";
 
-export function NutTaoPhieu({ open, onDong }: { open: boolean; onDong: () => void }) {
+export function NutTaoPhieu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { message } = App.useApp();
   const router = useRouter();
   const taoPhieu = useTaoPhieu();
@@ -33,7 +33,7 @@ export function NutTaoPhieu({ open, onDong }: { open: boolean; onDong: () => voi
   function dong() {
     if (taoPhieu.isPending) return;
     setLoi(null);
-    onDong();
+    onClose();
   }
 
   async function tao() {
@@ -49,15 +49,15 @@ export function NutTaoPhieu({ open, onDong }: { open: boolean; onDong: () => voi
         nguon_nhap: nguon,
       });
       message.success("Đã tạo phiếu, số phiếu đã được cấp");
-      onDong();
+      onClose();
       router.push(`/nhap-kho/${id}`);
     } catch (e) {
-      if (maLoi(e) === "42501") {
+      if (errorCode(e) === "42501") {
         setLoi("Tài khoản không có quyền tạo phiếu nhập.");
         return;
       }
-      const l = dienGiaiLoi(e);
-      setLoi(`${l.tieuDe}. ${l.huongXuLy}`);
+      const l = explainError(e);
+      setLoi(`${l.title}. ${l.action}`);
     }
   }
 

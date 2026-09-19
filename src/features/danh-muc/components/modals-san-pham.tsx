@@ -34,16 +34,16 @@ export function ModalsSanPham({
 }: Props) {
   return (
     <>
-      <NapGiaVon open={giaVonMo} onDong={onDongGiaVon} />
-      <GoiYCongDoan open={goiYMo} onDong={onDongGoiY} />
+      <NapGiaVon open={giaVonMo} onClose={onDongGiaVon} />
+      <GoiYCongDoan open={goiYMo} onClose={onDongGoiY} />
 
-      <NhapExcel open={nhapMo} onDong={onDongNhap} onXemMoiSua={onXemMoiSua} />
+      <NhapExcel open={nhapMo} onClose={onDongNhap} onXemMoiSua={onXemMoiSua} />
 
       <NganKeoSanPham
         id={nganKeo.id}
         open={nganKeo.mo}
         quyen={quyen}
-        onDong={onDongNganKeo}
+        onClose={onDongNganKeo}
       />
     </>
   );

@@ -5,8 +5,8 @@ import { Alert, App, Checkbox, Form, Input, InputNumber, Select, Skeleton, Switc
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
-import { NganKeoForm } from "@/shared/components/ngan-keo-form";
-import { dienGiaiLoi, laLoiPostgrest } from "@/shared/lib/errors";
+import { FormDrawer } from "@/shared/components/form-drawer";
+import { explainError, isPostgrestError } from "@/shared/lib/errors";
 
 import { useChiTietSanPham, useDanhMucPhu, useLuuSanPham } from "../hooks/useSanPham";
 import { sanPhamSchema, type SanPhamForm } from "../schemas/san-pham.schema";
@@ -17,7 +17,7 @@ type Props = {
   id: string | null;
   open: boolean;
   quyen: { suaGiaBan: boolean; xemGiaVon: boolean };
-  onDong: () => void;
+  onClose: () => void;
 };
 
 const MAC_DINH: SanPhamForm = {
@@ -45,7 +45,7 @@ function macDinhTaoMoi(dm: DanhMucPhu | undefined): SanPhamForm {
   };
 }
 
-export function NganKeoSanPham({ id, open, quyen, onDong }: Props) {
+export function NganKeoSanPham({ id, open, quyen, onClose }: Props) {
   const { message } = App.useApp();
   const danhMucPhu = useDanhMucPhu();
   const chiTiet = useChiTietSanPham(id ?? "");
@@ -96,7 +96,7 @@ export function NganKeoSanPham({ id, open, quyen, onDong }: Props) {
     }
   }, [open, id, ct, danhMucPhu.data, reset]);
 
-  const onLuu = handleSubmit(async (v) => {
+  const onSave = handleSubmit(async (v) => {
     const giaTri: SanPhamInput = {
       ma_hang: v.ma_hang,
       ten_hang: v.ten_hang,
@@ -134,9 +134,9 @@ export function NganKeoSanPham({ id, open, quyen, onDong }: Props) {
         setFocus("ma_hang");
         return;
       }
-      onDong();
+      onClose();
     } catch (e) {
-      if (laLoiPostgrest(e)) {
+      if (isPostgrestError(e)) {
         if (e.code === "23505") {
           setError("ma_hang", { message: "Mã hàng đã tồn tại. Dùng mã khác." });
           return;
@@ -153,8 +153,8 @@ export function NganKeoSanPham({ id, open, quyen, onDong }: Props) {
           return;
         }
       }
-      const loi = dienGiaiLoi(e);
-      setError("root", { message: `${loi.tieuDe}. ${loi.huongXuLy}` });
+      const loi = explainError(e);
+      setError("root", { message: `${loi.title}. ${loi.action}` });
     }
   });
 
@@ -162,13 +162,13 @@ export function NganKeoSanPham({ id, open, quyen, onDong }: Props) {
   const canRa = Boolean(ct?.can_ra || ct?.can_ra_dvt);
 
   return (
-    <NganKeoForm
+    <FormDrawer
       open={open}
-      tieuDe={taoMoi ? "Thêm mã hàng" : "Sửa mã hàng"}
-      dangLuu={luu.isPending}
-      onDong={onDong}
-      onLuu={() => void onLuu()}
-      phuDe={
+      title={taoMoi ? "Thêm mã hàng" : "Sửa mã hàng"}
+      saving={luu.isPending}
+      onClose={onClose}
+      onSave={() => void onSave()}
+      extra={
         taoMoi ? (
           <Checkbox checked={taoTiep} onChange={(e) => setTaoTiep(e.target.checked)}>
             Tạo tiếp mã khác
@@ -179,7 +179,7 @@ export function NganKeoSanPham({ id, open, quyen, onDong }: Props) {
       {id && chiTiet.isPending ? (
         <Skeleton active paragraph={{ rows: 10 }} />
       ) : (
-        <Form layout="vertical" onFinish={() => void onLuu()}>
+        <Form layout="vertical" onFinish={() => void onSave()}>
           {errors.root ? (
             <Alert className="mb-4" type="error" showIcon title={errors.root.message} />
           ) : null}
@@ -407,6 +407,6 @@ export function NganKeoSanPham({ id, open, quyen, onDong }: Props) {
           ) : null}
         </Form>
       )}
-    </NganKeoForm>
+    </FormDrawer>
   );
 }
