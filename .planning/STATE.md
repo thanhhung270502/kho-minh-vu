@@ -81,8 +81,15 @@ None yet.
 
 - [Phase 2]: CLAUDE.md và `src/shared/components/app-shell.tsx` còn mô tả phạm vi cũ (theo dõi sản xuất 5 xưởng) — phải viết lại khi Phase 2 chạm vào app shell.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260919-dm4 | Design system theo giao diện KiotViet: token + top-nav shell + bố cục trang danh sách | 2026-09-19 | 39da902 | [260919-dm4-update-design-system-theo-giao-dien-kiot](./quick/260919-dm4-update-design-system-theo-giao-dien-kiot/) |
+
 ## Session Continuity
 
 Last session: 2026-09-14T06:50:58.590Z
 Stopped at: Completed 02-05-PLAN.md
+Last activity: 2026-09-19 - Completed quick task 260919-dm4: design system theo giao diện KiotViet
 Resume file: None
