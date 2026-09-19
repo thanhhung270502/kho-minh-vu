@@ -79,9 +79,7 @@ export function BangDoiTac({ coQuyenSua }: { coQuyenSua: boolean }) {
       dataIndex: "loai",
       width: 130,
       render: (loai: DongDoiTac["loai"]) => (
-        <Tag bordered={false} color={MAU_LOAI_DOI_TAC[loai]}>
-          {NHAN_LOAI_DOI_TAC[loai]}
-        </Tag>
+        <Tag color={MAU_LOAI_DOI_TAC[loai]}>{NHAN_LOAI_DOI_TAC[loai]}</Tag>
       ),
     },
     { title: "Điện thoại", dataIndex: "dien_thoai", width: 130 },
@@ -90,9 +88,7 @@ export function BangDoiTac({ coQuyenSua }: { coQuyenSua: boolean }) {
       title: "Trạng thái",
       dataIndex: "dang_hoat_dong",
       width: 110,
-      render: (hoatDong: boolean) => (
-        <Tag bordered={false}>{hoatDong ? "Đang dùng" : "Ngừng"}</Tag>
-      ),
+      render: (hoatDong: boolean) => <Tag>{hoatDong ? "Đang dùng" : "Ngừng"}</Tag>,
     },
     ...(coQuyenSua
       ? [

@@ -22,31 +22,60 @@
     "Helvetica Neue", Arial, sans-serif;
 
   /*
-   * Màu thương hiệu — trùng khít với token trong src/providers/antd-theme.ts.
-   * colorPrimary/colorLink/colorInfo của antd = --color-brand-600. Sửa một
-   * chỗ phải sửa cả hai, không thì nút antd và link Tailwind lệch màu nhau.
+   * Màu thương hiệu — trích xuất THẬT từ CSS của KiotViet (biến --kv-*, đã giải
+   * hết alias), trùng khít với token trong src/providers/antd-theme.ts.
+   * colorPrimary/colorLink/colorInfo của antd = --color-brand-500 = #0070F4.
+   * Sửa một chỗ phải sửa cả hai, không thì nút antd và link Tailwind lệch màu.
    */
-  --color-brand-50: #EEF4FF;
-  --color-brand-100: #DBE7FF;
-  --color-brand-200: #BBD0FF;
-  --color-brand-300: #8FB0FF;
-  --color-brand-400: #5C87FB;
-  --color-brand-500: #2D68F8;
-  --color-brand-600: #1652F0;
-  --color-brand-700: #0F3FC4;
-  --color-brand-800: #0E3499;
-  --color-brand-900: #102C6E;
+  --color-brand-25: #F2F8FE;
+  --color-brand-50: #E6F1FE;
+  --color-brand-75: #D9EAFD;
+  --color-brand-100: #CCE2FD;
+  --color-brand-150: #B3D4FC;
+  --color-brand-200: #99C6FB;
+  --color-brand-250: #80B8FA;
+  --color-brand-300: #66A9F8;
+  --color-brand-350: #4D9BF7;
+  --color-brand-400: #338DF6;
+  --color-brand-500: #0070F4;
+  --color-brand-600: #005AC3;
+  --color-brand-700: #004392;
+  --color-brand-750: #00387A;
+  --color-brand-800: #002D62;
+  --color-brand-850: #002249;
+  --color-brand-900: #001631;
+  --color-brand-950: #000B18;
+
+  /* Thang trung tính — cũng trích từ KiotViet, dùng cho chữ/nền/viền trung tính. */
+  --color-trung-tinh-25: #F7F8F9;
+  --color-trung-tinh-50: #F0F1F3;
+  --color-trung-tinh-75: #E8EAED;
+  --color-trung-tinh-100: #E1E3E6;
+  --color-trung-tinh-150: #D1D5DA;
+  --color-trung-tinh-200: #C2C7CE;
+  --color-trung-tinh-250: #B3BAC2;
+  --color-trung-tinh-300: #A4ACB5;
+  --color-trung-tinh-350: #959EA9;
+  --color-trung-tinh-400: #85909D;
+  --color-trung-tinh-500: #677484;
+  --color-trung-tinh-600: #525D6A;
+  --color-trung-tinh-700: #3E464F;
+  --color-trung-tinh-750: #343A42;
+  --color-trung-tinh-800: #292E35;
+  --color-trung-tinh-850: #1F2328;
+  --color-trung-tinh-900: #15171A;
+  --color-trung-tinh-950: #0A0C0D;
 
   /* Nền/chữ/viền dùng chung — khớp colorBgLayout/colorText/colorBorder ở antd-theme.ts */
-  --color-nen-trang: #F0F2F5;
+  --color-nen-trang: #F7F8F9;
   --color-nen-the: #FFFFFF;
-  --color-vien: #E5E7EB;
-  --color-chu-chinh: #1F2A37;
-  --color-chu-phu: #6B7280;
-  --color-header-bang: #E8F0FE;
-  --color-nen-tong: #F7F8FA;
+  --color-vien: #D1D5DA;
+  --color-chu-chinh: #15171A;
+  --color-chu-phu: #525D6A;
+  --color-header-bang: #E6F1FE;
+  --color-nen-tong: #F0F1F3;
 
-  --shadow-the: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --shadow-the: -8px 8px 24px 0 rgba(0, 0, 0, 0.04);
   --radius-the: 12px;
 }
 

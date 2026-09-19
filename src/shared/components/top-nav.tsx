@@ -27,24 +27,39 @@ export function TopNav({ nguoiDung, muc, dangMo }: TopNavProps) {
           Kho Minh Vũ
         </Link>
 
-        {/* Pill nav — chỉ hiện từ 992px, dưới đó đã có thanh tab đáy. */}
-        <nav className="hidden items-center gap-1 rounded-full bg-brand-600 p-1 lg:flex">
-          {muc.map((m) => (
-            <Link
-              key={m.duongDan}
-              href={m.duongDan}
-              aria-current={m.duongDan === dangMo ? "page" : undefined}
-              className={[
-                "flex items-center gap-2 rounded-full px-3 py-1.5 text-sm transition-colors",
-                m.duongDan === dangMo
-                  ? "bg-brand-400 font-medium text-white"
-                  : "text-white/80 hover:bg-brand-500 hover:text-white",
-              ].join(" ")}
-            >
-              {ICON_DIEU_HUONG[m.icon]}
-              {m.nhan}
-            </Link>
-          ))}
+        {/*
+          Pill nav — chỉ hiện từ 992px, dưới đó đã có thanh tab đáy. Nền là
+          gradient + viền + đổ bóng nhẹ (giá trị trích xuất thật từ KiotViet),
+          không phải màu đặc nên cần style riêng — Tailwind color scale không
+          biểu diễn được gradient 2 điểm dừng chính xác từ token.
+        */}
+        <nav
+          className="hidden items-center gap-0.5 rounded-full p-px lg:flex"
+          style={{
+            background: "linear-gradient(0deg, var(--color-brand-500) 0%, var(--color-brand-400) 100%)",
+            border: "1px solid var(--color-brand-500)",
+            boxShadow: "0 0 4px 0 rgba(0,112,244,.15)",
+          }}
+        >
+          {muc.map((m) => {
+            const active = m.duongDan === dangMo;
+            return (
+              <Link
+                key={m.duongDan}
+                href={m.duongDan}
+                aria-current={active ? "page" : undefined}
+                className="flex items-center gap-2 rounded-full px-2 py-2.5 text-sm font-semibold text-white transition-all duration-200 ease-in-out hover:bg-white/25"
+              >
+                {ICON_DIEU_HUONG[m.icon]}
+                <span className="relative">
+                  {m.nhan}
+                  {active ? (
+                    <span className="absolute left-1/2 top-[18px] h-[3px] w-8 -translate-x-1/2 rounded-full bg-white" />
+                  ) : null}
+                </span>
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="ms-auto">
