@@ -9,9 +9,9 @@ import { hasPermission } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Đối tác" };
 
-export default async function DoiTacPage() {
+export default async function PartnersPage() {
   const user = await requirePermission("view-catalog");
-  const coQuyenSua = hasPermission(user.role, "edit-catalog");
+  const canEdit = hasPermission(user.role, "edit-catalog");
 
   return (
     <>
@@ -19,13 +19,13 @@ export default async function DoiTacPage() {
         title="Đối tác"
         description="Nhà cung cấp và khách hàng trong một danh sách."
         actions={
-          coQuyenSua ? <Link href="/doi-tac/ra-ghi-chu">Rà ghi chú KiotViet</Link> : null
+          canEdit ? <Link href="/doi-tac/ra-ghi-chu">Rà ghi chú KiotViet</Link> : null
         }
       />
 
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}
       <Suspense fallback={null}>
-        <PartnerTable canEdit={coQuyenSua} />
+        <PartnerTable canEdit={canEdit} />
       </Suspense>
     </>
   );

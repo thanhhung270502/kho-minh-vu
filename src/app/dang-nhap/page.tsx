@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "Đăng nhập",
 };
 
-export default function DangNhapPage() {
+export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-sm">

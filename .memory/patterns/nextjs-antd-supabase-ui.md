@@ -44,7 +44,7 @@ Gặp đủ 5 cái: `Dropdown.Button`, `Modal.maskClosable`, `Select` option `va
 
 ## Chốt chặn hồi quy
 
-`scripts/kiem-tra-quyen-route.ts` phải có **mọi route thật**, kể cả route chỉ redirect
+`scripts/test-route-permissions.ts` phải có **mọi route thật**, kể cả route chỉ redirect
 (`/cai-dat`). Ma trận cũ thiếu đúng nó nên 45/45 vẫn xanh trong khi trang crash.
 
 ---

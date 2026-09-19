@@ -47,7 +47,7 @@ Test cả hai role. Nếu ai bỏ REVOKE, assertion `service_role` đổi thành
 pgTAP chạy mọi thứ trong một transaction. Hai INSERT tuần tự trong cùng transaction
 vốn đã tuần tự — không bắt được lỗi thứ tự khóa.
 
-**Áp dụng:** `scripts/test-dong-thoi.sh` — hai tiến trình `psql`, transaction chồng nhau.
+**Áp dụng:** `scripts/test-concurrency.sh` — hai tiến trình `psql`, transaction chồng nhau.
 Kỳ vọng đúng với thứ tự khóa đúng: giá vốn `166.6667`. Sai thứ tự sẽ ra `150` hoặc `175`.
 
 Dọn dữ liệu sổ cái (append-only) bằng `set session_replication_role = replica` —
