@@ -30,7 +30,7 @@ sau cần dùng ngay.
 - [ ] **Phase 1: Nền dữ liệu** - Schema 13 bảng, sổ cái bất biến, trigger tồn kho + giá vốn, RLS bốn vai trò, chuyển danh mục thật — kiểm chứng bằng SQL, chưa có giao diện
 - [ ] **Phase 2: Khung ứng dụng, Danh mục, Đối tác, Cài đặt** - Đăng nhập, danh mục 3.266 mã, đối tác NCC/khách chung danh sách, cấu hình dữ liệu nền
 - [ ] **Phase 3: Phiếu nhập** - Luồng chứng từ hoàn chỉnh đầu tiên: tạo, thêm dòng, ghi sổ, hủy đảo, in — giá vốn bình quân chạy thật
-- [ ] **Phase 4: Đơn đặt hàng & Phiếu xuất** - Nhân bản cơ chế chứng từ cho chiều xuất, liên kết đơn đặt → phiếu xuất, vận hành trên cả PC và mobile quét barcode
+- [ ] **Phase 4: Đơn đặt hàng & Phiếu xuất** - Nhân bản cơ chế chứng từ cho chiều xuất, đơn đặt → duyệt → in đi lấy hàng → phiếu xuất, chạy trọn luồng trên máy tính văn phòng
 - [ ] **Phase 5: Tồn kho & Tổng quan** - Tồn theo kho/công đoạn, thẻ kho, tuổi tồn, dashboard tổng quan
 - [ ] **Phase 6: Kiểm kê & Go-live** - Kiểm kê mobile, chốt số liệu chuyển đổi cuối cùng, hệ thống sẵn sàng thay KiotViet
 

@@ -72,7 +72,7 @@ trong chính migration đó. WU-4 không thêm cột vào hai bảng này thì k
 mở màn phiếu nhập kiểm mắt sau khi rút.
 
 ⚠️ **Bẫy 10** — hook đọc một bản ghi phải có `enabled: id !== ""`.
-⚠️ **Bẫy 8** — bắt lỗi bằng `maLoi(e)` / `laLoiPostgrest(e)`, không `instanceof PostgrestError`.
+⚠️ **Bẫy 8** — bắt lỗi bằng `errorCode(e)` / `isPostgrestError(e)`, không `instanceof PostgrestError`.
 
 ---
 
@@ -80,7 +80,7 @@ mở màn phiếu nhập kiểm mắt sau khi rút.
 
 | WU | Việc | File | Yêu cầu |
 |---|---|---|---|
-| **WU-12** | Màn danh sách đơn: bộ lọc trên URL, bảng theo khuôn `BoCucDanhSach`, trạng thái rỗng, 4 trạng thái của `QueryState` | `app/(app)/dat-hang/page.tsx`, `features/sales-order/components/order-table.tsx`, `components/order-filter-panel.tsx` | DDH-01 |
+| **WU-12** | Màn danh sách đơn: bộ lọc trên URL, bảng theo khuôn `ListLayout` (`src/shared/components/list-layout.tsx`), trạng thái rỗng, 4 trạng thái của `QueryState` | `app/(app)/dat-hang/page.tsx`, `features/sales-order/components/order-table.tsx`, `components/order-filter-panel.tsx` | DDH-01 |
 | **WU-13** | Đầu đơn: **một ô tìm người nhận** trên `doi_tac`, gõ ra tên chưa có thì tạo đối tác tại chỗ; ngày giao dự kiến; ghi chú | `app/(app)/dat-hang/[id]/page.tsx`, `features/sales-order/components/order-header.tsx`, `components/partner-search-input.tsx` | DDH-01, D-03 |
 | **WU-14** | Bảng dòng đơn gõ bàn phím: mã → Enter → số lượng → Enter sang dòng mới. **Không có cột đơn giá.** Hiện "đã xuất / còn lại" khi đơn đã có phiếu xuất | `features/sales-order/components/order-line-table.tsx`, `components/order-table-body.tsx` | DDH-01, DDH-02, XUAT-07 |
 
@@ -104,7 +104,7 @@ và `setTimeout(..., 0)` khi chuyển focus sau khi mutation resolve.
 
 | WU | Việc | File | Yêu cầu |
 |---|---|---|---|
-| **WU-17** | Màn danh sách phiếu xuất (dùng lại `documents` + khuôn `BoCucDanhSach`) | `app/(app)/xuat-kho/page.tsx`, `features/stock-out/components/issue-table.tsx`, `components/issue-filter-panel.tsx` | XUAT-01 |
+| **WU-17** | Màn danh sách phiếu xuất (dùng lại `documents` + khuôn `ListLayout` (`src/shared/components/list-layout.tsx`)) | `app/(app)/xuat-kho/page.tsx`, `features/stock-out/components/issue-table.tsx`, `components/issue-filter-panel.tsx` | XUAT-01 |
 | **WU-18** | Tạo phiếu xuất: từ đơn (gọi `tao_phieu_xuat_tu_don`, **chỉ sửa dòng lệch**) và tạo mới không cần đơn; kho sửa được từng dòng | `app/(app)/xuat-kho/[id]/page.tsx`, `features/stock-out/components/issue-line-table.tsx`, `components/create-issue-button.tsx` | XUAT-01, XUAT-02, XUAT-07, D-10, D-13 |
 | **WU-19** | Ghi sổ: dòng đổi màu ngay khi vượt tồn + hộp tóm tắt trước khi ghi sổ; **bắt chọn lý do xuất âm** (4 mục cố định + ghi chú); hiện gợi ý mã gần giống còn tồn kèm nút "Đề nghị gộp hai mã" | `features/stock-out/components/post-issue-button.tsx`, `components/negative-stock-panel.tsx`, `components/similar-code-hint.tsx` | XUAT-04, XUAT-05, D-11, D-12, D-14 |
 
@@ -116,7 +116,7 @@ và `setTimeout(..., 0)` khi chuyển focus sau khi mutation resolve.
 |---|---|---|---|
 | **WU-20** | Mẫu in phiếu giao hàng cho khách (khác mẫu đi lấy hàng của WU-16) | `app/(app)/xuat-kho/[id]/in/page.tsx`, `features/stock-out/components/delivery-print-template.tsx` | XUAT-06 |
 | **WU-21** | Trả hàng: nút trên chứng từ gốc đã ghi sổ → màn phiếu trả với dòng bê sang, sửa số trả rồi ghi sổ | `app/(app)/tra-hang/[id]/page.tsx`, `features/returns/components/return-button.tsx`, `components/return-line-table.tsx` | XUAT-09, D-15 |
-| **WU-22** | Tích hợp cuối: menu trái, chặn route trong `src/proxy.ts`, **thêm mọi route mới vào ma trận quyền** (65 ô → ~85), chạy toàn bộ bộ kiểm | `shared/components/app-shell.tsx`, `src/proxy.ts`, `scripts/test-route-permissions.ts` | — |
+| **WU-22** | Tích hợp cuối: menu trái, chặn quyền bằng `requirePermission()` trong từng `page.tsx` (proxy.ts chỉ lo phiên đăng nhập), **thêm mọi route mới vào ma trận quyền** (65 ô → ~85), chạy toàn bộ bộ kiểm | `shared/lib/navigation.ts`, `app/(app)/**/page.tsx`, `scripts/test-route-permissions.ts` | — |
 
 ⚠️ **Bẫy 12** — ma trận quyền route phải liệt kê **mọi route thật**, kể cả route chỉ
 redirect. Thiếu một dòng thì script vẫn báo xanh trong khi trang đó crash.

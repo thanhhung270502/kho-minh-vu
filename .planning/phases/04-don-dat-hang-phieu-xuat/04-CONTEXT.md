@@ -203,10 +203,10 @@ Người dùng giao lại ba chỗ này:
   giá, đầu bảng lặp sang trang (D-09)
 - `components/void-receipt-dialog.tsx` — hủy phiếu sinh bút toán đảo
 - `components/receipt-filter-panel.tsx` + `receipt-toolbar.tsx` + khuôn
-  `BoCucDanhSach` — màn danh sách
+  `ListLayout` — màn danh sách
 - `api/receipt.api.ts` + `receipt.keys.ts` + `hooks/useReceipts.ts` — khuôn lớp dữ liệu
-- `src/shared/lib/errors.ts` — `explainError()`, `laLoiPostgrest()`, `maLoi()`
-  (**bẫy 8**: lỗi PostgREST KHÔNG phải instance của `PostgrestError`)
+- `src/shared/lib/errors.ts` — `explainError()`, `isPostgrestError()`, `errorCode()`
+  (**bẫy 8**: lỗi PostgREST KHÔNG phải instance của `PostgrestError`. Lưu ý: CLAUDE.md còn ghi tên cũ `laLoiPostgrest`/`maLoi` — tên thật hiện nay là `isPostgrestError`/`errorCode`)
 - `src/shared/components/query-state.tsx` — bốn trạng thái bắt buộc
 - `/doi-tac/ra-ghi-chu` (`src/app/(app)/doi-tac/ra-ghi-chu/page.tsx`) — công cụ rà tên
   người nhận, **đã có nhưng chưa ai chạy**
