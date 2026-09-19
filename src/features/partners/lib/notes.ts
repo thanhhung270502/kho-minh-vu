@@ -10,26 +10,30 @@
  * SĐT hoặc ghi chú giao hàng. Chỉ lấy dòng đầu và viết hoa chữ cái đầu mỗi từ —
  * người dùng vẫn sửa được trước khi lưu.
  */
-export function goiYTenKhach(giaTri: string): string {
-  const dongDau = giaTri.split(/\r?\n/)[0] ?? "";
+export function suggestCustomerName(value: string): string {
+  const firstLine = value.split(/\r?\n/)[0] ?? "";
 
-  return dongDau
+  return firstLine
     .trim()
     .replace(/\s+/g, " ")
     .toLocaleLowerCase("vi")
     .split(" ")
-    .map((tu) => (tu ? tu.charAt(0).toLocaleUpperCase("vi") + tu.slice(1) : tu))
+    .map((word) =>
+      word ? word.charAt(0).toLocaleUpperCase("vi") + word.slice(1) : word,
+    )
     .join(" ");
 }
 
 /** SĐT đầu tiên tìm được trong ghi chú, để điền sẵn form tạo khách. */
-export function tachSoDienThoai(giaTri: string): string | null {
-  const khop = giaTri.replace(/[.\-\s]/g, "").match(/(0\d{9,10})/);
-  return khop ? khop[1] : null;
+export function extractPhoneNumber(value: string): string | null {
+  const match = value.replace(/[.\-\s]/g, "").match(/(0\d{9,10})/);
+  return match ? match[1] : null;
 }
 
 /** Rút gọn để nhét vào thông báo mà không vỡ dòng. */
-export function rutGon(giaTri: string, toiDa = 30): string {
-  const mot = giaTri.replace(/\s+/g, " ").trim();
-  return mot.length <= toiDa ? mot : `${mot.slice(0, toiDa - 1)}…`;
+export function truncate(value: string, maxLength = 30): string {
+  const compact = value.replace(/\s+/g, " ").trim();
+  return compact.length <= maxLength
+    ? compact
+    : `${compact.slice(0, maxLength - 1)}…`;
 }

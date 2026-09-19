@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { RaGhiChu } from "@/features/doi-tac/components/ra-ghi-chu";
+import { NoteReview } from "@/features/partners/components/note-review";
 import { requirePermission } from "@/features/auth/api/current-user.server";
 import { PageHeader } from "@/shared/components/page-header";
 
@@ -21,7 +21,7 @@ export default async function RaGhiChuPage() {
         description="Biến tên trong ô Ghi chú hóa đơn cũ thành khách hàng thật. Hệ thống không tự đoán — bạn quyết từng giá trị."
       />
 
-      <RaGhiChu />
+      <NoteReview />
     </>
   );
 }

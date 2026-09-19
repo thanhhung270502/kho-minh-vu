@@ -1,36 +1,44 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { App, Alert, Form, Input, Radio, Skeleton, Switch } from "antd";
+import { Alert, App, Form, Input, Radio, Skeleton, Switch } from "antd";
 import { useEffect } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { FormDrawer } from "@/shared/components/form-drawer";
-import { explainError, errorCode } from "@/shared/lib/errors";
+import { errorCode, explainError } from "@/shared/lib/errors";
 
-import { useChiTietDoiTac, useGoiYMaDoiTac, useLuuDoiTac } from "../hooks/useDoiTac";
-import { doiTacSchema, type DoiTacForm, type DoiTacLuu } from "../schemas/doi-tac.schema";
-import { NHAN_LOAI_DOI_TAC, type LoaiDoiTac } from "../types";
+import {
+  usePartnerDetail,
+  useSavePartner,
+  useSuggestedPartnerCode,
+} from "../hooks/usePartners";
+import {
+  partnerSchema,
+  type PartnerFormValues,
+  type PartnerInput,
+} from "../schemas/partner.schema";
+import { PARTNER_KIND_LABELS, type PartnerKind } from "../types";
 
-const MAC_DINH: DoiTacForm = {
-  ma: "",
-  ten: "",
-  loai: "KHACH",
-  dien_thoai: "",
+const EMPTY_FORM: PartnerFormValues = {
+  code: "",
+  name: "",
+  kind: "KHACH",
+  phone: "",
   email: "",
-  dia_chi: "",
-  khu_vuc: "",
-  ma_so_thue: "",
-  ghi_chu: "",
-  dang_hoat_dong: true,
+  address: "",
+  region: "",
+  taxCode: "",
+  note: "",
+  isActive: true,
 };
 
 type Props = { id: string | null; open: boolean; onClose: () => void };
 
-export function NganKeoDoiTac({ id, open, onClose }: Props) {
+export function PartnerDrawer({ id, open, onClose }: Props) {
   const { message } = App.useApp();
-  const chiTiet = useChiTietDoiTac(open ? id : null);
-  const luu = useLuuDoiTac();
+  const detail = usePartnerDetail(open ? id : null);
+  const save = useSavePartner();
 
   const {
     control,
@@ -40,71 +48,71 @@ export function NganKeoDoiTac({ id, open, onClose }: Props) {
     setValue,
     getFieldState,
     formState: { errors },
-  } = useForm<DoiTacForm, undefined, DoiTacLuu>({
-    resolver: zodResolver(doiTacSchema),
-    defaultValues: MAC_DINH,
+  } = useForm<PartnerFormValues, undefined, PartnerInput>({
+    resolver: zodResolver(partnerSchema),
+    defaultValues: EMPTY_FORM,
   });
 
-  const loai = useWatch({ control, name: "loai" });
-  const taoMoi = !id;
+  const kind = useWatch({ control, name: "kind" });
+  const isNew = !id;
 
   // Dữ liệu chi tiết về sau khi mount → nạp lại form (CLAUDE.md Bước 5).
   useEffect(() => {
     if (!open) return;
 
     if (!id) {
-      reset(MAC_DINH);
+      reset(EMPTY_FORM);
       return;
     }
 
-    if (chiTiet.data) {
+    if (detail.data) {
       reset({
-        ma: chiTiet.data.ma,
-        ten: chiTiet.data.ten,
-        loai: chiTiet.data.loai,
-        dien_thoai: chiTiet.data.dien_thoai ?? "",
-        email: chiTiet.data.email ?? "",
-        dia_chi: chiTiet.data.dia_chi ?? "",
-        khu_vuc: chiTiet.data.khu_vuc ?? "",
-        ma_so_thue: chiTiet.data.ma_so_thue ?? "",
-        ghi_chu: chiTiet.data.ghi_chu ?? "",
-        dang_hoat_dong: chiTiet.data.dang_hoat_dong,
+        code: detail.data.code,
+        name: detail.data.name,
+        kind: detail.data.kind,
+        phone: detail.data.phone ?? "",
+        email: detail.data.email ?? "",
+        address: detail.data.address ?? "",
+        region: detail.data.region ?? "",
+        taxCode: detail.data.taxCode ?? "",
+        note: detail.data.note ?? "",
+        isActive: detail.data.isActive,
       });
     }
-  }, [open, id, chiTiet.data, reset]);
+  }, [open, id, detail.data, reset]);
 
   // Gợi ý mã theo loại, nhưng không đè lên mã người dùng đã tự gõ.
-  const maGoiY = useGoiYMaDoiTac(loai as LoaiDoiTac, open && taoMoi);
+  const suggestedCode = useSuggestedPartnerCode(kind as PartnerKind, open && isNew);
   useEffect(() => {
-    if (!open || !taoMoi || !maGoiY.data) return;
-    if (getFieldState("ma").isDirty) return;
-    setValue("ma", maGoiY.data);
-  }, [open, taoMoi, maGoiY.data, getFieldState, setValue]);
+    if (!open || !isNew || !suggestedCode.data) return;
+    if (getFieldState("code").isDirty) return;
+    setValue("code", suggestedCode.data);
+  }, [open, isNew, suggestedCode.data, getFieldState, setValue]);
 
-  const onSave = handleSubmit(async (v) => {
+  const onSave = handleSubmit(async (values) => {
     try {
-      await luu.mutateAsync({ id, giaTri: v });
-      message.success(taoMoi ? "Đã tạo đối tác" : "Đã lưu đối tác");
+      await save.mutateAsync({ id, values });
+      message.success(isNew ? "Đã tạo đối tác" : "Đã lưu đối tác");
       onClose();
-    } catch (e) {
-      if (errorCode(e) === "23505") {
-        setError("ma", { message: "Mã này đã có. Dùng mã khác." });
+    } catch (error) {
+      if (errorCode(error) === "23505") {
+        setError("code", { message: "Mã này đã có. Dùng mã khác." });
         return;
       }
-      const loi = explainError(e);
-      setError("root", { message: `${loi.title}. ${loi.action}` });
+      const explained = explainError(error);
+      setError("root", { message: `${explained.title}. ${explained.action}` });
     }
   });
 
   return (
     <FormDrawer
       open={open}
-      title={taoMoi ? "Thêm đối tác" : "Sửa đối tác"}
-      saving={luu.isPending}
+      title={isNew ? "Thêm đối tác" : "Sửa đối tác"}
+      saving={save.isPending}
       onClose={onClose}
       onSave={() => void onSave()}
     >
-      {id && chiTiet.isPending ? (
+      {id && detail.isPending ? (
         <Skeleton active paragraph={{ rows: 8 }} />
       ) : (
         <Form layout="vertical" onFinish={() => void onSave()}>
@@ -114,15 +122,17 @@ export function NganKeoDoiTac({ id, open, onClose }: Props) {
 
           <Form.Item label="Loại đối tác">
             <Controller
-              name="loai"
+              name="kind"
               control={control}
               render={({ field }) => (
                 <Radio.Group {...field} optionType="button" buttonStyle="solid">
-                  {(Object.keys(NHAN_LOAI_DOI_TAC) as LoaiDoiTac[]).map((l) => (
-                    <Radio.Button key={l} value={l}>
-                      {NHAN_LOAI_DOI_TAC[l]}
-                    </Radio.Button>
-                  ))}
+                  {(Object.keys(PARTNER_KIND_LABELS) as PartnerKind[]).map(
+                    (option) => (
+                      <Radio.Button key={option} value={option}>
+                        {PARTNER_KIND_LABELS[option]}
+                      </Radio.Button>
+                    ),
+                  )}
                 </Radio.Group>
               )}
             />
@@ -131,23 +141,25 @@ export function NganKeoDoiTac({ id, open, onClose }: Props) {
           <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
             <Form.Item
               label="Mã đối tác"
-              validateStatus={errors.ma ? "error" : undefined}
-              help={errors.ma?.message ?? (taoMoi ? "Gợi ý theo loại, sửa được" : undefined)}
+              validateStatus={errors.code ? "error" : undefined}
+              help={
+                errors.code?.message ?? (isNew ? "Gợi ý theo loại, sửa được" : undefined)
+              }
             >
               <Controller
-                name="ma"
+                name="code"
                 control={control}
-                render={({ field }) => <Input {...field} autoFocus={taoMoi} />}
+                render={({ field }) => <Input {...field} autoFocus={isNew} />}
               />
             </Form.Item>
 
             <Form.Item
               label="Điện thoại"
-              validateStatus={errors.dien_thoai ? "error" : undefined}
-              help={errors.dien_thoai?.message}
+              validateStatus={errors.phone ? "error" : undefined}
+              help={errors.phone?.message}
             >
               <Controller
-                name="dien_thoai"
+                name="phone"
                 control={control}
                 render={({ field }) => <Input {...field} inputMode="tel" />}
               />
@@ -156,10 +168,14 @@ export function NganKeoDoiTac({ id, open, onClose }: Props) {
 
           <Form.Item
             label="Tên đối tác"
-            validateStatus={errors.ten ? "error" : undefined}
-            help={errors.ten?.message}
+            validateStatus={errors.name ? "error" : undefined}
+            help={errors.name?.message}
           >
-            <Controller name="ten" control={control} render={({ field }) => <Input {...field} />} />
+            <Controller
+              name="name"
+              control={control}
+              render={({ field }) => <Input {...field} />}
+            />
           </Form.Item>
 
           <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
@@ -177,7 +193,7 @@ export function NganKeoDoiTac({ id, open, onClose }: Props) {
 
             <Form.Item label="Khu vực">
               <Controller
-                name="khu_vuc"
+                name="region"
                 control={control}
                 render={({ field }) => <Input {...field} />}
               />
@@ -186,7 +202,7 @@ export function NganKeoDoiTac({ id, open, onClose }: Props) {
 
           <Form.Item label="Địa chỉ">
             <Controller
-              name="dia_chi"
+              name="address"
               control={control}
               render={({ field }) => <Input {...field} />}
             />
@@ -194,11 +210,11 @@ export function NganKeoDoiTac({ id, open, onClose }: Props) {
 
           <Form.Item
             label="Mã số thuế"
-            validateStatus={errors.ma_so_thue ? "error" : undefined}
-            help={errors.ma_so_thue?.message}
+            validateStatus={errors.taxCode ? "error" : undefined}
+            help={errors.taxCode?.message}
           >
             <Controller
-              name="ma_so_thue"
+              name="taxCode"
               control={control}
               render={({ field }) => <Input {...field} />}
             />
@@ -206,19 +222,19 @@ export function NganKeoDoiTac({ id, open, onClose }: Props) {
 
           <Form.Item label="Ghi chú">
             <Controller
-              name="ghi_chu"
+              name="note"
               control={control}
               render={({ field }) => <Input.TextArea {...field} rows={2} />}
             />
           </Form.Item>
 
-          {!taoMoi ? (
+          {!isNew ? (
             <Form.Item
               label="Đang hoạt động"
               help="Tắt để ngừng dùng đối tác này. Lịch sử giao dịch vẫn giữ nguyên."
             >
               <Controller
-                name="dang_hoat_dong"
+                name="isActive"
                 control={control}
                 render={({ field }) => (
                   <Switch checked={field.value} onChange={field.onChange} />

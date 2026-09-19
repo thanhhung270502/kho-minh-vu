@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { removeDiacritics, normalizeUsername, usernameToEmail } from "../src/shared/lib/text";
 import { hasPermission } from "../src/shared/lib/permissions";
 import { safeRedirectPath } from "../src/shared/lib/redirect-path";
-import { goiYTenKhach, tachSoDienThoai } from "../src/features/doi-tac/lib/ghi-chu";
+import { suggestCustomerName, extractPhoneNumber } from "../src/features/partners/lib/notes";
 import { buildErrorCsv, errorFileName } from "../src/features/products/lib/error-file";
 import {
   BO_LOC_PHIEU_MAC_DINH,
@@ -87,16 +87,16 @@ assert.equal(toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, needsReview: false }).p_
 
 // Ghi chú KiotViet thật: dòng 1 là tên + địa chỉ, dòng 2 là SĐT.
 assert.equal(
-  goiYTenKhach("TIẾN DŨNG 602 QUANG TRUNG\nSĐT 0909"),
+  suggestCustomerName("TIẾN DŨNG 602 QUANG TRUNG\nSĐT 0909"),
   "Tiến Dũng 602 Quang Trung",
   "tên đề xuất chỉ lấy dòng đầu, viết hoa chữ cái đầu",
 );
 assert.equal(
-  tachSoDienThoai("HUY HOÀNG 5 \nPHƯỚC HẬU 0966116224"),
+  extractPhoneNumber("HUY HOÀNG 5 \nPHƯỚC HẬU 0966116224"),
   "0966116224",
   "lấy được SĐT nằm ở dòng sau",
 );
-assert.equal(tachSoDienThoai("NGỌC"), null, "ghi chú không có số thì trả null");
+assert.equal(extractPhoneNumber("NGỌC"), null, "ghi chú không có số thì trả null");
 
 // --- Bộ lọc phiếu nhập (Phase 3) -------------------------------------------
 const boLocPhieu: BoLocPhieu = {

@@ -1,4 +1,5 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import type { Page } from "@/shared/types";
 import type { Json } from "@/types/database.types";
 
 import { toListRpcArgs, type ProductFilter } from "../schemas/filter.schema";
@@ -10,7 +11,6 @@ import {
   toStockCardRow,
   type EditableProductField,
   type Lookups,
-  type Page,
   type ProductDetail,
   toProductInsert,
   type ProductInput,
