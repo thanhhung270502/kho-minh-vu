@@ -1,6 +1,6 @@
 /**
  * Kiểm hàm thuần bằng node:assert — không cần Next.js, không cần database.
- * Chạy: npx tsx scripts/kiem-tra-ham-thuan.ts
+ * Chạy: npx tsx scripts/test-pure-functions.ts
  */
 import assert from "node:assert/strict";
 

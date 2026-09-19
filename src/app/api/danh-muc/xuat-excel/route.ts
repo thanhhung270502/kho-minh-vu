@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 
-import { taoFileMau } from "@/features/products/lib/read-catalog-file.server";
+import { buildTemplateWorkbook } from "@/features/products/lib/read-catalog-file.server";
 import type { ExportRowPayload } from "@/features/products/lib/excel-template";
 import { readFilterFromUrl, toListRpcArgs } from "@/features/products/schemas/filter.schema";
 import { getCurrentUser } from "@/features/auth/api/current-user.server";
@@ -30,8 +30,8 @@ function tenFile(): string {
 }
 
 export async function GET(request: NextRequest) {
-  const nd = await getCurrentUser();
-  if (!nd) {
+  const user = await getCurrentUser();
+  if (!user) {
     return Response.json(
       {
         title: "Phiên đăng nhập đã hết hạn",
@@ -72,16 +72,16 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const { data: kho, error: loiKho } = await supabase.from("kho").select("id, ten");
-  if (loiKho) {
-    const loi = explainError(loiKho);
+  const { data: kho, error: warehouseError } = await supabase.from("kho").select("id, ten");
+  if (warehouseError) {
+    const loi = explainError(warehouseError);
     return Response.json({ title: loi.title, action: loi.action }, { status: 500 });
   }
 
-  const tenKho = new Map((kho ?? []).map((k) => [k.id, k.ten]));
-  const coGiaVon = hasPermission(nd.role, "view-cost");
+  const warehouseName = new Map((kho ?? []).map((k) => [k.id, k.ten]));
+  const includeCost = hasPermission(user.role, "view-cost");
 
-  const dongXuat: ExportRowPayload[] = dong.map((d, i) => ({
+  const exportRows: ExportRowPayload[] = dong.map((d, i) => ({
     dong: i + 2,
     ma_hang: d.ma_hang,
     ten_hang: d.ten_hang,
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
     dvt: d.ten_dvt,
     cong_doan: d.ten_cong_doan,
     quy_doi: d.quy_doi === null ? null : Number(d.quy_doi),
-    kho_mac_dinh: d.kho_mac_dinh_id ? (tenKho.get(d.kho_mac_dinh_id) ?? null) : null,
+    kho_mac_dinh: d.kho_mac_dinh_id ? (warehouseName.get(d.kho_mac_dinh_id) ?? null) : null,
     ton_toi_thieu: d.ton_toi_thieu === null ? null : Number(d.ton_toi_thieu),
     ton_toi_da: d.ton_toi_da === null ? null : Number(d.ton_toi_da),
     gia_ban: d.gia_ban === null ? null : Number(d.gia_ban),
@@ -97,10 +97,10 @@ export async function GET(request: NextRequest) {
     ghi_chu: null,
     tong_ton: d.tong_ton === null ? null : Number(d.tong_ton),
     // Cột giá vốn chỉ có mặt khi được phép xem; RPC cũng đã trả null cho vai trò khác.
-    gia_von: coGiaVon && d.gia_von !== null ? Number(d.gia_von) : null,
+    gia_von: includeCost && d.gia_von !== null ? Number(d.gia_von) : null,
   }));
 
-  const buf = await taoFileMau(dongXuat, { coGiaVon });
+  const buf = await buildTemplateWorkbook(exportRows, { includeCost });
 
   return new Response(new Uint8Array(buf), {
     headers: {

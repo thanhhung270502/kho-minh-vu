@@ -11,7 +11,7 @@
  *
  * Dùng anon key, mô phỏng đúng luồng của người dùng thật.
  */
-import { taoAnonClient, taoAdminClient, TAI_KHOAN_MAU, matKhauMau } from "./_supabase-admin";
+import { taoAnonClient, taoAdminClient, SAMPLE_ACCOUNTS, samplePassword } from "./_supabase-admin";
 
 type Claims = { vai_tro?: string; kho_id?: string[] | string; sub?: string };
 
@@ -31,10 +31,10 @@ async function main() {
   const dong: Array<{ email: string; vai_tro: string; kho_id: string; ket_qua: string }> = [];
   let hong = 0;
 
-  for (const tk of TAI_KHOAN_MAU) {
+  for (const tk of SAMPLE_ACCOUNTS) {
     const { data, error } = await anon.auth.signInWithPassword({
       email: tk.email,
-      password: matKhauMau(),
+      password: samplePassword(),
     });
 
     if (error || !data.session) {
@@ -83,7 +83,7 @@ async function main() {
 
   if (hong > 0) {
     console.error(
-      `\n${hong}/${TAI_KHOAN_MAU.length} tài khoản thiếu claim.\n\n` +
+      `\n${hong}/${SAMPLE_ACCOUNTS.length} tài khoản thiếu claim.\n\n` +
         "Nguyên nhân thường gặp: hook chưa được bật trên cloud.\n" +
         "Cách xử lý: Supabase Dashboard > Authentication > Hooks >\n" +
         "  Customize Access Token (JWT) Claims > chọn public.custom_access_token_hook > Enable.\n" +

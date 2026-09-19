@@ -15,7 +15,7 @@ import ExcelJS from "exceljs";
 import { readdirSync } from "node:fs";
 import path from "node:path";
 
-import { readString } from "./doc-file";
+import { readString } from "./read-file";
 
 const THU_MUC = process.argv[2] ?? path.join("data", "kiotviet");
 

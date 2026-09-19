@@ -3,7 +3,7 @@ import type { QueryData } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 /** Một truy vấn, một kiểu: shape suy từ chính câu select, không viết tay. */
-function truyVanNguoiDung() {
+function userQuery() {
   return getSupabaseBrowserClient()
     .from("nguoi_dung")
     .select(
@@ -12,19 +12,19 @@ function truyVanNguoiDung() {
     .order("ho_ten");
 }
 
-export type DongNguoiDung = QueryData<ReturnType<typeof truyVanNguoiDung>>[number];
+export type UserRow = QueryData<ReturnType<typeof userQuery>>[number];
 
-export const khoaNguoiDung = ["nguoi-dung"] as const;
-export const khoaKhoHoatDong = ["nguoi-dung", "kho-hoat-dong"] as const;
+export const userListKey = ["nguoi-dung"] as const;
+export const activeWarehouseKey = ["nguoi-dung", "kho-hoat-dong"] as const;
 
 /** RLS: chỉ quản lý thấy mọi dòng, vai trò khác chỉ thấy chính mình. */
-export async function layDanhSachNguoiDung(): Promise<DongNguoiDung[]> {
-  const { data, error } = await truyVanNguoiDung();
+export async function fetchUsers(): Promise<UserRow[]> {
+  const { data, error } = await userQuery();
   if (error) throw error;
   return data ?? [];
 }
 
-export async function layKhoHoatDong(): Promise<Array<{ id: string; ma: string; ten: string }>> {
+export async function fetchActiveWarehouses(): Promise<Array<{ id: string; ma: string; ten: string }>> {
   const { data, error } = await getSupabaseBrowserClient()
     .from("kho")
     .select("id, ma, ten")
@@ -34,7 +34,7 @@ export async function layKhoHoatDong(): Promise<Array<{ id: string; ma: string; 
   return data ?? [];
 }
 
-export function khoCuaNguoiDung(nd: DongNguoiDung): Array<{ id: string; ten: string }> {
+export function userWarehouses(nd: UserRow): Array<{ id: string; ten: string }> {
   return (nd.nguoi_dung_kho ?? []).map((k) => ({
     id: k.kho_id,
     ten: k.kho?.ten ?? k.kho_id,

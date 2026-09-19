@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { requirePermission } from "@/features/auth/api/current-user.server";
-import { TabCaiDat } from "@/features/cai-dat/components/tab-cai-dat";
+import { SettingsTabs } from "@/features/settings/components/settings-tabs";
 import { PageHeader } from "@/shared/components/page-header";
 
 export default async function CaiDatLayout({ children }: { children: ReactNode }) {
@@ -15,7 +15,7 @@ export default async function CaiDatLayout({ children }: { children: ReactNode }
         description="Người dùng & vai trò, kho, nhóm hàng/ĐVT, quy tắc đánh số chứng từ."
       />
 
-      <TabCaiDat role={nd.role} />
+      <SettingsTabs role={nd.role} />
 
       {children}
     </>

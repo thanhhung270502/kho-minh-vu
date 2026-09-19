@@ -3,13 +3,13 @@ import type { PostgrestError } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Database } from "@/types/database.types";
 
-export type BangDanhMucPhu = "kho" | "nhom_hang" | "don_vi_tinh" | "cong_doan";
+export type LookupTableName = "kho" | "nhom_hang" | "don_vi_tinh" | "cong_doan";
 
 /**
  * Một dòng của bất kỳ bảng danh mục phụ nào. Các cột chỉ có ở một bảng để
- * optional — bảng nào hiện cột nào do `CAU_HINH_DANH_MUC_PHU` quyết định.
+ * optional — bảng nào hiện cột nào do `LOOKUP_TABLE_CONFIG` quyết định.
  */
-export type LookupItem = {
+export type LookupRow = {
   id: string;
   ma: string;
   ten: string;
@@ -21,58 +21,58 @@ export type LookupItem = {
   dang_hoat_dong?: boolean;
 };
 
-export type CauHinhDanhMucPhu = {
+export type LookupTableConfig = {
   label: string;
-  nhanHoa: string;
+  title: string;
   cot: string;
   /** Kho KHÔNG xóa được: tồn kho và chứng từ cũ trỏ vào — ngừng hoạt động thay vì xóa. */
-  xoaDuoc: boolean;
-  coCha: boolean;
-  coMau: boolean;
-  coDiaChi: boolean;
-  coTrangThai: boolean;
+  deletable: boolean;
+  hasParent: boolean;
+  hasColor: boolean;
+  hasAddress: boolean;
+  hasStatus: boolean;
 };
 
-export const CAU_HINH_DANH_MUC_PHU: Record<BangDanhMucPhu, CauHinhDanhMucPhu> = {
+export const LOOKUP_TABLE_CONFIG: Record<LookupTableName, LookupTableConfig> = {
   kho: {
     label: "kho",
-    nhanHoa: "Kho",
+    title: "Kho",
     cot: "id, ma, ten, dia_chi, dang_hoat_dong, updated_at",
-    xoaDuoc: false,
-    coCha: false,
-    coMau: false,
-    coDiaChi: true,
-    coTrangThai: true,
+    deletable: false,
+    hasParent: false,
+    hasColor: false,
+    hasAddress: true,
+    hasStatus: true,
   },
   nhom_hang: {
     label: "nhóm hàng",
-    nhanHoa: "Nhóm hàng",
+    title: "Nhóm hàng",
     cot: "id, ma, ten, parent_id, thu_tu, updated_at",
-    xoaDuoc: true,
-    coCha: true,
-    coMau: false,
-    coDiaChi: false,
-    coTrangThai: false,
+    deletable: true,
+    hasParent: true,
+    hasColor: false,
+    hasAddress: false,
+    hasStatus: false,
   },
   don_vi_tinh: {
     label: "đơn vị tính",
-    nhanHoa: "Đơn vị tính",
+    title: "Đơn vị tính",
     cot: "id, ma, ten, updated_at",
-    xoaDuoc: true,
-    coCha: false,
-    coMau: false,
-    coDiaChi: false,
-    coTrangThai: false,
+    deletable: true,
+    hasParent: false,
+    hasColor: false,
+    hasAddress: false,
+    hasStatus: false,
   },
   cong_doan: {
     label: "công đoạn",
-    nhanHoa: "Công đoạn",
+    title: "Công đoạn",
     cot: "id, ma, ten, mau_hien_thi, updated_at",
-    xoaDuoc: true,
-    coCha: false,
-    coMau: true,
-    coDiaChi: false,
-    coTrangThai: false,
+    deletable: true,
+    hasParent: false,
+    hasColor: true,
+    hasAddress: false,
+    hasStatus: false,
   },
 };
 
@@ -81,18 +81,18 @@ export const CAU_HINH_DANH_MUC_PHU: Record<BangDanhMucPhu, CauHinhDanhMucPhu> = 
  * `cong_doan_khi_tao_moi` khi nhập Excel). Trùng đúng danh sách trong migration
  * 0040 — database mới là nơi chặn thật, đây chỉ để ẩn nút cho đỡ bực.
  */
-export const MA_HE_THONG: Record<BangDanhMucPhu, readonly string[]> = {
+export const SYSTEM_CODES: Record<LookupTableName, readonly string[]> = {
   kho: [],
   nhom_hang: [],
   don_vi_tinh: ["CAI"],
   cong_doan: ["EP", "SON", "CARBON", "XI_MA", "NANO", "MUA_NGOAI"],
 };
 
-export function laMaHeThong(table: BangDanhMucPhu, ma: string): boolean {
-  return MA_HE_THONG[table].includes(ma);
+export function isSystemCode(table: LookupTableName, ma: string): boolean {
+  return SYSTEM_CODES[table].includes(ma);
 }
 
-export type GiaTriDanhMucPhu = {
+export type LookupValues = {
   ma: string;
   ten: string;
   parent_id?: string | null;
@@ -105,49 +105,49 @@ export type GiaTriDanhMucPhu = {
  * Bốn bảng có shape khác nhau nên supabase-js không suy được kiểu chung cho
  * `.from(table)` — nó chốt vào bảng đầu của union và báo lỗi cột. Khai một mặt
  * cắt hẹp đúng bốn thao tác đang dùng, ép kiểu CHỈ ở đây. Cột đọc ra luôn liệt
- * kê tường minh trong `CAU_HINH_DANH_MUC_PHU.cot`, kết quả thu về
- * `LookupItem` — không có `any` nào lọt ra ngoài file này.
+ * kê tường minh trong `LOOKUP_TABLE_CONFIG.cot`, kết quả thu về
+ * `LookupRow` — không có `any` nào lọt ra ngoài file này.
  */
-type KetQua = PromiseLike<{
+type QueryResult = PromiseLike<{
   data: unknown;
   error: PostgrestError | null;
   count: number | null;
 }>;
 
-type MatCatBang = {
-  select(cot: string): { order(cot: string): KetQua };
-  insert(v: GiaTriDanhMucPhu): KetQua;
-  update(v: GiaTriDanhMucPhu): { eq(cot: string, gt: string): KetQua };
-  delete(tuyChon: { count: "exact" }): { eq(cot: string, gt: string): KetQua };
+type TableSlice = {
+  select(cot: string): { order(cot: string): QueryResult };
+  insert(v: LookupValues): QueryResult;
+  update(v: LookupValues): { eq(cot: string, gt: string): QueryResult };
+  delete(tuyChon: { count: "exact" }): { eq(cot: string, gt: string): QueryResult };
 };
 
-function table(ten: BangDanhMucPhu): MatCatBang {
+function table(ten: LookupTableName): TableSlice {
   const sb = getSupabaseBrowserClient() as unknown as {
-    from(t: string): MatCatBang;
+    from(t: string): TableSlice;
   };
   return sb.from(ten);
 }
 
-export async function fetchLookups(ten: BangDanhMucPhu): Promise<LookupItem[]> {
+export async function fetchLookupRows(ten: LookupTableName): Promise<LookupRow[]> {
   const { data, error } = await table(ten)
-    .select(CAU_HINH_DANH_MUC_PHU[ten].cot)
+    .select(LOOKUP_TABLE_CONFIG[ten].cot)
     .order("ma");
   if (error) throw error;
-  return (data ?? []) as unknown as LookupItem[];
+  return (data ?? []) as unknown as LookupRow[];
 }
 
-export async function taoMucDanhMucPhu(
-  ten: BangDanhMucPhu,
-  v: GiaTriDanhMucPhu,
+export async function createLookupRow(
+  ten: LookupTableName,
+  v: LookupValues,
 ): Promise<void> {
   const { error } = await table(ten).insert(v);
   if (error) throw error;
 }
 
-export async function capNhatMucDanhMucPhu(
-  ten: BangDanhMucPhu,
+export async function updateLookupRow(
+  ten: LookupTableName,
   id: string,
-  v: GiaTriDanhMucPhu,
+  v: LookupValues,
 ): Promise<void> {
   const { error } = await table(ten).update(v).eq("id", id);
   if (error) throw error;
@@ -157,7 +157,7 @@ export async function capNhatMucDanhMucPhu(
  * Không có policy DELETE thì Postgres lọc sạch dòng và trả về 0 — `error` là
  * null, giao diện sẽ báo "đã xóa" trong khi dữ liệu còn nguyên. Đếm để phát hiện.
  */
-export async function xoaMucDanhMucPhu(ten: BangDanhMucPhu, id: string): Promise<void> {
+export async function deleteLookupRow(ten: LookupTableName, id: string): Promise<void> {
   const { error, count } = await table(ten).delete({ count: "exact" }).eq("id", id);
   if (error) throw error;
   if (!count) {
@@ -167,4 +167,4 @@ export async function xoaMucDanhMucPhu(ten: BangDanhMucPhu, id: string): Promise
   }
 }
 
-export type LoaiCt = Database["public"]["Enums"]["loai_ct"];
+export type DocType = Database["public"]["Enums"]["loai_ct"];

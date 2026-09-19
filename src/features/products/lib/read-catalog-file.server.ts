@@ -2,7 +2,7 @@
  * Đọc và ghi file Excel danh mục. CHỈ CHẠY Ở SERVER (Route Handler).
  *
  * KHÔNG dùng `import "server-only"`: gói đó ném lỗi khi chạy ngoài điều kiện
- * `react-server`, mà `scripts/kiem-tra-doc-excel.ts` phải import được để kiểm trên
+ * `react-server`, mà `scripts/test-excel-reader.ts` phải import được để kiểm trên
  * file KiotViet thật. Hàng rào thật là `node:stream` bên trong `o-excel.ts` —
  * import nhầm vào Client Component là build hỏng ngay.
  */
@@ -49,7 +49,7 @@ function nhanDang(headers: string[]): DinhDangFile {
   );
 }
 
-function dongMauMoi(o: Record<string, unknown>, rowNumber: number): ImportRowPayload {
+function parseTemplateRow(o: Record<string, unknown>, rowNumber: number): ImportRowPayload {
   const toiDa = readNumber(o["ton_toi_da"]);
 
   return {
@@ -70,10 +70,10 @@ function dongMauMoi(o: Record<string, unknown>, rowNumber: number): ImportRowPay
   };
 }
 
-function dongKiotViet(o: Record<string, unknown>, rowNumber: number): ImportRowPayload {
+function parseKiotVietRow(o: Record<string, unknown>, rowNumber: number): ImportRowPayload {
   const tach = splitUnitStage(readString(o["dvt"]));
   const toiDa = readNumber(o["ton_lon_nhat"]);
-  const giaBan = readNumber(o["gia_ban"]);
+  const salePrice = readNumber(o["gia_ban"]);
 
   return {
     dong: rowNumber,
@@ -92,13 +92,13 @@ function dongKiotViet(o: Record<string, unknown>, rowNumber: number): ImportRowP
     ton_toi_thieu: readNumber(o["ton_nho_nhat"]),
     ton_toi_da: toiDa === null || toiDa >= KHONG_GIOI_HAN ? null : toiDa,
     // Giá bán trên hệ cũ bằng 0 cho cả 3.266 mã — gửi 0 là ghi đè giá quản lý vừa đặt.
-    gia_ban: giaBan ? giaBan : null,
+    gia_ban: salePrice ? salePrice : null,
     dang_kinh_doanh: readString(o["dang_kinh_doanh"]) !== "0",
     ghi_chu: readString(o["mo_ta"]),
   };
 }
 
-export async function docFileDanhMuc(
+export async function readCatalogFile(
   buf: Buffer,
 ): Promise<{ dinhDang: DinhDangFile; dong: ImportRowPayload[] }> {
   let doc;
@@ -112,7 +112,7 @@ export async function docFileDanhMuc(
 
   const dinhDang = nhanDang(doc.headers);
   const dong = doc.rows.map((d) =>
-    dinhDang === "mau_moi" ? dongMauMoi(d.cells, d.rowNumber) : dongKiotViet(d.cells, d.rowNumber),
+    dinhDang === "mau_moi" ? parseTemplateRow(d.cells, d.rowNumber) : parseKiotVietRow(d.cells, d.rowNumber),
   );
 
   return { dinhDang, dong };
@@ -130,11 +130,11 @@ const HUONG_DAN: Array<[string, string]> = [
 ];
 
 /** Ghi file mẫu hệ mới. Dùng workbook thường (ghi không gặp bẫy styles như khi đọc). */
-export async function taoFileMau(
+export async function buildTemplateWorkbook(
   dong: ExportRowPayload[],
-  { coGiaVon }: { coGiaVon: boolean },
+  { includeCost }: { includeCost: boolean },
 ): Promise<Buffer> {
-  const cot = TEMPLATE_COLUMNS.filter((c) => c.key !== "gia_von" || coGiaVon);
+  const cot = TEMPLATE_COLUMNS.filter((c) => c.key !== "gia_von" || includeCost);
 
   const wb = new ExcelJS.Workbook();
   wb.creator = "Kho Minh Vũ";
@@ -171,6 +171,6 @@ export async function taoFileMau(
 }
 
 /** Dòng đọc lên rồi ghi lại — dùng cho kiểm quay vòng. */
-export function dongNhapThanhDongXuat(d: ImportRowPayload): ExportRowPayload {
+export function toExportRow(d: ImportRowPayload): ExportRowPayload {
   return { ...d };
 }

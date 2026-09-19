@@ -49,7 +49,7 @@ export function taoAnonClient(): SupabaseClient<Database> {
   });
 }
 
-export const TAI_KHOAN_MAU = [
+export const SAMPLE_ACCOUNTS = [
   { email: "quanly@khominhvu.local",   fullName: "Quản lý demo",    role: "quan_ly"   as const, maKho: [] as string[] },
   { email: "vanphong@khominhvu.local", fullName: "Văn phòng demo",  role: "van_phong" as const, maKho: [] as string[] },
   { email: "thukho1@khominhvu.local",  fullName: "Thủ kho K1",      role: "thu_kho"   as const, maKho: ["K1"] },
@@ -57,6 +57,6 @@ export const TAI_KHOAN_MAU = [
   { email: "chixem@khominhvu.local",   fullName: "Chỉ xem demo",    role: "chi_xem"   as const, maKho: [] as string[] },
 ];
 
-export function matKhauMau(): string {
+export function samplePassword(): string {
   return process.env.SEED_USER_PASSWORD ?? "MatKhauDemo123!";
 }

@@ -8,7 +8,7 @@ import { Controller, useForm } from "react-hook-form";
 import {
   changePasswordSchema,
   type ChangePasswordInput,
-} from "@/features/cai-dat/schemas/nguoi-dung.schema";
+} from "@/features/settings/schemas/user.schema";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { explainError } from "@/shared/lib/errors";
 

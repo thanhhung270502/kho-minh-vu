@@ -6,8 +6,8 @@
  */
 import { z } from "zod";
 
-import { readString, readNumber, type RawRow } from "./doc-file";
-import { splitUnitStage } from "./tach-dvt-cong-doan";
+import { readString, readNumber, type RawRow } from "./read-file";
+import { splitUnitStage } from "./parse-unit-stage";
 
 export type Loi = { rowNumber: number; truong: string; lyDo: string; giaTri: unknown };
 export type CanhBao = { rowNumber: number | null; lyDo: string };

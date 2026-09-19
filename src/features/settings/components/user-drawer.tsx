@@ -10,20 +10,20 @@ import { FormDrawer } from "@/shared/components/form-drawer";
 import { normalizeUsername } from "@/shared/lib/text";
 import { ROLE_LABELS, type Role } from "@/shared/lib/permissions";
 
-import { capNhatNguoiDung, taoNguoiDung } from "../actions/nguoi-dung.actions";
+import { updateUser, createUser } from "../actions/user.actions";
 import {
-  khoaKhoHoatDong,
-  khoaNguoiDung,
-  khoCuaNguoiDung,
-  layKhoHoatDong,
-  type DongNguoiDung,
-} from "../api/nguoi-dung.api";
+  activeWarehouseKey,
+  userListKey,
+  userWarehouses,
+  fetchActiveWarehouses,
+  type UserRow,
+} from "../api/user.api";
 import {
-  formSuaNguoiDungSchema,
-  formTaoNguoiDungSchema,
-  VAI_TRO,
-} from "../schemas/nguoi-dung.schema";
-import { OMatKhauTam, generateTempPassword } from "./o-mat-khau-tam";
+  editUserFormSchema,
+  createUserFormSchema,
+  ROLES,
+} from "../schemas/user.schema";
+import { TempPasswordField, generateTempPassword } from "./temp-password-field";
 
 const MO_TA_VAI_TRO: Record<Role, string> = {
   quan_ly: "Toàn quyền, kể cả Cài đặt và giá bán",
@@ -32,23 +32,23 @@ const MO_TA_VAI_TRO: Record<Role, string> = {
   chi_xem: "Xem, không tạo hay sửa gì",
 };
 
-type FormNguoiDung = {
+type UserFormValues = {
   fullName: string;
   username: string;
   role: Role;
-  khoIds: string[];
+  warehouseIds: string[];
   tempPassword: string;
 };
 
-type Props = { open: boolean; user: DongNguoiDung | null; onClose: () => void };
+type Props = { open: boolean; user: UserRow | null; onClose: () => void };
 
-export function NganKeoNguoiDung({ open, user, onClose }: Props) {
+export function UserDrawer({ open, user, onClose }: Props) {
   const { message, notification } = App.useApp();
   const queryClient = useQueryClient();
   const [dangChay, batDau] = useTransition();
-  const kho = useQuery({ queryKey: khoaKhoHoatDong, queryFn: layKhoHoatDong });
+  const warehouses = useQuery({ queryKey: activeWarehouseKey, queryFn: fetchActiveWarehouses });
 
-  const taoMoi = !user;
+  const isNew = !user;
 
   const {
     control,
@@ -56,17 +56,17 @@ export function NganKeoNguoiDung({ open, user, onClose }: Props) {
     reset,
     setError,
     formState: { errors },
-  } = useForm<FormNguoiDung>({
+  } = useForm<UserFormValues>({
     // Hai schema khác nhau: tạo mới cần tên đăng nhập + mật khẩu tạm, sửa thì
     // không (và cũng không có `id` trong form — id lấy từ dòng bảng).
     resolver: zodResolver(
-      taoMoi ? formTaoNguoiDungSchema : formSuaNguoiDungSchema,
-    ) as unknown as Resolver<FormNguoiDung>,
+      isNew ? createUserFormSchema : editUserFormSchema,
+    ) as unknown as Resolver<UserFormValues>,
     defaultValues: {
       fullName: "",
       username: "",
       role: "thu_kho",
-      khoIds: [],
+      warehouseIds: [],
       tempPassword: "",
     },
   });
@@ -80,14 +80,14 @@ export function NganKeoNguoiDung({ open, user, onClose }: Props) {
             fullName: user.ho_ten,
             username: user.ten_dang_nhap ?? "",
             role: user.vai_tro,
-            khoIds: khoCuaNguoiDung(user).map((k) => k.id),
+            warehouseIds: userWarehouses(user).map((k) => k.id),
             tempPassword: "",
           }
         : {
             fullName: "",
             username: "",
             role: "thu_kho",
-            khoIds: [],
+            warehouseIds: [],
             tempPassword: generateTempPassword(),
           },
     );
@@ -99,40 +99,40 @@ export function NganKeoNguoiDung({ open, user, onClose }: Props) {
   const onSave = handleSubmit((v) => {
     batDau(async () => {
       const kq = user
-        ? await capNhatNguoiDung({
+        ? await updateUser({
             id: user.id,
             fullName: v.fullName,
             role: v.role,
-            khoIds: v.role === "thu_kho" ? v.khoIds : [],
+            warehouseIds: v.role === "thu_kho" ? v.warehouseIds : [],
           })
-        : await taoNguoiDung({
+        : await createUser({
             fullName: v.fullName,
             username: v.username,
             role: v.role,
-            khoIds: v.role === "thu_kho" ? v.khoIds : [],
+            warehouseIds: v.role === "thu_kho" ? v.warehouseIds : [],
             tempPassword: v.tempPassword,
           });
 
       if (!kq.ok) {
-        if (kq.truong) {
-          setError(kq.truong as keyof FormNguoiDung, { message: kq.thongBao });
+        if (kq.field) {
+          setError(kq.field as keyof UserFormValues, { message: kq.message });
         } else {
-          setError("root", { message: kq.thongBao });
+          setError("root", { message: kq.message });
         }
         return;
       }
 
-      void queryClient.invalidateQueries({ queryKey: khoaNguoiDung });
+      void queryClient.invalidateQueries({ queryKey: userListKey });
 
-      if (taoMoi) {
+      if (isNew) {
         message.success(`Đã tạo tài khoản ${normalizeUsername(v.username)}`);
       } else {
-        const doiVaiTro = user.vai_tro !== v.role;
-        const khoCu = khoCuaNguoiDung(user).map((k) => k.id);
-        const doiKho =
-          khoCu.length !== v.khoIds.length || khoCu.some((k) => !v.khoIds.includes(k));
+        const roleChanged = user.vai_tro !== v.role;
+        const previousWarehouses = userWarehouses(user).map((k) => k.id);
+        const warehousesChanged =
+          previousWarehouses.length !== v.warehouseIds.length || previousWarehouses.some((k) => !v.warehouseIds.includes(k));
 
-        if (doiVaiTro || doiKho) {
+        if (roleChanged || warehousesChanged) {
           notification.info({
             message: "Đã lưu",
             description:
@@ -150,7 +150,7 @@ export function NganKeoNguoiDung({ open, user, onClose }: Props) {
   return (
     <FormDrawer
       open={open}
-      title={taoMoi ? "Thêm tài khoản" : "Sửa tài khoản"}
+      title={isNew ? "Thêm tài khoản" : "Sửa tài khoản"}
       saving={dangChay}
       onClose={onClose}
       onSave={() => void onSave()}
@@ -172,7 +172,7 @@ export function NganKeoNguoiDung({ open, user, onClose }: Props) {
           />
         </Form.Item>
 
-        {taoMoi ? (
+        {isNew ? (
           <Form.Item
             label="Tên đăng nhập"
             validateStatus={errors.username ? "error" : undefined}
@@ -219,7 +219,7 @@ export function NganKeoNguoiDung({ open, user, onClose }: Props) {
             control={control}
             render={({ field }) => (
               <Radio.Group {...field} className="flex flex-col gap-2">
-                {VAI_TRO.map((v) => (
+                {ROLES.map((v) => (
                   <Radio key={v} value={v}>
                     {ROLE_LABELS[v]}
                     <div className="text-xs text-gray-500">{MO_TA_VAI_TRO[v]}</div>
@@ -233,24 +233,24 @@ export function NganKeoNguoiDung({ open, user, onClose }: Props) {
         {role === "thu_kho" ? (
           <Form.Item
             label="Kho được vào"
-            validateStatus={errors.khoIds ? "error" : undefined}
-            help={errors.khoIds?.message ?? "Thủ kho chỉ thấy tồn và phiếu của kho được gán."}
+            validateStatus={errors.warehouseIds ? "error" : undefined}
+            help={errors.warehouseIds?.message ?? "Thủ kho chỉ thấy tồn và phiếu của kho được gán."}
           >
             <Controller
-              name="khoIds"
+              name="warehouseIds"
               control={control}
               render={({ field }) => (
                 <Checkbox.Group
                   value={field.value}
                   onChange={field.onChange}
-                  options={(kho.data ?? []).map((k) => ({ value: k.id, label: k.ten }))}
+                  options={(warehouses.data ?? []).map((w) => ({ value: w.id, label: w.ten }))}
                 />
               )}
             />
           </Form.Item>
         ) : null}
 
-        {taoMoi ? (
+        {isNew ? (
           <Form.Item
             label="Mật khẩu tạm"
             validateStatus={errors.tempPassword ? "error" : undefined}
@@ -263,7 +263,7 @@ export function NganKeoNguoiDung({ open, user, onClose }: Props) {
               name="tempPassword"
               control={control}
               render={({ field }) => (
-                <OMatKhauTam value={field.value} onChange={field.onChange} />
+                <TempPasswordField value={field.value} onChange={field.onChange} />
               )}
             />
           </Form.Item>

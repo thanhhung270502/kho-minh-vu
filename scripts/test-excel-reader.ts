@@ -1,7 +1,7 @@
 /**
  * Kiểm bộ đọc Excel trên FILE KIOTVIET THẬT, không phải file tự tạo.
  *
- *   npx tsx scripts/kiem-tra-doc-excel.ts
+ *   npx tsx scripts/test-excel-reader.ts
  *
  * Lý do bắt buộc dùng file thật: lỗi `reading 'styles'` chỉ xuất hiện với file do
  * KiotViet xuất ra; file tự tạo sạch sẽ không tái hiện được (bẫy Phase 1).
@@ -11,9 +11,9 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 import {
-  docFileDanhMuc,
-  dongNhapThanhDongXuat,
-  taoFileMau,
+  readCatalogFile,
+  toExportRow,
+  buildTemplateWorkbook,
 } from "../src/features/products/lib/read-catalog-file.server";
 
 async function main() {
@@ -24,7 +24,7 @@ async function main() {
   );
   assert.ok(ten, `Cần ${THU_MUC}/DanhSachSanPham*.xlsx (dữ liệu thật, không commit)`);
 
-  const kv = await docFileDanhMuc(readFileSync(join(THU_MUC, ten)));
+  const kv = await readCatalogFile(readFileSync(join(THU_MUC, ten)));
   assert.equal(kv.dinhDang, "kiotviet", "nhận ra file KiotViet");
   assert.equal(kv.dong.length, 3266, "đọc đủ 3.266 mã, không crash vì styles.xml lệch chuẩn");
   assert.ok(
@@ -53,8 +53,8 @@ async function main() {
 
   // Quay vòng: xuất mẫu hệ mới rồi đọc lại
   const nam = kv.dong.slice(0, 5);
-  const buf = await taoFileMau(nam.map(dongNhapThanhDongXuat), { coGiaVon: false });
-  const mm = await docFileDanhMuc(buf);
+  const buf = await buildTemplateWorkbook(nam.map(toExportRow), { includeCost: false });
+  const mm = await readCatalogFile(buf);
 
   assert.equal(mm.dinhDang, "mau_moi", "nhận ra mẫu hệ mới");
   assert.deepEqual(
@@ -69,7 +69,7 @@ async function main() {
   );
 
   await assert.rejects(
-    () => docFileDanhMuc(Buffer.from("day khong phai xlsx")),
+    () => readCatalogFile(Buffer.from("day khong phai xlsx")),
     /không đọc được file excel/i,
     "file hỏng báo lỗi đọc hiểu được, không ném lỗi thô",
   );
