@@ -10,6 +10,14 @@ import { tiepTucAnToan } from "../src/shared/lib/tiep-tuc";
 import { goiYTenKhach, tachSoDienThoai } from "../src/features/doi-tac/lib/ghi-chu";
 import { taoCsvLoi, tenFileLoi } from "../src/features/danh-muc/lib/file-loi";
 import {
+  BO_LOC_PHIEU_MAC_DINH,
+  demDieuKienPhieu,
+  docBoLocPhieu,
+  ghiBoLocPhieu,
+  thamSoRpcPhieu,
+  type BoLocPhieu,
+} from "../src/features/nhap-kho/schemas/phieu-nhap.schema";
+import {
   BO_LOC_MAC_DINH,
   docBoLocTuUrl,
   ghiBoLocRaUrl,
@@ -89,6 +97,37 @@ assert.equal(
   "lấy được SĐT nằm ở dòng sau",
 );
 assert.equal(tachSoDienThoai("NGỌC"), null, "ghi chú không có số thì trả null");
+
+// --- Bộ lọc phiếu nhập (Phase 3) -------------------------------------------
+const boLocPhieu: BoLocPhieu = {
+  q: "PN26",
+  trangThai: "HOAN_THANH",
+  doiTacId: "11111111-1111-4111-8111-111111111111",
+  khoId: "22222222-2222-4222-8222-222222222222",
+  nguonNhap: "NHA_MAY",
+  tuNgay: "2026-09-01",
+  denNgay: "2026-09-30",
+  trang: 3,
+};
+
+assert.deepEqual(
+  docBoLocPhieu(ghiBoLocPhieu(boLocPhieu)),
+  boLocPhieu,
+  "bộ lọc phiếu nhập quay vòng qua URL không mất giá trị",
+);
+assert.equal(ghiBoLocPhieu(BO_LOC_PHIEU_MAC_DINH).toString(), "", "bộ lọc mặc định không ghi gì vào URL");
+assert.deepEqual(docBoLocPhieu(new URLSearchParams("")), BO_LOC_PHIEU_MAC_DINH);
+assert.equal(docBoLocPhieu(new URLSearchParams("trang=-2")).trang, 1, "trang âm về 1");
+assert.equal(docBoLocPhieu(new URLSearchParams("ncc=khong-phai-uuid")).doiTacId, null);
+assert.equal(docBoLocPhieu(new URLSearchParams("tu_ngay=01/09/2026")).tuNgay, null, "ngày sai định dạng bị bỏ");
+assert.equal(demDieuKienPhieu(BO_LOC_PHIEU_MAC_DINH), 0, "không điều kiện nào thì đếm 0");
+assert.equal(demDieuKienPhieu(boLocPhieu), 5, "khoảng ngày tính là MỘT điều kiện");
+assert.equal(
+  demDieuKienPhieu({ ...BO_LOC_PHIEU_MAC_DINH, q: "tìm gì đó" }),
+  0,
+  "ô tìm KHÔNG tính vào số điều kiện của panel lọc",
+);
+assert.equal(thamSoRpcPhieu(BO_LOC_PHIEU_MAC_DINH).p_loai_ct, "NHAP", "màn phiếu nhập luôn khóa loại NHAP");
 
 // tsx biên dịch ra CJS nên KHÔNG có top-level await — bọc phần bất đồng bộ lại.
 async function kiemCsvLoi() {
