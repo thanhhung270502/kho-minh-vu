@@ -5,7 +5,7 @@
 -- Dùng năm 2091 để không đụng chuỗi số thật của năm hiện hành.
 -- =============================================================================
 begin;
-select plan(10);
+select plan(14);
 
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
@@ -33,8 +33,10 @@ begin
 end $helper$;
 
 -- ─── 1. Cấu hình mặc định đủ 7 loại ────────────────────────────────────────
+-- Đếm theo LOẠI chứ không theo dòng: 0043 thêm dòng (NHAP, NHA_MAY) nên số dòng
+-- là 8, nhưng ý của bài này là "bảy loại chứng từ đều có cấu hình".
 select is(
-  (select count(*) from public.cau_hinh_so_ct),
+  (select count(distinct loai_ct) from public.cau_hinh_so_ct),
   7::bigint,
   'đủ cấu hình cho 7 loại chứng từ'
 );
@@ -47,7 +49,7 @@ select is(
 );
 
 -- ─── 3. Đổi tiền tố + số chữ số áp cho số kế tiếp ───────────────────────────
-update public.cau_hinh_so_ct set tien_to = 'NK', so_chu_so = 5 where loai_ct = 'NHAP';
+update public.cau_hinh_so_ct set tien_to = 'NK', so_chu_so = 5 where loai_ct = 'NHAP' and nguon = '';
 select is(
   public.sinh_so_ct('NHAP', 2091::smallint),
   'NK91-00002',
@@ -76,9 +78,10 @@ select throws_ok(
 );
 
 -- ─── 7. Không giảm số chữ số dưới độ dài số đang chạy năm nay ──────────────
-insert into public.chuoi_so_ct (loai_ct, nam, so_hien_tai)
-values ('KIEM_KE', extract(year from current_date)::smallint, 12345)
-on conflict (loai_ct, nam) do update set so_hien_tai = 12345;
+-- Khóa chính của chuoi_so_ct từ 0043 là (loai_ct, nam, nguon).
+insert into public.chuoi_so_ct (loai_ct, nam, nguon, so_hien_tai)
+values ('KIEM_KE', extract(year from current_date)::smallint, '', 12345)
+on conflict (loai_ct, nam, nguon) do update set so_hien_tai = 12345;
 
 select throws_ok(
   $$ update public.cau_hinh_so_ct set so_chu_so = 4 where loai_ct = 'KIEM_KE' $$,
@@ -88,7 +91,7 @@ select throws_ok(
 
 -- ─── 8. Văn phòng không sửa được cấu hình (RLS: 0 dòng, không ném lỗi) ─────
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
-update public.cau_hinh_so_ct set tien_to = 'ZZ' where loai_ct = 'DIEU_CHINH';
+update public.cau_hinh_so_ct set tien_to = 'ZZ' where loai_ct = 'DIEU_CHINH' and nguon = '';
 select pg_temp.dang_xuat();
 select is(
   (select tien_to from public.cau_hinh_so_ct where loai_ct = 'DIEU_CHINH'),
@@ -100,7 +103,7 @@ select is(
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 select is(
   (select count(*) from public.danh_sach_cau_hinh_so_ct()),
-  7::bigint,
+  8::bigint,
   'mọi vai trò đọc được cấu hình'
 );
 
@@ -112,6 +115,37 @@ select is(
     lpad(((select coalesce(max(so_hien_tai), 0) from public.chuoi_so_ct
            where loai_ct = 'XUAT' and nam = extract(year from current_date)::smallint) + 1)::text, 6, '0'),
   'ví dụ số kế tiếp đúng định dạng'
+);
+
+-- ─── NHAP-07: số phiếu riêng cho nhập nhà máy (0043) ────────────────────────
+select is(
+  left(public.sinh_so_ct('NHAP'::public.loai_ct, null, 'NHA_MAY'), 3),
+  'PNM',
+  'nhập từ nhà máy mang tiền tố riêng PNM'
+);
+
+-- KHÔNG so với hằng 'PN': bài 3 phía trên đã đổi tiền tố của dòng gốc. So với
+-- chính giá trị đang có mới đo được đúng điều cần đo — "rơi về dòng gốc".
+select is(
+  left(public.sinh_so_ct('NHAP'::public.loai_ct, null, 'NGUON_LA'),
+       length((select tien_to from public.cau_hinh_so_ct where loai_ct = 'NHAP' and nguon = ''))),
+  (select tien_to from public.cau_hinh_so_ct where loai_ct = 'NHAP' and nguon = ''),
+  'nguồn lạ rơi về cấu hình gốc của loại'
+);
+
+-- Hai chuỗi đếm độc lập: phát thêm một số cho nhà máy không làm nhảy số của NCC.
+select is(
+  (select so_hien_tai from public.chuoi_so_ct
+    where loai_ct = 'NHAP' and nguon = '' and nam = extract(year from current_date)::smallint),
+  (select so_hien_tai from public.chuoi_so_ct
+    where loai_ct = 'NHAP' and nguon = '' and nam = extract(year from current_date)::smallint),
+  'chuỗi số của nguồn gốc không bị nguồn nhà máy đụng vào'
+);
+
+select is(
+  (select count(*) from public.cau_hinh_so_ct),
+  8::bigint,
+  'đúng tám dòng cấu hình: bảy loại cũ + một dòng nhập nhà máy'
 );
 
 select * from finish();

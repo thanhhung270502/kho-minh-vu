@@ -11,7 +11,7 @@ import { dienGiaiLoi, laLoiPostgrest } from "@/shared/lib/errors";
 import {
   layCauHinhSoCt,
   luuCauHinhSoCt,
-  NHAN_LOAI_CT,
+  nhanCauHinh,
   viDuSoKeTiep,
   type DongCauHinhSoCt,
   type LoaiCt,
@@ -30,18 +30,24 @@ export function CauHinhSoCt() {
   const [loi, setLoi] = useState<Record<string, string>>({});
 
   const luu = useMutation({
-    mutationFn: (v: { loai: LoaiCt; giaTri: BanNhap }) => luuCauHinhSoCt(v.loai, v.giaTri),
+    mutationFn: (v: { loai: LoaiCt; nguon: string; giaTri: BanNhap }) =>
+      luuCauHinhSoCt(v.loai, v.nguon, v.giaTri),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["cau-hinh-so-ct"] }),
   });
-  const [dangLuu, setDangLuu] = useState<LoaiCt | null>(null);
+  const [dangLuu, setDangLuu] = useState<string | null>(null);
 
-  function giaTri(d: DongCauHinhSoCt): BanNhap {
-    return nhap[d.loai_ct] ?? { tien_to: d.tien_to, so_chu_so: d.so_chu_so };
+  /** Một loại giờ có thể có nhiều dòng (NHAP có thêm dòng nhà máy). */
+function khoaDong(d: DongCauHinhSoCt): string {
+  return `${d.loai_ct}|${d.nguon}`;
+}
+
+function giaTri(d: DongCauHinhSoCt): BanNhap {
+    return nhap[khoaDong(d)] ?? { tien_to: d.tien_to, so_chu_so: d.so_chu_so };
   }
 
   function doi(d: DongCauHinhSoCt, thayDoi: Partial<BanNhap>) {
-    setNhap((s) => ({ ...s, [d.loai_ct]: { ...giaTri(d), ...thayDoi } }));
-    setLoi((s) => ({ ...s, [d.loai_ct]: "" }));
+    setNhap((s) => ({ ...s, [khoaDong(d)]: { ...giaTri(d), ...thayDoi } }));
+    setLoi((s) => ({ ...s, [khoaDong(d)]: "" }));
   }
 
   function daDoi(d: DongCauHinhSoCt): boolean {
@@ -54,8 +60,10 @@ export function CauHinhSoCt() {
     if (!TIEN_TO_HOP_LE.test(v.tien_to)) {
       return "Tiền tố 1–5 ký tự, chỉ chữ in hoa không dấu và số.";
     }
-    const trung = tatCa.find((k) => k.loai_ct !== d.loai_ct && giaTri(k).tien_to === v.tien_to);
-    if (trung) return `Tiền tố đã dùng cho ${NHAN_LOAI_CT[trung.loai_ct]}.`;
+    const trung = tatCa.find(
+      (k) => khoaDong(k) !== khoaDong(d) && giaTri(k).tien_to === v.tien_to,
+    );
+    if (trung) return `Tiền tố đã dùng cho ${nhanCauHinh(trung.loai_ct, trung.nguon)}.`;
 
     const dai = String(d.so_hien_tai).length;
     if (v.so_chu_so < dai) {
@@ -67,30 +75,30 @@ export function CauHinhSoCt() {
   async function luuDong(d: DongCauHinhSoCt, tatCa: DongCauHinhSoCt[]) {
     const loiNhap = kiemTra(d, tatCa);
     if (loiNhap) {
-      setLoi((s) => ({ ...s, [d.loai_ct]: loiNhap }));
+      setLoi((s) => ({ ...s, [khoaDong(d)]: loiNhap }));
       return;
     }
 
-    setDangLuu(d.loai_ct);
+    setDangLuu(khoaDong(d));
     try {
-      await luu.mutateAsync({ loai: d.loai_ct, giaTri: giaTri(d) });
+      await luu.mutateAsync({ loai: d.loai_ct, nguon: d.nguon, giaTri: giaTri(d) });
       setNhap((s) => {
         const conLai = { ...s };
-        delete conLai[d.loai_ct];
+        delete conLai[khoaDong(d)];
         return conLai;
       });
-      message.success(`Đã lưu quy tắc số ${NHAN_LOAI_CT[d.loai_ct]}`);
+      message.success(`Đã lưu quy tắc số ${nhanCauHinh(d.loai_ct, d.nguon)}`);
     } catch (e) {
       if (laLoiPostgrest(e) && (e.code === "23505" || e.code === "23514")) {
         setLoi((s) => ({
           ...s,
-          [d.loai_ct]:
+          [khoaDong(d)]:
             e.code === "23505" ? "Tiền tố đã dùng cho loại khác." : e.message,
         }));
         return;
       }
       const l = dienGiaiLoi(e);
-      setLoi((s) => ({ ...s, [d.loai_ct]: `${l.tieuDe}. ${l.huongXuLy}` }));
+      setLoi((s) => ({ ...s, [khoaDong(d)]: `${l.tieuDe}. ${l.huongXuLy}` }));
     } finally {
       setDangLuu(null);
     }
@@ -102,7 +110,7 @@ export function CauHinhSoCt() {
         title: "Loại chứng từ",
         dataIndex: "loai_ct",
         width: 160,
-        render: (l: LoaiCt) => NHAN_LOAI_CT[l],
+        render: (_: LoaiCt, d) => nhanCauHinh(d.loai_ct, d.nguon),
       },
       {
         title: "Tiền tố",
@@ -113,11 +121,11 @@ export function CauHinhSoCt() {
             <Input
               value={giaTri(d).tien_to}
               maxLength={5}
-              status={loi[d.loai_ct] ? "error" : undefined}
+              status={loi[khoaDong(d)] ? "error" : undefined}
               onChange={(e) => doi(d, { tien_to: e.target.value.toUpperCase() })}
             />
-            {loi[d.loai_ct] ? (
-              <div className="mt-1 text-xs text-red-600">{loi[d.loai_ct]}</div>
+            {loi[khoaDong(d)] ? (
+              <div className="mt-1 text-xs text-red-600">{loi[khoaDong(d)]}</div>
             ) : null}
           </div>
         ),
@@ -155,7 +163,7 @@ export function CauHinhSoCt() {
             size="small"
             className="px-0"
             disabled={!daDoi(d)}
-            loading={dangLuu === d.loai_ct}
+            loading={dangLuu === khoaDong(d)}
             onClick={() => void luuDong(d, tatCa)}
           >
             Lưu
@@ -178,7 +186,7 @@ export function CauHinhSoCt() {
         {(d) => (
           <div className="overflow-x-auto">
             <Table<DongCauHinhSoCt>
-              rowKey="loai_ct"
+              rowKey={khoaDong}
               size="small"
               columns={cot(d)}
               dataSource={d}

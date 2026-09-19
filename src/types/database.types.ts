@@ -59,18 +59,21 @@ export type Database = {
       cau_hinh_so_ct: {
         Row: {
           loai_ct: Database["public"]["Enums"]["loai_ct"]
+          nguon: string
           so_chu_so: number
           tien_to: string
           updated_at: string
         }
         Insert: {
           loai_ct: Database["public"]["Enums"]["loai_ct"]
+          nguon?: string
           so_chu_so?: number
           tien_to: string
           updated_at?: string
         }
         Update: {
           loai_ct?: Database["public"]["Enums"]["loai_ct"]
+          nguon?: string
           so_chu_so?: number
           tien_to?: string
           updated_at?: string
@@ -95,6 +98,7 @@ export type Database = {
           ngay_ghi_so: string | null
           nguoi_duyet_id: string | null
           nguoi_tao_id: string | null
+          nguon_nhap: Database["public"]["Enums"]["nguon_nhap"] | null
           so_ct: string
           tong_so_luong: number
           tong_tien: number
@@ -118,6 +122,7 @@ export type Database = {
           ngay_ghi_so?: string | null
           nguoi_duyet_id?: string | null
           nguoi_tao_id?: string | null
+          nguon_nhap?: Database["public"]["Enums"]["nguon_nhap"] | null
           so_ct: string
           tong_so_luong?: number
           tong_tien?: number
@@ -141,6 +146,7 @@ export type Database = {
           ngay_ghi_so?: string | null
           nguoi_duyet_id?: string | null
           nguoi_tao_id?: string | null
+          nguon_nhap?: Database["public"]["Enums"]["nguon_nhap"] | null
           so_ct?: string
           tong_so_luong?: number
           tong_tien?: number
@@ -264,16 +270,19 @@ export type Database = {
         Row: {
           loai_ct: Database["public"]["Enums"]["loai_ct"]
           nam: number
+          nguon: string
           so_hien_tai: number
         }
         Insert: {
           loai_ct: Database["public"]["Enums"]["loai_ct"]
           nam: number
+          nguon?: string
           so_hien_tai?: number
         }
         Update: {
           loai_ct?: Database["public"]["Enums"]["loai_ct"]
           nam?: number
+          nguon?: string
           so_hien_tai?: number
         }
         Relationships: []
@@ -1099,6 +1108,7 @@ export type Database = {
         Args: never
         Returns: {
           loai_ct: Database["public"]["Enums"]["loai_ct"]
+          nguon: string
           so_chu_so: number
           so_hien_tai: number
           tien_to: string
@@ -1224,6 +1234,7 @@ export type Database = {
           ngay_ghi_so: string | null
           nguoi_duyet_id: string | null
           nguoi_tao_id: string | null
+          nguon_nhap: Database["public"]["Enums"]["nguon_nhap"] | null
           so_ct: string
           tong_so_luong: number
           tong_tien: number
@@ -1275,6 +1286,7 @@ export type Database = {
           ngay_ghi_so: string | null
           nguoi_duyet_id: string | null
           nguoi_tao_id: string | null
+          nguon_nhap: Database["public"]["Enums"]["nguon_nhap"] | null
           so_ct: string
           tong_so_luong: number
           tong_tien: number
@@ -1378,7 +1390,11 @@ export type Database = {
         Returns: string
       }
       sinh_so_ct: {
-        Args: { p_loai: Database["public"]["Enums"]["loai_ct"]; p_nam?: number }
+        Args: {
+          p_loai: Database["public"]["Enums"]["loai_ct"]
+          p_nam?: number
+          p_nguon?: string
+        }
         Returns: string
       }
       ten_danh_muc: { Args: { p_bang: string; p_id: string }; Returns: string }
@@ -1443,6 +1459,7 @@ export type Database = {
         | "KIEM_KE"
         | "DIEU_CHINH"
       loai_doi_tac: "NCC" | "KHACH" | "CA_HAI"
+      nguon_nhap: "NCC" | "NHA_MAY"
       trang_thai_ct: "NHAP_LIEU" | "HOAN_THANH" | "DA_HUY"
       trang_thai_ddh: "MOI" | "DA_XUAT_MOT_PHAN" | "DA_XUAT_DU" | "DA_HUY"
       vai_tro: "quan_ly" | "van_phong" | "thu_kho" | "chi_xem"
@@ -1583,6 +1600,7 @@ export const Constants = {
         "DIEU_CHINH",
       ],
       loai_doi_tac: ["NCC", "KHACH", "CA_HAI"],
+      nguon_nhap: ["NCC", "NHA_MAY"],
       trang_thai_ct: ["NHAP_LIEU", "HOAN_THANH", "DA_HUY"],
       trang_thai_ddh: ["MOI", "DA_XUAT_MOT_PHAN", "DA_XUAT_DU", "DA_HUY"],
       vai_tro: ["quan_ly", "van_phong", "thu_kho", "chi_xem"],
