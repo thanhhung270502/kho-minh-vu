@@ -10,13 +10,13 @@ import { safeRedirectPath } from "../src/shared/lib/redirect-path";
 import { suggestCustomerName, extractPhoneNumber } from "../src/features/partners/lib/notes";
 import { buildErrorCsv, errorFileName } from "../src/features/products/lib/error-file";
 import {
-  BO_LOC_PHIEU_MAC_DINH,
-  demDieuKienPhieu,
-  docBoLocPhieu,
-  ghiBoLocPhieu,
-  thamSoRpcPhieu,
-  type BoLocPhieu,
-} from "../src/features/nhap-kho/schemas/phieu-nhap.schema";
+  DEFAULT_RECEIPT_FILTER,
+  countActiveReceiptFilters,
+  readReceiptFilterFromUrl,
+  writeReceiptFilterToUrl,
+  toReceiptListRpcArgs,
+  type ReceiptFilter,
+} from "../src/features/stock-in/schemas/receipt.schema";
 import {
   DEFAULT_PRODUCT_FILTER,
   readFilterFromUrl,
@@ -99,35 +99,35 @@ assert.equal(
 assert.equal(extractPhoneNumber("NGỌC"), null, "ghi chú không có số thì trả null");
 
 // --- Bộ lọc phiếu nhập (Phase 3) -------------------------------------------
-const boLocPhieu: BoLocPhieu = {
+const sampleReceiptFilter: ReceiptFilter = {
   q: "PN26",
-  trangThai: "HOAN_THANH",
-  doiTacId: "11111111-1111-4111-8111-111111111111",
-  khoId: "22222222-2222-4222-8222-222222222222",
-  nguonNhap: "NHA_MAY",
-  tuNgay: "2026-09-01",
-  denNgay: "2026-09-30",
+  status: "HOAN_THANH",
+  partnerId: "11111111-1111-4111-8111-111111111111",
+  warehouseId: "22222222-2222-4222-8222-222222222222",
+  source: "NHA_MAY",
+  fromDate: "2026-09-01",
+  toDate: "2026-09-30",
   page: 3,
 };
 
 assert.deepEqual(
-  docBoLocPhieu(ghiBoLocPhieu(boLocPhieu)),
-  boLocPhieu,
+  readReceiptFilterFromUrl(writeReceiptFilterToUrl(sampleReceiptFilter)),
+  sampleReceiptFilter,
   "bộ lọc phiếu nhập quay vòng qua URL không mất giá trị",
 );
-assert.equal(ghiBoLocPhieu(BO_LOC_PHIEU_MAC_DINH).toString(), "", "bộ lọc mặc định không ghi gì vào URL");
-assert.deepEqual(docBoLocPhieu(new URLSearchParams("")), BO_LOC_PHIEU_MAC_DINH);
-assert.equal(docBoLocPhieu(new URLSearchParams("page=-2")).page, 1, "page âm về 1");
-assert.equal(docBoLocPhieu(new URLSearchParams("ncc=khong-phai-uuid")).doiTacId, null);
-assert.equal(docBoLocPhieu(new URLSearchParams("tu_ngay=01/09/2026")).tuNgay, null, "ngày sai định dạng bị bỏ");
-assert.equal(demDieuKienPhieu(BO_LOC_PHIEU_MAC_DINH), 0, "không điều kiện nào thì đếm 0");
-assert.equal(demDieuKienPhieu(boLocPhieu), 5, "khoảng ngày tính là MỘT điều kiện");
+assert.equal(writeReceiptFilterToUrl(DEFAULT_RECEIPT_FILTER).toString(), "", "bộ lọc mặc định không ghi gì vào URL");
+assert.deepEqual(readReceiptFilterFromUrl(new URLSearchParams("")), DEFAULT_RECEIPT_FILTER);
+assert.equal(readReceiptFilterFromUrl(new URLSearchParams("trang=-2")).page, 1, "page âm về 1");
+assert.equal(readReceiptFilterFromUrl(new URLSearchParams("ncc=khong-phai-uuid")).partnerId, null);
+assert.equal(readReceiptFilterFromUrl(new URLSearchParams("tu_ngay=01/09/2026")).fromDate, null, "ngày sai định dạng bị bỏ");
+assert.equal(countActiveReceiptFilters(DEFAULT_RECEIPT_FILTER), 0, "không điều kiện nào thì đếm 0");
+assert.equal(countActiveReceiptFilters(sampleReceiptFilter), 5, "khoảng ngày tính là MỘT điều kiện");
 assert.equal(
-  demDieuKienPhieu({ ...BO_LOC_PHIEU_MAC_DINH, q: "tìm gì đó" }),
+  countActiveReceiptFilters({ ...DEFAULT_RECEIPT_FILTER, q: "tìm gì đó" }),
   0,
   "ô tìm KHÔNG tính vào số điều kiện của panel lọc",
 );
-assert.equal(thamSoRpcPhieu(BO_LOC_PHIEU_MAC_DINH).p_loai_ct, "NHAP", "màn phiếu nhập luôn khóa loại NHAP");
+assert.equal(toReceiptListRpcArgs(DEFAULT_RECEIPT_FILTER).p_loai_ct, "NHAP", "màn phiếu nhập luôn khóa loại NHAP");
 
 // tsx biên dịch ra CJS nên KHÔNG có top-level await — bọc phần bất đồng bộ lại.
 async function kiemCsvLoi() {

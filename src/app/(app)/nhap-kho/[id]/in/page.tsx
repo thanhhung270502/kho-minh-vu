@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { TrangInPhieu } from "@/features/nhap-kho/components/trang-in-phieu";
+import { ReceiptPrintPage } from "@/features/stock-in/components/receipt-print-page";
 import { requirePermission } from "@/features/auth/api/current-user.server";
 
 export const metadata: Metadata = { title: "In phiếu nhập" };
@@ -18,5 +18,5 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
   await requirePermission("view-catalog");
 
-  return <TrangInPhieu id={id} />;
+  return <ReceiptPrintPage id={id} />;
 }
