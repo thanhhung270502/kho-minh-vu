@@ -93,7 +93,23 @@ vận hành trọn luồng trên máy tính văn phòng.
   3. Quản lý xác nhận đơn rồi in được phiếu đi lấy hàng có cột trống để kho ghi tay số thực lấy; đơn đã xác nhận chỉ quản lý mở khóa được về `TAM`
   4. Khi số xuất làm tồn xuống dưới 0, hệ thống cảnh báo và bắt buộc chọn lý do trước khi cho ghi sổ; ghi sổ phiếu xuất làm tồn giảm đúng và cập nhật tiến độ đơn đặt hàng liên quan; in được phiếu giao hàng
   5. Trả hàng khách (`TRA_KHACH`, tồn tăng) và trả hàng NCC (`TRA_NCC`, tồn giảm) là hai loại chứng từ riêng, đều bắt buộc tham chiếu chứng từ gốc
-**Plans**: TBD
+**Plans**: 15 plans
+Plans:
+- [ ] 04-01-PLAN.md — đổi trục trạng thái đơn sang trục duyệt, mở rộng RPC chứng từ, vá kho theo dòng cho chiều xuất
+- [ ] 04-02-PLAN.md — RPC duyệt đơn (xác nhận / mở khóa / đóng sớm), khóa sửa đơn đã duyệt, bộ cấp số đơn
+- [ ] 04-03-PLAN.md — RPC đọc đơn (danh sách / chi tiết / dòng) và bảng đề nghị gộp mã + gợi ý mã trùng
+- [ ] 04-04-PLAN.md — RPC tạo phiếu xuất từ đơn và RPC tạo phiếu trả từ chứng từ gốc
+- [ ] 04-05-PLAN.md — rút lớp chứng từ dùng chung sang features/documents, trả nợ UAT màn phiếu nhập
+- [ ] 04-06-PLAN.md — lớp dữ liệu đơn đặt hàng: kiểu, schema, bộ lọc URL, query key, api, hook
+- [ ] 04-07-PLAN.md — lớp dữ liệu phiếu xuất và phiếu trả, danh sách lý do xuất âm
+- [ ] 04-08-PLAN.md — màn danh sách đơn, ô tìm người nhận kèm tạo đối tác tại chỗ, nút tạo đơn
+- [ ] 04-09-PLAN.md — chi tiết đơn: đầu đơn sửa tại chỗ và bảng dòng gõ bàn phím
+- [ ] 04-10-PLAN.md — màn danh sách phiếu xuất và nút tạo phiếu xuất không cần đơn
+- [ ] 04-11-PLAN.md — chi tiết phiếu xuất: kho theo dòng và tô màu dòng vượt tồn
+- [ ] 04-12-PLAN.md — duyệt đơn theo vai trò, in phiếu đi lấy hàng, nút tạo phiếu xuất từ đơn
+- [ ] 04-13-PLAN.md — ghi sổ phiếu xuất: lý do xuất âm bắt buộc, tóm tắt hậu quả, gợi ý gộp mã
+- [ ] 04-14-PLAN.md — in phiếu giao hàng và trả hàng hai chiều
+- [ ] 04-15-PLAN.md — điều hướng, ma trận quyền route, bộ kiểm cuối, cập nhật tài liệu
 **UI hint**: yes
 
 ### Phase 5: Tồn kho & Tổng quan
