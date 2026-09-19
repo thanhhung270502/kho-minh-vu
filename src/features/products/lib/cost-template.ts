@@ -25,3 +25,39 @@ export type CostImportResultPayload = {
   }>;
   loi: Array<{ ma_hang: string; ly_do: string }>;
 };
+
+// --- Mô hình miền -----------------------------------------------------------
+
+export type SkippedCostRow = {
+  code: string;
+  currentCost: number;
+  reason: string;
+};
+
+export type CostErrorRow = { code: string; reason: string };
+
+export type CostImportResult = {
+  committed: boolean;
+  applied: number;
+  skipped: number;
+  errorCount: number;
+  skippedRows: SkippedCostRow[];
+  errors: CostErrorRow[];
+};
+
+export function toCostImportResult(
+  payload: CostImportResultPayload,
+): CostImportResult {
+  return {
+    committed: payload.da_nap,
+    applied: payload.dat,
+    skipped: payload.bo_qua,
+    errorCount: payload.so_loi,
+    skippedRows: payload.chi_tiet_bo_qua.map((row) => ({
+      code: row.ma_hang,
+      currentCost: Number(row.gia_von_hien_tai),
+      reason: row.ly_do,
+    })),
+    errors: payload.loi.map((row) => ({ code: row.ma_hang, reason: row.ly_do })),
+  };
+}

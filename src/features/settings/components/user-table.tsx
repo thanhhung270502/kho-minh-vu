@@ -103,7 +103,7 @@ export function UserTable({ currentUserId }: { currentUserId: string }) {
     },
     {
       title: "Trạng thái",
-      key: "trang_thai",
+      key: "status",
       width: 220,
       render: (_, d) => (
         <Space size={6}>
@@ -129,7 +129,7 @@ export function UserTable({ currentUserId }: { currentUserId: string }) {
               { key: "mat_khau", label: "Đặt lại mật khẩu" },
               { type: "divider" as const },
               {
-                key: "trang_thai",
+                key: "status",
                 label: d.dang_hoat_dong ? "Vô hiệu hóa" : "Mở lại",
                 danger: d.dang_hoat_dong,
               },
@@ -137,7 +137,7 @@ export function UserTable({ currentUserId }: { currentUserId: string }) {
             onClick: ({ key }) => {
               if (key === "sua") setDrawer({ mo: true, nd: d });
               if (key === "mat_khau") setResetTarget(d);
-              if (key === "trang_thai") toggleActive(d);
+              if (key === "status") toggleActive(d);
             },
           }}
         >

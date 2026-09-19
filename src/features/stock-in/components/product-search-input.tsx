@@ -5,33 +5,13 @@ import { Select, Typography } from "antd";
 import type { RefSelectProps } from "antd/es/select";
 import { useState, type Ref } from "react";
 
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import {
+  productSearchKeys,
+  searchProducts,
+  type ProductSearchResult,
+} from "../api/product-search.api";
 
-export type ProductSearchResult = {
-  id: string;
-  code: string;
-  name: string;
-  unitId: string | null;
-  conversion: number | null;
-  defaultWarehouseId: string | null;
-};
-
-async function searchProducts(query: string): Promise<ProductSearchResult[]> {
-  const { data, error } = await getSupabaseBrowserClient().rpc("tim_san_pham", {
-    p_tu_khoa: query,
-    p_gioi_han: 20,
-  });
-  if (error) throw error;
-
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    code: row.ma_hang,
-    name: row.ten_hang,
-    unitId: row.dvt_id,
-    conversion: row.quy_doi === null ? null : Number(row.quy_doi),
-    defaultWarehouseId: row.kho_mac_dinh_id,
-  }));
-}
+export type { ProductSearchResult };
 
 type Props = {
   onSelect: (product: ProductSearchResult) => void;
@@ -47,7 +27,7 @@ export function ProductSearchInput({ onSelect, inputRef, disabled }: Props) {
   const [query, setQuery] = useState("");
 
   const results = useQuery({
-    queryKey: ["product-search", query],
+    queryKey: productSearchKeys.search(query),
     queryFn: () => searchProducts(query),
     enabled: query.trim().length >= 1,
     staleTime: 30_000,
