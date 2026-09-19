@@ -5,8 +5,8 @@ import dayjs from "dayjs";
 import type { ReactNode } from "react";
 
 import { useLookups } from "@/features/products/hooks/useProducts";
-import { useDanhSachDoiTac } from "@/features/doi-tac/hooks/useDoiTac";
-import { BO_LOC_DOI_TAC_MAC_DINH } from "@/features/doi-tac/types";
+import { usePartners } from "@/features/partners/hooks/usePartners";
+import { DEFAULT_PARTNER_FILTER } from "@/features/partners/types";
 
 import {
   BO_LOC_PHIEU_MAC_DINH,
@@ -33,7 +33,7 @@ export function PanelLocPhieu({
 }) {
   const lookups = useLookups();
   // Danh sách NCC đang hoạt động — dùng lại RPC đối tác của Phase 2.
-  const ncc = useDanhSachDoiTac({ ...BO_LOC_DOI_TAC_MAC_DINH, loai: "NCC" });
+  const ncc = usePartners({ ...DEFAULT_PARTNER_FILTER, loai: "NCC" });
 
   /** Đổi điều kiện nào cũng về page 1 — giữ page cũ dễ rơi vào page trống. */
   function doi(thayDoi: Partial<BoLocPhieu>) {

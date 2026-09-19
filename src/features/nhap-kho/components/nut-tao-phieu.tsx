@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { useLookups } from "@/features/products/hooks/useProducts";
-import { useDanhSachDoiTac } from "@/features/doi-tac/hooks/useDoiTac";
-import { BO_LOC_DOI_TAC_MAC_DINH } from "@/features/doi-tac/types";
+import { usePartners } from "@/features/partners/hooks/usePartners";
+import { DEFAULT_PARTNER_FILTER } from "@/features/partners/types";
 import { explainError, errorCode } from "@/shared/lib/errors";
 
 import { useTaoPhieu } from "../hooks/usePhieuNhap";
@@ -20,7 +20,7 @@ export function NutTaoPhieu({ open, onClose }: { open: boolean; onClose: () => v
   const router = useRouter();
   const taoPhieu = useTaoPhieu();
   const lookups = useLookups();
-  const ncc = useDanhSachDoiTac({ ...BO_LOC_DOI_TAC_MAC_DINH, loai: "NCC" });
+  const ncc = usePartners({ ...DEFAULT_PARTNER_FILTER, loai: "NCC" });
 
   const [doiTacId, setDoiTacId] = useState<string | undefined>();
   const [khoId, setKhoId] = useState<string | undefined>();

@@ -3,15 +3,15 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { requirePermission } from "@/features/auth/api/current-user.server";
-import { BangDoiTac } from "@/features/doi-tac/components/bang-doi-tac";
+import { PartnerTable } from "@/features/partners/components/partner-table";
 import { PageHeader } from "@/shared/components/page-header";
 import { hasPermission } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Đối tác" };
 
 export default async function DoiTacPage() {
-  const nd = await requirePermission("view-catalog");
-  const coQuyenSua = hasPermission(nd.role, "edit-catalog");
+  const user = await requirePermission("view-catalog");
+  const coQuyenSua = hasPermission(user.role, "edit-catalog");
 
   return (
     <>
@@ -25,7 +25,7 @@ export default async function DoiTacPage() {
 
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}
       <Suspense fallback={null}>
-        <BangDoiTac coQuyenSua={coQuyenSua} />
+        <PartnerTable canEdit={coQuyenSua} />
       </Suspense>
     </>
   );

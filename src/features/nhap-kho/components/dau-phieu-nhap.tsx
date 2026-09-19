@@ -5,8 +5,8 @@ import dayjs from "dayjs";
 import { useState } from "react";
 
 import { useLookups } from "@/features/products/hooks/useProducts";
-import { useDanhSachDoiTac } from "@/features/doi-tac/hooks/useDoiTac";
-import { BO_LOC_DOI_TAC_MAC_DINH } from "@/features/doi-tac/types";
+import { usePartners } from "@/features/partners/hooks/usePartners";
+import { DEFAULT_PARTNER_FILTER } from "@/features/partners/types";
 import { explainError } from "@/shared/lib/errors";
 
 import { useSuaDauPhieu } from "../hooks/usePhieuNhap";
@@ -25,7 +25,7 @@ export function DauPhieuNhap({ phieu, coQuyenSua }: Props) {
   const { message } = App.useApp();
   const sua = useSuaDauPhieu(phieu.id);
   const lookups = useLookups();
-  const ncc = useDanhSachDoiTac({ ...BO_LOC_DOI_TAC_MAC_DINH, loai: "NCC" });
+  const ncc = usePartners({ ...DEFAULT_PARTNER_FILTER, loai: "NCC" });
   const [vuaLuu, setVuaLuu] = useState<string | null>(null);
 
   const sanSang = phieu.trang_thai === "NHAP_LIEU" && coQuyenSua;

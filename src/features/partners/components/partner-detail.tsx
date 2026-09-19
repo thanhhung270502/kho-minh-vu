@@ -1,7 +1,7 @@
 "use client";
 
-import { Button, Descriptions, Tabs, Tag, Typography } from "antd";
 import { useQuery } from "@tanstack/react-query";
+import { Button, Descriptions, Tabs, Tag, Typography } from "antd";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -10,12 +10,13 @@ import { AuditLog } from "@/shared/components/audit-log";
 import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
 
-import { useChiTietDoiTac } from "../hooks/useDoiTac";
-import { MAU_LOAI_DOI_TAC, NHAN_LOAI_DOI_TAC } from "../types";
-import { LichSuGiaoDich } from "./lich-su-giao-dich";
-import { NganKeoDoiTac } from "./ngan-keo-doi-tac";
+import { usePartnerDetail } from "../hooks/usePartners";
+import { PARTNER_KIND_COLORS, PARTNER_KIND_LABELS } from "../types";
+import { PartnerDrawer } from "./partner-drawer";
+import { TransactionHistory } from "./transaction-history";
 
-const NHAN_TRUONG: Record<string, string> = {
+/** Khóa là TÊN CỘT trong `nhat_ky_sua.truong` — không đổi sang tiếng Anh. */
+const FIELD_LABELS: Record<string, string> = {
   ma: "Mã",
   ten: "Tên",
   loai: "Loại",
@@ -28,45 +29,50 @@ const NHAN_TRUONG: Record<string, string> = {
   dang_hoat_dong: "Đang hoạt động",
 };
 
+export type PartnerDetailPermissions = {
+  canEdit: boolean;
+  canViewHistory: boolean;
+};
+
 /**
  * Tên trong ô Ghi chú KiotViet đã gán cho đối tác này. Bảng ánh xạ chỉ mở cho
  * quản lý/văn phòng — vai trò khác nhận 42501, khi đó ẩn hẳn khối này thay vì
  * hiện lỗi (thiếu thông tin phụ không phải là hỏng màn hình).
  */
-function useTenGhiChu(doiTacId: string) {
+function useMappedNoteNames(partnerId: string) {
   return useQuery({
-    queryKey: ["doi-tac", "anh-xa-ghi-chu", doiTacId],
+    queryKey: ["partners", "note-mapping", partnerId],
     queryFn: async () => {
       const { data, error } = await getSupabaseBrowserClient()
         .from("anh_xa_ghi_chu_kiotviet")
         .select("gia_tri, loai")
-        .eq("doi_tac_id", doiTacId);
+        .eq("doi_tac_id", partnerId);
 
       if (error) {
         if (error.code === "42501") return [];
         throw error;
       }
-      return data ?? [];
+      return (data ?? []).map((row) => ({ value: row.gia_tri, kind: row.loai }));
     },
     retry: false,
   });
 }
 
-export function ChiTietDoiTac({
+export function PartnerDetailView({
   id,
-  quyen,
+  permissions,
 }: {
   id: string;
-  quyen: { sua: boolean; xemLichSu: boolean };
+  permissions: PartnerDetailPermissions;
 }) {
-  const chiTiet = useChiTietDoiTac(id);
-  const tenGhiChu = useTenGhiChu(id);
-  const [suaMo, setSuaMo] = useState(false);
+  const detail = usePartnerDetail(id);
+  const noteNames = useMappedNoteNames(id);
+  const [editOpen, setEditOpen] = useState(false);
 
   return (
     <QueryState
-      query={chiTiet}
-      isEmpty={(d) => d === null}
+      query={detail}
+      isEmpty={(partner) => partner === null}
       emptyDescription={
         <div className="flex flex-col items-center gap-3">
           <span>Không tìm thấy đối tác này.</span>
@@ -76,8 +82,8 @@ export function ChiTietDoiTac({
         </div>
       }
     >
-      {(d) => {
-        if (!d) return null;
+      {(partner) => {
+        if (!partner) return null;
 
         return (
           <>
@@ -86,17 +92,19 @@ export function ChiTietDoiTac({
             </Link>
 
             <PageHeader
-              title={d.ten}
+              title={partner.name}
               description={
                 <span className="flex items-center gap-2">
-                  <Tag color={MAU_LOAI_DOI_TAC[d.loai]}>{NHAN_LOAI_DOI_TAC[d.loai]}</Tag>
-                  <span className="font-mono">{d.ma}</span>
-                  {d.dang_hoat_dong ? null : <Tag>Ngừng hoạt động</Tag>}
+                  <Tag color={PARTNER_KIND_COLORS[partner.kind]}>
+                    {PARTNER_KIND_LABELS[partner.kind]}
+                  </Tag>
+                  <span className="font-mono">{partner.code}</span>
+                  {partner.isActive ? null : <Tag>Ngừng hoạt động</Tag>}
                 </span>
               }
               actions={
-                quyen.sua ? (
-                  <Button type="primary" onClick={() => setSuaMo(true)}>
+                permissions.canEdit ? (
+                  <Button type="primary" onClick={() => setEditOpen(true)}>
                     Sửa
                   </Button>
                 ) : null
@@ -109,30 +117,30 @@ export function ChiTietDoiTac({
               column={{ xs: 1, sm: 2, lg: 3 }}
               items={[
                 {
-                  key: "dt",
+                  key: "phone",
                   label: "Điện thoại",
-                  children: d.dien_thoai ? (
-                    <a href={`tel:${d.dien_thoai}`}>{d.dien_thoai}</a>
+                  children: partner.phone ? (
+                    <a href={`tel:${partner.phone}`}>{partner.phone}</a>
                   ) : (
                     "—"
                   ),
                 },
-                { key: "em", label: "Email", children: d.email ?? "—" },
-                { key: "kv", label: "Khu vực", children: d.khu_vuc ?? "—" },
-                { key: "dc", label: "Địa chỉ", children: d.dia_chi ?? "—" },
-                { key: "mst", label: "Mã số thuế", children: d.ma_so_thue ?? "—" },
+                { key: "email", label: "Email", children: partner.email ?? "—" },
+                { key: "region", label: "Khu vực", children: partner.region ?? "—" },
+                { key: "address", label: "Địa chỉ", children: partner.address ?? "—" },
+                { key: "taxCode", label: "Mã số thuế", children: partner.taxCode ?? "—" },
                 // KHÔNG đặt `span` cố định: lưới đổi theo breakpoint (1/2/3 cột)
                 // nên span 3 làm vỡ tổng span ở màn 2 cột, antd cảnh báo.
-                { key: "gc", label: "Ghi chú", children: d.ghi_chu ?? "—" },
+                { key: "note", label: "Ghi chú", children: partner.note ?? "—" },
               ]}
             />
 
-            {(tenGhiChu.data ?? []).length > 0 ? (
+            {(noteNames.data ?? []).length > 0 ? (
               <Typography.Paragraph type="secondary" className="mt-3 mb-0">
                 Tên trong ô Ghi chú KiotViet:{" "}
-                {(tenGhiChu.data ?? []).map((g) => (
-                  <Tag key={g.gia_tri} className="m-0 me-1">
-                    {g.gia_tri.replace(/\s+/g, " ").trim()}
+                {(noteNames.data ?? []).map((note) => (
+                  <Tag key={note.value} className="m-0 me-1">
+                    {note.value.replace(/\s+/g, " ").trim()}
                   </Tag>
                 ))}
               </Typography.Paragraph>
@@ -142,17 +150,17 @@ export function ChiTietDoiTac({
               className="mt-4"
               items={[
                 {
-                  key: "giao-dich",
+                  key: "transactions",
                   label: "Giao dịch",
-                  children: <LichSuGiaoDich doiTacId={id} />,
+                  children: <TransactionHistory partnerId={id} />,
                 },
-                ...(quyen.xemLichSu
+                ...(permissions.canViewHistory
                   ? [
                       {
-                        key: "lich-su",
+                        key: "audit-log",
                         label: "Lịch sử sửa",
                         children: (
-                          <AuditLog table="doi_tac" id={id} fieldLabels={NHAN_TRUONG} />
+                          <AuditLog table="doi_tac" id={id} fieldLabels={FIELD_LABELS} />
                         ),
                       },
                     ]
@@ -160,7 +168,11 @@ export function ChiTietDoiTac({
               ]}
             />
 
-            <NganKeoDoiTac id={id} open={suaMo} onClose={() => setSuaMo(false)} />
+            <PartnerDrawer
+              id={id}
+              open={editOpen}
+              onClose={() => setEditOpen(false)}
+            />
           </>
         );
       }}

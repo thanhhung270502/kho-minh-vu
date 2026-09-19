@@ -1,5 +1,5 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { Page } from "@/features/products/types";
+import type { Page } from "@/shared/types";
 
 import {
   thamSoRpcPhieu,
