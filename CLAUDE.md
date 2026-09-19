@@ -410,6 +410,56 @@ Chọn nhầm mã ở màn nhập kho là nhập sai hàng vào sổ, không ph�
 xanh đúng một lần rồi đỏ vĩnh viễn kể từ phiếu thật đầu tiên của năm đó. Test đánh
 số phải dùng năm không ai chạm tới (2091–2093) hoặc so tương đối với giá trị đang có.
 
+### 17. Integration Supabase trên Vercel đặt TÊN BIẾN khác `.env.local`
+
+Bấm "Connect Supabase" trên Vercel sinh ra một bộ biến tên khác hẳn file local.
+Build production đầu tiên chết ở `src/lib/env.ts` vì thế:
+
+| `.env.local` | Vercel (integration tự tạo) |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` |
+| `SUPABASE_SERVICE_ROLE_KEY` | `SUPABASE_SECRET_KEY` |
+| `NEXT_PUBLIC_SUPABASE_URL` | **không tạo** — chỉ có `SUPABASE_URL` |
+
+`env.ts` / `env-server.ts` nay đọc cả hai tên, nối bằng `||` chứ không `??`:
+biến khai trên Vercel nhưng bỏ trống là **chuỗi rỗng**, `??` sẽ nhận chuỗi rỗng
+đó rồi bỏ qua tên còn lại.
+
+Dòng thứ ba không có đường vòng. Next.js chỉ nhúng biến `NEXT_PUBLIC_*` vào
+bundle trình duyệt, nên `SUPABASE_URL` của integration vô dụng ở client —
+**`NEXT_PUBLIC_SUPABASE_URL` phải tự khai tay** trong Vercel > Settings >
+Environment Variables. Thiếu nó thì `next build` chết ngay ở bước collect page
+data, không phải lúc chạy.
+
+Giá trị hiện tại là khóa đời mới (`sb_publishable_…`, `sb_secret_…`), nên trường
+xuất ra đặt tên trung tính `env.SUPABASE_URL` / `env.SUPABASE_PUBLISHABLE_KEY` /
+`layEnvServer().SUPABASE_SECRET_KEY` — gọi là "anon key" hay "service role" đều sai.
+
+### 18. Vercel chặn deploy khi tác giả commit không thuộc team
+
+Repo private + `git push` từ máy có `user.email` lạ → deployment vào thẳng trạng
+thái `BLOCKED`, **không có log build** nên rất dễ tưởng là lỗi code. Dấu hiệu
+nhận ra: `errorLink` trỏ tới `/docs/deployments/troubleshoot-project-collaboration`.
+
+Vercel đối chiếu email tác giả commit với thành viên team. Repo này:
+
+- tác giả commit: `hung.ly@c0x12c.com`
+- team Vercel: chỉ `production.planning@vutru.vn` (GitHub `vutru-productionplanning-code`)
+
+Deployment đã `BLOCKED` thì **không redeploy lại được** (`deployment_can_never_deploy`).
+Hai đường thoát:
+
+```bash
+# Cách bền: đặt tác giả commit khớp tài khoản GitHub của chủ team
+git config user.email "<email đã verify trên GitHub vutru-productionplanning-code>"
+
+# Cách chữa cháy: tạo deployment qua API dưới danh nghĩa chủ team
+# (Vercel MCP create_deployment với gitSource org/repo/ref/sha)
+```
+
+Không sửa được bằng code trong repo. Trước khi đào log build, kiểm tra state:
+`BLOCKED` là chuyện quyền, `ERROR` mới là chuyện code.
+
 ---
 
 # Không tự ý làm
