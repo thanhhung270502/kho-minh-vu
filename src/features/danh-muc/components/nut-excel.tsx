@@ -10,6 +10,8 @@ type Props = {
   soMa: number;
   /** Chỉ truyền khi người dùng có quyền sửa — plan 20 nối màn nhập vào đây. */
   onMoNhap?: () => void;
+  /** Chỉ truyền cho QUẢN LÝ — giá vốn đầu kỳ là việc một lần, không phải việc hằng ngày. */
+  onMoGiaVon?: () => void;
 };
 
 /** Tải một file từ route trả blob; lỗi thì đọc JSON để hiện câu tiếng Việt. */
@@ -43,7 +45,7 @@ async function tai(url: string): Promise<{ ok: true } | { ok: false; loi: string
   return { ok: true };
 }
 
-export function NutExcel({ boLoc, soMa, onMoNhap }: Props) {
+export function NutExcel({ boLoc, soMa, onMoNhap, onMoGiaVon }: Props) {
   const { message } = App.useApp();
   const [dangTai, setDangTai] = useState(false);
 
@@ -69,10 +71,12 @@ export function NutExcel({ boLoc, soMa, onMoNhap }: Props) {
           items: [
             { key: "mau", label: "Tải file mẫu trống" },
             ...(onMoNhap ? [{ key: "nhap", label: "Nhập từ Excel…" }] : []),
+            ...(onMoGiaVon ? [{ key: "gia_von", label: "Nạp giá vốn đầu kỳ…" }] : []),
           ],
           onClick: ({ key }) => {
             if (key === "mau") void chay("/api/danh-muc/mau-excel");
             if (key === "nhap") onMoNhap?.();
+            if (key === "gia_von") onMoGiaVon?.();
           },
         }}
       >

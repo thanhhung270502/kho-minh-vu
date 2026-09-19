@@ -53,6 +53,7 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
   const [chon, setChon] = useState<string[]>([]);
   const [goiYMo, setGoiYMo] = useState(false);
   const [nhapMo, setNhapMo] = useState(false);
+  const [giaVonMo, setGiaVonMo] = useState(false);
 
   // Badge "Cần rà": lấy tổng từ chính RPC danh sách, không thêm RPC mới.
   const demCanRa = useDanhSachSanPham({
@@ -114,6 +115,7 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
             onDoi={doiBoLoc}
             hanhDongPhu={
               <HanhDongCanRa
+                onMoGiaVon={quyen.suaGiaBan ? () => setGiaVonMo(true) : undefined}
                 boLoc={boLoc}
                 tong={tong}
                 demCanRa={demCanRa.data?.tong ?? 0}
@@ -182,6 +184,8 @@ export function BangSanPham({ quyen }: { quyen: QuyenDanhMuc }) {
       </BoCucDanhSach>
 
       <ModalsSanPham
+        giaVonMo={giaVonMo}
+        onDongGiaVon={() => setGiaVonMo(false)}
         quyen={quyen}
         goiYMo={goiYMo}
         onDongGoiY={() => setGoiYMo(false)}

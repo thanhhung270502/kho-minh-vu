@@ -12,10 +12,19 @@ type Props = {
   quyenSua: boolean;
   onDoiBoLoc: (b: BoLocSanPham) => void;
   onMoNhap?: () => void;
+  onMoGiaVon?: () => void;
 };
 
 /** Nút "Cần rà" (badge số lượng) + nút xuất/nhập Excel — cụm hành động phụ trên thanh công cụ. */
-export function HanhDongCanRa({ boLoc, tong, demCanRa, quyenSua, onDoiBoLoc, onMoNhap }: Props) {
+export function HanhDongCanRa({
+  boLoc,
+  tong,
+  demCanRa,
+  quyenSua,
+  onDoiBoLoc,
+  onMoNhap,
+  onMoGiaVon,
+}: Props) {
   return (
     <>
       <Badge count={demCanRa} overflowCount={9999} size="small">
@@ -26,7 +35,12 @@ export function HanhDongCanRa({ boLoc, tong, demCanRa, quyenSua, onDoiBoLoc, onM
           Cần rà
         </Button>
       </Badge>
-      <NutExcel boLoc={boLoc} soMa={tong} onMoNhap={quyenSua ? onMoNhap : undefined} />
+      <NutExcel
+        boLoc={boLoc}
+        soMa={tong}
+        onMoNhap={quyenSua ? onMoNhap : undefined}
+        onMoGiaVon={onMoGiaVon}
+      />
     </>
   );
 }
