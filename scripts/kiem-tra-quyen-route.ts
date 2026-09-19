@@ -54,8 +54,9 @@ async function layCookie(email: string): Promise<string> {
   const kho = new Map<string, string>();
 
   const sb = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL) as string,
+    (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) as string,
     {
       cookies: {
         getAll: () => [...kho].map(([name, value]) => ({ name, value })),

@@ -15,8 +15,8 @@ let client: SupabaseBrowserClient | undefined;
  */
 export function getSupabaseBrowserClient(): SupabaseBrowserClient {
   client ??= createBrowserClient<Database>(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    env.SUPABASE_URL,
+    env.SUPABASE_PUBLISHABLE_KEY,
   );
 
   return client;

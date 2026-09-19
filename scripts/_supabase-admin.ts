@@ -11,8 +11,11 @@ config({ path: ".env" });
  * chỉ dùng trong `scripts/`, không bao giờ import vào `src/`.
  */
 export function taoAdminClient(): SupabaseClient<Database> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  // Vercel (Supabase integration) đặt tên SUPABASE_URL / SUPABASE_SECRET_KEY,
+  // .env.local đặt NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY — nhận cả hai.
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const serviceKey =
+    process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !serviceKey) {
     throw new Error(
@@ -29,8 +32,10 @@ export function taoAdminClient(): SupabaseClient<Database> {
 
 /** Client `anon` — mô phỏng đúng luồng của người dùng thật, chịu RLS. */
 export function taoAnonClient(): SupabaseClient<Database> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const anonKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !anonKey) {
     throw new Error(

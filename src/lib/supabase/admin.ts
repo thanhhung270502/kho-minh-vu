@@ -19,8 +19,8 @@ import type { Database } from "@/types/database.types";
  */
 export function createSupabaseAdminClient() {
   return createClient<Database>(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    layEnvServer().SUPABASE_SERVICE_ROLE_KEY,
+    env.SUPABASE_URL,
+    layEnvServer().SUPABASE_SECRET_KEY,
     { auth: { autoRefreshToken: false, persistSession: false } },
   );
 }

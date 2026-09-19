@@ -13,8 +13,8 @@ export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient<Database>(
-    env.NEXT_PUBLIC_SUPABASE_URL,
-    env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    env.SUPABASE_URL,
+    env.SUPABASE_PUBLISHABLE_KEY,
     {
       cookies: {
         getAll() {
