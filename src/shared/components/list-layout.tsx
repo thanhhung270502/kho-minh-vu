@@ -12,7 +12,7 @@ type Props = {
 };
 
 /**
- * Bố cục trang danh sách kiểu KiotViet: panel lọc cố định trái (>=992px),
+ * Bố cục page danh sách kiểu KiotViet: panel lọc cố định trái (>=992px),
  * bảng bên phải trong card trắng. Dưới 992px panel sập vào ngăn kéo đáy.
  */
 export function ListLayout({
@@ -43,7 +43,7 @@ export function ListLayout({
             <div className="min-w-0 flex-1">{toolbar}</div>
           </div>
 
-          {/* Bảng cuộn ngang TRONG khung này, không để cả trang tràn ngang. */}
+          {/* Bảng cuộn ngang TRONG khung này, không để cả page tràn ngang. */}
           <div className="overflow-x-auto">{children}</div>
         </section>
       </div>

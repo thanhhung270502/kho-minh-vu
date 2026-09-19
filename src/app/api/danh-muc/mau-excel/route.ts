@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/features/auth/api/current-user.server";
-import { taoFileMau } from "@/features/danh-muc/lib/doc-file-danh-muc.server";
+import { taoFileMau } from "@/features/products/lib/read-catalog-file.server";
 
 export const runtime = "nodejs";
 

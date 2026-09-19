@@ -23,8 +23,8 @@ function so(v: number | string | null): string {
 }
 
 export function LichSuGiaoDich({ doiTacId }: { doiTacId: string }) {
-  const [trang, setTrang] = useState(1);
-  const lichSu = useLichSuGiaoDich(doiTacId, trang);
+  const [page, setTrang] = useState(1);
+  const lichSu = useLichSuGiaoDich(doiTacId, page);
 
   const cot: ColumnsType<DongLichSuGiaoDich> = [
     {
@@ -76,7 +76,7 @@ export function LichSuGiaoDich({ doiTacId }: { doiTacId: string }) {
             loading={lichSu.isFetching && !lichSu.isPending}
             scroll={{ x: 900 }}
             pagination={{
-              current: trang,
+              current: page,
               pageSize: 50,
               total: d.tong,
               showSizeChanger: false,

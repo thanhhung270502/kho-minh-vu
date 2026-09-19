@@ -11,7 +11,7 @@ type NotImplementedProps = {
 
 /**
  * Khung tạm cho route đã có trong menu nhưng chưa xây. Ghi rõ phạm vi để
- * người dùng góp ý trước khi code, thay vì để trang trắng.
+ * người dùng góp ý trước khi code, thay vì để page trắng.
  */
 export function NotImplemented({ planned, dependsOn }: NotImplementedProps) {
   return (

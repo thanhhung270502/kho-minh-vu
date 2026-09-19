@@ -5,7 +5,7 @@ import { TabCaiDat } from "@/features/cai-dat/components/tab-cai-dat";
 import { PageHeader } from "@/shared/components/page-header";
 
 export default async function CaiDatLayout({ children }: { children: ReactNode }) {
-  // Tab ít quyền nhất là danh mục phụ; từng trang con còn tự gác quyền của nó.
+  // Tab ít quyền nhất là danh mục phụ; từng page con còn tự gác quyền của nó.
   const nd = await requirePermission("manage-lookups");
 
   return (

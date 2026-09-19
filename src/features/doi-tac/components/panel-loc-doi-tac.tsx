@@ -7,7 +7,7 @@ import { BO_LOC_DOI_TAC_MAC_DINH, demDieuKienDoiTac, NHAN_LOAI_DOI_TAC } from ".
 import type { BoLocDoiTac, LoaiDoiTac } from "../types";
 
 type Props = {
-  boLoc: BoLocDoiTac;
+  filter: BoLocDoiTac;
   onDoi: (thayDoi: Partial<BoLocDoiTac>) => void;
 };
 
@@ -34,7 +34,7 @@ function NhomLoc({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export function PanelLocDoiTac({ boLoc, onDoi }: Props) {
+export function PanelLocDoiTac({ filter, onDoi }: Props) {
   return (
     <div className="flex flex-col gap-3">
       <NhomLoc label="Loại đối tác">
@@ -42,7 +42,7 @@ export function PanelLocDoiTac({ boLoc, onDoi }: Props) {
           block
           vertical
           options={LOAI}
-          value={boLoc.loai ?? "tat_ca"}
+          value={filter.loai ?? "tat_ca"}
           onChange={(v) => onDoi({ loai: v === "tat_ca" ? null : (v as LoaiDoiTac) })}
         />
       </NhomLoc>
@@ -50,7 +50,7 @@ export function PanelLocDoiTac({ boLoc, onDoi }: Props) {
       <NhomLoc label="Trạng thái">
         <Select
           options={TRANG_THAI}
-          value={boLoc.hoatDong}
+          value={filter.hoatDong}
           className="w-full"
           onChange={(v) => onDoi({ hoatDong: v })}
         />
@@ -58,7 +58,7 @@ export function PanelLocDoiTac({ boLoc, onDoi }: Props) {
 
       <Button
         block
-        disabled={demDieuKienDoiTac(boLoc) === 0}
+        disabled={demDieuKienDoiTac(filter) === 0}
         onClick={() => onDoi(BO_LOC_DOI_TAC_MAC_DINH)}
       >
         Xóa bộ lọc

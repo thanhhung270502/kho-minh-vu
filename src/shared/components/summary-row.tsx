@@ -42,7 +42,7 @@ export function SummaryRow({ columns, hasSelection, label, totals = {} }: Props)
             const columnTotal = totals[dataIndex] ?? 0;
             return (
               <Table.Summary.Cell key={key} index={index}>
-                <Tooltip title="Cộng các dòng đang hiển thị trên trang này">
+                <Tooltip title="Cộng các dòng đang hiển thị trên page này">
                   <span className="block text-right tabular-nums">
                     {columnTotal.toLocaleString("vi-VN")}
                   </span>

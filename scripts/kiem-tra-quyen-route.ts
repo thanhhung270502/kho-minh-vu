@@ -36,7 +36,7 @@ const AI_CUNG_XEM: Record<VaiTroTest, KyVong> = {
 const MA_TRAN: Dong[] = [
   { route: "/", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   // /cai-dat chỉ redirect sang tab đầu tiên theo quyền. UAT Phase 2 bắt được
-  // lỗi trang này crash vì gọi hàm client từ server — ma trận cũ thiếu đúng nó.
+  // lỗi page này crash vì gọi hàm client từ server — ma trận cũ thiếu đúng nó.
   { route: "/cai-dat", ky_vong: { quanly: "→/cai-dat/nguoi-dung", vanphong: "→/cai-dat/nhom-hang", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/nhap-kho", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/danh-muc", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
@@ -46,7 +46,7 @@ const MA_TRAN: Dong[] = [
   { route: "/cai-dat/nhom-hang", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/cai-dat/so-chung-tu", ky_vong: { quanly: "200", vanphong: "quyen", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/api/danh-muc/mau-excel", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "401" } },
-  // Mở /dang-nhap khi đã đăng nhập phải quay về trang gốc, và `tiep_tuc` trỏ ra
+  // Mở /dang-nhap khi đã đăng nhập phải quay về page gốc, và `tiep_tuc` trỏ ra
   // ngoài miền thì bị vứt (safeRedirectPath) chứ không được chuyển hướng theo.
   { route: "/dang-nhap?tiep_tuc=//evil.com", ky_vong: { quanly: "goc", vanphong: "goc", thukho1: "goc", chixem: "goc", khach: "200" } },
 ];

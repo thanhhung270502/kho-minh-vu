@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   capNhatMucDanhMucPhu,
-  layDanhMucPhu,
+  fetchLookups,
   taoMucDanhMucPhu,
   xoaMucDanhMucPhu,
   type BangDanhMucPhu,
@@ -14,10 +14,10 @@ export const khoaDanhMucPhu = {
   table: (b: BangDanhMucPhu) => ["danh-muc-phu", b] as const,
 };
 
-export function useDanhMucPhu(table: BangDanhMucPhu) {
+export function useLookups(table: BangDanhMucPhu) {
   return useQuery({
     queryKey: khoaDanhMucPhu.table(table),
-    queryFn: () => layDanhMucPhu(table),
+    queryFn: () => fetchLookups(table),
   });
 }
 

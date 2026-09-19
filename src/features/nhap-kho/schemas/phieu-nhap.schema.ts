@@ -36,7 +36,7 @@ export type BoLocPhieu = {
   nguonNhap: NguonNhap | null;
   tuNgay: string | null;
   denNgay: string | null;
-  trang: number;
+  page: number;
 };
 
 export const BO_LOC_PHIEU_MAC_DINH: BoLocPhieu = {
@@ -47,7 +47,7 @@ export const BO_LOC_PHIEU_MAC_DINH: BoLocPhieu = {
   nguonNhap: null,
   tuNgay: null,
   denNgay: null,
-  trang: 1,
+  page: 1,
 };
 
 export const KICH_THUOC_PHIEU = 50;
@@ -82,7 +82,7 @@ export function docBoLocPhieu(sp: { get(k: string): string | null }): BoLocPhieu
   const ng = sp.get("nguon");
   // `Number(null)` là 0 chứ không phải NaN — phải chặn trước khi Number().
   const tho = sp.get("trang");
-  const trang = tho === null || tho.trim() === "" ? 1 : Number(tho);
+  const page = tho === null || tho.trim() === "" ? 1 : Number(tho);
 
   return {
     q: sp.get("q")?.trim() ?? "",
@@ -92,7 +92,7 @@ export function docBoLocPhieu(sp: { get(k: string): string | null }): BoLocPhieu
     nguonNhap: NGUON.includes(ng as NguonNhap) ? (ng as NguonNhap) : null,
     tuNgay: docNgay(sp.get("tu_ngay")),
     denNgay: docNgay(sp.get("den_ngay")),
-    trang: Number.isFinite(trang) && trang >= 1 ? Math.trunc(trang) : 1,
+    page: Number.isFinite(page) && page >= 1 ? Math.trunc(page) : 1,
   };
 }
 
@@ -105,7 +105,7 @@ export function ghiBoLocPhieu(b: BoLocPhieu): URLSearchParams {
   if (b.nguonNhap) sp.set("nguon", b.nguonNhap);
   if (b.tuNgay) sp.set("tu_ngay", b.tuNgay);
   if (b.denNgay) sp.set("den_ngay", b.denNgay);
-  if (b.trang !== 1) sp.set("trang", String(b.trang));
+  if (b.page !== 1) sp.set("trang", String(b.page));
   return sp;
 }
 
@@ -121,7 +121,7 @@ export function thamSoRpcPhieu(b: BoLocPhieu): ArgsDanhSach {
     p_tu_ngay: b.tuNgay ?? undefined,
     p_den_ngay: b.denNgay ?? undefined,
     p_tu_khoa: b.q || undefined,
-    p_trang: b.trang,
+    p_trang: b.page,
     p_kich_thuoc: KICH_THUOC_PHIEU,
   };
 }

@@ -68,21 +68,21 @@ function ngayNgan(iso: string | null): string {
 export function RaGhiChu() {
   const dem = useDemGhiChu();
   const boQuyet = useBoQuyetGhiChu();
-  const [boLoc, setBoLoc] = useState<BoLocGhiChu>(BO_LOC_GHI_CHU_MAC_DINH);
-  const danhSach = useGhiChu(boLoc);
+  const [filter, setBoLoc] = useState<BoLocGhiChu>(BO_LOC_GHI_CHU_MAC_DINH);
+  const danhSach = useGhiChu(filter);
 
   const daDongMeo = useSyncExternalStore(dangKyMeo, docMeoDaDong, () => true);
 
   const dong = danhSach.data?.dong ?? [];
   const tong = danhSach.data?.tong ?? 0;
 
-  // Quyết nốt phần tử cuối của trang 3 thì trang 3 biến mất — về trang 1 ngay
+  // Quyết nốt phần tử cuối của page 3 thì page 3 biến mất — về page 1 ngay
   // trong lúc render, không qua effect (xem SUMMARY plan 13).
-  if (!danhSach.isPending && !danhSach.isFetching && boLoc.trang > 1 && dong.length === 0) {
-    setBoLoc({ ...boLoc, trang: 1 });
+  if (!danhSach.isPending && !danhSach.isFetching && filter.page > 1 && dong.length === 0) {
+    setBoLoc({ ...filter, page: 1 });
   }
 
-  const daRa = boLoc.trangThai === "da_ra";
+  const daRa = filter.trangThai === "da_ra";
   const soDaRa = (dem.data?.tong ?? 0) - (dem.data?.chuaRa ?? 0);
   const phanTram = dem.data?.tong ? Math.round((soDaRa / dem.data.tong) * 100) : 0;
 
@@ -219,7 +219,7 @@ export function RaGhiChu() {
       )}
 
       <Tabs
-        activeKey={boLoc.trangThai}
+        activeKey={filter.trangThai}
         onChange={(k) =>
           setBoLoc({ ...BO_LOC_GHI_CHU_MAC_DINH, trangThai: k as BoLocGhiChu["trangThai"] })
         }
@@ -233,16 +233,16 @@ export function RaGhiChu() {
         allowClear
         className="mb-3 w-full sm:max-w-md"
         placeholder="Tìm trong giá trị ghi chú"
-        defaultValue={boLoc.q}
-        onSearch={(v) => setBoLoc((b) => ({ ...b, q: v.trim(), trang: 1 }))}
+        defaultValue={filter.q}
+        onSearch={(v) => setBoLoc((b) => ({ ...b, q: v.trim(), page: 1 }))}
       />
 
       <QueryState
         query={danhSach}
         isEmpty={(d) => d.dong.length === 0}
         emptyDescription={
-          boLoc.q
-            ? `Không có giá trị nào khớp “${boLoc.q}”.`
+          filter.q
+            ? `Không có giá trị nào khớp “${filter.q}”.`
             : daRa
               ? "Chưa quyết giá trị nào."
               : "Không còn giá trị nào chưa rà."
@@ -258,12 +258,12 @@ export function RaGhiChu() {
               loading={danhSach.isFetching && !danhSach.isPending}
               scroll={{ x: 1000 }}
               pagination={{
-                current: boLoc.trang,
+                current: filter.page,
                 pageSize: 30,
                 total: tong,
                 showSizeChanger: false,
                 showTotal: (t) => `${t} giá trị`,
-                onChange: (trang) => setBoLoc((b) => ({ ...b, trang })),
+                onChange: (page) => setBoLoc((b) => ({ ...b, page })),
               }}
             />
           </div>

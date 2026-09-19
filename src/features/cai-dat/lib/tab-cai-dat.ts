@@ -8,7 +8,7 @@ export type MucTabCaiDat = { duongDan: string; label: string; quyen: Permission 
  * Trước đây cả hai nằm trong `components/tab-cai-dat.tsx` — file client — nên
  * `src/app/(app)/cai-dat/page.tsx` (Server Component) gọi `tabDauTien()` là
  * Next.js ném ngay: "Attempted to call tabDauTien() from the server but
- * tabDauTien is on the client". Bấm menu Cài đặt ra trang lỗi (UAT Phase 2).
+ * tabDauTien is on the client". Bấm menu Cài đặt ra page lỗi (UAT Phase 2).
  */
 export const TAB_CAI_DAT: MucTabCaiDat[] = [
   { duongDan: "/cai-dat/nguoi-dung", label: "Người dùng", quyen: "manage-users" },

@@ -12,10 +12,10 @@ import {
   type QuyetDinh,
 } from "../api/ra-ghi-chu.api";
 
-export function useGhiChu(boLoc: BoLocGhiChu) {
+export function useGhiChu(filter: BoLocGhiChu) {
   return useQuery({
-    queryKey: khoaRaGhiChu.danhSach(boLoc),
-    queryFn: () => layGhiChu(boLoc),
+    queryKey: khoaRaGhiChu.danhSach(filter),
+    queryFn: () => layGhiChu(filter),
     placeholderData: keepPreviousData,
   });
 }

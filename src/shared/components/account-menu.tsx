@@ -12,7 +12,7 @@ type AccountMenuProps = {
   user: { fullName: string; role: Role };
 };
 
-/** Header mọi trang nội bộ phải hiện họ tên + vai trò và nút Đăng xuất (D-34). */
+/** Header mọi page nội bộ phải hiện họ tên + vai trò và nút Đăng xuất (D-34). */
 export function AccountMenu({ user }: AccountMenuProps) {
   const router = useRouter();
   const queryClient = useQueryClient();

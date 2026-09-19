@@ -11,17 +11,17 @@ import {
   CAU_HINH_DANH_MUC_PHU,
   laMaHeThong,
   type BangDanhMucPhu,
-  type MucDanhMucPhu,
+  type LookupItem,
 } from "../api/danh-muc-phu.api";
-import { useDanhMucPhu, useXoaDanhMucPhu } from "../hooks/useDanhMucPhu";
+import { useLookups, useXoaDanhMucPhu } from "../hooks/useLookups";
 import { NganKeoDanhMucPhu } from "./ngan-keo-danh-muc-phu";
 
-export function DanhMucPhu({ table }: { table: BangDanhMucPhu }) {
+export function Lookups({ table }: { table: BangDanhMucPhu }) {
   const { message } = App.useApp();
   const cauHinh = CAU_HINH_DANH_MUC_PHU[table];
-  const danhSach = useDanhMucPhu(table);
+  const danhSach = useLookups(table);
   const xoa = useXoaDanhMucPhu(table);
-  const [nganKeo, setNganKeo] = useState<{ mo: boolean; muc: MucDanhMucPhu | null }>({
+  const [nganKeo, setNganKeo] = useState<{ mo: boolean; muc: LookupItem | null }>({
     mo: false,
     muc: null,
   });
@@ -32,7 +32,7 @@ export function DanhMucPhu({ table }: { table: BangDanhMucPhu }) {
     [dong],
   );
 
-  async function xoaMuc(muc: MucDanhMucPhu) {
+  async function xoaMuc(muc: LookupItem) {
     try {
       await xoa.mutateAsync(muc.id);
       message.success(`Đã xóa ${cauHinh.label} ${muc.ma}`);
@@ -54,7 +54,7 @@ export function DanhMucPhu({ table }: { table: BangDanhMucPhu }) {
     }
   }
 
-  const cot: ColumnsType<MucDanhMucPhu> = [
+  const cot: ColumnsType<LookupItem> = [
     {
       title: "Mã",
       dataIndex: "ma",
@@ -108,7 +108,7 @@ export function DanhMucPhu({ table }: { table: BangDanhMucPhu }) {
       key: "thao_tac",
       width: 130,
       align: "right",
-      render: (_: unknown, d: MucDanhMucPhu) => (
+      render: (_: unknown, d: LookupItem) => (
         <Space size={4}>
           <Button
             type="link"
@@ -151,7 +151,7 @@ export function DanhMucPhu({ table }: { table: BangDanhMucPhu }) {
       >
         {(d) => (
           <div className="overflow-x-auto">
-            <Table<MucDanhMucPhu>
+            <Table<LookupItem>
               rowKey="id"
               size="small"
               columns={cot}

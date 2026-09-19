@@ -4,7 +4,7 @@ import { Alert, App, Form, Modal, Radio, Select } from "antd";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { useDanhMucPhu } from "@/features/danh-muc/hooks/useSanPham";
+import { useLookups } from "@/features/products/hooks/useProducts";
 import { useDanhSachDoiTac } from "@/features/doi-tac/hooks/useDoiTac";
 import { BO_LOC_DOI_TAC_MAC_DINH } from "@/features/doi-tac/types";
 import { explainError, errorCode } from "@/shared/lib/errors";
@@ -19,7 +19,7 @@ export function NutTaoPhieu({ open, onClose }: { open: boolean; onClose: () => v
   const { message } = App.useApp();
   const router = useRouter();
   const taoPhieu = useTaoPhieu();
-  const danhMucPhu = useDanhMucPhu();
+  const lookups = useLookups();
   const ncc = useDanhSachDoiTac({ ...BO_LOC_DOI_TAC_MAC_DINH, loai: "NCC" });
 
   const [doiTacId, setDoiTacId] = useState<string | undefined>();
@@ -27,7 +27,7 @@ export function NutTaoPhieu({ open, onClose }: { open: boolean; onClose: () => v
   const [nguon, setNguon] = useState<NguonNhap>("NCC");
   const [loi, setLoi] = useState<string | null>(null);
 
-  const kho = danhMucPhu.data?.kho ?? [];
+  const kho = lookups.data?.kho ?? [];
   const khoChon = khoId ?? (kho.length === 1 ? kho[0]?.id : undefined);
 
   function dong() {

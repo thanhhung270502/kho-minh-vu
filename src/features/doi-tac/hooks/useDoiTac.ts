@@ -11,10 +11,10 @@ import { khoaDoiTac } from "../api/doi-tac.keys";
 import type { DoiTacLuu } from "../schemas/doi-tac.schema";
 import type { BoLocDoiTac, LoaiDoiTac } from "../types";
 
-export function useDanhSachDoiTac(boLoc: BoLocDoiTac) {
+export function useDanhSachDoiTac(filter: BoLocDoiTac) {
   return useQuery({
-    queryKey: khoaDoiTac.danhSach(boLoc),
-    queryFn: () => layDanhSachDoiTac(boLoc),
+    queryKey: khoaDoiTac.danhSach(filter),
+    queryFn: () => layDanhSachDoiTac(filter),
     placeholderData: keepPreviousData,
   });
 }
@@ -45,15 +45,15 @@ export function useLuuDoiTac() {
     mutationFn: (v: { id: string | null; giaTri: DoiTacLuu }) => luuDoiTac(v.id, v.giaTri),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: khoaDoiTac.tatCa });
-      void queryClient.invalidateQueries({ queryKey: ["lich-su-sua", "doi_tac"] });
+      void queryClient.invalidateQueries({ queryKey: ["audit-log", "doi_tac"] });
     },
   });
 }
 
-export function useLichSuGiaoDich(doiTacId: string, trang: number) {
+export function useLichSuGiaoDich(doiTacId: string, page: number) {
   return useQuery({
-    queryKey: khoaDoiTac.lichSu(doiTacId, trang),
-    queryFn: () => layLichSuGiaoDich(doiTacId, trang),
+    queryKey: khoaDoiTac.lichSu(doiTacId, page),
+    queryFn: () => layLichSuGiaoDich(doiTacId, page),
     placeholderData: keepPreviousData,
   });
 }

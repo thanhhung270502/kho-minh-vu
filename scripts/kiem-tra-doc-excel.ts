@@ -14,7 +14,7 @@ import {
   docFileDanhMuc,
   dongNhapThanhDongXuat,
   taoFileMau,
-} from "../src/features/danh-muc/lib/doc-file-danh-muc.server";
+} from "../src/features/products/lib/read-catalog-file.server";
 
 async function main() {
   const THU_MUC = "data/kiotviet";

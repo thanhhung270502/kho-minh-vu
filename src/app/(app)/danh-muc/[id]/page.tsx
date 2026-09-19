@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { ChiTietSanPham } from "@/features/danh-muc/components/chi-tiet-san-pham";
+import { ProductDetailView } from "@/features/products/components/product-detail";
 import { requirePermission } from "@/features/auth/api/current-user.server";
 import { hasPermission } from "@/shared/lib/permissions";
 
@@ -14,16 +14,16 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const { id } = await params;
   if (!UUID.test(id)) notFound();
 
-  const nd = await requirePermission("view-catalog");
+  const user = await requirePermission("view-catalog");
 
   return (
-    <ChiTietSanPham
+    <ProductDetailView
       id={id}
-      quyen={{
-        sua: hasPermission(nd.role, "edit-catalog"),
-        xemGiaVon: hasPermission(nd.role, "view-cost"),
-        suaGiaBan: hasPermission(nd.role, "edit-sale-price"),
-        xemLichSu: hasPermission(nd.role, "edit-catalog"),
+      permissions={{
+        canEdit: hasPermission(user.role, "edit-catalog"),
+        canViewCost: hasPermission(user.role, "view-cost"),
+        canEditSalePrice: hasPermission(user.role, "edit-sale-price"),
+        canViewHistory: hasPermission(user.role, "edit-catalog"),
       }}
     />
   );

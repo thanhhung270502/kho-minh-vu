@@ -23,7 +23,7 @@ import { NganKeoDoiTac } from "./ngan-keo-doi-tac";
 import { PanelLocDoiTac } from "./panel-loc-doi-tac";
 import { ThanhCongCuDoiTac } from "./thanh-cong-cu-doi-tac";
 
-const KICH_THUOC_TRANG = 50;
+const PAGE_SIZES = 50;
 
 function coLoc(b: BoLocDoiTac): boolean {
   return b.q !== "" || b.loai !== null || b.hoatDong !== BO_LOC_DOI_TAC_MAC_DINH.hoatDong;
@@ -34,8 +34,8 @@ export function BangDoiTac({ coQuyenSua }: { coQuyenSua: boolean }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const boLoc = docBoLocDoiTac(searchParams);
-  const danhSach = useDanhSachDoiTac(boLoc);
+  const filter = docBoLocDoiTac(searchParams);
+  const danhSach = useDanhSachDoiTac(filter);
   const [nganKeo, setNganKeo] = useState<{ mo: boolean; id: string | null }>({
     mo: false,
     id: null,
@@ -49,21 +49,21 @@ export function BangDoiTac({ coQuyenSua }: { coQuyenSua: boolean }) {
     [router, pathname],
   );
 
-  // Đổi bất kỳ điều kiện nào cũng về trang 1: giữ nguyên trang cũ thì rất dễ
-  // rơi vào trang trống và tưởng là không có dữ liệu.
+  // Đổi bất kỳ điều kiện nào cũng về page 1: giữ nguyên page cũ thì rất dễ
+  // rơi vào page trống và tưởng là không có dữ liệu.
   function doiBoLoc(thayDoi: Partial<BoLocDoiTac>) {
-    dieuHuong({ ...boLoc, ...thayDoi, trang: 1 });
+    dieuHuong({ ...filter, ...thayDoi, page: 1 });
   }
 
-  // Xóa đối tác cuối của một trang (hoặc sửa loại) làm trang đang xem biến mất.
+  // Xóa đối tác cuối của một page (hoặc sửa loại) làm page đang xem biến mất.
   const dong = danhSach.data?.dong ?? [];
   const tong = danhSach.data?.tong ?? 0;
   useEffect(() => {
     if (danhSach.isPending || danhSach.isFetching) return;
-    if (boLoc.trang > 1 && dong.length === 0) dieuHuong({ ...boLoc, trang: 1 });
-    // `boLoc` dựng lại mỗi lần render nên chỉ theo dõi các giá trị thật sự đổi.
+    if (filter.page > 1 && dong.length === 0) dieuHuong({ ...filter, page: 1 });
+    // `filter` dựng lại mỗi lần render nên chỉ theo dõi các giá trị thật sự đổi.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [danhSach.isPending, danhSach.isFetching, dong.length, boLoc.trang]);
+  }, [danhSach.isPending, danhSach.isFetching, dong.length, filter.page]);
 
   const cot: ColumnsType<DongDoiTac> = [
     {
@@ -115,22 +115,22 @@ export function BangDoiTac({ coQuyenSua }: { coQuyenSua: boolean }) {
   return (
     <>
       <ListLayout
-        filterPanel={<PanelLocDoiTac boLoc={boLoc} onDoi={doiBoLoc} />}
+        filterPanel={<PanelLocDoiTac filter={filter} onDoi={doiBoLoc} />}
         toolbar={
           <ThanhCongCuDoiTac
-            boLoc={boLoc}
+            filter={filter}
             coQuyenSua={coQuyenSua}
             onDoi={doiBoLoc}
             onThem={() => setNganKeo({ mo: true, id: null })}
           />
         }
-        activeFilterCount={demDieuKienDoiTac(boLoc)}
+        activeFilterCount={demDieuKienDoiTac(filter)}
       >
         <QueryState
           query={danhSach}
           isEmpty={(d) => d.dong.length === 0}
           emptyDescription={
-            coLoc(boLoc) ? (
+            coLoc(filter) ? (
               <div className="flex flex-col items-center gap-3">
                 <span>Không có đối tác khớp bộ lọc. Xóa bớt điều kiện tìm.</span>
                 <Button size="small" onClick={() => dieuHuong(BO_LOC_DOI_TAC_MAC_DINH)}>
@@ -158,12 +158,12 @@ export function BangDoiTac({ coQuyenSua }: { coQuyenSua: boolean }) {
                 />
               )}
               pagination={{
-                current: boLoc.trang,
-                pageSize: KICH_THUOC_TRANG,
+                current: filter.page,
+                pageSize: PAGE_SIZES,
                 total: tong,
                 showSizeChanger: false,
                 showTotal: (t) => `${t} đối tác`,
-                onChange: (trang) => dieuHuong({ ...boLoc, trang }),
+                onChange: (page) => dieuHuong({ ...filter, page }),
               }}
             />
           )}

@@ -1,6 +1,6 @@
 import { getCurrentUser } from "@/features/auth/api/current-user.server";
-import { docFileDanhMuc } from "@/features/danh-muc/lib/doc-file-danh-muc.server";
-import { GIOI_HAN_FILE_MB } from "@/features/danh-muc/lib/mau-excel";
+import { docFileDanhMuc } from "@/features/products/lib/read-catalog-file.server";
+import { MAX_FILE_MB } from "@/features/products/lib/excel-template";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { explainError } from "@/shared/lib/errors";
 import { hasPermission } from "@/shared/lib/permissions";
@@ -40,9 +40,9 @@ export async function POST(request: Request) {
       400,
     );
   }
-  if (file.size > GIOI_HAN_FILE_MB * 1024 * 1024) {
+  if (file.size > MAX_FILE_MB * 1024 * 1024) {
     return loi(
-      `File lớn hơn ${GIOI_HAN_FILE_MB}MB`,
+      `File lớn hơn ${MAX_FILE_MB}MB`,
       "Chia nhỏ file rồi nhập từng phần.",
       413,
     );

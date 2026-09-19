@@ -5,11 +5,11 @@
 /**
  * Dãy màu biểu đồ Recharts. Dashboard (Phase 5) import từ đây, không tự đặt màu.
  *
- * LƯU Ý: lần trích xuất CSS thật từ KiotViet chỉ chạy trên trang Kho hàng
+ * LƯU Ý: lần trích xuất CSS thật từ KiotViet chỉ chạy trên page Kho hàng
  * (fnb.kiotviet.vn/hoffee/man/#/WareHouse) nên KHÔNG bắt được màu biểu đồ
  * dashboard thật của họ. Dãy dưới đây là SUY RA từ chính thang màu primary/
  * success/warning/danger đã trích xuất được, chưa phải giá trị trích xuất
- * trực tiếp — cần trích xuất lại khi có trang dashboard thật của KiotViet.
+ * trực tiếp — cần trích xuất lại khi có page dashboard thật của KiotViet.
  */
 export const CHART_COLORS = [
   "#0070F4",

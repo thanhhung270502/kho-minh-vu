@@ -136,7 +136,7 @@ export function NganKeoNguoiDung({ open, user, onClose }: Props) {
           notification.info({
             message: "Đã lưu",
             description:
-              "Quyền bị thu hẹp có hiệu lực ngay. Quyền được mở rộng có hiệu lực khi nhân viên tải lại trang hoặc trong tối đa 60 phút.",
+              "Quyền bị thu hẹp có hiệu lực ngay. Quyền được mở rộng có hiệu lực khi nhân viên tải lại page hoặc trong tối đa 60 phút.",
           });
         } else {
           message.success("Đã lưu tài khoản");

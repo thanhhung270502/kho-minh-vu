@@ -1,7 +1,7 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Database, Json } from "@/types/database.types";
 
-import type { TrangDuLieu } from "@/features/danh-muc/types";
+import type { Page } from "@/features/products/types";
 import type { DongDoiTac } from "../types";
 
 export type DongGhiChu =
@@ -12,13 +12,13 @@ export type LoaiQuyet = "KHACH" | "SALE" | "KHACH_VA_SALE" | "BO_QUA";
 export type BoLocGhiChu = {
   trangThai: "chua_ra" | "da_ra";
   q: string;
-  trang: number;
+  page: number;
 };
 
 export const BO_LOC_GHI_CHU_MAC_DINH: BoLocGhiChu = {
   trangThai: "chua_ra",
   q: "",
-  trang: 1,
+  page: 1,
 };
 
 const KICH_THUOC = 30;
@@ -30,13 +30,13 @@ export const khoaRaGhiChu = {
   timKhach: (q: string) => ["ra-ghi-chu", "tim-khach", q] as const,
 };
 
-export async function layGhiChu(b: BoLocGhiChu): Promise<TrangDuLieu<DongGhiChu>> {
+export async function layGhiChu(b: BoLocGhiChu): Promise<Page<DongGhiChu>> {
   const { data, error } = await getSupabaseBrowserClient().rpc(
     "danh_sach_ghi_chu_kiotviet",
     {
       p_trang_thai: b.trangThai,
       p_tu_khoa: b.q || undefined,
-      p_trang: b.trang,
+      p_trang: b.page,
       p_kich_thuoc: KICH_THUOC,
     },
   );
