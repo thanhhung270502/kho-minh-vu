@@ -11,9 +11,9 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
-import { docSheet, type RawRow } from "./doc-file";
-import { kiemTraSanPham, kiemTraDoiTac, type CanhBao, type Loi } from "./kiem-tra";
-import { napDuLieu, napLuuTruHoaDon, napLuuTruNhap } from "./nap-du-lieu";
+import { docSheet, type RawRow } from "./read-file";
+import { kiemTraSanPham, kiemTraDoiTac, type CanhBao, type Loi } from "./validate";
+import { napDuLieu, napLuuTruHoaDon, napLuuTruNhap } from "./load-data";
 
 const co = new Set(process.argv.slice(2));
 const GHI = co.has("--ghi");

@@ -10,7 +10,7 @@
  * Supabase đổi schema. Đây cũng là đường DUY NHẤT dùng được trên cloud —
  * `supabase db push` không chạy `seed.sql`.
  */
-import { taoAdminClient, TAI_KHOAN_MAU, matKhauMau } from "./_supabase-admin";
+import { taoAdminClient, SAMPLE_ACCOUNTS, samplePassword } from "./_supabase-admin";
 
 async function main() {
   const supabase = taoAdminClient();
@@ -31,13 +31,13 @@ async function main() {
   // database.types.ts có bảng nguoi_dung_kho (migration 0026).
   const nguoiDungKho = () => supabase.from("nguoi_dung_kho" as never);
 
-  for (const tk of TAI_KHOAN_MAU) {
+  for (const tk of SAMPLE_ACCOUNTS) {
     let userId: string | undefined;
     let trangThai = "đã tạo";
 
     const { data: taoMoi, error: loiTao } = await supabase.auth.admin.createUser({
       email: tk.email,
-      password: matKhauMau(),
+      password: samplePassword(),
       email_confirm: true,
     });
 
@@ -54,13 +54,13 @@ async function main() {
       userId = taoMoi.user.id;
     }
 
-    const khoIds: string[] = [];
+    const warehouseIds: string[] = [];
     for (const ma of tk.maKho) {
       const id = khoTheoMa.get(ma);
       if (!id) {
         throw new Error(`Không tìm thấy kho có mã ${ma}. Chạy npm run db:push trước.`);
       }
-      khoIds.push(id);
+      warehouseIds.push(id);
     }
 
     const { error: loiHoSo } = await supabase
@@ -71,9 +71,9 @@ async function main() {
     const { error: loiXoaKho } = await nguoiDungKho().delete().eq("nguoi_dung_id", userId);
     if (loiXoaKho) throw loiXoaKho;
 
-    if (khoIds.length > 0) {
+    if (warehouseIds.length > 0) {
       const { error: loiThemKho } = await nguoiDungKho().insert(
-        khoIds.map((khoId) => ({ nguoi_dung_id: userId, kho_id: khoId })) as never,
+        warehouseIds.map((khoId) => ({ nguoi_dung_id: userId, kho_id: khoId })) as never,
       );
       if (loiThemKho) throw loiThemKho;
     }
@@ -84,7 +84,7 @@ async function main() {
   console.log("\nTài khoản mẫu:\n");
   console.table(ketQua);
   console.log(
-    `\nMật khẩu: ${matKhauMau()}\n` +
+    `\nMật khẩu: ${samplePassword()}\n` +
       "Đây là tài khoản DEMO. Đổi mật khẩu hoặc xóa hẳn trước khi go-live.\n" +
       "Bước tiếp theo: npm run verify:hook\n",
   );

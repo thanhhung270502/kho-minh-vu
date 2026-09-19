@@ -10,18 +10,18 @@ import type { Json } from "@/types/database.types";
 
 export const runtime = "nodejs";
 
-function loi(title: string, action: string, status: number) {
+function errorResponse(title: string, action: string, status: number) {
   return Response.json({ title, action }, { status });
 }
 
 /** Giá vốn đầu kỳ là việc một lần của quản lý, không phải việc hằng ngày. */
-async function gacQuanLy() {
-  const nd = await getCurrentUser();
-  if (!nd) {
-    return loi("Phiên đăng nhập đã hết hạn", "Đăng nhập lại rồi thử lần nữa.", 401);
+async function requireManager() {
+  const user = await getCurrentUser();
+  if (!user) {
+    return errorResponse("Phiên đăng nhập đã hết hạn", "Đăng nhập lại rồi thử lần nữa.", 401);
   }
-  if (nd.role !== "quan_ly") {
-    return loi(
+  if (user.role !== "quan_ly") {
+    return errorResponse(
       "Chỉ quản lý đặt được giá vốn đầu kỳ",
       "Giá vốn ảnh hưởng mọi báo cáo lãi lỗ. Nhờ quản lý thao tác giúp.",
       403,
@@ -31,8 +31,8 @@ async function gacQuanLy() {
 }
 
 export async function GET() {
-  const chan = await gacQuanLy();
-  if (chan) return chan;
+  const blocked = await requireManager();
+  if (blocked) return blocked;
 
   const wb = new ExcelJS.Workbook();
   wb.creator = "Kho Minh Vũ";
@@ -67,28 +67,28 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const chan = await gacQuanLy();
-  if (chan) return chan;
+  const blocked = await requireManager();
+  if (blocked) return blocked;
 
   const form = await request.formData();
   const file = form.get("file");
   const cheDo = form.get("che_do") === "nap" ? "nap" : "kiem_tra";
 
   if (!(file instanceof File)) {
-    return loi("Chưa chọn file", "Chọn một file Excel (.xlsx) rồi thử lại.", 400);
+    return errorResponse("Chưa chọn file", "Chọn một file Excel (.xlsx) rồi thử lại.", 400);
   }
   if (!file.name.toLowerCase().endsWith(".xlsx")) {
-    return loi("File không phải .xlsx", "Lưu lại thành .xlsx rồi tải lên.", 400);
+    return errorResponse("File không phải .xlsx", "Lưu lại thành .xlsx rồi tải lên.", 400);
   }
   if (file.size > MAX_FILE_MB * 1024 * 1024) {
-    return loi(`File lớn hơn ${MAX_FILE_MB}MB`, "Chia nhỏ file rồi nạp từng phần.", 413);
+    return errorResponse(`File lớn hơn ${MAX_FILE_MB}MB`, "Chia nhỏ file rồi nạp từng phần.", 413);
   }
 
   let dong: CostRowPayload[];
   try {
     const doc = await readFirstSheet(Buffer.from(await file.arrayBuffer()));
     if (!doc.headers.includes("ma_hang") || !doc.headers.includes("gia_von")) {
-      return loi(
+      return errorResponse(
         "Không thấy hai cột bắt buộc",
         "File cần đúng hai cột: Mã hàng và Giá vốn. Tải file mẫu để đối chiếu.",
         422,
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
       gia_von: readNumber(d.cells["gia_von"]),
     }));
   } catch (e) {
-    return loi(
+    return errorResponse(
       "Không đọc được file",
       e instanceof Error ? e.message : "Kiểm tra lại file rồi thử lần nữa.",
       422,
@@ -114,9 +114,9 @@ export async function POST(request: Request) {
   });
 
   if (error) {
-    const dien = explainError(error);
-    return loi(dien.title, dien.action, dien.kind === "forbidden" ? 403 : 500);
+    const explained = explainError(error);
+    return errorResponse(explained.title, explained.action, explained.kind === "forbidden" ? 403 : 500);
   }
 
-  return Response.json({ ketQua: data });
+  return Response.json({ result: data });
 }

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { normalizeUsername } from "@/shared/lib/text";
 
-export const VAI_TRO = ["quan_ly", "van_phong", "thu_kho", "chi_xem"] as const;
+export const ROLES = ["quan_ly", "van_phong", "thu_kho", "chi_xem"] as const;
 
 const username = z
   .string()
@@ -22,34 +22,34 @@ const password = z
   .regex(/[0-9]/, "Mật khẩu phải có ít nhất một số");
 
 /** Phần hồ sơ dùng chung cho cả tạo, sửa và form giao diện. */
-export const hoSoNguoiDungSchema = z
+export const userProfileSchema = z
   .object({
     fullName: z.string().trim().min(2, "Nhập họ tên"),
-    role: z.enum(VAI_TRO),
-    khoIds: z.array(z.string().uuid()).default([]),
+    role: z.enum(ROLES),
+    warehouseIds: z.array(z.string().uuid()).default([]),
   })
-  .refine((v) => v.role !== "thu_kho" || v.khoIds.length > 0, {
-    path: ["khoIds"],
+  .refine((v) => v.role !== "thu_kho" || v.warehouseIds.length > 0, {
+    path: ["warehouseIds"],
     message: "Thủ kho phải được gán ít nhất một kho",
   });
 
-export const taoNguoiDungSchema = z
+export const createUserSchema = z
   .object({ username, tempPassword: password })
-  .and(hoSoNguoiDungSchema);
+  .and(userProfileSchema);
 
-export const capNhatNguoiDungSchema = z
+export const updateUserSchema = z
   .object({ id: z.string().uuid() })
-  .and(hoSoNguoiDungSchema);
+  .and(userProfileSchema);
 
 /**
  * Schema cho FORM giao diện: form sửa không có `id` (id lấy từ dòng bảng) và
- * không có ô mật khẩu. Ghép từ cùng `hoSoNguoiDungSchema` nên luật vai trò/kho
+ * không có ô mật khẩu. Ghép từ cùng `userProfileSchema` nên luật vai trò/kho
  * chỉ khai một chỗ.
  */
-export const formTaoNguoiDungSchema = taoNguoiDungSchema;
-export const formSuaNguoiDungSchema = hoSoNguoiDungSchema;
+export const createUserFormSchema = createUserSchema;
+export const editUserFormSchema = userProfileSchema;
 
-export const datLaiMatKhauSchema = z.object({
+export const resetPasswordSchema = z.object({
   id: z.string().uuid(),
   tempPassword: password,
 });
@@ -61,7 +61,7 @@ export const changePasswordSchema = z
     message: "Hai mật khẩu không khớp",
   });
 
-export type TaoNguoiDungInput = z.input<typeof taoNguoiDungSchema>;
-export type CapNhatNguoiDungInput = z.input<typeof capNhatNguoiDungSchema>;
-export type DatLaiMatKhauInput = z.input<typeof datLaiMatKhauSchema>;
+export type CreateUserInput = z.input<typeof createUserSchema>;
+export type UpdateUserInput = z.input<typeof updateUserSchema>;
+export type ResetPasswordInput = z.input<typeof resetPasswordSchema>;
 export type ChangePasswordInput = z.input<typeof changePasswordSchema>;

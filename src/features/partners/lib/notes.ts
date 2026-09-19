@@ -1,6 +1,6 @@
 /**
  * Hàm thuần cho màn Rà ghi chú — không import supabase, không import React, để
- * `scripts/kiem-tra-ham-thuan.ts` kiểm được bằng node:assert.
+ * `scripts/test-pure-functions.ts` kiểm được bằng node:assert.
  */
 
 /**

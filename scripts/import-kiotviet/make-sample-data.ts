@@ -1,7 +1,7 @@
 /**
  * Sinh bốn file .xlsx mẫu để test script import khi chưa có file thật.
  *
- *   npx tsx scripts/import-kiotviet/tao-du-lieu-mau.ts
+ *   npx tsx scripts/import-kiotviet/make-sample-data.ts
  *
  * Dữ liệu mẫu CỐ Ý chứa đủ các ca lỗi đã biết của file KiotViet — đây là bộ
  * test của chính script import:

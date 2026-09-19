@@ -1,4 +1,3 @@
-import type { Page } from "@/shared/types";
 import type { Database } from "@/types/database.types";
 
 type Fn = Database["public"]["Functions"];

@@ -8,32 +8,32 @@ import { useState, useTransition } from "react";
 import { QueryState } from "@/shared/components/query-state";
 import { ROLE_LABELS } from "@/shared/lib/permissions";
 
-import { doiTrangThaiNguoiDung } from "../actions/nguoi-dung.actions";
+import { setUserActive } from "../actions/user.actions";
 import {
-  khoaNguoiDung,
-  khoCuaNguoiDung,
-  layDanhSachNguoiDung,
-  type DongNguoiDung,
-} from "../api/nguoi-dung.api";
-import { HopDatLaiMatKhau } from "./hop-dat-lai-mat-khau";
-import { NganKeoNguoiDung } from "./ngan-keo-nguoi-dung";
+  userListKey,
+  userWarehouses,
+  fetchUsers,
+  type UserRow,
+} from "../api/user.api";
+import { ResetPasswordDialog } from "./reset-password-dialog";
+import { UserDrawer } from "./user-drawer";
 
-type Loc = "dang" | "ngung" | "tat_ca";
+type UserFilter = "dang" | "ngung" | "tat_ca";
 
-export function BangNguoiDung({ nguoiDungHienTaiId }: { nguoiDungHienTaiId: string }) {
+export function UserTable({ currentUserId }: { currentUserId: string }) {
   const { message, modal } = App.useApp();
   const queryClient = useQueryClient();
   const [, batDau] = useTransition();
-  const danhSach = useQuery({ queryKey: khoaNguoiDung, queryFn: layDanhSachNguoiDung });
+  const users = useQuery({ queryKey: userListKey, queryFn: fetchUsers });
 
-  const [loc, setLoc] = useState<Loc>("dang");
-  const [nganKeo, setNganKeo] = useState<{ mo: boolean; nd: DongNguoiDung | null }>({
+  const [filter, setFilter] = useState<UserFilter>("dang");
+  const [drawer, setDrawer] = useState<{ mo: boolean; nd: UserRow | null }>({
     mo: false,
     nd: null,
   });
-  const [datLai, setDatLai] = useState<DongNguoiDung | null>(null);
+  const [resetTarget, setResetTarget] = useState<UserRow | null>(null);
 
-  function doiTrangThai(nd: DongNguoiDung) {
+  function toggleActive(nd: UserRow) {
     const batLai = !nd.dang_hoat_dong;
 
     modal.confirm({
@@ -47,12 +47,12 @@ export function BangNguoiDung({ nguoiDungHienTaiId }: { nguoiDungHienTaiId: stri
       onOk: () =>
         new Promise<void>((xong) => {
           batDau(async () => {
-            const kq = await doiTrangThaiNguoiDung({ id: nd.id, dangHoatDong: batLai });
+            const kq = await setUserActive({ id: nd.id, isActive: batLai });
             if (!kq.ok) {
-              message.error(kq.thongBao);
+              message.error(kq.message);
             } else {
               message.success(batLai ? "Đã mở lại tài khoản" : "Đã vô hiệu hóa tài khoản");
-              void queryClient.invalidateQueries({ queryKey: khoaNguoiDung });
+              void queryClient.invalidateQueries({ queryKey: userListKey });
             }
             xong();
           });
@@ -60,7 +60,7 @@ export function BangNguoiDung({ nguoiDungHienTaiId }: { nguoiDungHienTaiId: stri
     });
   }
 
-  const cot: ColumnsType<DongNguoiDung> = [
+  const columns: ColumnsType<UserRow> = [
     {
       title: "Họ tên",
       dataIndex: "ho_ten",
@@ -68,7 +68,7 @@ export function BangNguoiDung({ nguoiDungHienTaiId }: { nguoiDungHienTaiId: stri
       render: (ten: string, d) => (
         <Space size={6}>
           <span className="font-medium">{ten}</span>
-          {d.id === nguoiDungHienTaiId ? <Tag color="blue">Bạn</Tag> : null}
+          {d.id === currentUserId ? <Tag color="blue">Bạn</Tag> : null}
         </Space>
       ),
     },
@@ -82,7 +82,7 @@ export function BangNguoiDung({ nguoiDungHienTaiId }: { nguoiDungHienTaiId: stri
       title: "Vai trò",
       dataIndex: "vai_tro",
       width: 120,
-      render: (v: DongNguoiDung["vai_tro"]) => ROLE_LABELS[v],
+      render: (v: UserRow["vai_tro"]) => ROLE_LABELS[v],
     },
     {
       title: "Kho",
@@ -91,7 +91,7 @@ export function BangNguoiDung({ nguoiDungHienTaiId }: { nguoiDungHienTaiId: stri
       render: (_, d) =>
         d.vai_tro === "thu_kho" ? (
           <span className="flex flex-wrap gap-1">
-            {khoCuaNguoiDung(d).map((k) => (
+            {userWarehouses(d).map((k) => (
               <Tag key={k.id} className="m-0">
                 {k.ten}
               </Tag>
@@ -135,9 +135,9 @@ export function BangNguoiDung({ nguoiDungHienTaiId }: { nguoiDungHienTaiId: stri
               },
             ],
             onClick: ({ key }) => {
-              if (key === "sua") setNganKeo({ mo: true, nd: d });
-              if (key === "mat_khau") setDatLai(d);
-              if (key === "trang_thai") doiTrangThai(d);
+              if (key === "sua") setDrawer({ mo: true, nd: d });
+              if (key === "mat_khau") setResetTarget(d);
+              if (key === "trang_thai") toggleActive(d);
             },
           }}
         >
@@ -153,8 +153,8 @@ export function BangNguoiDung({ nguoiDungHienTaiId }: { nguoiDungHienTaiId: stri
     <>
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <Segmented
-          value={loc}
-          onChange={(v) => setLoc(v as Loc)}
+          value={filter}
+          onChange={(v) => setFilter(v as UserFilter)}
           options={[
             { value: "dang", label: "Đang hoạt động" },
             { value: "ngung", label: "Đã vô hiệu hóa" },
@@ -164,32 +164,32 @@ export function BangNguoiDung({ nguoiDungHienTaiId }: { nguoiDungHienTaiId: stri
         <Button
           type="primary"
           className="ms-auto"
-          onClick={() => setNganKeo({ mo: true, nd: null })}
+          onClick={() => setDrawer({ mo: true, nd: null })}
         >
           Thêm tài khoản
         </Button>
       </div>
 
       <QueryState
-        query={danhSach}
+        query={users}
         emptyDescription="Chưa có tài khoản nào khác. Bấm “Thêm tài khoản” để cấp cho nhân viên."
       >
         {(d) => {
           // Vài chục dòng — lọc ngay ở client, không cần thêm tham số server.
           const dong = d.filter(
             (n) =>
-              loc === "tat_ca" ||
-              (loc === "dang" ? n.dang_hoat_dong : !n.dang_hoat_dong),
+              filter === "tat_ca" ||
+              (filter === "dang" ? n.dang_hoat_dong : !n.dang_hoat_dong),
           );
 
           return (
             <div className="overflow-x-auto">
-              <Table<DongNguoiDung>
+              <Table<UserRow>
                 rowKey="id"
                 size="small"
-                columns={cot}
+                columns={columns}
                 dataSource={dong}
-                loading={danhSach.isFetching}
+                loading={users.isFetching}
                 scroll={{ x: 900 }}
                 pagination={false}
                 locale={{ emptyText: "Không có tài khoản nào ở trạng thái này." }}
@@ -199,13 +199,13 @@ export function BangNguoiDung({ nguoiDungHienTaiId }: { nguoiDungHienTaiId: stri
         }}
       </QueryState>
 
-      <NganKeoNguoiDung
-        open={nganKeo.mo}
-        user={nganKeo.nd}
-        onClose={() => setNganKeo((s) => ({ ...s, mo: false }))}
+      <UserDrawer
+        open={drawer.mo}
+        user={drawer.nd}
+        onClose={() => setDrawer((s) => ({ ...s, mo: false }))}
       />
 
-      <HopDatLaiMatKhau user={datLai} onClose={() => setDatLai(null)} />
+      <ResetPasswordDialog user={resetTarget} onClose={() => setResetTarget(null)} />
     </>
   );
 }

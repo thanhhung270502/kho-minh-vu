@@ -8,7 +8,7 @@
 import { readdirSync } from "node:fs";
 import path from "node:path";
 
-import { docSheet, readString, readNumber } from "./doc-file";
+import { docSheet, readString, readNumber } from "./read-file";
 
 const DIR = path.join("data", "kiotviet");
 const tim = (tienTo: string) => {

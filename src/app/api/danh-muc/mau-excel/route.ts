@@ -1,12 +1,12 @@
 import { getCurrentUser } from "@/features/auth/api/current-user.server";
-import { taoFileMau } from "@/features/products/lib/read-catalog-file.server";
+import { buildTemplateWorkbook } from "@/features/products/lib/read-catalog-file.server";
 
 export const runtime = "nodejs";
 
 /** File mẫu trống để người dùng điền rồi nhập lại (D-23). */
 export async function GET() {
-  const nd = await getCurrentUser();
-  if (!nd) {
+  const user = await getCurrentUser();
+  if (!user) {
     return Response.json(
       {
         title: "Phiên đăng nhập đã hết hạn",
@@ -16,7 +16,7 @@ export async function GET() {
     );
   }
 
-  const buf = await taoFileMau([], { coGiaVon: false });
+  const buf = await buildTemplateWorkbook([], { includeCost: false });
 
   return new Response(new Uint8Array(buf), {
     headers: {

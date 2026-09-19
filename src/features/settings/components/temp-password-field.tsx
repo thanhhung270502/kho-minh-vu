@@ -21,7 +21,7 @@ type Props = {
   autoFocus?: boolean;
 };
 
-export function OMatKhauTam({ value, onChange, autoFocus }: Props) {
+export function TempPasswordField({ value, onChange, autoFocus }: Props) {
   const { message } = App.useApp();
 
   async function sao() {

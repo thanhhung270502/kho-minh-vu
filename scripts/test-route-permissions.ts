@@ -5,12 +5,12 @@
  * `requirePermission()` trong Server Component và `proxy.ts`. Gõ tay URL là cách người
  * dùng (và người tò mò) vượt giao diện — script này gõ hộ, cho cả 4 vai trò.
  *
- * Chạy: `npm run dev` ở một cửa sổ, rồi `npx tsx scripts/kiem-tra-quyen-route.ts`.
+ * Chạy: `npm run dev` ở một cửa sổ, rồi `npx tsx scripts/test-route-permissions.ts`.
  */
 import { createServerClient } from "@supabase/ssr";
 import { config } from "dotenv";
 
-import { matKhauMau } from "./_supabase-admin";
+import { samplePassword } from "./_supabase-admin";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -79,7 +79,7 @@ async function layCookie(email: string): Promise<string> {
 
   const { error } = await sb.auth.signInWithPassword({
     email,
-    password: matKhauMau(),
+    password: samplePassword(),
   });
   if (error) throw new Error(`Không đăng nhập được ${email}: ${error.message}`);
 
@@ -102,7 +102,7 @@ async function layIdPhieuNhap(): Promise<string | null> {
 
   const { error } = await sb.auth.signInWithPassword({
     email: TAI_KHOAN.quanly,
-    password: matKhauMau(),
+    password: samplePassword(),
   });
   if (error) return null;
 

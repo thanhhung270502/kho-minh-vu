@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/features/auth/api/current-user.server";
-import { docFileDanhMuc } from "@/features/products/lib/read-catalog-file.server";
+import { readCatalogFile } from "@/features/products/lib/read-catalog-file.server";
 import { MAX_FILE_MB } from "@/features/products/lib/excel-template";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { explainError } from "@/shared/lib/errors";
@@ -9,17 +9,17 @@ import type { Json } from "@/types/database.types";
 /** exceljs cần Node (stream, zip) — Edge runtime không chạy được. */
 export const runtime = "nodejs";
 
-function loi(title: string, action: string, status: number) {
+function errorResponse(title: string, action: string, status: number) {
   return Response.json({ title, action }, { status });
 }
 
 export async function POST(request: Request) {
-  const nd = await getCurrentUser();
-  if (!nd) {
-    return loi("Phiên đăng nhập đã hết hạn", "Đăng nhập lại rồi tải file lên lần nữa.", 401);
+  const user = await getCurrentUser();
+  if (!user) {
+    return errorResponse("Phiên đăng nhập đã hết hạn", "Đăng nhập lại rồi tải file lên lần nữa.", 401);
   }
-  if (!hasPermission(nd.role, "edit-catalog")) {
-    return loi(
+  if (!hasPermission(user.role, "edit-catalog")) {
+    return errorResponse(
       "Tài khoản không có quyền nhập danh mục",
       "Chỉ quản lý và văn phòng nhập được danh mục. Liên hệ quản lý nếu bạn cần quyền.",
       403,
@@ -31,17 +31,17 @@ export async function POST(request: Request) {
   const cheDo = form.get("che_do") === "nap" ? "nap" : "kiem_tra";
 
   if (!(file instanceof File)) {
-    return loi("Chưa chọn file", "Chọn một file Excel (.xlsx) rồi thử lại.", 400);
+    return errorResponse("Chưa chọn file", "Chọn một file Excel (.xlsx) rồi thử lại.", 400);
   }
   if (!file.name.toLowerCase().endsWith(".xlsx")) {
-    return loi(
+    return errorResponse(
       "File không phải .xlsx",
       "Mở file bằng Excel rồi Lưu thành định dạng .xlsx, sau đó tải lại.",
       400,
     );
   }
   if (file.size > MAX_FILE_MB * 1024 * 1024) {
-    return loi(
+    return errorResponse(
       `File lớn hơn ${MAX_FILE_MB}MB`,
       "Chia nhỏ file rồi nhập từng phần.",
       413,
@@ -50,9 +50,9 @@ export async function POST(request: Request) {
 
   let doc;
   try {
-    doc = await docFileDanhMuc(Buffer.from(await file.arrayBuffer()));
+    doc = await readCatalogFile(Buffer.from(await file.arrayBuffer()));
   } catch (e) {
-    return loi(
+    return errorResponse(
       "Không đọc được file",
       e instanceof Error ? e.message : "Kiểm tra lại file rồi thử lần nữa.",
       422,
@@ -68,11 +68,11 @@ export async function POST(request: Request) {
   });
 
   if (error) {
-    const dien = explainError(error);
+    const explained = explainError(error);
     const status =
-      dien.kind === "forbidden" ? 403 : dien.kind === "invalid-data" ? 422 : 500;
-    return loi(dien.title, dien.action, status);
+      explained.kind === "forbidden" ? 403 : explained.kind === "invalid-data" ? 422 : 500;
+    return errorResponse(explained.title, explained.action, status);
   }
 
-  return Response.json({ dinhDang: doc.dinhDang, ketQua: data });
+  return Response.json({ dinhDang: doc.dinhDang, result: data });
 }
