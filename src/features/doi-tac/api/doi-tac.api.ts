@@ -1,5 +1,5 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { TrangDuLieu } from "@/features/danh-muc/types";
+import type { Page } from "@/features/products/types";
 
 import type { DoiTacLuu } from "../schemas/doi-tac.schema";
 import {
@@ -21,7 +21,7 @@ export function docBoLocDoiTac(sp: {
 }): BoLocDoiTac {
   const loai = sp.get("loai");
   const hoatDong = sp.get("hoat_dong");
-  const trang = Number(sp.get("trang"));
+  const page = Number(sp.get("trang"));
 
   return {
     q: sp.get("q")?.trim() ?? "",
@@ -30,7 +30,7 @@ export function docBoLocDoiTac(sp: {
       hoatDong === "ngung" || hoatDong === "tat_ca"
         ? hoatDong
         : BO_LOC_DOI_TAC_MAC_DINH.hoatDong,
-    trang: Number.isFinite(trang) && trang >= 1 ? Math.trunc(trang) : 1,
+    page: Number.isFinite(page) && page >= 1 ? Math.trunc(page) : 1,
   };
 }
 
@@ -39,13 +39,13 @@ export function ghiBoLocDoiTac(b: BoLocDoiTac): URLSearchParams {
   if (b.q) sp.set("q", b.q);
   if (b.loai) sp.set("loai", b.loai);
   if (b.hoatDong !== BO_LOC_DOI_TAC_MAC_DINH.hoatDong) sp.set("hoat_dong", b.hoatDong);
-  if (b.trang !== 1) sp.set("trang", String(b.trang));
+  if (b.page !== 1) sp.set("trang", String(b.page));
   return sp;
 }
 
 export async function layDanhSachDoiTac(
   b: BoLocDoiTac,
-): Promise<TrangDuLieu<DongDoiTac>> {
+): Promise<Page<DongDoiTac>> {
   const { data, error } = await getSupabaseBrowserClient().rpc("danh_sach_doi_tac", {
     p_tu_khoa: b.q || undefined,
     p_loai: b.loai ?? undefined,
@@ -53,7 +53,7 @@ export async function layDanhSachDoiTac(
     ...(b.hoatDong === "tat_ca"
       ? { p_dang_hoat_dong: null as unknown as boolean }
       : { p_dang_hoat_dong: b.hoatDong === "dang" }),
-    p_trang: b.trang,
+    p_trang: b.page,
     p_kich_thuoc: 50,
   });
   if (error) throw error;
@@ -96,11 +96,11 @@ export async function luuDoiTac(id: string | null, v: DoiTacLuu): Promise<string
 
 export async function layLichSuGiaoDich(
   doiTacId: string,
-  trang: number,
-): Promise<TrangDuLieu<DongLichSuGiaoDich>> {
+  page: number,
+): Promise<Page<DongLichSuGiaoDich>> {
   const { data, error } = await getSupabaseBrowserClient().rpc(
     "lich_su_giao_dich_doi_tac",
-    { p_doi_tac_id: doiTacId, p_trang: trang, p_kich_thuoc: 50 },
+    { p_doi_tac_id: doiTacId, p_trang: page, p_kich_thuoc: 50 },
   );
   if (error) throw error;
 

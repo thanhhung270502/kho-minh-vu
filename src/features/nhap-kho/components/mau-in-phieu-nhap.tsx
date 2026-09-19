@@ -29,7 +29,7 @@ export function MauInPhieuNhap({
         @page { size: A4; margin: 12mm; }
         @media print {
           body { background: #fff; }
-          /* Đầu bảng lặp lại ở trang sau — phiếu 48 dòng tràn sang trang hai. */
+          /* Đầu bảng lặp lại ở page sau — phiếu 48 dòng tràn sang page hai. */
           thead { display: table-header-group; }
           tr { break-inside: avoid; }
         }

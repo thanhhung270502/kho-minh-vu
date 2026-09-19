@@ -9,7 +9,7 @@ export type BangDanhMucPhu = "kho" | "nhom_hang" | "don_vi_tinh" | "cong_doan";
  * Một dòng của bất kỳ bảng danh mục phụ nào. Các cột chỉ có ở một bảng để
  * optional — bảng nào hiện cột nào do `CAU_HINH_DANH_MUC_PHU` quyết định.
  */
-export type MucDanhMucPhu = {
+export type LookupItem = {
   id: string;
   ma: string;
   ten: string;
@@ -106,7 +106,7 @@ export type GiaTriDanhMucPhu = {
  * `.from(table)` — nó chốt vào bảng đầu của union và báo lỗi cột. Khai một mặt
  * cắt hẹp đúng bốn thao tác đang dùng, ép kiểu CHỈ ở đây. Cột đọc ra luôn liệt
  * kê tường minh trong `CAU_HINH_DANH_MUC_PHU.cot`, kết quả thu về
- * `MucDanhMucPhu` — không có `any` nào lọt ra ngoài file này.
+ * `LookupItem` — không có `any` nào lọt ra ngoài file này.
  */
 type KetQua = PromiseLike<{
   data: unknown;
@@ -128,12 +128,12 @@ function table(ten: BangDanhMucPhu): MatCatBang {
   return sb.from(ten);
 }
 
-export async function layDanhMucPhu(ten: BangDanhMucPhu): Promise<MucDanhMucPhu[]> {
+export async function fetchLookups(ten: BangDanhMucPhu): Promise<LookupItem[]> {
   const { data, error } = await table(ten)
     .select(CAU_HINH_DANH_MUC_PHU[ten].cot)
     .order("ma");
   if (error) throw error;
-  return (data ?? []) as unknown as MucDanhMucPhu[];
+  return (data ?? []) as unknown as LookupItem[];
 }
 
 export async function taoMucDanhMucPhu(

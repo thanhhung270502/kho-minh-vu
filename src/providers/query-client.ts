@@ -42,7 +42,7 @@ async function refreshSessionOnce(): Promise<boolean> {
   const result = (await refreshInFlight) as { error?: unknown } | undefined;
 
   if (result?.error) {
-    // Refresh token đã bị thu hồi (quản lý vô hiệu hóa tài khoản). Tải lại cả trang
+    // Refresh token đã bị thu hồi (quản lý vô hiệu hóa tài khoản). Tải lại cả page
     // chứ không điều hướng mềm: phải vứt sạch cache TanStack Query của phiên cũ.
     // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.assign("/dang-nhap?loi=vo-hieu-hoa");

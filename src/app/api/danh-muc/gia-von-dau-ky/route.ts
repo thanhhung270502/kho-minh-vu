@@ -1,7 +1,7 @@
 import ExcelJS from "exceljs";
 
-import { COT_GIA_VON, type DongGiaVon } from "@/features/danh-muc/lib/mau-gia-von";
-import { GIOI_HAN_FILE_MB } from "@/features/danh-muc/lib/mau-excel";
+import { COST_TEMPLATE_COLUMNS, type CostRowPayload } from "@/features/products/lib/cost-template";
+import { MAX_FILE_MB } from "@/features/products/lib/excel-template";
 import { getCurrentUser } from "@/features/auth/api/current-user.server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { readString, readFirstSheet, readNumber } from "@/shared/lib/excel-cell";
@@ -37,7 +37,7 @@ export async function GET() {
   const wb = new ExcelJS.Workbook();
   wb.creator = "Kho Minh Vũ";
   const ws = wb.addWorksheet("Giá vốn đầu kỳ");
-  ws.columns = COT_GIA_VON.map((c) => ({ header: c.title, key: c.khoa, width: c.rong }));
+  ws.columns = COST_TEMPLATE_COLUMNS.map((c) => ({ header: c.title, key: c.key, width: c.width }));
   ws.getRow(1).font = { bold: true };
 
   const hd = wb.addWorksheet("Hướng dẫn");
@@ -80,11 +80,11 @@ export async function POST(request: Request) {
   if (!file.name.toLowerCase().endsWith(".xlsx")) {
     return loi("File không phải .xlsx", "Lưu lại thành .xlsx rồi tải lên.", 400);
   }
-  if (file.size > GIOI_HAN_FILE_MB * 1024 * 1024) {
-    return loi(`File lớn hơn ${GIOI_HAN_FILE_MB}MB`, "Chia nhỏ file rồi nạp từng phần.", 413);
+  if (file.size > MAX_FILE_MB * 1024 * 1024) {
+    return loi(`File lớn hơn ${MAX_FILE_MB}MB`, "Chia nhỏ file rồi nạp từng phần.", 413);
   }
 
-  let dong: DongGiaVon[];
+  let dong: CostRowPayload[];
   try {
     const doc = await readFirstSheet(Buffer.from(await file.arrayBuffer()));
     if (!doc.headers.includes("ma_hang") || !doc.headers.includes("gia_von")) {

@@ -8,7 +8,7 @@ import { removeDiacritics, normalizeUsername, usernameToEmail } from "../src/sha
 import { hasPermission } from "../src/shared/lib/permissions";
 import { safeRedirectPath } from "../src/shared/lib/redirect-path";
 import { goiYTenKhach, tachSoDienThoai } from "../src/features/doi-tac/lib/ghi-chu";
-import { taoCsvLoi, tenFileLoi } from "../src/features/danh-muc/lib/file-loi";
+import { buildErrorCsv, errorFileName } from "../src/features/products/lib/error-file";
 import {
   BO_LOC_PHIEU_MAC_DINH,
   demDieuKienPhieu,
@@ -18,12 +18,12 @@ import {
   type BoLocPhieu,
 } from "../src/features/nhap-kho/schemas/phieu-nhap.schema";
 import {
-  BO_LOC_MAC_DINH,
-  docBoLocTuUrl,
-  ghiBoLocRaUrl,
-  thamSoRpc,
-  type BoLocSanPham,
-} from "../src/features/danh-muc/schemas/bo-loc.schema";
+  DEFAULT_PRODUCT_FILTER,
+  readFilterFromUrl,
+  writeFilterToUrl,
+  toListRpcArgs,
+  type ProductFilter,
+} from "../src/features/products/schemas/filter.schema";
 
 assert.equal(removeDiacritics("Đặng Thị Ngọc"), "Dang Thi Ngoc");
 assert.equal(normalizeUsername("  Kim.Chi "), "kim.chi");
@@ -56,34 +56,34 @@ assert.equal(hasPermission("van_phong", "manage-lookups"), true);
 assert.equal(hasPermission("van_phong", "manage-users"), false);
 assert.equal(hasPermission("chi_xem", "view-cost"), false);
 
-const boLocMau: BoLocSanPham = {
+const sampleFilter: ProductFilter = {
   q: "op po",
-  nhomHangId: "11111111-1111-4111-8111-111111111111",
-  congDoanId: null,
-  dvtId: null,
-  trangThaiTon: "duoi_dinh_muc",
-  kinhDoanh: "ngung",
-  canRa: true,
-  sapXep: "tong_ton",
-  huong: "desc",
-  trang: 3,
-  kichThuoc: 100,
+  categoryId: "11111111-1111-4111-8111-111111111111",
+  stageId: null,
+  unitId: null,
+  stockStatus: "duoi_dinh_muc",
+  tradingStatus: "inactive",
+  needsReview: true,
+  sortBy: "totalStock",
+  sortDir: "desc",
+  page: 3,
+  pageSize: 100,
 };
 
-assert.deepEqual(docBoLocTuUrl(ghiBoLocRaUrl(boLocMau)), boLocMau, "bộ lọc quay vòng qua URL không mất giá trị");
-assert.equal(ghiBoLocRaUrl(BO_LOC_MAC_DINH).toString(), "", "bộ lọc mặc định không ghi gì vào URL");
-assert.deepEqual(docBoLocTuUrl(new URLSearchParams("")), BO_LOC_MAC_DINH);
-assert.equal(docBoLocTuUrl(new URLSearchParams("trang=-5")).trang, 1, "trang âm về 1");
-assert.equal(docBoLocTuUrl(new URLSearchParams("kich_thuoc=99999")).kichThuoc, 200, "kích thước trang bị chặn trần");
-assert.equal(docBoLocTuUrl(new URLSearchParams("sap_xep=drop")).sapXep, null, "cột sắp xếp lạ bị bỏ");
-assert.equal(docBoLocTuUrl(new URLSearchParams("nhom=khong-phai-uuid")).nhomHangId, null, "nhóm không phải uuid bị bỏ");
+assert.deepEqual(readFilterFromUrl(writeFilterToUrl(sampleFilter)), sampleFilter, "bộ lọc quay vòng qua URL không mất giá trị");
+assert.equal(writeFilterToUrl(DEFAULT_PRODUCT_FILTER).toString(), "", "bộ lọc mặc định không ghi gì vào URL");
+assert.deepEqual(readFilterFromUrl(new URLSearchParams("")), DEFAULT_PRODUCT_FILTER);
+assert.equal(readFilterFromUrl(new URLSearchParams("trang=-5")).page, 1, "page âm về 1");
+assert.equal(readFilterFromUrl(new URLSearchParams("kich_thuoc=99999")).pageSize, 200, "kích thước page bị chặn trần");
+assert.equal(readFilterFromUrl(new URLSearchParams("sap_xep=drop")).sortBy, null, "cột sắp xếp lạ bị bỏ");
+assert.equal(readFilterFromUrl(new URLSearchParams("nhom=khong-phai-uuid")).categoryId, null, "nhóm không phải uuid bị bỏ");
 assert.equal(
-  thamSoRpc({ ...BO_LOC_MAC_DINH, kinhDoanh: "tat_ca" }).p_dang_kinh_doanh,
+  toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, tradingStatus: "all" }).p_dang_kinh_doanh,
   null,
   "lọc tất cả gửi null tường minh, không bỏ trống",
 );
-assert.equal(thamSoRpc(BO_LOC_MAC_DINH).p_dang_kinh_doanh, true);
-assert.equal(thamSoRpc({ ...BO_LOC_MAC_DINH, canRa: false }).p_can_ra, undefined);
+assert.equal(toListRpcArgs(DEFAULT_PRODUCT_FILTER).p_dang_kinh_doanh, true);
+assert.equal(toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, needsReview: false }).p_can_ra, undefined);
 
 // Ghi chú KiotViet thật: dòng 1 là tên + địa chỉ, dòng 2 là SĐT.
 assert.equal(
@@ -107,7 +107,7 @@ const boLocPhieu: BoLocPhieu = {
   nguonNhap: "NHA_MAY",
   tuNgay: "2026-09-01",
   denNgay: "2026-09-30",
-  trang: 3,
+  page: 3,
 };
 
 assert.deepEqual(
@@ -117,7 +117,7 @@ assert.deepEqual(
 );
 assert.equal(ghiBoLocPhieu(BO_LOC_PHIEU_MAC_DINH).toString(), "", "bộ lọc mặc định không ghi gì vào URL");
 assert.deepEqual(docBoLocPhieu(new URLSearchParams("")), BO_LOC_PHIEU_MAC_DINH);
-assert.equal(docBoLocPhieu(new URLSearchParams("trang=-2")).trang, 1, "trang âm về 1");
+assert.equal(docBoLocPhieu(new URLSearchParams("page=-2")).page, 1, "page âm về 1");
 assert.equal(docBoLocPhieu(new URLSearchParams("ncc=khong-phai-uuid")).doiTacId, null);
 assert.equal(docBoLocPhieu(new URLSearchParams("tu_ngay=01/09/2026")).tuNgay, null, "ngày sai định dạng bị bỏ");
 assert.equal(demDieuKienPhieu(BO_LOC_PHIEU_MAC_DINH), 0, "không điều kiện nào thì đếm 0");
@@ -132,8 +132,8 @@ assert.equal(thamSoRpcPhieu(BO_LOC_PHIEU_MAC_DINH).p_loai_ct, "NHAP", "màn phi�
 // tsx biên dịch ra CJS nên KHÔNG có top-level await — bọc phần bất đồng bộ lại.
 async function kiemCsvLoi() {
   // CSV lỗi: Excel trên Windows cần BOM, và dấu nháy trong thông báo phải nhân đôi.
-  const blob = taoCsvLoi([
-    { dong: 12, cot: "dvt", thong_bao: 'Không có đơn vị tính "Thùng", kiểm tra' },
+  const blob = buildErrorCsv([
+    { row: 12, column: "dvt", message: 'Không có đơn vị tính "Thùng", kiểm tra' },
   ]);
 
   // Kiểm BYTE chứ không kiểm chuỗi: `blob.text()` giải mã UTF-8 theo chuẩn
@@ -151,7 +151,7 @@ async function kiemCsvLoi() {
     "nháy kép trong thông báo được nhân đôi",
   );
   assert.ok(csv.includes("Đơn vị tính"), "tên cột hiển thị bằng tiêu đề tiếng Việt");
-  assert.equal(tenFileLoi("danh-muc-20260918-1030.xlsx"), "danh-muc-20260918-1030-loi.csv");
+  assert.equal(errorFileName("danh-muc-20260918-1030.xlsx"), "danh-muc-20260918-1030-loi.csv");
 }
 
 void kiemCsvLoi().then(() => {

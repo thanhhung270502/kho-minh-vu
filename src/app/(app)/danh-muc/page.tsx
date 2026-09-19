@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { BangSanPham } from "@/features/danh-muc/components/bang-san-pham";
+import { ProductTable } from "@/features/products/components/product-table";
 import { requirePermission } from "@/features/auth/api/current-user.server";
 import { PageHeader } from "@/shared/components/page-header";
 import { hasPermission } from "@/shared/lib/permissions";
@@ -9,7 +9,7 @@ import { hasPermission } from "@/shared/lib/permissions";
 export const metadata: Metadata = { title: "Danh mục hàng" };
 
 export default async function DanhMucPage() {
-  const nd = await requirePermission("view-catalog");
+  const user = await requirePermission("view-catalog");
 
   return (
     <>
@@ -20,11 +20,11 @@ export default async function DanhMucPage() {
 
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}
       <Suspense fallback={null}>
-        <BangSanPham
-          quyen={{
-            sua: hasPermission(nd.role, "edit-catalog"),
-            xemGiaVon: hasPermission(nd.role, "view-cost"),
-            suaGiaBan: hasPermission(nd.role, "edit-sale-price"),
+        <ProductTable
+          permissions={{
+            canEdit: hasPermission(user.role, "edit-catalog"),
+            canViewCost: hasPermission(user.role, "view-cost"),
+            canEditSalePrice: hasPermission(user.role, "edit-sale-price"),
           }}
         />
       </Suspense>

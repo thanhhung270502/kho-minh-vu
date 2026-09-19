@@ -23,14 +23,14 @@ export type BoLocDoiTac = {
   q: string;
   loai: LoaiDoiTac | null;
   hoatDong: "dang" | "ngung" | "tat_ca";
-  trang: number;
+  page: number;
 };
 
 export const BO_LOC_DOI_TAC_MAC_DINH: BoLocDoiTac = {
   q: "",
   loai: null,
   hoatDong: "dang",
-  trang: 1,
+  page: 1,
 };
 
 /** Đếm điều kiện đang bật, KHÔNG tính ô tìm kiếm (ô tìm nằm ngoài panel). */

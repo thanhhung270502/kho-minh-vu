@@ -7,21 +7,21 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { BoLocPhieu } from "../schemas/phieu-nhap.schema";
 
 type Props = {
-  boLoc: BoLocPhieu;
+  filter: BoLocPhieu;
   onDoi: (b: BoLocPhieu) => void;
   nutThem?: ReactNode;
 };
 
-export function ThanhCongCuPhieu({ boLoc, onDoi, nutThem }: Props) {
-  const [tuKhoa, setTuKhoa] = useState(boLoc.q);
-  const [qTruoc, setQTruoc] = useState(boLoc.q);
+export function ThanhCongCuPhieu({ filter, onDoi, nutThem }: Props) {
+  const [tuKhoa, setTuKhoa] = useState(filter.q);
+  const [qTruoc, setQTruoc] = useState(filter.q);
   const hen = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Từ khóa đổi từ bên ngoài (Xóa bộ lọc, nút back) — chỉnh trong lúc render,
   // không dùng effect (lint react-hooks/set-state-in-effect).
-  if (boLoc.q !== qTruoc) {
-    setQTruoc(boLoc.q);
-    setTuKhoa(boLoc.q);
+  if (filter.q !== qTruoc) {
+    setQTruoc(filter.q);
+    setTuKhoa(filter.q);
   }
 
   useEffect(() => () => { if (hen.current) clearTimeout(hen.current); }, []);
@@ -29,7 +29,7 @@ export function ThanhCongCuPhieu({ boLoc, onDoi, nutThem }: Props) {
   function goTim(v: string) {
     setTuKhoa(v);
     if (hen.current) clearTimeout(hen.current);
-    hen.current = setTimeout(() => onDoi({ ...boLoc, q: v.trim(), trang: 1 }), 300);
+    hen.current = setTimeout(() => onDoi({ ...filter, q: v.trim(), page: 1 }), 300);
   }
 
   return (
@@ -43,7 +43,7 @@ export function ThanhCongCuPhieu({ boLoc, onDoi, nutThem }: Props) {
         onChange={(e) => goTim(e.target.value)}
         onPressEnter={() => {
           if (hen.current) clearTimeout(hen.current);
-          onDoi({ ...boLoc, q: tuKhoa.trim(), trang: 1 });
+          onDoi({ ...filter, q: tuKhoa.trim(), page: 1 });
         }}
       />
       {nutThem ? <div className="ms-auto">{nutThem}</div> : null}

@@ -25,8 +25,8 @@ export function BangPhieuNhap({ coQuyenTao }: { coQuyenTao: boolean }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const boLoc = useMemo(() => docBoLocPhieu(searchParams), [searchParams]);
-  const danhSach = useDanhSachPhieu(boLoc);
+  const filter = useMemo(() => docBoLocPhieu(searchParams), [searchParams]);
+  const danhSach = useDanhSachPhieu(filter);
   const [taoMo, setTaoMo] = useState(false);
 
   const doiBoLoc = useCallback(
@@ -40,23 +40,23 @@ export function BangPhieuNhap({ coQuyenTao }: { coQuyenTao: boolean }) {
   const dong = danhSach.data?.dong ?? [];
   const tong = danhSach.data?.tong ?? 0;
 
-  // Trang cuối cạn sau khi lọc lại — về trang 1 thay vì hiện "không có gì".
+  // Trang cuối cạn sau khi lọc lại — về page 1 thay vì hiện "không có gì".
   useEffect(() => {
     if (danhSach.isPending || danhSach.isFetching) return;
-    if (boLoc.trang > 1 && dong.length === 0) doiBoLoc({ ...boLoc, trang: 1 });
+    if (filter.page > 1 && dong.length === 0) doiBoLoc({ ...filter, page: 1 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [danhSach.isPending, danhSach.isFetching, dong.length, boLoc.trang]);
+  }, [danhSach.isPending, danhSach.isFetching, dong.length, filter.page]);
 
-  const coLoc = demDieuKienPhieu(boLoc) > 0;
+  const coLoc = demDieuKienPhieu(filter) > 0;
 
   return (
     <>
       <ListLayout
-        activeFilterCount={demDieuKienPhieu(boLoc)}
-        filterPanel={<PanelLocPhieu boLoc={boLoc} onDoi={doiBoLoc} />}
+        activeFilterCount={demDieuKienPhieu(filter)}
+        filterPanel={<PanelLocPhieu filter={filter} onDoi={doiBoLoc} />}
         toolbar={
           <ThanhCongCuPhieu
-            boLoc={boLoc}
+            filter={filter}
             onDoi={doiBoLoc}
             nutThem={
               coQuyenTao ? (
@@ -72,8 +72,8 @@ export function BangPhieuNhap({ coQuyenTao }: { coQuyenTao: boolean }) {
           query={danhSach}
           isEmpty={(d) => d.dong.length === 0}
           emptyDescription={
-            boLoc.q ? (
-              `Không có phiếu nào khớp “${boLoc.q}”.`
+            filter.q ? (
+              `Không có phiếu nào khớp “${filter.q}”.`
             ) : coLoc ? (
               <div className="flex flex-col items-center gap-3">
                 <span>Không có phiếu nào khớp bộ lọc.</span>
@@ -90,7 +90,7 @@ export function BangPhieuNhap({ coQuyenTao }: { coQuyenTao: boolean }) {
             <NoiDungBangPhieu
               dong={d.dong}
               tong={tong}
-              boLoc={boLoc}
+              filter={filter}
               dangTai={danhSach.isFetching && !danhSach.isPending}
               onDoiBoLoc={doiBoLoc}
             />

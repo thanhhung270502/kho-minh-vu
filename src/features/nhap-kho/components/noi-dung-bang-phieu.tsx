@@ -67,12 +67,12 @@ const COT: TableColumnsType<DongDanhSachPhieu> = [
 type Props = {
   dong: DongDanhSachPhieu[];
   tong: number;
-  boLoc: BoLocPhieu;
+  filter: BoLocPhieu;
   dangTai: boolean;
   onDoiBoLoc: (b: BoLocPhieu) => void;
 };
 
-export function NoiDungBangPhieu({ dong, tong, boLoc, dangTai, onDoiBoLoc }: Props) {
+export function NoiDungBangPhieu({ dong, tong, filter, dangTai, onDoiBoLoc }: Props) {
   return (
     <Table<DongDanhSachPhieu>
       rowKey="id"
@@ -83,12 +83,12 @@ export function NoiDungBangPhieu({ dong, tong, boLoc, dangTai, onDoiBoLoc }: Pro
       loading={dangTai}
       scroll={{ x: 1000 }}
       pagination={{
-        current: boLoc.trang,
+        current: filter.page,
         pageSize: KICH_THUOC_PHIEU,
         total: tong,
         showSizeChanger: false,
         showTotal: (t) => `${t.toLocaleString("vi-VN")} phiếu`,
-        onChange: (trang) => onDoiBoLoc({ ...boLoc, trang }),
+        onChange: (page) => onDoiBoLoc({ ...filter, page }),
       }}
     />
   );

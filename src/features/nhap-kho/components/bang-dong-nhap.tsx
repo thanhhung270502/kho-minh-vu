@@ -6,7 +6,7 @@ import type { InputNumberRef } from "@rc-component/input-number";
 import type { RefSelectProps } from "antd/es/select";
 import { useRef, useState } from "react";
 
-import { useDanhMucPhu } from "@/features/danh-muc/hooks/useSanPham";
+import { useLookups } from "@/features/products/hooks/useProducts";
 import { SummaryRow } from "@/shared/components/summary-row";
 import { explainError } from "@/shared/lib/errors";
 
@@ -26,7 +26,7 @@ type Props = { phieu: ChiTietPhieu; dong: DongPhieu[]; coQuyenSua: boolean };
  */
 export function BangDongNhap({ phieu, dong, coQuyenSua }: Props) {
   const { message } = App.useApp();
-  const danhMucPhu = useDanhMucPhu();
+  const lookups = useLookups();
   const themDong = useThemDong(phieu.id);
   const suaDong = useSuaDong(phieu.id);
   const xoaDong = useXoaDong(phieu.id);
@@ -43,7 +43,7 @@ export function BangDongNhap({ phieu, dong, coQuyenSua }: Props) {
   const oDonGia = useRef<InputNumberRef>(null);
 
   const sanSang = phieu.trang_thai === "NHAP_LIEU" && coQuyenSua;
-  const kho = danhMucPhu.data?.kho ?? [];
+  const kho = lookups.data?.kho ?? [];
   const nhieuKho = kho.length > 1;
 
   async function luuDongMoi() {

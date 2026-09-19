@@ -1,6 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { khoaSanPham } from "@/features/danh-muc/api/san-pham.keys";
+import { productKeys } from "@/features/products/api/product.keys";
 
 import {
   capNhatDauPhieu,
@@ -22,10 +22,10 @@ import type {
   DongPhieuInput,
 } from "../schemas/phieu-nhap.schema";
 
-export function useDanhSachPhieu(boLoc: BoLocPhieu) {
+export function useDanhSachPhieu(filter: BoLocPhieu) {
   return useQuery({
-    queryKey: khoaPhieuNhap.danhSach(boLoc),
-    queryFn: () => layDanhSachPhieu(boLoc),
+    queryKey: khoaPhieuNhap.danhSach(filter),
+    queryFn: () => layDanhSachPhieu(filter),
     placeholderData: keepPreviousData,
   });
 }
@@ -105,7 +105,7 @@ function useLamMoiSauGhiSo(id: string) {
 
   return () => {
     lamMoiPhieu();
-    void queryClient.invalidateQueries({ queryKey: khoaSanPham.tatCa });
+    void queryClient.invalidateQueries({ queryKey: productKeys.all });
     void queryClient.invalidateQueries({ queryKey: ["san-pham", "the-kho"] });
   };
 }

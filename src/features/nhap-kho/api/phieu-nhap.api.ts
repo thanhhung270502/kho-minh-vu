@@ -1,5 +1,5 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { TrangDuLieu } from "@/features/danh-muc/types";
+import type { Page } from "@/features/products/types";
 
 import {
   thamSoRpcPhieu,
@@ -11,7 +11,7 @@ import type { ChiTietPhieu, DongDanhSachPhieu, DongPhieu, NguonNhap } from "../t
 
 export async function layDanhSachPhieu(
   b: BoLocPhieu,
-): Promise<TrangDuLieu<DongDanhSachPhieu>> {
+): Promise<Page<DongDanhSachPhieu>> {
   const { data, error } = await getSupabaseBrowserClient().rpc(
     "danh_sach_chung_tu",
     thamSoRpcPhieu(b),

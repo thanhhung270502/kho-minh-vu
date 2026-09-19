@@ -4,7 +4,7 @@ import { Button, DatePicker, Select } from "antd";
 import dayjs from "dayjs";
 import type { ReactNode } from "react";
 
-import { useDanhMucPhu } from "@/features/danh-muc/hooks/useSanPham";
+import { useLookups } from "@/features/products/hooks/useProducts";
 import { useDanhSachDoiTac } from "@/features/doi-tac/hooks/useDoiTac";
 import { BO_LOC_DOI_TAC_MAC_DINH } from "@/features/doi-tac/types";
 
@@ -25,19 +25,19 @@ function NhomLoc({ label, children }: { label: string; children: ReactNode }) {
 }
 
 export function PanelLocPhieu({
-  boLoc,
+  filter,
   onDoi,
 }: {
-  boLoc: BoLocPhieu;
+  filter: BoLocPhieu;
   onDoi: (b: BoLocPhieu) => void;
 }) {
-  const danhMucPhu = useDanhMucPhu();
+  const lookups = useLookups();
   // Danh sách NCC đang hoạt động — dùng lại RPC đối tác của Phase 2.
   const ncc = useDanhSachDoiTac({ ...BO_LOC_DOI_TAC_MAC_DINH, loai: "NCC" });
 
-  /** Đổi điều kiện nào cũng về trang 1 — giữ trang cũ dễ rơi vào trang trống. */
+  /** Đổi điều kiện nào cũng về page 1 — giữ page cũ dễ rơi vào page trống. */
   function doi(thayDoi: Partial<BoLocPhieu>) {
-    onDoi({ ...boLoc, ...thayDoi, trang: 1 });
+    onDoi({ ...filter, ...thayDoi, page: 1 });
   }
 
   return (
@@ -47,7 +47,7 @@ export function PanelLocPhieu({
           allowClear
           className="w-full"
           placeholder="Tất cả"
-          value={boLoc.trangThai}
+          value={filter.trangThai}
           options={(["NHAP_LIEU", "HOAN_THANH", "DA_HUY"] as const).map((t) => ({
             value: t,
             label: NHAN_TRANG_THAI[t],
@@ -63,7 +63,7 @@ export function PanelLocPhieu({
           optionFilterProp="label"
           className="w-full"
           placeholder="Tất cả"
-          value={boLoc.doiTacId}
+          value={filter.doiTacId}
           loading={ncc.isPending}
           options={(ncc.data?.dong ?? []).map((d) => ({ value: d.id, label: d.ten }))}
           onChange={(v) => doi({ doiTacId: v ?? null })}
@@ -75,7 +75,7 @@ export function PanelLocPhieu({
           allowClear
           className="w-full"
           placeholder="Tất cả"
-          value={boLoc.nguonNhap}
+          value={filter.nguonNhap}
           options={(["NCC", "NHA_MAY"] as const).map((n) => ({
             value: n,
             label: NHAN_NGUON_NHAP[n],
@@ -89,8 +89,8 @@ export function PanelLocPhieu({
           allowClear
           className="w-full"
           placeholder="Tất cả"
-          value={boLoc.khoId}
-          options={(danhMucPhu.data?.kho ?? []).map((k) => ({ value: k.id, label: k.ten }))}
+          value={filter.khoId}
+          options={(lookups.data?.kho ?? []).map((k) => ({ value: k.id, label: k.ten }))}
           onChange={(v) => doi({ khoId: v ?? null })}
         />
       </NhomLoc>
@@ -100,8 +100,8 @@ export function PanelLocPhieu({
           className="w-full"
           format="DD/MM/YYYY"
           value={
-            boLoc.tuNgay && boLoc.denNgay
-              ? [dayjs(boLoc.tuNgay), dayjs(boLoc.denNgay)]
+            filter.tuNgay && filter.denNgay
+              ? [dayjs(filter.tuNgay), dayjs(filter.denNgay)]
               : null
           }
           onChange={(v) =>
@@ -113,8 +113,8 @@ export function PanelLocPhieu({
         />
       </NhomLoc>
 
-      {demDieuKienPhieu(boLoc) > 0 ? (
-        <Button onClick={() => onDoi({ ...BO_LOC_PHIEU_MAC_DINH, q: boLoc.q })}>
+      {demDieuKienPhieu(filter) > 0 ? (
+        <Button onClick={() => onDoi({ ...BO_LOC_PHIEU_MAC_DINH, q: filter.q })}>
           Xóa bộ lọc
         </Button>
       ) : null}

@@ -14,9 +14,9 @@ import {
   laMaHeThong,
   type BangDanhMucPhu,
   type GiaTriDanhMucPhu,
-  type MucDanhMucPhu,
+  type LookupItem,
 } from "../api/danh-muc-phu.api";
-import { useLuuDanhMucPhu } from "../hooks/useDanhMucPhu";
+import { useLuuDanhMucPhu } from "../hooks/useLookups";
 
 const schema = z.object({
   ma: z
@@ -46,9 +46,9 @@ const MAC_DINH: FormDanhMucPhu = {
 
 type Props = {
   table: BangDanhMucPhu;
-  muc: MucDanhMucPhu | null;
+  muc: LookupItem | null;
   open: boolean;
-  danhSach: MucDanhMucPhu[];
+  danhSach: LookupItem[];
   onClose: () => void;
 };
 

@@ -1,8 +1,8 @@
 import type { NextRequest } from "next/server";
 
-import { taoFileMau } from "@/features/danh-muc/lib/doc-file-danh-muc.server";
-import type { DongXuat } from "@/features/danh-muc/lib/mau-excel";
-import { docBoLocTuUrl, thamSoRpc } from "@/features/danh-muc/schemas/bo-loc.schema";
+import { taoFileMau } from "@/features/products/lib/read-catalog-file.server";
+import type { ExportRowPayload } from "@/features/products/lib/excel-template";
+import { readFilterFromUrl, toListRpcArgs } from "@/features/products/schemas/filter.schema";
 import { getCurrentUser } from "@/features/auth/api/current-user.server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { explainError } from "@/shared/lib/errors";
@@ -42,11 +42,11 @@ export async function GET(request: NextRequest) {
   }
 
   // Xuất đúng những gì đang thấy trên bảng: bộ lọc nằm sẵn trên URL.
-  const boLoc = docBoLocTuUrl(request.nextUrl.searchParams);
+  const filter = readFilterFromUrl(request.nextUrl.searchParams);
   const supabase = await createSupabaseServerClient();
 
   const { data, error } = await supabase.rpc("danh_sach_san_pham", {
-    ...thamSoRpc(boLoc),
+    ...toListRpcArgs(filter),
     p_trang: 1,
     p_kich_thuoc: TOI_DA,
   });
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
   const tenKho = new Map((kho ?? []).map((k) => [k.id, k.ten]));
   const coGiaVon = hasPermission(nd.role, "view-cost");
 
-  const dongXuat: DongXuat[] = dong.map((d, i) => ({
+  const dongXuat: ExportRowPayload[] = dong.map((d, i) => ({
     dong: i + 2,
     ma_hang: d.ma_hang,
     ten_hang: d.ten_hang,

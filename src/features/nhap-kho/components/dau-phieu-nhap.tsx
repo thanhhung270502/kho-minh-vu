@@ -4,7 +4,7 @@ import { App, DatePicker, Descriptions, Input, Select, Tag, Typography } from "a
 import dayjs from "dayjs";
 import { useState } from "react";
 
-import { useDanhMucPhu } from "@/features/danh-muc/hooks/useSanPham";
+import { useLookups } from "@/features/products/hooks/useProducts";
 import { useDanhSachDoiTac } from "@/features/doi-tac/hooks/useDoiTac";
 import { BO_LOC_DOI_TAC_MAC_DINH } from "@/features/doi-tac/types";
 import { explainError } from "@/shared/lib/errors";
@@ -24,7 +24,7 @@ type Props = { phieu: ChiTietPhieu; coQuyenSua: boolean };
 export function DauPhieuNhap({ phieu, coQuyenSua }: Props) {
   const { message } = App.useApp();
   const sua = useSuaDauPhieu(phieu.id);
-  const danhMucPhu = useDanhMucPhu();
+  const lookups = useLookups();
   const ncc = useDanhSachDoiTac({ ...BO_LOC_DOI_TAC_MAC_DINH, loai: "NCC" });
   const [vuaLuu, setVuaLuu] = useState<string | null>(null);
 
@@ -130,7 +130,7 @@ export function DauPhieuNhap({ phieu, coQuyenSua }: Props) {
             <Select
               className="w-full min-w-40"
               value={phieu.kho_id}
-              options={(danhMucPhu.data?.kho ?? []).map((k) => ({
+              options={(lookups.data?.kho ?? []).map((k) => ({
                 value: k.id,
                 label: k.ten,
               }))}
