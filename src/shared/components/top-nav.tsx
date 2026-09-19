@@ -6,6 +6,7 @@ import { MenuTaiKhoan } from "@/shared/components/menu-tai-khoan";
 import type { MucDieuHuong } from "@/shared/lib/dieu-huong";
 import type { VaiTro } from "@/shared/lib/quyen";
 
+import { cn } from "../utils/cn";
 import { ICON_DIEU_HUONG } from "./icon-dieu-huong";
 
 type TopNavProps = {
@@ -21,7 +22,10 @@ type TopNavProps = {
  */
 export function TopNav({ nguoiDung, muc, dangMo }: TopNavProps) {
   return (
-    <header data-khong-in className="sticky top-0 z-20 border-b border-vien bg-nen-the">
+    <header
+      data-khong-in
+      className="sticky top-0 z-20 border-b border-vien bg-nen-the"
+    >
       <div className="flex h-14 items-center gap-3 px-4 lg:px-6">
         <Link href="/" className="shrink-0 font-semibold text-chu-chinh">
           Kho Minh Vũ
@@ -36,7 +40,8 @@ export function TopNav({ nguoiDung, muc, dangMo }: TopNavProps) {
         <nav
           className="hidden items-center gap-0.5 rounded-full p-px lg:flex"
           style={{
-            background: "linear-gradient(0deg, var(--color-brand-500) 0%, var(--color-brand-400) 100%)",
+            background:
+              "linear-gradient(0deg, var(--color-brand-500) 0%, var(--color-brand-400) 100%)",
             border: "1px solid var(--color-brand-500)",
             boxShadow: "0 0 4px 0 rgba(0,112,244,.15)",
           }}
@@ -48,13 +53,16 @@ export function TopNav({ nguoiDung, muc, dangMo }: TopNavProps) {
                 key={m.duongDan}
                 href={m.duongDan}
                 aria-current={active ? "page" : undefined}
-                className="flex items-center gap-2 rounded-full px-2 py-2.5 text-sm font-semibold text-white transition-all duration-200 ease-in-out hover:bg-white/25"
+                className={cn(
+                  "flex items-center gap-2 rounded-full px-2 py-2.5 text-sm font-semibold text-white transition-all duration-200 ease-in-out hover:bg-white/25",
+                  active ? "bg-white/25" : "",
+                )}
               >
                 {ICON_DIEU_HUONG[m.icon]}
                 <span className="relative">
                   {m.nhan}
                   {active ? (
-                    <span className="absolute left-1/2 top-[18px] h-[3px] w-8 -translate-x-1/2 rounded-full bg-white" />
+                    <span className="absolute left-1/2 top-6 h-0.75 w-10 -translate-x-1/2 rounded-full bg-white" />
                   ) : null}
                 </span>
               </Link>
