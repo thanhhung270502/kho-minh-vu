@@ -28,7 +28,6 @@ export function MauInPhieuNhap({
       <style>{`
         @page { size: A4; margin: 12mm; }
         @media print {
-          .khong-in { display: none !important; }
           body { background: #fff; }
           /* Đầu bảng lặp lại ở trang sau — phiếu 48 dòng tràn sang trang hai. */
           thead { display: table-header-group; }
@@ -36,7 +35,7 @@ export function MauInPhieuNhap({
         }
       `}</style>
 
-      <div className="khong-in mb-4 flex justify-end">
+      <div data-khong-in className="mb-4 flex justify-end">
         <Button type="primary" onClick={() => window.print()}>
           In phiếu
         </Button>

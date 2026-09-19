@@ -89,3 +89,12 @@ body {
      colorBgLayout — đặt trực tiếp để không bị trắng phẳng. */
   background: var(--color-nen-trang);
 }
+
+/* Vỏ ứng dụng không được in ra giấy: trang in phiếu chỉ có nội dung phiếu.
+   Đánh dấu bằng data-khong-in thay vì liệt kê selector — thêm thanh mới sau
+   này chỉ cần gắn thuộc tính. (Lỗi UAT Phase 3 bài 9.) */
+@media print {
+  [data-khong-in] {
+    display: none !important;
+  }
+}

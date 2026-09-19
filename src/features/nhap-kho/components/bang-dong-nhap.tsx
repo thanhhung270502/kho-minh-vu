@@ -60,7 +60,9 @@ export function BangDongNhap({ phieu, dong, coQuyenSua }: Props) {
         kho_id: moi.kho_id,
       });
       setMoi({ sp: null, so_luong: null, don_gia: null, kho_id: null });
-      oMa.current?.focus();
+      // Hẹn sang lượt sau: focus ngay lúc này sẽ bị chính vòng render dọn bảng
+      // xoá đi, con trỏ rơi về ô đơn giá và mã kế tiếp gõ vào nhầm chỗ.
+      setTimeout(() => oMa.current?.focus(), 0);
     } catch (e) {
       const l = dienGiaiLoi(e);
       message.error(`${l.tieuDe}. ${l.huongXuLy}`);
@@ -271,7 +273,10 @@ export function BangDongNhap({ phieu, dong, coQuyenSua }: Props) {
               min={0}
               value={moi.so_luong}
               onChange={(v) => setMoi((m) => ({ ...m, so_luong: v }))}
-              onPressEnter={() => oDonGia.current?.focus()}
+              onPressEnter={(e) => {
+                e.preventDefault();
+                oDonGia.current?.focus();
+              }}
             />
           </div>
 
@@ -285,7 +290,10 @@ export function BangDongNhap({ phieu, dong, coQuyenSua }: Props) {
               formatter={(x) => (x === undefined ? "" : so(x))}
               parser={(x) => Number((x ?? "").replace(/\D/g, ""))}
               onChange={(v) => setMoi((m) => ({ ...m, don_gia: v }))}
-              onPressEnter={() => void luuDongMoi()}
+              onPressEnter={(e) => {
+                e.preventDefault();
+                void luuDongMoi();
+              }}
             />
           </div>
 

@@ -365,6 +365,51 @@ Viết component antd mới thì **mở console một lần** trước khi báo 
 redirect như `/cai-dat`. Thêm màn mới thì thêm dòng vào ma trận — lần trước thiếu
 đúng `/cai-dat` nên script báo 45/45 xanh trong khi trang đó crash.
 
+### 13. Phím giả lập của công cụ trình duyệt có thể không mang `event.key`
+
+Khi tự kiểm thử bằng công cụ điều khiển trình duyệt, phím gửi dưới tên `Return`
+tới trang với `event.key === ""`. Mọi handler viết `if (e.key !== "Enter") return`
+— kể cả handler nội bộ của antd và rc-component — đều trượt, nên màn hình trông
+y hệt như đang hỏng thật. Đã suýt ghi hai kết luận sai vào UAT Phase 3 vì việc này.
+
+**Trước khi kết luận "thư viện không xử lý phím X", hãy đo chính sự kiện đó:**
+
+```js
+document.addEventListener("keydown", (e) => console.log(e.key), true);
+```
+
+Rỗng thì lỗi nằm ở công cụ, không nằm ở code. Gửi đúng tên `Enter` thì chạy.
+
+### 14. Tranh chấp focus với rc-select và với vòng render
+
+Hai chỗ đã cắn trong luồng nhập liệu bàn phím của phiếu nhập:
+
+- **rc-select tự focus lại ô tìm của nó** ngay sau khi Enter chọn option. Lệnh
+  `focus()` sang ô kế tiếp đặt trong `onChange` sẽ bị nuốt. Cách chữa: bắt Enter ở
+  `onKeyDownCapture` của div bọc ngoài — pha capture chạy TRƯỚC rc-select — rồi
+  `preventDefault` + `stopPropagation`.
+- **`focus()` gọi ngay sau khi mutation resolve** bị chính vòng render kế tiếp dọn
+  đi. Hẹn `setTimeout(..., 0)` thì con trỏ mới ở lại đúng ô.
+
+### 15. Gợi ý tìm kiếm phải ưu tiên mã khớp tuyệt đối
+
+`tim_san_pham` xếp `lan_phat_sinh_cuoi desc` TRƯỚC `similarity` — hợp lý khi gõ
+dở, nhưng khiến mã luân chuyển nhiều đè lên mã vừa gõ đầy đủ. Bất kỳ chỗ nào
+"Enter chọn kết quả đầu tiên" đều phải tìm mã khớp tuyệt đối trước:
+
+```ts
+const khopHan = ds.find((sp) => sp.ma_hang.toLowerCase() === q.trim().toLowerCase());
+onChon(khopHan ?? ds[0]);
+```
+
+Chọn nhầm mã ở màn nhập kho là nhập sai hàng vào sổ, không phải lỗi hiển thị.
+
+### 16. pgTAP không được neo vào bộ đếm đang sống
+
+`chuoi_so_ct` là bộ đếm thật. Assertion kiểu `sinh_so_ct('NHAP', 2026) = 'PN26-000001'`
+xanh đúng một lần rồi đỏ vĩnh viễn kể từ phiếu thật đầu tiên của năm đó. Test đánh
+số phải dùng năm không ai chạm tới (2091–2093) hoặc so tương đối với giá trị đang có.
+
 ---
 
 # Không tự ý làm

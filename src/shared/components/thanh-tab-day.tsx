@@ -27,6 +27,7 @@ export function ThanhTabDay({ chinh, khac, dangMo }: ThanhTabDayProps) {
   return (
     <>
       <nav
+        data-khong-in
         className="fixed inset-x-0 bottom-0 z-30 border-t border-vien bg-nen-the lg:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >

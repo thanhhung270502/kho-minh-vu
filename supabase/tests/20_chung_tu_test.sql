@@ -67,17 +67,20 @@ values ('NCC-TEST', 'NCC test', 'CA_HAI') on conflict (ma) do nothing;
 update t_id set dt = (select id from public.doi_tac where ma = 'NCC-TEST');
 
 -- ─── DATA-08: đánh số ────────────────────────────────────────────────────
-select is(public.sinh_so_ct('NHAP', 2026::smallint), 'PN26-000001', 'số phiếu nhập đầu tiên đúng định dạng PN26-000001');
-select is(public.sinh_so_ct('NHAP', 2026::smallint), 'PN26-000002', 'gọi lần hai cho số kế tiếp');
-select is(public.sinh_so_ct('XUAT', 2026::smallint), 'PX26-000001', 'chuỗi số độc lập theo từng loại chứng từ');
-select is(public.sinh_so_ct('NHAP', 2027::smallint), 'PN27-000001', 'reset theo năm');
+-- Dùng năm 2092/2093 chứ KHÔNG dùng năm hiện hành: `chuoi_so_ct` là bộ đếm
+-- sống, phiếu thật đầu tiên của năm nay làm mọi assertion neo vào '-000001'
+-- đỏ vĩnh viễn. Đã đỏ thật một lần sau UAT Phase 3.
+select is(public.sinh_so_ct('NHAP', 2092::smallint), 'PN92-000001', 'số phiếu nhập đầu tiên đúng định dạng PN92-000001');
+select is(public.sinh_so_ct('NHAP', 2092::smallint), 'PN92-000002', 'gọi lần hai cho số kế tiếp');
+select is(public.sinh_so_ct('XUAT', 2092::smallint), 'PX92-000001', 'chuỗi số độc lập theo từng loại chứng từ');
+select is(public.sinh_so_ct('NHAP', 2093::smallint), 'PN93-000001', 'reset theo năm');
 select is(
   array[
-    left(public.sinh_so_ct('TRA_NCC',    2026::smallint), 2),
-    left(public.sinh_so_ct('TRA_KHACH',  2026::smallint), 2),
-    left(public.sinh_so_ct('CHUYEN_KHO', 2026::smallint), 2),
-    left(public.sinh_so_ct('KIEM_KE',    2026::smallint), 2),
-    left(public.sinh_so_ct('DIEU_CHINH', 2026::smallint), 2)
+    left(public.sinh_so_ct('TRA_NCC',    2092::smallint), 2),
+    left(public.sinh_so_ct('TRA_KHACH',  2092::smallint), 2),
+    left(public.sinh_so_ct('CHUYEN_KHO', 2092::smallint), 2),
+    left(public.sinh_so_ct('KIEM_KE',    2092::smallint), 2),
+    left(public.sinh_so_ct('DIEU_CHINH', 2092::smallint), 2)
   ],
   array['TN','TK','CK','KK','DC'],
   'đủ tiền tố cho cả bảy loại chứng từ'

@@ -21,7 +21,7 @@ type TopNavProps = {
  */
 export function TopNav({ nguoiDung, muc, dangMo }: TopNavProps) {
   return (
-    <header className="sticky top-0 z-20 border-b border-vien bg-nen-the">
+    <header data-khong-in className="sticky top-0 z-20 border-b border-vien bg-nen-the">
       <div className="flex h-14 items-center gap-3 px-4 lg:px-6">
         <Link href="/" className="shrink-0 font-semibold text-chu-chinh">
           Kho Minh Vũ
