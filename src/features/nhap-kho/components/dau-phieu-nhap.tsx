@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useDanhMucPhu } from "@/features/danh-muc/hooks/useSanPham";
 import { useDanhSachDoiTac } from "@/features/doi-tac/hooks/useDoiTac";
 import { BO_LOC_DOI_TAC_MAC_DINH } from "@/features/doi-tac/types";
-import { dienGiaiLoi } from "@/shared/lib/errors";
+import { explainError } from "@/shared/lib/errors";
 
 import { useSuaDauPhieu } from "../hooks/usePhieuNhap";
 import {
@@ -36,12 +36,12 @@ export function DauPhieuNhap({ phieu, coQuyenSua }: Props) {
       setVuaLuu(truong);
       setTimeout(() => setVuaLuu(null), 2000);
     } catch (e) {
-      const l = dienGiaiLoi(e);
-      message.error(`${l.tieuDe}. ${l.huongXuLy}`);
+      const l = explainError(e);
+      message.error(`${l.title}. ${l.action}`);
     }
   }
 
-  function nhan(truong: string, chu: string) {
+  function label(truong: string, chu: string) {
     return (
       <span className="flex items-center gap-2">
         {chu}
@@ -89,7 +89,7 @@ export function DauPhieuNhap({ phieu, coQuyenSua }: Props) {
         },
         {
           key: "ngay",
-          label: nhan("ngay_ct", "Ngày phiếu"),
+          label: label("ngay_ct", "Ngày phiếu"),
           children: sanSang ? (
             <DatePicker
               format="DD/MM/YYYY"
@@ -105,7 +105,7 @@ export function DauPhieuNhap({ phieu, coQuyenSua }: Props) {
         },
         {
           key: "ncc",
-          label: nhan("doi_tac_id", "Nhà cung cấp"),
+          label: label("doi_tac_id", "Nhà cung cấp"),
           children: sanSang ? (
             <Select
               showSearch
@@ -125,7 +125,7 @@ export function DauPhieuNhap({ phieu, coQuyenSua }: Props) {
         },
         {
           key: "kho",
-          label: nhan("kho_id", "Kho mặc định"),
+          label: label("kho_id", "Kho mặc định"),
           children: sanSang ? (
             <Select
               className="w-full min-w-40"
@@ -147,7 +147,7 @@ export function DauPhieuNhap({ phieu, coQuyenSua }: Props) {
         },
         {
           key: "ghi_chu",
-          label: nhan("ghi_chu", "Ghi chú"),
+          label: label("ghi_chu", "Ghi chú"),
           children: sanSang ? (
             <Input
               defaultValue={phieu.ghi_chu ?? ""}

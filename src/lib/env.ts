@@ -42,12 +42,12 @@ const parsed = publicEnvSchema.safeParse({
 });
 
 if (!parsed.success) {
-  const chiTiet = parsed.error.issues
+  const details = parsed.error.issues
     .map((issue) => `  - ${issue.path.join(".")}: ${issue.message}`)
     .join("\n");
 
   throw new Error(
-    `Cấu hình biến môi trường chưa đúng:\n${chiTiet}\n\n` +
+    `Cấu hình biến môi trường chưa đúng:\n${details}\n\n` +
       `Chạy local: sao chép .env.example thành .env.local rồi điền giá trị lấy từ ` +
       `Supabase Dashboard > Project Settings > API Keys.\n` +
       `Trên Vercel: Settings > Environment Variables — integration Supabase KHÔNG ` +

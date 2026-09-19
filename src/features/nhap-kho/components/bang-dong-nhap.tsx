@@ -7,8 +7,8 @@ import type { RefSelectProps } from "antd/es/select";
 import { useRef, useState } from "react";
 
 import { useDanhMucPhu } from "@/features/danh-muc/hooks/useSanPham";
-import { HangTongCong } from "@/shared/components/hang-tong-cong";
-import { dienGiaiLoi } from "@/shared/lib/errors";
+import { SummaryRow } from "@/shared/components/summary-row";
+import { explainError } from "@/shared/lib/errors";
 
 import { useSuaDong, useThemDong, useXoaDong } from "../hooks/usePhieuNhap";
 import type { ChiTietPhieu, DongPhieu } from "../types";
@@ -64,8 +64,8 @@ export function BangDongNhap({ phieu, dong, coQuyenSua }: Props) {
       // xoá đi, con trỏ rơi về ô đơn giá và mã kế tiếp gõ vào nhầm chỗ.
       setTimeout(() => oMa.current?.focus(), 0);
     } catch (e) {
-      const l = dienGiaiLoi(e);
-      message.error(`${l.tieuDe}. ${l.huongXuLy}`);
+      const l = explainError(e);
+      message.error(`${l.title}. ${l.action}`);
     }
   }
 
@@ -81,8 +81,8 @@ export function BangDongNhap({ phieu, dong, coQuyenSua }: Props) {
         },
       });
     } catch (e) {
-      const l = dienGiaiLoi(e);
-      message.error(`${l.tieuDe}. ${l.huongXuLy}`);
+      const l = explainError(e);
+      message.error(`${l.title}. ${l.action}`);
     }
   }
 
@@ -226,11 +226,11 @@ export function BangDongNhap({ phieu, dong, coQuyenSua }: Props) {
           locale={{ emptyText: "Chưa có dòng nào. Gõ mã hàng ở ô bên dưới để thêm." }}
           summary={() =>
             dong.length > 0 ? (
-              <HangTongCong
-                cot={cot}
-                coChon={false}
-                nhan={`Tổng cộng — ${dong.length} dòng`}
-                cong={{ so_luong: tongSoLuong, thanh_tien: tongTien }}
+              <SummaryRow
+                columns={cot}
+                hasSelection={false}
+                label={`Tổng cộng — ${dong.length} dòng`}
+                totals={{ so_luong: tongSoLuong, thanh_tien: tongTien }}
               />
             ) : null
           }

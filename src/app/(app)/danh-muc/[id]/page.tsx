@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ChiTietSanPham } from "@/features/danh-muc/components/chi-tiet-san-pham";
-import { yeuCauQuyen } from "@/features/xac-thuc/api/nguoi-dung-hien-tai.server";
-import { coQuyen } from "@/shared/lib/quyen";
+import { requirePermission } from "@/features/auth/api/current-user.server";
+import { hasPermission } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Chi tiết mã hàng" };
 
@@ -14,16 +14,16 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const { id } = await params;
   if (!UUID.test(id)) notFound();
 
-  const nd = await yeuCauQuyen("xem_danh_muc");
+  const nd = await requirePermission("view-catalog");
 
   return (
     <ChiTietSanPham
       id={id}
       quyen={{
-        sua: coQuyen(nd.vaiTro, "sua_danh_muc"),
-        xemGiaVon: coQuyen(nd.vaiTro, "xem_gia_von"),
-        suaGiaBan: coQuyen(nd.vaiTro, "sua_gia_ban"),
-        xemLichSu: coQuyen(nd.vaiTro, "sua_danh_muc"),
+        sua: hasPermission(nd.role, "edit-catalog"),
+        xemGiaVon: hasPermission(nd.role, "view-cost"),
+        suaGiaBan: hasPermission(nd.role, "edit-sale-price"),
+        xemLichSu: hasPermission(nd.role, "edit-catalog"),
       }}
     />
   );

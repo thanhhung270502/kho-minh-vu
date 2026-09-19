@@ -1,6 +1,6 @@
-import { coQuyen, type Quyen, type VaiTro } from "@/shared/lib/quyen";
+import { hasPermission, type Permission, type Role } from "@/shared/lib/permissions";
 
-export type MucTabCaiDat = { duongDan: string; nhan: string; quyen: Quyen };
+export type MucTabCaiDat = { duongDan: string; label: string; quyen: Permission };
 
 /**
  * Danh sách tab + hàm chọn tab mặc định để ở module THUẦN (không `"use client"`).
@@ -11,18 +11,18 @@ export type MucTabCaiDat = { duongDan: string; nhan: string; quyen: Quyen };
  * tabDauTien is on the client". Bấm menu Cài đặt ra trang lỗi (UAT Phase 2).
  */
 export const TAB_CAI_DAT: MucTabCaiDat[] = [
-  { duongDan: "/cai-dat/nguoi-dung", nhan: "Người dùng", quyen: "cai_dat_nguoi_dung" },
-  { duongDan: "/cai-dat/kho", nhan: "Kho", quyen: "cai_dat_kho" },
-  { duongDan: "/cai-dat/nhom-hang", nhan: "Nhóm hàng", quyen: "cai_dat_danh_muc_phu" },
-  { duongDan: "/cai-dat/don-vi-tinh", nhan: "Đơn vị tính", quyen: "cai_dat_danh_muc_phu" },
-  { duongDan: "/cai-dat/cong-doan", nhan: "Công đoạn", quyen: "cai_dat_danh_muc_phu" },
-  { duongDan: "/cai-dat/so-chung-tu", nhan: "Số chứng từ", quyen: "cai_dat_so_chung_tu" },
+  { duongDan: "/cai-dat/nguoi-dung", label: "Người dùng", quyen: "manage-users" },
+  { duongDan: "/cai-dat/kho", label: "Kho", quyen: "manage-warehouses" },
+  { duongDan: "/cai-dat/nhom-hang", label: "Nhóm hàng", quyen: "manage-lookups" },
+  { duongDan: "/cai-dat/don-vi-tinh", label: "Đơn vị tính", quyen: "manage-lookups" },
+  { duongDan: "/cai-dat/cong-doan", label: "Công đoạn", quyen: "manage-lookups" },
+  { duongDan: "/cai-dat/so-chung-tu", label: "Số chứng từ", quyen: "manage-doc-numbering" },
 ];
 
-export function tabCuaVaiTro(vaiTro: VaiTro): MucTabCaiDat[] {
-  return TAB_CAI_DAT.filter((t) => coQuyen(vaiTro, t.quyen));
+export function tabCuaVaiTro(role: Role): MucTabCaiDat[] {
+  return TAB_CAI_DAT.filter((t) => hasPermission(role, t.quyen));
 }
 
-export function tabDauTien(vaiTro: VaiTro): string {
-  return tabCuaVaiTro(vaiTro)[0]?.duongDan ?? "/cai-dat/nhom-hang";
+export function tabDauTien(role: Role): string {
+  return tabCuaVaiTro(role)[0]?.duongDan ?? "/cai-dat/nhom-hang";
 }

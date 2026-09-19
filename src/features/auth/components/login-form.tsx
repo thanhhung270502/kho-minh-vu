@@ -6,52 +6,52 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { tenDangNhapThanhEmail } from "@/shared/lib/chuan-hoa";
-import { dienGiaiLoi } from "@/shared/lib/errors";
-import { tiepTucAnToan } from "@/shared/lib/tiep-tuc";
+import { usernameToEmail } from "@/shared/lib/text";
+import { explainError } from "@/shared/lib/errors";
+import { safeRedirectPath } from "@/shared/lib/redirect-path";
 
 import {
-  dangNhapSchema,
-  type DangNhapInput,
-} from "../schemas/dang-nhap.schema";
+  loginSchema,
+  type LoginInput,
+} from "../schemas/login.schema";
 
-/** Đăng nhập nội bộ dùng tên đăng nhập; Supabase Auth yêu cầu email — quy đổi ở chuan-hoa.ts (D-01). */
-export function FormDangNhap() {
+/** Đăng nhập nội bộ dùng tên đăng nhập; Supabase Auth yêu cầu email — quy đổi ở text.ts (D-01). */
+export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const taiKhoanBiVoHieuHoa = searchParams.get("loi") === "vo-hieu-hoa";
+  const accountDisabled = searchParams.get("loi") === "vo-hieu-hoa";
 
   const {
     control,
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<DangNhapInput>({
-    resolver: zodResolver(dangNhapSchema),
-    defaultValues: { tenDangNhap: "", matKhau: "" },
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { username: "", password: "" },
   });
 
-  const onSubmit = async (v: DangNhapInput) => {
+  const onSubmit = async (v: LoginInput) => {
     const { error } = await getSupabaseBrowserClient().auth.signInWithPassword(
       {
-        email: tenDangNhapThanhEmail(v.tenDangNhap),
-        password: v.matKhau,
+        email: usernameToEmail(v.username),
+        password: v.password,
       },
     );
 
     if (error) {
-      const loi = dienGiaiLoi(error);
-      setError("root", { message: `${loi.tieuDe}. ${loi.huongXuLy}` });
+      const explained = explainError(error);
+      setError("root", { message: `${explained.title}. ${explained.action}` });
       return;
     }
 
-    router.replace(tiepTucAnToan(searchParams.get("tiep_tuc")));
+    router.replace(safeRedirectPath(searchParams.get("tiep_tuc")));
     router.refresh();
   };
 
   return (
     <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-      {taiKhoanBiVoHieuHoa ? (
+      {accountDisabled ? (
         <Alert
           type="warning"
           showIcon
@@ -71,11 +71,11 @@ export function FormDangNhap() {
 
       <Form.Item
         label="Tên đăng nhập"
-        validateStatus={errors.tenDangNhap ? "error" : ""}
-        help={errors.tenDangNhap?.message}
+        validateStatus={errors.username ? "error" : ""}
+        help={errors.username?.message}
       >
         <Controller
-          name="tenDangNhap"
+          name="username"
           control={control}
           render={({ field }) => (
             <Input {...field} autoComplete="username" autoFocus size="large" />
@@ -85,11 +85,11 @@ export function FormDangNhap() {
 
       <Form.Item
         label="Mật khẩu"
-        validateStatus={errors.matKhau ? "error" : ""}
-        help={errors.matKhau?.message}
+        validateStatus={errors.password ? "error" : ""}
+        help={errors.password?.message}
       >
         <Controller
-          name="matKhau"
+          name="password"
           control={control}
           render={({ field }) => (
             <Input.Password

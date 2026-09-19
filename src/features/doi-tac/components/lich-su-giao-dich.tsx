@@ -10,10 +10,10 @@ import { QueryState } from "@/shared/components/query-state";
 import { useLichSuGiaoDich } from "../hooks/useDoiTac";
 import type { DongLichSuGiaoDich } from "../types";
 
-const NHAN_NGUON: Record<string, { nhan: string; mau?: string }> = {
-  HE_THONG: { nhan: "Hệ thống", mau: "green" },
-  KIOTVIET_NHAP: { nhan: "KiotViet · nhập" },
-  KIOTVIET_BAN: { nhan: "KiotViet · bán" },
+const NHAN_NGUON: Record<string, { label: string; mau?: string }> = {
+  HE_THONG: { label: "Hệ thống", mau: "green" },
+  KIOTVIET_NHAP: { label: "KiotViet · nhập" },
+  KIOTVIET_BAN: { label: "KiotViet · bán" },
 };
 
 const NHAN_LOAI: Record<string, string> = { NHAP: "Nhập", XUAT: "Xuất" };
@@ -38,8 +38,8 @@ export function LichSuGiaoDich({ doiTacId }: { doiTacId: string }) {
       dataIndex: "nguon",
       width: 140,
       render: (v: string) => {
-        const n = NHAN_NGUON[v] ?? { nhan: v };
-        return <Tag color={n.mau}>{n.nhan}</Tag>;
+        const n = NHAN_NGUON[v] ?? { label: v };
+        return <Tag color={n.mau}>{n.label}</Tag>;
       },
     },
     { title: "Số phiếu", dataIndex: "ma_phieu", width: 150 },
@@ -63,8 +63,8 @@ export function LichSuGiaoDich({ doiTacId }: { doiTacId: string }) {
   return (
     <QueryState
       query={lichSu}
-      laRong={(d) => d.dong.length === 0}
-      moTaRong="Chưa có giao dịch. Với khách hàng tạo từ Rà ghi chú, hóa đơn KiotViet hiện ở đây sau khi gán ghi chú cho khách."
+      isEmpty={(d) => d.dong.length === 0}
+      emptyDescription="Chưa có giao dịch. Với khách hàng tạo từ Rà ghi chú, hóa đơn KiotViet hiện ở đây sau khi gán ghi chú cho khách."
     >
       {(d) => (
         <div className="overflow-x-auto">

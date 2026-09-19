@@ -4,21 +4,21 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { Alert, Button, Empty, Skeleton } from "antd";
 import type { ReactNode } from "react";
 
-import { dienGiaiLoi } from "@/shared/lib/errors";
+import { explainError } from "@/shared/lib/errors";
 
 type QueryStateProps<TData> = {
   query: UseQueryResult<TData>;
   /** Chỉ chạy khi đã có dữ liệu thật và không rỗng. */
   children: (data: TData) => ReactNode;
   /** Mặc định coi mảng rỗng là rỗng. Truyền hàm riêng cho shape khác. */
-  laRong?: (data: TData) => boolean;
+  isEmpty?: (data: TData) => boolean;
   /** Nội dung trạng thái rỗng — nói rõ vì sao trống và làm gì tiếp. */
-  moTaRong?: ReactNode;
+  emptyDescription?: ReactNode;
   /** Khung xương lúc tải. Mặc định là Skeleton nhiều dòng. */
-  khungCho?: ReactNode;
+  skeleton?: ReactNode;
 };
 
-function macDinhLaRong(data: unknown): boolean {
+function defaultIsEmpty(data: unknown): boolean {
   return Array.isArray(data) && data.length === 0;
 }
 
@@ -31,27 +31,27 @@ function macDinhLaRong(data: unknown): boolean {
 export function QueryState<TData>({
   query,
   children,
-  laRong = macDinhLaRong,
-  moTaRong = "Chưa có dữ liệu.",
-  khungCho,
+  isEmpty = defaultIsEmpty,
+  emptyDescription = "Chưa có dữ liệu.",
+  skeleton,
 }: QueryStateProps<TData>) {
   if (query.isPending) {
-    return <>{khungCho ?? <Skeleton active paragraph={{ rows: 6 }} />}</>;
+    return <>{skeleton ?? <Skeleton active paragraph={{ rows: 6 }} />}</>;
   }
 
   if (query.isError) {
-    const loi = dienGiaiLoi(query.error);
+    const explained = explainError(query.error);
 
     return (
       <Alert
         type="error"
         showIcon
-        title={loi.tieuDe}
+        title={explained.title}
         description={
           <div className="flex flex-col items-start gap-3">
-            <span>{loi.huongXuLy}</span>
+            <span>{explained.action}</span>
             {/* Lỗi hết phiên / thiếu quyền thử lại cũng vô ích — không đưa nút. */}
-            {loi.loai !== "het-phien" && loi.loai !== "khong-du-quyen" ? (
+            {explained.kind !== "session-expired" && explained.kind !== "forbidden" ? (
               <Button
                 size="small"
                 onClick={() => void query.refetch()}
@@ -66,11 +66,11 @@ export function QueryState<TData>({
     );
   }
 
-  if (laRong(query.data)) {
+  if (isEmpty(query.data)) {
     return (
       <Empty
         image={Empty.PRESENTED_IMAGE_SIMPLE}
-        description={moTaRong}
+        description={emptyDescription}
         className="py-8"
       />
     );

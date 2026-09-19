@@ -11,7 +11,7 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
-import { docSheet, type DongTho } from "./doc-file";
+import { docSheet, type RawRow } from "./doc-file";
 import { kiemTraSanPham, kiemTraDoiTac, type CanhBao, type Loi } from "./kiem-tra";
 import { napDuLieu, napLuuTruHoaDon, napLuuTruNhap } from "./nap-du-lieu";
 
@@ -64,9 +64,9 @@ function duongDan(tienTo: string): string {
   return path.join(THU_MUC, ungVien[0]!);
 }
 
-function inKhoi(ten: string, soDong: number, hopLe: number, loi: Loi[], canhBao: CanhBao[]) {
+function inKhoi(ten: string, rowNumber: number, hopLe: number, loi: Loi[], canhBao: CanhBao[]) {
   console.log(`\n${path.basename(duongDan(ten))}`);
-  console.log(`  Đọc được   ${String(soDong).padStart(6)} dòng`);
+  console.log(`  Đọc được   ${String(rowNumber).padStart(6)} dòng`);
   console.log(`  Hợp lệ     ${String(hopLe).padStart(6)} dòng`);
   console.log(`  Lỗi        ${String(loi.length).padStart(6)}`);
   console.log(`  Cảnh báo   ${String(canhBao.length).padStart(6)}`);
@@ -75,7 +75,7 @@ function inKhoi(ten: string, soDong: number, hopLe: number, loi: Loi[], canhBao:
     console.log("\n  LỖI");
     for (const l of loi.slice(0, 30)) {
       console.log(
-        `    Dòng ${String(l.soDong).padStart(5)}  ${l.truong.padEnd(16)} ${l.lyDo}` +
+        `    Dòng ${String(l.rowNumber).padStart(5)}  ${l.truong.padEnd(16)} ${l.lyDo}` +
           (l.giaTri === null || l.giaTri === undefined ? "" : `  (giá trị: ${JSON.stringify(l.giaTri)})`),
       );
     }
@@ -85,13 +85,13 @@ function inKhoi(ten: string, soDong: number, hopLe: number, loi: Loi[], canhBao:
   if (canhBao.length) {
     console.log("\n  CẢNH BÁO");
     for (const c of canhBao.slice(0, 20)) {
-      console.log(`    ${c.soDong ? `Dòng ${String(c.soDong).padStart(5)}  ` : "            "}${c.lyDo}`);
+      console.log(`    ${c.rowNumber ? `Dòng ${String(c.rowNumber).padStart(5)}  ` : "            "}${c.lyDo}`);
     }
     if (canhBao.length > 20) console.log(`    ... còn ${canhBao.length - 20} cảnh báo nữa`);
   }
 }
 
-async function docAnToan(ten: string): Promise<DongTho[]> {
+async function docAnToan(ten: string): Promise<RawRow[]> {
   try {
     return await docSheet(duongDan(ten));
   } catch (e) {
@@ -157,7 +157,7 @@ async function main() {
     for (const x of kq.dungDoNhom) console.log(`  ${x}`);
   }
 
-  const tongTon = thoSanPham.reduce((s, d) => s + (Number(d.o["ton_kho"]) || 0), 0);
+  const tongTon = thoSanPham.reduce((s, d) => s + (Number(d.cells["ton_kho"]) || 0), 0);
   console.log(`\nTồn từ KiotViet (KHÔNG nạp, chỉ để đối chiếu): ${tongTon.toLocaleString("vi-VN")} đơn vị`);
   console.log("Chạy lại lệnh này lần nữa phải cho đúng những con số trên (idempotent).\n");
 }

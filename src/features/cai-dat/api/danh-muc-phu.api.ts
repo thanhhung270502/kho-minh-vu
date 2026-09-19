@@ -22,7 +22,7 @@ export type MucDanhMucPhu = {
 };
 
 export type CauHinhDanhMucPhu = {
-  nhan: string;
+  label: string;
   nhanHoa: string;
   cot: string;
   /** Kho KHÔNG xóa được: tồn kho và chứng từ cũ trỏ vào — ngừng hoạt động thay vì xóa. */
@@ -35,7 +35,7 @@ export type CauHinhDanhMucPhu = {
 
 export const CAU_HINH_DANH_MUC_PHU: Record<BangDanhMucPhu, CauHinhDanhMucPhu> = {
   kho: {
-    nhan: "kho",
+    label: "kho",
     nhanHoa: "Kho",
     cot: "id, ma, ten, dia_chi, dang_hoat_dong, updated_at",
     xoaDuoc: false,
@@ -45,7 +45,7 @@ export const CAU_HINH_DANH_MUC_PHU: Record<BangDanhMucPhu, CauHinhDanhMucPhu> = 
     coTrangThai: true,
   },
   nhom_hang: {
-    nhan: "nhóm hàng",
+    label: "nhóm hàng",
     nhanHoa: "Nhóm hàng",
     cot: "id, ma, ten, parent_id, thu_tu, updated_at",
     xoaDuoc: true,
@@ -55,7 +55,7 @@ export const CAU_HINH_DANH_MUC_PHU: Record<BangDanhMucPhu, CauHinhDanhMucPhu> = 
     coTrangThai: false,
   },
   don_vi_tinh: {
-    nhan: "đơn vị tính",
+    label: "đơn vị tính",
     nhanHoa: "Đơn vị tính",
     cot: "id, ma, ten, updated_at",
     xoaDuoc: true,
@@ -65,7 +65,7 @@ export const CAU_HINH_DANH_MUC_PHU: Record<BangDanhMucPhu, CauHinhDanhMucPhu> = 
     coTrangThai: false,
   },
   cong_doan: {
-    nhan: "công đoạn",
+    label: "công đoạn",
     nhanHoa: "Công đoạn",
     cot: "id, ma, ten, mau_hien_thi, updated_at",
     xoaDuoc: true,
@@ -88,8 +88,8 @@ export const MA_HE_THONG: Record<BangDanhMucPhu, readonly string[]> = {
   cong_doan: ["EP", "SON", "CARBON", "XI_MA", "NANO", "MUA_NGOAI"],
 };
 
-export function laMaHeThong(bang: BangDanhMucPhu, ma: string): boolean {
-  return MA_HE_THONG[bang].includes(ma);
+export function laMaHeThong(table: BangDanhMucPhu, ma: string): boolean {
+  return MA_HE_THONG[table].includes(ma);
 }
 
 export type GiaTriDanhMucPhu = {
@@ -103,7 +103,7 @@ export type GiaTriDanhMucPhu = {
 
 /**
  * Bốn bảng có shape khác nhau nên supabase-js không suy được kiểu chung cho
- * `.from(bang)` — nó chốt vào bảng đầu của union và báo lỗi cột. Khai một mặt
+ * `.from(table)` — nó chốt vào bảng đầu của union và báo lỗi cột. Khai một mặt
  * cắt hẹp đúng bốn thao tác đang dùng, ép kiểu CHỈ ở đây. Cột đọc ra luôn liệt
  * kê tường minh trong `CAU_HINH_DANH_MUC_PHU.cot`, kết quả thu về
  * `MucDanhMucPhu` — không có `any` nào lọt ra ngoài file này.
@@ -121,7 +121,7 @@ type MatCatBang = {
   delete(tuyChon: { count: "exact" }): { eq(cot: string, gt: string): KetQua };
 };
 
-function bang(ten: BangDanhMucPhu): MatCatBang {
+function table(ten: BangDanhMucPhu): MatCatBang {
   const sb = getSupabaseBrowserClient() as unknown as {
     from(t: string): MatCatBang;
   };
@@ -129,7 +129,7 @@ function bang(ten: BangDanhMucPhu): MatCatBang {
 }
 
 export async function layDanhMucPhu(ten: BangDanhMucPhu): Promise<MucDanhMucPhu[]> {
-  const { data, error } = await bang(ten)
+  const { data, error } = await table(ten)
     .select(CAU_HINH_DANH_MUC_PHU[ten].cot)
     .order("ma");
   if (error) throw error;
@@ -140,7 +140,7 @@ export async function taoMucDanhMucPhu(
   ten: BangDanhMucPhu,
   v: GiaTriDanhMucPhu,
 ): Promise<void> {
-  const { error } = await bang(ten).insert(v);
+  const { error } = await table(ten).insert(v);
   if (error) throw error;
 }
 
@@ -149,7 +149,7 @@ export async function capNhatMucDanhMucPhu(
   id: string,
   v: GiaTriDanhMucPhu,
 ): Promise<void> {
-  const { error } = await bang(ten).update(v).eq("id", id);
+  const { error } = await table(ten).update(v).eq("id", id);
   if (error) throw error;
 }
 
@@ -158,7 +158,7 @@ export async function capNhatMucDanhMucPhu(
  * null, giao diện sẽ báo "đã xóa" trong khi dữ liệu còn nguyên. Đếm để phát hiện.
  */
 export async function xoaMucDanhMucPhu(ten: BangDanhMucPhu, id: string): Promise<void> {
-  const { error, count } = await bang(ten).delete({ count: "exact" }).eq("id", id);
+  const { error, count } = await table(ten).delete({ count: "exact" }).eq("id", id);
   if (error) throw error;
   if (!count) {
     throw new Error(

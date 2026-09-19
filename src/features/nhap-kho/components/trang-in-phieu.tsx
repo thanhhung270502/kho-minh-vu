@@ -12,8 +12,8 @@ export function TrangInPhieu({ id }: { id: string }) {
   return (
     <QueryState
       query={chiTiet}
-      laRong={(d) => d === null}
-      moTaRong="Không tìm thấy phiếu này."
+      isEmpty={(d) => d === null}
+      emptyDescription="Không tìm thấy phiếu này."
     >
       {(phieu) =>
         phieu ? <MauInPhieuNhap phieu={phieu} dong={dong.data ?? []} /> : null

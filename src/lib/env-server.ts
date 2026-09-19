@@ -19,7 +19,7 @@ const envServerSchema = z.object({
     .min(1, "Thiếu SUPABASE_SECRET_KEY (hoặc SUPABASE_SERVICE_ROLE_KEY)"),
 });
 
-export function layEnvServer() {
+export function getServerEnv() {
   // Dùng `||` chứ không `??`: biến khai trên Vercel nhưng bỏ trống sẽ là chuỗi
   // rỗng, `??` sẽ nhận chuỗi rỗng đó và bỏ qua tên biến còn lại.
   const parsed = envServerSchema.safeParse({

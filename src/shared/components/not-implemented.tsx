@@ -2,18 +2,18 @@
 
 import { Card, Typography } from "antd";
 
-type ChuaTrienKhaiProps = {
+type NotImplementedProps = {
   /** Những gì màn hình này sẽ làm khi hoàn thiện. */
-  seCo: string[];
+  planned: string[];
   /** Việc phải xong trước mới làm được màn hình này. */
-  phuThuoc?: string;
+  dependsOn?: string;
 };
 
 /**
  * Khung tạm cho route đã có trong menu nhưng chưa xây. Ghi rõ phạm vi để
  * người dùng góp ý trước khi code, thay vì để trang trắng.
  */
-export function ChuaTrienKhai({ seCo, phuThuoc }: ChuaTrienKhaiProps) {
+export function NotImplemented({ planned, dependsOn }: NotImplementedProps) {
   return (
     <Card>
       <Typography.Paragraph type="secondary">
@@ -21,14 +21,14 @@ export function ChuaTrienKhai({ seCo, phuThuoc }: ChuaTrienKhaiProps) {
       </Typography.Paragraph>
 
       <ul className="m-0 list-disc space-y-1.5 pl-5">
-        {seCo.map((muc) => (
-          <li key={muc}>{muc}</li>
+        {planned.map((item) => (
+          <li key={item}>{item}</li>
         ))}
       </ul>
 
-      {phuThuoc ? (
+      {dependsOn ? (
         <Typography.Paragraph type="secondary" className="mt-4 mb-0">
-          Cần làm trước: {phuThuoc}
+          Cần làm trước: {dependsOn}
         </Typography.Paragraph>
       ) : null}
     </Card>

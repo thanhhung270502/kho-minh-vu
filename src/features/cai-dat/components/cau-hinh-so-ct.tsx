@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { QueryState } from "@/shared/components/query-state";
-import { dienGiaiLoi, laLoiPostgrest } from "@/shared/lib/errors";
+import { explainError, isPostgrestError } from "@/shared/lib/errors";
 
 import {
   layCauHinhSoCt,
@@ -34,7 +34,7 @@ export function CauHinhSoCt() {
       luuCauHinhSoCt(v.loai, v.nguon, v.giaTri),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["cau-hinh-so-ct"] }),
   });
-  const [dangLuu, setDangLuu] = useState<string | null>(null);
+  const [saving, setDangLuu] = useState<string | null>(null);
 
   /** Một loại giờ có thể có nhiều dòng (NHAP có thêm dòng nhà máy). */
 function khoaDong(d: DongCauHinhSoCt): string {
@@ -89,7 +89,7 @@ function giaTri(d: DongCauHinhSoCt): BanNhap {
       });
       message.success(`Đã lưu quy tắc số ${nhanCauHinh(d.loai_ct, d.nguon)}`);
     } catch (e) {
-      if (laLoiPostgrest(e) && (e.code === "23505" || e.code === "23514")) {
+      if (isPostgrestError(e) && (e.code === "23505" || e.code === "23514")) {
         setLoi((s) => ({
           ...s,
           [khoaDong(d)]:
@@ -97,8 +97,8 @@ function giaTri(d: DongCauHinhSoCt): BanNhap {
         }));
         return;
       }
-      const l = dienGiaiLoi(e);
-      setLoi((s) => ({ ...s, [khoaDong(d)]: `${l.tieuDe}. ${l.huongXuLy}` }));
+      const l = explainError(e);
+      setLoi((s) => ({ ...s, [khoaDong(d)]: `${l.title}. ${l.action}` }));
     } finally {
       setDangLuu(null);
     }
@@ -163,7 +163,7 @@ function giaTri(d: DongCauHinhSoCt): BanNhap {
             size="small"
             className="px-0"
             disabled={!daDoi(d)}
-            loading={dangLuu === khoaDong(d)}
+            loading={saving === khoaDong(d)}
             onClick={() => void luuDong(d, tatCa)}
           >
             Lưu
@@ -182,7 +182,7 @@ function giaTri(d: DongCauHinhSoCt): BanNhap {
         title="Đổi tiền tố chỉ áp cho chứng từ tạo sau. Số đã phát giữ nguyên. Số thứ tự tự đặt lại về 1 vào đầu năm."
       />
 
-      <QueryState query={danhSach} moTaRong="Chưa có cấu hình đánh số nào.">
+      <QueryState query={danhSach} emptyDescription="Chưa có cấu hình đánh số nào.">
         {(d) => (
           <div className="overflow-x-auto">
             <Table<DongCauHinhSoCt>

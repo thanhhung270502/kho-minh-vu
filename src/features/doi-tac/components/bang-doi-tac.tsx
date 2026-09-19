@@ -6,8 +6,8 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
-import { BoCucDanhSach } from "@/shared/components/bo-cuc-danh-sach";
-import { HangTongCong } from "@/shared/components/hang-tong-cong";
+import { ListLayout } from "@/shared/components/list-layout";
+import { SummaryRow } from "@/shared/components/summary-row";
 import { QueryState } from "@/shared/components/query-state";
 
 import { docBoLocDoiTac, ghiBoLocDoiTac } from "../api/doi-tac.api";
@@ -114,9 +114,9 @@ export function BangDoiTac({ coQuyenSua }: { coQuyenSua: boolean }) {
 
   return (
     <>
-      <BoCucDanhSach
-        panelLoc={<PanelLocDoiTac boLoc={boLoc} onDoi={doiBoLoc} />}
-        thanhCongCu={
+      <ListLayout
+        filterPanel={<PanelLocDoiTac boLoc={boLoc} onDoi={doiBoLoc} />}
+        toolbar={
           <ThanhCongCuDoiTac
             boLoc={boLoc}
             coQuyenSua={coQuyenSua}
@@ -124,12 +124,12 @@ export function BangDoiTac({ coQuyenSua }: { coQuyenSua: boolean }) {
             onThem={() => setNganKeo({ mo: true, id: null })}
           />
         }
-        soDieuKien={demDieuKienDoiTac(boLoc)}
+        activeFilterCount={demDieuKienDoiTac(boLoc)}
       >
         <QueryState
           query={danhSach}
-          laRong={(d) => d.dong.length === 0}
-          moTaRong={
+          isEmpty={(d) => d.dong.length === 0}
+          emptyDescription={
             coLoc(boLoc) ? (
               <div className="flex flex-col items-center gap-3">
                 <span>Không có đối tác khớp bộ lọc. Xóa bớt điều kiện tìm.</span>
@@ -151,10 +151,10 @@ export function BangDoiTac({ coQuyenSua }: { coQuyenSua: boolean }) {
               loading={danhSach.isFetching}
               scroll={{ x: 900 }}
               summary={() => (
-                <HangTongCong
-                  cot={cot}
-                  coChon={false}
-                  nhan={`Tổng cộng — ${tong.toLocaleString("vi-VN")} đối tác`}
+                <SummaryRow
+                  columns={cot}
+                  hasSelection={false}
+                  label={`Tổng cộng — ${tong.toLocaleString("vi-VN")} đối tác`}
                 />
               )}
               pagination={{
@@ -168,12 +168,12 @@ export function BangDoiTac({ coQuyenSua }: { coQuyenSua: boolean }) {
             />
           )}
         </QueryState>
-      </BoCucDanhSach>
+      </ListLayout>
 
       <NganKeoDoiTac
         id={nganKeo.id}
         open={nganKeo.mo}
-        onDong={() => setNganKeo((s) => ({ ...s, mo: false }))}
+        onClose={() => setNganKeo((s) => ({ ...s, mo: false }))}
       />
     </>
   );

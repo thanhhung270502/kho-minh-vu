@@ -12,7 +12,7 @@ type TrangThai = {
   buoc: 0 | 1 | 2;
   file: File | null;
   ketQua: KetQuaGiaVon | null;
-  loi: { tieuDe: string; huongXuLy: string } | null;
+  loi: { title: string; action: string } | null;
   dangGui: boolean;
 };
 
@@ -21,7 +21,7 @@ type HanhDong =
   | { kieu: "dang_gui" }
   | { kieu: "xem_truoc"; ketQua: KetQuaGiaVon }
   | { kieu: "da_nap"; ketQua: KetQuaGiaVon }
-  | { kieu: "loi"; tieuDe: string; huongXuLy: string }
+  | { kieu: "loi"; title: string; action: string }
   | { kieu: "lam_lai" };
 
 const BAN_DAU: TrangThai = { buoc: 0, file: null, ketQua: null, loi: null, dangGui: false };
@@ -37,13 +37,13 @@ function rut(t: TrangThai, h: HanhDong): TrangThai {
     case "da_nap":
       return { ...t, buoc: 2, ketQua: h.ketQua, dangGui: false, loi: null };
     case "loi":
-      return { ...t, dangGui: false, loi: { tieuDe: h.tieuDe, huongXuLy: h.huongXuLy } };
+      return { ...t, dangGui: false, loi: { title: h.title, action: h.action } };
     case "lam_lai":
       return BAN_DAU;
   }
 }
 
-export function NapGiaVon({ open, onDong }: { open: boolean; onDong: () => void }) {
+export function NapGiaVon({ open, onClose }: { open: boolean; onClose: () => void }) {
   const queryClient = useQueryClient();
   const [t, gui] = useReducer(rut, BAN_DAU);
 
@@ -56,15 +56,15 @@ export function NapGiaVon({ open, onDong }: { open: boolean; onDong: () => void 
       const res = await fetch("/api/danh-muc/gia-von-dau-ky", { method: "POST", body: form });
       const j = (await res.json()) as {
         ketQua?: KetQuaGiaVon;
-        tieuDe?: string;
-        huongXuLy?: string;
+        title?: string;
+        action?: string;
       };
 
       if (!res.ok || !j.ketQua) {
         gui({
           kieu: "loi",
-          tieuDe: j.tieuDe ?? "Không nạp được giá vốn",
-          huongXuLy: j.huongXuLy ?? "Thử lại sau ít phút.",
+          title: j.title ?? "Không nạp được giá vốn",
+          action: j.action ?? "Thử lại sau ít phút.",
         });
         return;
       }
@@ -78,15 +78,15 @@ export function NapGiaVon({ open, onDong }: { open: boolean; onDong: () => void 
     } catch {
       gui({
         kieu: "loi",
-        tieuDe: "Không gửi được file",
-        huongXuLy: "Kiểm tra kết nối mạng rồi thử lại.",
+        title: "Không gửi được file",
+        action: "Kiểm tra kết nối mạng rồi thử lại.",
       });
     }
   }
 
   function chonFile(file: File): boolean {
     if (!file.name.toLowerCase().endsWith(".xlsx")) {
-      gui({ kieu: "loi", tieuDe: "File không phải .xlsx", huongXuLy: "Lưu lại thành .xlsx rồi chọn." });
+      gui({ kieu: "loi", title: "File không phải .xlsx", action: "Lưu lại thành .xlsx rồi chọn." });
       return false;
     }
     gui({ kieu: "chon_file", file });
@@ -97,7 +97,7 @@ export function NapGiaVon({ open, onDong }: { open: boolean; onDong: () => void 
   function dong() {
     if (t.dangGui) return;
     gui({ kieu: "lam_lai" });
-    onDong();
+    onClose();
   }
 
   const kq = t.ketQua;
@@ -154,7 +154,7 @@ export function NapGiaVon({ open, onDong }: { open: boolean; onDong: () => void 
       />
 
       {t.loi ? (
-        <Alert className="mb-3" type="error" showIcon title={t.loi.tieuDe} description={t.loi.huongXuLy} />
+        <Alert className="mb-3" type="error" showIcon title={t.loi.title} description={t.loi.action} />
       ) : null}
 
       {t.buoc === 0 ? (

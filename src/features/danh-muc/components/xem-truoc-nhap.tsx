@@ -7,7 +7,7 @@ import type { LoiDong, PhanHoiNhap, ThayDoiDong } from "../api/nhap-excel.api";
 import { taoCsvLoi, tenFileLoi } from "../lib/file-loi";
 import { nhanCot } from "../lib/mau-excel";
 
-function hienGiaTri(v: unknown): string {
+function renderValue(v: unknown): string {
   if (v === null || v === undefined || v === "") return "(trống)";
   if (typeof v === "boolean") return v ? "Có" : "Không";
   return String(v);
@@ -52,8 +52,8 @@ export function XemTruocNhap({
           {Object.entries(t.truong ?? {}).map(([truong, gt]) => (
             <li key={truong}>
               <span className="text-gray-500">{nhanCot(truong)}:</span>{" "}
-              <span className="text-gray-400 line-through">{hienGiaTri(gt?.[0])}</span> →{" "}
-              {hienGiaTri(gt?.[1])}
+              <span className="text-gray-400 line-through">{renderValue(gt?.[0])}</span> →{" "}
+              {renderValue(gt?.[1])}
             </li>
           ))}
         </ul>

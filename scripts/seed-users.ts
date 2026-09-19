@@ -25,7 +25,7 @@ async function main() {
   }
   const khoTheoMa = new Map(khoList.map((k) => [k.ma, k.id]));
 
-  const ketQua: Array<{ email: string; vaiTro: string; kho: string; trangThai: string }> = [];
+  const ketQua: Array<{ email: string; role: string; kho: string; trangThai: string }> = [];
 
   // TODO(plan 02-09): bỏ ép kiểu "as never" sau khi `npm run db:types` sinh lại
   // database.types.ts có bảng nguoi_dung_kho (migration 0026).
@@ -65,7 +65,7 @@ async function main() {
 
     const { error: loiHoSo } = await supabase
       .from("nguoi_dung")
-      .upsert({ id: userId, ho_ten: tk.hoTen, vai_tro: tk.vaiTro }, { onConflict: "id" });
+      .upsert({ id: userId, ho_ten: tk.fullName, vai_tro: tk.role }, { onConflict: "id" });
     if (loiHoSo) throw loiHoSo;
 
     const { error: loiXoaKho } = await nguoiDungKho().delete().eq("nguoi_dung_id", userId);
@@ -78,7 +78,7 @@ async function main() {
       if (loiThemKho) throw loiThemKho;
     }
 
-    ketQua.push({ email: tk.email, vaiTro: tk.vaiTro, kho: tk.maKho.length ? tk.maKho.join("+") : "—", trangThai });
+    ketQua.push({ email: tk.email, role: tk.role, kho: tk.maKho.length ? tk.maKho.join("+") : "—", trangThai });
   }
 
   console.log("\nTài khoản mẫu:\n");

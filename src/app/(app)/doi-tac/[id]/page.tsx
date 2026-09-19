@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ChiTietDoiTac } from "@/features/doi-tac/components/chi-tiet-doi-tac";
-import { yeuCauQuyen } from "@/features/xac-thuc/api/nguoi-dung-hien-tai.server";
-import { coQuyen } from "@/shared/lib/quyen";
+import { requirePermission } from "@/features/auth/api/current-user.server";
+import { hasPermission } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Chi tiết đối tác" };
 
@@ -13,8 +13,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const { id } = await params;
   if (!UUID.test(id)) notFound();
 
-  const nd = await yeuCauQuyen("xem_danh_muc");
-  const sua = coQuyen(nd.vaiTro, "sua_danh_muc");
+  const nd = await requirePermission("view-catalog");
+  const sua = hasPermission(nd.role, "edit-catalog");
 
   return <ChiTietDoiTac id={id} quyen={{ sua, xemLichSu: sua }} />;
 }

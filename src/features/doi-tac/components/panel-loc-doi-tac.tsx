@@ -25,10 +25,10 @@ const TRANG_THAI = [
   { label: "Tất cả", value: "tat_ca" },
 ];
 
-function NhomLoc({ nhan, children }: { nhan: string; children: ReactNode }) {
+function NhomLoc({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <label className="mb-1 block text-[13px] text-chu-phu">{nhan}</label>
+      <label className="mb-1 block text-[13px] text-chu-phu">{label}</label>
       {children}
     </div>
   );
@@ -37,7 +37,7 @@ function NhomLoc({ nhan, children }: { nhan: string; children: ReactNode }) {
 export function PanelLocDoiTac({ boLoc, onDoi }: Props) {
   return (
     <div className="flex flex-col gap-3">
-      <NhomLoc nhan="Loại đối tác">
+      <NhomLoc label="Loại đối tác">
         <Segmented
           block
           vertical
@@ -47,7 +47,7 @@ export function PanelLocDoiTac({ boLoc, onDoi }: Props) {
         />
       </NhomLoc>
 
-      <NhomLoc nhan="Trạng thái">
+      <NhomLoc label="Trạng thái">
         <Select
           options={TRANG_THAI}
           value={boLoc.hoatDong}

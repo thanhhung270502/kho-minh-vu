@@ -6,14 +6,14 @@
  */
 import { z } from "zod";
 
-import { doChuoi, doSo, type DongTho } from "./doc-file";
-import { tachDvtCongDoan } from "./tach-dvt-cong-doan";
+import { readString, readNumber, type RawRow } from "./doc-file";
+import { splitUnitStage } from "./tach-dvt-cong-doan";
 
-export type Loi = { soDong: number; truong: string; lyDo: string; giaTri: unknown };
-export type CanhBao = { soDong: number | null; lyDo: string };
+export type Loi = { rowNumber: number; truong: string; lyDo: string; giaTri: unknown };
+export type CanhBao = { rowNumber: number | null; lyDo: string };
 
 export type KetQuaKiemTra<T> = {
-  hopLe: Array<{ soDong: number; duLieu: T; duLieuGoc: Record<string, unknown> }>;
+  hopLe: Array<{ rowNumber: number; duLieu: T; duLieuGoc: Record<string, unknown> }>;
   loi: Loi[];
   canhBao: CanhBao[];
 };
@@ -69,21 +69,21 @@ export const DoiTacSchema = z.object({
 });
 export type DoiTac = z.infer<typeof DoiTacSchema>;
 
-function ghiLoi(loi: Loi[], soDong: number, kq: z.ZodSafeParseError<unknown>, tho: Record<string, unknown>) {
+function ghiLoi(loi: Loi[], rowNumber: number, kq: z.ZodSafeParseError<unknown>, tho: Record<string, unknown>) {
   for (const issue of kq.error.issues) {
     const truong = issue.path.join(".") || "(dòng)";
-    loi.push({ soDong, truong, lyDo: issue.message, giaTri: tho[issue.path[0] as string] });
+    loi.push({ rowNumber, truong, lyDo: issue.message, giaTri: tho[issue.path[0] as string] });
   }
 }
 
-export function kiemTraSanPham(dong: DongTho[], tenFile: string): KetQuaKiemTra<SanPham> {
+export function kiemTraSanPham(dong: RawRow[], tenFile: string): KetQuaKiemTra<SanPham> {
   const hopLe: KetQuaKiemTra<SanPham>["hopLe"] = [];
   const loi: Loi[] = [];
   const canhBao: CanhBao[] = [];
 
   const daThay = new Map<string, number>();
   const dvtLa = new Map<string, number[]>();
-  let suyDuoc = 0;
+  let inferred = 0;
   let chuaSuyDuoc = 0;
   let dvtRong = 0;
   let soCap = 0;
@@ -91,99 +91,99 @@ export function kiemTraSanPham(dong: DongTho[], tenFile: string): KetQuaKiemTra<
   let tonAm = 0;
 
   for (const d of dong) {
-    const toiDa = doSo(d.o["ton_lon_nhat"]);
-    const hinh = doChuoi(d.o["hinh_anh_url1_url2"]);
+    const toiDa = readNumber(d.cells["ton_lon_nhat"]);
+    const hinh = readString(d.cells["hinh_anh_url1_url2"]);
 
     const tho = {
-      ma_hang: doChuoi(d.o["ma_hang"]),
-      ten_hang: doChuoi(d.o["ten_hang"]),
-      loai_hang: doChuoi(d.o["loai_hang"]),
-      ten_nhom_hang: doChuoi(d.o["nhom_hang_3_cap"]),
-      dvt_goc: doChuoi(d.o["dvt"]),
-      quy_doi: doSo(d.o["quy_doi"]) ?? 1,
-      gia_ban: doSo(d.o["gia_ban"]) ?? 0,
-      ton_toi_thieu: doSo(d.o["ton_nho_nhat"]) ?? 0,
+      ma_hang: readString(d.cells["ma_hang"]),
+      ten_hang: readString(d.cells["ten_hang"]),
+      loai_hang: readString(d.cells["loai_hang"]),
+      ten_nhom_hang: readString(d.cells["nhom_hang_3_cap"]),
+      dvt_goc: readString(d.cells["dvt"]),
+      quy_doi: readNumber(d.cells["quy_doi"]) ?? 1,
+      gia_ban: readNumber(d.cells["gia_ban"]) ?? 0,
+      ton_toi_thieu: readNumber(d.cells["ton_nho_nhat"]) ?? 0,
       ton_toi_da: toiDa === null || toiDa >= KHONG_GIOI_HAN ? null : toiDa,
       // Cột "Vị trí" của KiotViet chứa TÊN KHO ("Kho 1" / "Kho 2"), không phải
       // dãy/kệ/tầng. Bản đầu nạp nhầm vào vi_tri_ke — lỗi UAT Phase 1, bài 3.
-      ten_kho: doChuoi(d.o["vi_tri"]),
+      ten_kho: readString(d.cells["vi_tri"]),
       // Cột chứa nhiều URL cách nhau dấu phẩy; lấy ảnh đầu tiên.
       hinh_anh_url: hinh ? (hinh.split(",")[0]?.trim() || null) : null,
-      dang_kinh_doanh: doChuoi(d.o["dang_kinh_doanh"]) !== "0",
-      ton_kiotviet: doSo(d.o["ton_kho"]),
-      ghi_chu: doChuoi(d.o["mo_ta"]),
+      dang_kinh_doanh: readString(d.cells["dang_kinh_doanh"]) !== "0",
+      ton_kiotviet: readNumber(d.cells["ton_kho"]),
+      ghi_chu: readString(d.cells["mo_ta"]),
     };
 
     const kq = SanPhamSchema.safeParse(tho);
     if (!kq.success) {
-      ghiLoi(loi, d.soDong, kq, tho);
+      ghiLoi(loi, d.rowNumber, kq, tho);
       continue;
     }
 
     const truoc = daThay.get(kq.data.ma_hang);
     if (truoc !== undefined) {
       canhBao.push({
-        soDong: d.soDong,
+        rowNumber: d.rowNumber,
         lyDo: `Trùng mã hàng "${kq.data.ma_hang}" với dòng ${truoc}. Dòng sau ghi đè dòng trước.`,
       });
     }
-    daThay.set(kq.data.ma_hang, d.soDong);
+    daThay.set(kq.data.ma_hang, d.rowNumber);
 
-    const tach = tachDvtCongDoan(kq.data.dvt_goc);
-    if (tach.suyDuoc) suyDuoc++;
+    const tach = splitUnitStage(kq.data.dvt_goc);
+    if (tach.inferred) inferred++;
     else chuaSuyDuoc++;
     if (!kq.data.dvt_goc) dvtRong++;
-    if (tach.maDvt === "CAP") soCap++;
-    if (tach.giaTriLa && kq.data.dvt_goc) {
-      const ds = dvtLa.get(tach.giaTriLa) ?? [];
-      ds.push(d.soDong);
-      dvtLa.set(tach.giaTriLa, ds);
+    if (tach.unitCode === "CAP") soCap++;
+    if (tach.unknownValue && kq.data.dvt_goc) {
+      const ds = dvtLa.get(tach.unknownValue) ?? [];
+      ds.push(d.rowNumber);
+      dvtLa.set(tach.unknownValue, ds);
     }
     if (kq.data.loai_hang && kq.data.loai_hang !== "Hàng hóa") soCombo++;
     if ((kq.data.ton_kiotviet ?? 0) < 0) tonAm++;
 
-    hopLe.push({ soDong: d.soDong, duLieu: kq.data, duLieuGoc: d.o });
+    hopLe.push({ rowNumber: d.rowNumber, duLieu: kq.data, duLieuGoc: d.cells });
   }
 
   const kyVong = SO_DONG_KY_VONG[tenFile];
   if (kyVong && dong.length !== kyVong) {
     canhBao.push({
-      soDong: null,
+      rowNumber: null,
       lyDo: `Đọc được ${dong.length} dòng, PROJECT.md ghi ${kyVong}. Có thể là file export khác kỳ — cần xác nhận.`,
     });
   }
 
   canhBao.push({
-    soDong: null,
+    rowNumber: null,
     lyDo:
-      `Công đoạn: suy được từ ĐVT cũ ${suyDuoc} mã, chưa suy được ${chuaSuyDuoc} mã (tạm gán MUA_NGOAI, cần rà theo nhóm hàng).` +
+      `Công đoạn: suy được từ ĐVT cũ ${inferred} mã, chưa suy được ${chuaSuyDuoc} mã (tạm gán MUA_NGOAI, cần rà theo nhóm hàng).` +
       (dvtRong ? ` Trong đó ${dvtRong} mã có ô ĐVT RỖNG.` : ""),
   });
 
   if (soCap > 0) {
     canhBao.push({
-      soDong: null,
+      rowNumber: null,
       lyDo: `${soCap} mã đơn vị CẶP nhưng file ghi quy_doi = 1. Nạp đúng số trong file. XÁC NHẬN: 1 CẶP có phải là 1 đơn vị tồn kho không, hay là 2 CÁI?`,
     });
   }
 
   if (soCombo > 0) {
     canhBao.push({
-      soDong: null,
+      rowNumber: null,
       lyDo: `${soCombo} mã là "Combo - đóng gói". Hệ mới chưa mô hình hóa combo — nạp như hàng thường.`,
     });
   }
 
   if (tonAm > 0) {
     canhBao.push({
-      soDong: null,
+      rowNumber: null,
       lyDo: `${tonAm} mã đang tồn ÂM trên KiotViet. Tồn KHÔNG được nạp — chỉ để biết trước khi kiểm kê.`,
     });
   }
 
   for (const [gt, ds] of dvtLa) {
     canhBao.push({
-      soDong: ds[0] ?? null,
+      rowNumber: ds[0] ?? null,
       lyDo: `ĐVT lạ "${gt}" ở ${ds.length} dòng (dòng đầu ${ds[0]}). Tạm gán CAI / MUA_NGOAI.`,
     });
   }
@@ -191,7 +191,7 @@ export function kiemTraSanPham(dong: DongTho[], tenFile: string): KetQuaKiemTra<
   return { hopLe, loi, canhBao };
 }
 
-export function kiemTraDoiTac(dong: DongTho[], tenFile: string): KetQuaKiemTra<DoiTac> {
+export function kiemTraDoiTac(dong: RawRow[], tenFile: string): KetQuaKiemTra<DoiTac> {
   const hopLe: KetQuaKiemTra<DoiTac>["hopLe"] = [];
   const loi: Loi[] = [];
   const canhBao: CanhBao[] = [];
@@ -199,12 +199,12 @@ export function kiemTraDoiTac(dong: DongTho[], tenFile: string): KetQuaKiemTra<D
   let soThuTu = 900_000; // mã sinh cho NCC bị ghi nhầm MST vào ô mã — dải riêng, không đụng mã thật
 
   for (const d of dong) {
-    let ma = doChuoi(d.o["ma_nha_cung_cap"]);
-    let mst = doChuoi(d.o["ma_so_thue"]);
-    const ten = doChuoi(d.o["ten_nha_cung_cap"]);
+    let ma = readString(d.cells["ma_nha_cung_cap"]);
+    let mst = readString(d.cells["ma_so_thue"]);
+    const ten = readString(d.cells["ten_nha_cung_cap"]);
 
     if (ma && NCC_AO.has(ma)) {
-      canhBao.push({ soDong: d.soDong, lyDo: `Bỏ qua NCC ảo ${ma} "${ten}": ${NCC_AO.get(ma)}.` });
+      canhBao.push({ rowNumber: d.rowNumber, lyDo: `Bỏ qua NCC ảo ${ma} "${ten}": ${NCC_AO.get(ma)}.` });
       continue;
     }
 
@@ -214,7 +214,7 @@ export function kiemTraDoiTac(dong: DongTho[], tenFile: string): KetQuaKiemTra<D
       soThuTu++;
       const maMoi = `NCC${soThuTu}`;
       canhBao.push({
-        soDong: d.soDong,
+        rowNumber: d.rowNumber,
         lyDo: `Ô mã chứa mã số thuế (${ma}) — chuyển sang ma_so_thue, sinh mã mới ${maMoi}. Phiếu nhập cũ tham chiếu mã ${ma} vẫn tra được trong bảng lưu trữ.`,
       });
       ma = maMoi;
@@ -223,32 +223,32 @@ export function kiemTraDoiTac(dong: DongTho[], tenFile: string): KetQuaKiemTra<D
     const tho = {
       ma,
       ten,
-      dien_thoai: doChuoi(d.o["dien_thoai"]),
-      email: doChuoi(d.o["email"]),
-      dia_chi: doChuoi(d.o["dia_chi"]),
-      khu_vuc: doChuoi(d.o["khu_vuc"]),
-      phuong_xa: doChuoi(d.o["phuong_xa"]),
+      dien_thoai: readString(d.cells["dien_thoai"]),
+      email: readString(d.cells["email"]),
+      dia_chi: readString(d.cells["dia_chi"]),
+      khu_vuc: readString(d.cells["khu_vuc"]),
+      phuong_xa: readString(d.cells["phuong_xa"]),
       ma_so_thue: mst,
-      ghi_chu: doChuoi(d.o["ghi_chu"]),
+      ghi_chu: readString(d.cells["ghi_chu"]),
     };
 
     const kq = DoiTacSchema.safeParse(tho);
     if (!kq.success) {
-      ghiLoi(loi, d.soDong, kq, tho);
+      ghiLoi(loi, d.rowNumber, kq, tho);
       continue;
     }
 
     const truoc = daThay.get(kq.data.ma);
     if (truoc !== undefined) {
-      canhBao.push({ soDong: d.soDong, lyDo: `Trùng mã đối tác "${kq.data.ma}" với dòng ${truoc}.` });
+      canhBao.push({ rowNumber: d.rowNumber, lyDo: `Trùng mã đối tác "${kq.data.ma}" với dòng ${truoc}.` });
     }
-    daThay.set(kq.data.ma, d.soDong);
-    hopLe.push({ soDong: d.soDong, duLieu: kq.data, duLieuGoc: d.o });
+    daThay.set(kq.data.ma, d.rowNumber);
+    hopLe.push({ rowNumber: d.rowNumber, duLieu: kq.data, duLieuGoc: d.cells });
   }
 
   const kyVong = SO_DONG_KY_VONG[tenFile];
   if (kyVong && dong.length !== kyVong) {
-    canhBao.push({ soDong: null, lyDo: `Đọc được ${dong.length} dòng, PROJECT.md ghi ${kyVong}.` });
+    canhBao.push({ rowNumber: null, lyDo: `Đọc được ${dong.length} dòng, PROJECT.md ghi ${kyVong}.` });
   }
 
   return { hopLe, loi, canhBao };

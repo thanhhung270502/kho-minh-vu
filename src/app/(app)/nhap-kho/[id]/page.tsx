@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ChiTietPhieuNhap } from "@/features/nhap-kho/components/chi-tiet-phieu-nhap";
-import { yeuCauQuyen } from "@/features/xac-thuc/api/nguoi-dung-hien-tai.server";
-import { coQuyen } from "@/shared/lib/quyen";
+import { requirePermission } from "@/features/auth/api/current-user.server";
+import { hasPermission } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Phiếu nhập" };
 
@@ -14,15 +14,15 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const { id } = await params;
   if (!UUID.test(id)) notFound();
 
-  const nd = await yeuCauQuyen("xem_danh_muc");
+  const nd = await requirePermission("view-catalog");
 
   return (
     <ChiTietPhieuNhap
       id={id}
       quyen={{
-        sua: coQuyen(nd.vaiTro, "sua_danh_muc"),
+        sua: hasPermission(nd.role, "edit-catalog"),
         // D-11: chỉ quản lý hủy phiếu đã ghi sổ. Chặn thật ở database (plan 10).
-        huy: nd.vaiTro === "quan_ly",
+        huy: nd.role === "quan_ly",
       }}
     />
   );

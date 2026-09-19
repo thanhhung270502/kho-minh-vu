@@ -3,7 +3,7 @@
 import { App, Button, Dropdown, Select, Space } from "antd";
 import { useState } from "react";
 
-import { dienGiaiLoi } from "@/shared/lib/errors";
+import { explainError } from "@/shared/lib/errors";
 
 import { useGanHangLoat, useXacNhanDaRa } from "../hooks/useSanPham";
 import type { DanhMucPhu } from "../types";
@@ -61,14 +61,14 @@ export function ThanhGanHangLoat({ ids, danhMucPhu, onXong }: Props) {
 
   if (ids.length === 0) return null;
 
-  function hoiRoiChay(moTa: string, chay: () => Promise<number>) {
+  function hoiRoiChay(description: string, chay: () => Promise<number>) {
     if (ids.length > TOI_DA) {
       message.warning(`Chọn tối đa ${TOI_DA} mã mỗi lần.`);
       return;
     }
 
     modal.confirm({
-      title: `${moTa} cho ${ids.length} mã?`,
+      title: `${description} cho ${ids.length} mã?`,
       content:
         ids.length > 20
           ? "Thao tác ghi vào nhật ký sửa của từng mã."
@@ -82,8 +82,8 @@ export function ThanhGanHangLoat({ ids, danhMucPhu, onXong }: Props) {
           message.success(`Đã cập nhật ${so} mã`);
           onXong();
         } catch (e) {
-          const loi = dienGiaiLoi(e);
-          message.error(`${loi.tieuDe}. ${loi.huongXuLy}`);
+          const loi = explainError(e);
+          message.error(`${loi.title}. ${loi.action}`);
         } finally {
           setDangChay(false);
         }
@@ -95,9 +95,9 @@ export function ThanhGanHangLoat({ ids, danhMucPhu, onXong }: Props) {
     truong: "cong_doan_id" | "nhom_hang_id" | "dvt_id",
     id: string,
     ten: string,
-    nhan: string,
+    label: string,
   ) {
-    hoiRoiChay(`Gán ${nhan} “${ten}”`, () =>
+    hoiRoiChay(`Gán ${label} “${ten}”`, () =>
       gan.mutateAsync({ ids, thayDoi: { [truong]: id || null }, nguon: "hang_loat" }),
     );
   }

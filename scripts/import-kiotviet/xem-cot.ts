@@ -15,7 +15,7 @@ import ExcelJS from "exceljs";
 import { readdirSync } from "node:fs";
 import path from "node:path";
 
-import { doChuoi } from "./doc-file";
+import { readString } from "./doc-file";
 
 const THU_MUC = process.argv[2] ?? path.join("data", "kiotviet");
 
@@ -41,29 +41,29 @@ async function main() {
       }
 
       let header: string[] = [];
-      let soDong = 0;
+      let rowNumber = 0;
       let dongCuoi: string[] = [];
 
       for await (const row of ws) {
-        soDong++;
+        rowNumber++;
         const values = (row.values as unknown[]) ?? [];
-        const text = values.map((v) => doChuoi(v) ?? "");
+        const text = values.map((v) => readString(v) ?? "");
 
-        if (soDong === 1) {
+        if (rowNumber === 1) {
           header = text;
           const cot = header.map((h, i) => [i, h] as const).filter(([, h]) => h);
           console.log(`   ${cot.length} cột:`);
           for (const [i, h] of cot) console.log(`     [${i}] ${h}`);
-        } else if (soDong <= 3) {
+        } else if (rowNumber <= 3) {
           const cap = header
             .map((h, i) => (h ? `${h}=${JSON.stringify(text[i] ?? "").slice(0, 32)}` : ""))
             .filter(Boolean);
-          console.log(`   dòng ${soDong}: ${cap.slice(0, 12).join(" | ")}`);
+          console.log(`   dòng ${rowNumber}: ${cap.slice(0, 12).join(" | ")}`);
         }
         dongCuoi = text;
       }
 
-      console.log(`   tổng ${soDong} dòng kể cả header`);
+      console.log(`   tổng ${rowNumber} dòng kể cả header`);
       console.log(`   dòng cuối: ${dongCuoi.slice(1, 6).map((v) => JSON.stringify(v).slice(0, 26)).join(" | ")}`);
     }
   }

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
-import { layNguoiDungHienTai } from "@/features/xac-thuc/api/nguoi-dung-hien-tai.server";
+import { getCurrentUser } from "@/features/auth/api/current-user.server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/shared/components/app-shell";
 
@@ -10,9 +10,9 @@ export default async function AppLayout({
 }: {
   children: ReactNode;
 }) {
-  const nd = await layNguoiDungHienTai();
+  const user = await getCurrentUser();
 
-  if (!nd) {
+  if (!user) {
     const supabase = await createSupabaseServerClient();
     const {
       data: { user },
@@ -30,7 +30,7 @@ export default async function AppLayout({
 
   // Mật khẩu tạm chỉ dùng để vào đặt mật khẩu riêng, không dùng app (D-03).
   // Đọc cờ từ BẢNG chứ không từ claim: đổi xong là hết chặn ngay, không chờ token mới.
-  if (nd.phaiDoiMatKhau) redirect("/doi-mat-khau");
+  if (user.mustChangePassword) redirect("/doi-mat-khau");
 
-  return <AppShell nguoiDung={nd}>{children}</AppShell>;
+  return <AppShell user={user}>{children}</AppShell>;
 }

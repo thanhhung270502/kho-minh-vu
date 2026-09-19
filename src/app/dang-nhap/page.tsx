@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { FormDangNhap } from "@/features/xac-thuc/components/form-dang-nhap";
+import { LoginForm } from "@/features/auth/components/login-form";
 
 export const metadata: Metadata = {
   title: "Đăng nhập",
@@ -19,7 +19,7 @@ export default function DangNhapPage() {
         </div>
 
         <Suspense>
-          <FormDangNhap />
+          <LoginForm />
         </Suspense>
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import { App, Button, Tooltip } from "antd";
 
-import { dienGiaiLoi, laLoiPostgrest, maLoi } from "@/shared/lib/errors";
+import { explainError, isPostgrestError, errorCode } from "@/shared/lib/errors";
 
 import { useGhiSo } from "../hooks/usePhieuNhap";
 import type { ChiTietPhieu, DongPhieu } from "../types";
@@ -44,16 +44,16 @@ export function NutGhiSo({ phieu, dong, coQuyenSua }: Props) {
         } catch (e) {
           // RPC soạn sẵn câu tiếng Việt cho ca nghiệp vụ (thiếu dòng, sai
           // trạng thái, xuất quá tồn) — hiện nguyên văn, đừng dịch lại.
-          if (laLoiPostgrest(e) && e.code === "23514") {
+          if (isPostgrestError(e) && e.code === "23514") {
             message.error(e.message);
             return;
           }
-          if (maLoi(e) === "42501") {
+          if (errorCode(e) === "42501") {
             message.error("Tài khoản không có quyền ghi sổ chứng từ.");
             return;
           }
-          const l = dienGiaiLoi(e);
-          message.error(`${l.tieuDe}. ${l.huongXuLy}`);
+          const l = explainError(e);
+          message.error(`${l.title}. ${l.action}`);
         }
       },
     });

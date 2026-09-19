@@ -3,10 +3,10 @@ import type { NextRequest } from "next/server";
 import { taoFileMau } from "@/features/danh-muc/lib/doc-file-danh-muc.server";
 import type { DongXuat } from "@/features/danh-muc/lib/mau-excel";
 import { docBoLocTuUrl, thamSoRpc } from "@/features/danh-muc/schemas/bo-loc.schema";
-import { layNguoiDungHienTai } from "@/features/xac-thuc/api/nguoi-dung-hien-tai.server";
+import { getCurrentUser } from "@/features/auth/api/current-user.server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { dienGiaiLoi } from "@/shared/lib/errors";
-import { coQuyen } from "@/shared/lib/quyen";
+import { explainError } from "@/shared/lib/errors";
+import { hasPermission } from "@/shared/lib/permissions";
 
 export const runtime = "nodejs";
 
@@ -30,12 +30,12 @@ function tenFile(): string {
 }
 
 export async function GET(request: NextRequest) {
-  const nd = await layNguoiDungHienTai();
+  const nd = await getCurrentUser();
   if (!nd) {
     return Response.json(
       {
-        tieuDe: "Phiên đăng nhập đã hết hạn",
-        huongXuLy: "Đăng nhập lại rồi xuất Excel.",
+        title: "Phiên đăng nhập đã hết hạn",
+        action: "Đăng nhập lại rồi xuất Excel.",
       },
       { status: 401 },
     );
@@ -52,10 +52,10 @@ export async function GET(request: NextRequest) {
   });
 
   if (error) {
-    const loi = dienGiaiLoi(error);
+    const loi = explainError(error);
     return Response.json(
-      { tieuDe: loi.tieuDe, huongXuLy: loi.huongXuLy },
-      { status: loi.loai === "khong-du-quyen" ? 403 : 500 },
+      { title: loi.title, action: loi.action },
+      { status: loi.kind === "forbidden" ? 403 : 500 },
     );
   }
 
@@ -65,8 +65,8 @@ export async function GET(request: NextRequest) {
   if (tong > TOI_DA) {
     return Response.json(
       {
-        tieuDe: `Kết quả có ${tong.toLocaleString("vi-VN")} mã`,
-        huongXuLy: `Xuất tối đa ${TOI_DA.toLocaleString("vi-VN")} mã một lần — lọc hẹp lại (theo nhóm hàng hoặc công đoạn) rồi xuất.`,
+        title: `Kết quả có ${tong.toLocaleString("vi-VN")} mã`,
+        action: `Xuất tối đa ${TOI_DA.toLocaleString("vi-VN")} mã một lần — lọc hẹp lại (theo nhóm hàng hoặc công đoạn) rồi xuất.`,
       },
       { status: 422 },
     );
@@ -74,12 +74,12 @@ export async function GET(request: NextRequest) {
 
   const { data: kho, error: loiKho } = await supabase.from("kho").select("id, ten");
   if (loiKho) {
-    const loi = dienGiaiLoi(loiKho);
-    return Response.json({ tieuDe: loi.tieuDe, huongXuLy: loi.huongXuLy }, { status: 500 });
+    const loi = explainError(loiKho);
+    return Response.json({ title: loi.title, action: loi.action }, { status: 500 });
   }
 
   const tenKho = new Map((kho ?? []).map((k) => [k.id, k.ten]));
-  const coGiaVon = coQuyen(nd.vaiTro, "xem_gia_von");
+  const coGiaVon = hasPermission(nd.role, "view-cost");
 
   const dongXuat: DongXuat[] = dong.map((d, i) => ({
     dong: i + 2,

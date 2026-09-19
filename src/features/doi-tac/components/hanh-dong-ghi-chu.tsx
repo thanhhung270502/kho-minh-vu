@@ -13,7 +13,7 @@ import {
 } from "antd";
 import { useState } from "react";
 
-import { dienGiaiLoi } from "@/shared/lib/errors";
+import { explainError } from "@/shared/lib/errors";
 
 import type { DongGhiChu, LoaiQuyet, QuyetDinh } from "../api/ra-ghi-chu.api";
 import { useQuyetGhiChu, useTimKhach } from "../hooks/useRaGhiChu";
@@ -71,12 +71,12 @@ export function HanhDongGhiChu({ dong }: Props) {
       message.success(`Đã lưu: ${rutGon(dong.gia_tri)}`);
       setMo(null);
     } catch (e) {
-      const loi = dienGiaiLoi(e);
-      message.error(`${loi.tieuDe}. ${loi.huongXuLy}`);
+      const loi = explainError(e);
+      message.error(`${loi.title}. ${loi.action}`);
     }
   }
 
-  const dangLuu = quyet.isPending;
+  const saving = quyet.isPending;
 
   const noiDung: Record<LoaiQuyet, React.ReactNode> = {
     KHACH: (
@@ -100,7 +100,7 @@ export function HanhDongGhiChu({ dong }: Props) {
         />
         <Button
           type="primary"
-          loading={dangLuu}
+          loading={saving}
           disabled={!ten.trim()}
           onClick={() =>
             void luu({
@@ -124,7 +124,7 @@ export function HanhDongGhiChu({ dong }: Props) {
         />
         <Button
           type="primary"
-          loading={dangLuu}
+          loading={saving}
           disabled={!tenSale.trim()}
           onClick={() => void luu({ loai: "SALE", tenSale })}
         >
@@ -151,7 +151,7 @@ export function HanhDongGhiChu({ dong }: Props) {
         />
         <Button
           type="primary"
-          loading={dangLuu}
+          loading={saving}
           disabled={!tenSale.trim() || (!khachId && !ten.trim())}
           onClick={() =>
             void luu({
@@ -169,10 +169,10 @@ export function HanhDongGhiChu({ dong }: Props) {
     BO_QUA: null,
   };
 
-  const hanhDong: Array<{ loai: LoaiQuyet; nhan: string }> = [
-    { loai: "KHACH", nhan: "Tạo khách" },
-    { loai: "SALE", nhan: "Là sale" },
-    { loai: "KHACH_VA_SALE", nhan: "Khách + sale" },
+  const actions: Array<{ loai: LoaiQuyet; label: string }> = [
+    { loai: "KHACH", label: "Tạo khách" },
+    { loai: "SALE", label: "Là sale" },
+    { loai: "KHACH_VA_SALE", label: "Khách + sale" },
   ];
 
   // "Gộp vào khách" tách riêng vì nội dung popover chỉ có ô chọn.
@@ -181,7 +181,7 @@ export function HanhDongGhiChu({ dong }: Props) {
       <ChonKhach value={khachId} onChange={setKhachId} />
       <Button
         type="primary"
-        loading={dangLuu}
+        loading={saving}
         disabled={!khachId}
         onClick={() => void luu({ loai: "KHACH", doiTacId: khachId })}
       >
@@ -216,7 +216,7 @@ export function HanhDongGhiChu({ dong }: Props) {
           trigger={["click"]}
           menu={{
             items: [
-              ...hanhDong.map((h) => ({ key: h.loai, label: h.nhan })),
+              ...actions.map((h) => ({ key: h.loai, label: h.label })),
               { key: "GOP", label: "Gộp vào khách có sẵn" },
               { type: "divider" as const },
               { key: "BO_QUA", label: "Bỏ qua" },
@@ -238,7 +238,7 @@ export function HanhDongGhiChu({ dong }: Props) {
 
   return (
     <Space size={4} wrap>
-      {hanhDong.map((h) => (
+      {actions.map((h) => (
         <Popover
           key={h.loai}
           open={mo === h.loai}
@@ -247,8 +247,8 @@ export function HanhDongGhiChu({ dong }: Props) {
           content={noiDung[h.loai]}
           onOpenChange={(v) => setMo(v ? h.loai : null)}
         >
-          <Button size="small" disabled={dangLuu && mo !== h.loai}>
-            {h.nhan}
+          <Button size="small" disabled={saving && mo !== h.loai}>
+            {h.label}
           </Button>
         </Popover>
       ))}
@@ -260,14 +260,14 @@ export function HanhDongGhiChu({ dong }: Props) {
         content={gop}
         onOpenChange={(v) => setMo(v ? "GOP" : null)}
       >
-        <Button size="small" disabled={dangLuu}>
+        <Button size="small" disabled={saving}>
           Gộp
         </Button>
       </Popover>
 
       <Button
         size="small"
-        loading={dangLuu}
+        loading={saving}
         onClick={() => void luu({ loai: "BO_QUA" })}
       >
         Bỏ qua

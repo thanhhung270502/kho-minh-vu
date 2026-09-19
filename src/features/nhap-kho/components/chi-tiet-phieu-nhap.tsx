@@ -22,8 +22,8 @@ export function ChiTietPhieuNhap({ id, quyen }: { id: string; quyen: QuyenPhieuN
   return (
     <QueryState
       query={chiTiet}
-      laRong={(d) => d === null}
-      moTaRong={
+      isEmpty={(d) => d === null}
+      emptyDescription={
         <div className="flex flex-col items-center gap-3">
           <span>Không tìm thấy phiếu này, hoặc phiếu không thuộc kho bạn được phân công.</span>
           <Link href="/nhap-kho">
@@ -45,9 +45,9 @@ export function ChiTietPhieuNhap({ id, quyen }: { id: string; quyen: QuyenPhieuN
             </Link>
 
             <PageHeader
-              tieuDe={phieu.so_ct}
-              moTa={phieu.ten_doi_tac ?? "Chưa chọn nhà cung cấp"}
-              hanhDong={
+              title={phieu.so_ct}
+              description={phieu.ten_doi_tac ?? "Chưa chọn nhà cung cấp"}
+              actions={
                 <Space wrap>
                   <Link href={`/nhap-kho/${id}/in`} target="_blank">
                     <Button>In phiếu</Button>
@@ -68,14 +68,14 @@ export function ChiTietPhieuNhap({ id, quyen }: { id: string; quyen: QuyenPhieuN
             <DauPhieuNhap phieu={phieu} coQuyenSua={quyen.sua} />
 
             <div className="mt-4">
-              <QueryState query={dong} laRong={() => false} moTaRong="">
+              <QueryState query={dong} isEmpty={() => false} emptyDescription="">
                 {(d) => (
                   <BangDongNhap phieu={phieu} dong={d} coQuyenSua={quyen.sua} />
                 )}
               </QueryState>
             </div>
 
-            <HopHuyPhieu phieu={phieu} open={huyMo} onDong={() => setHuyMo(false)} />
+            <HopHuyPhieu phieu={phieu} open={huyMo} onClose={() => setHuyMo(false)} />
           </>
         );
       }}

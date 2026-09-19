@@ -11,7 +11,7 @@
  * success/warning/danger đã trích xuất được, chưa phải giá trị trích xuất
  * trực tiếp — cần trích xuất lại khi có trang dashboard thật của KiotViet.
  */
-export const MAU_BIEU_DO = [
+export const CHART_COLORS = [
   "#0070F4",
   "#00B63E",
   "#FF8800",
@@ -21,9 +21,9 @@ export const MAU_BIEU_DO = [
 ] as const;
 
 /** Màu ngữ nghĩa — dùng cho viền trái card KPI và trạng thái. */
-export const MAU_NGU_NGHIA = {
-  chinh: "#0070F4",
-  tot: "#00B63E",
-  canhBao: "#FF8800",
-  xau: "#FF0000",
+export const SEMANTIC_COLORS = {
+  primary: "#0070F4",
+  success: "#00B63E",
+  warning: "#FF8800",
+  danger: "#FF0000",
 } as const;

@@ -20,8 +20,8 @@ async function tai(url: string): Promise<{ ok: true } | { ok: false; loi: string
 
   if (!res.ok) {
     try {
-      const j = (await res.json()) as { tieuDe?: string; huongXuLy?: string };
-      return { ok: false, loi: `${j.tieuDe ?? "Không tải được file"}. ${j.huongXuLy ?? ""}` };
+      const j = (await res.json()) as { title?: string; action?: string };
+      return { ok: false, loi: `${j.title ?? "Không tải được file"}. ${j.action ?? ""}` };
     } catch {
       return { ok: false, loi: "Không tải được file. Thử lại sau ít phút." };
     }

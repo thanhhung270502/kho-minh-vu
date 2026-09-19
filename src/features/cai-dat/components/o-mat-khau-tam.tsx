@@ -9,7 +9,7 @@ import { App, Button, Input, Space } from "antd";
  */
 const BANG_CHU = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-export function sinhMatKhauTam(dai = 10): string {
+export function generateTempPassword(dai = 10): string {
   const so = new Uint32Array(dai);
   crypto.getRandomValues(so);
   return Array.from(so, (n) => BANG_CHU[n % BANG_CHU.length]).join("");
@@ -41,7 +41,7 @@ export function OMatKhauTam({ value, onChange, autoFocus }: Props) {
         placeholder="Mật khẩu tạm"
         onChange={(e) => onChange(e.target.value)}
       />
-      <Button onClick={() => onChange(sinhMatKhauTam())}>Tạo ngẫu nhiên</Button>
+      <Button onClick={() => onChange(generateTempPassword())}>Tạo ngẫu nhiên</Button>
       <Button disabled={!value} onClick={() => void sao()}>
         Sao chép
       </Button>

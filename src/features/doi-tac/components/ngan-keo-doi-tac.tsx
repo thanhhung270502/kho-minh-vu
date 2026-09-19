@@ -5,8 +5,8 @@ import { App, Alert, Form, Input, Radio, Skeleton, Switch } from "antd";
 import { useEffect } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
-import { NganKeoForm } from "@/shared/components/ngan-keo-form";
-import { dienGiaiLoi, maLoi } from "@/shared/lib/errors";
+import { FormDrawer } from "@/shared/components/form-drawer";
+import { explainError, errorCode } from "@/shared/lib/errors";
 
 import { useChiTietDoiTac, useGoiYMaDoiTac, useLuuDoiTac } from "../hooks/useDoiTac";
 import { doiTacSchema, type DoiTacForm, type DoiTacLuu } from "../schemas/doi-tac.schema";
@@ -25,9 +25,9 @@ const MAC_DINH: DoiTacForm = {
   dang_hoat_dong: true,
 };
 
-type Props = { id: string | null; open: boolean; onDong: () => void };
+type Props = { id: string | null; open: boolean; onClose: () => void };
 
-export function NganKeoDoiTac({ id, open, onDong }: Props) {
+export function NganKeoDoiTac({ id, open, onClose }: Props) {
   const { message } = App.useApp();
   const chiTiet = useChiTietDoiTac(open ? id : null);
   const luu = useLuuDoiTac();
@@ -81,33 +81,33 @@ export function NganKeoDoiTac({ id, open, onDong }: Props) {
     setValue("ma", maGoiY.data);
   }, [open, taoMoi, maGoiY.data, getFieldState, setValue]);
 
-  const onLuu = handleSubmit(async (v) => {
+  const onSave = handleSubmit(async (v) => {
     try {
       await luu.mutateAsync({ id, giaTri: v });
       message.success(taoMoi ? "Đã tạo đối tác" : "Đã lưu đối tác");
-      onDong();
+      onClose();
     } catch (e) {
-      if (maLoi(e) === "23505") {
+      if (errorCode(e) === "23505") {
         setError("ma", { message: "Mã này đã có. Dùng mã khác." });
         return;
       }
-      const loi = dienGiaiLoi(e);
-      setError("root", { message: `${loi.tieuDe}. ${loi.huongXuLy}` });
+      const loi = explainError(e);
+      setError("root", { message: `${loi.title}. ${loi.action}` });
     }
   });
 
   return (
-    <NganKeoForm
+    <FormDrawer
       open={open}
-      tieuDe={taoMoi ? "Thêm đối tác" : "Sửa đối tác"}
-      dangLuu={luu.isPending}
-      onDong={onDong}
-      onLuu={() => void onLuu()}
+      title={taoMoi ? "Thêm đối tác" : "Sửa đối tác"}
+      saving={luu.isPending}
+      onClose={onClose}
+      onSave={() => void onSave()}
     >
       {id && chiTiet.isPending ? (
         <Skeleton active paragraph={{ rows: 8 }} />
       ) : (
-        <Form layout="vertical" onFinish={() => void onLuu()}>
+        <Form layout="vertical" onFinish={() => void onSave()}>
           {errors.root ? (
             <Alert className="mb-4" type="error" showIcon title={errors.root.message} />
           ) : null}
@@ -228,6 +228,6 @@ export function NganKeoDoiTac({ id, open, onDong }: Props) {
           ) : null}
         </Form>
       )}
-    </NganKeoForm>
+    </FormDrawer>
   );
 }

@@ -3,14 +3,14 @@
 import { Alert, App, Input, Modal } from "antd";
 import { useState } from "react";
 
-import { dienGiaiLoi, laLoiPostgrest, maLoi } from "@/shared/lib/errors";
+import { explainError, isPostgrestError, errorCode } from "@/shared/lib/errors";
 
 import { useHuyPhieu } from "../hooks/usePhieuNhap";
 import type { ChiTietPhieu } from "../types";
 
-type Props = { phieu: ChiTietPhieu; open: boolean; onDong: () => void };
+type Props = { phieu: ChiTietPhieu; open: boolean; onClose: () => void };
 
-export function HopHuyPhieu({ phieu, open, onDong }: Props) {
+export function HopHuyPhieu({ phieu, open, onClose }: Props) {
   const { message } = App.useApp();
   const huy = useHuyPhieu(phieu.id);
   const [lyDo, setLyDo] = useState("");
@@ -22,7 +22,7 @@ export function HopHuyPhieu({ phieu, open, onDong }: Props) {
     if (huy.isPending) return;
     setLyDo("");
     setLoi(null);
-    onDong();
+    onClose();
   }
 
   async function chay() {
@@ -36,16 +36,16 @@ export function HopHuyPhieu({ phieu, open, onDong }: Props) {
       message.success(`Đã hủy phiếu ${phieu.so_ct}`);
       dong();
     } catch (e) {
-      if (maLoi(e) === "42501") {
+      if (errorCode(e) === "42501") {
         setLoi("Chỉ quản lý hủy được phiếu nhập đã ghi sổ.");
         return;
       }
-      if (laLoiPostgrest(e) && e.code === "23514") {
+      if (isPostgrestError(e) && e.code === "23514") {
         setLoi(e.message);
         return;
       }
-      const l = dienGiaiLoi(e);
-      setLoi(`${l.tieuDe}. ${l.huongXuLy}`);
+      const l = explainError(e);
+      setLoi(`${l.title}. ${l.action}`);
     }
   }
 

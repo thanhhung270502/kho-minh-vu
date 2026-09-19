@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { tenDangNhapThanhEmail } from "@/shared/lib/chuan-hoa";
-import { dienGiaiLoi } from "@/shared/lib/errors";
+import { usernameToEmail } from "@/shared/lib/text";
+import { explainError } from "@/shared/lib/errors";
 
 import {
   capNhatNguoiDungSchema,
@@ -48,7 +48,7 @@ async function layPhienQuanLy(): Promise<PhienQuanLy | { loi: string }> {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (error) return { loi: dienGiaiLoi(error).huongXuLy };
+  if (error) return { loi: explainError(error).action };
   if (!data?.dang_hoat_dong || data.vai_tro !== "quan_ly") {
     return { loi: "Chỉ quản lý được quản trị tài khoản." };
   }
@@ -120,8 +120,8 @@ export async function taoNguoiDung(input: TaoNguoiDungInput): Promise<KetQuaHanh
 
   const admin = createSupabaseAdminClient();
   const { data: taoMoi, error: loiTao } = await admin.auth.admin.createUser({
-    email: tenDangNhapThanhEmail(v.tenDangNhap),
-    password: v.matKhauTam,
+    email: usernameToEmail(v.username),
+    password: v.tempPassword,
     email_confirm: true,
   });
 
@@ -130,18 +130,18 @@ export async function taoNguoiDung(input: TaoNguoiDungInput): Promise<KetQuaHanh
       loiTao?.code === "email_exists" || loiTao?.message?.includes("already been registered");
     return {
       ok: false,
-      truong: trung ? "tenDangNhap" : undefined,
+      truong: trung ? "username" : undefined,
       thongBao: trung
         ? "Tên đăng nhập này đã có người dùng. Chọn tên khác."
-        : (loiTao ? dienGiaiLoi(loiTao).huongXuLy : "Không tạo được tài khoản."),
+        : (loiTao ? explainError(loiTao).action : "Không tạo được tài khoản."),
     };
   }
 
   const { error: loiHoSo } = await phien.supabase.rpc("luu_ho_so_nguoi_dung", {
     p_id: taoMoi.user.id,
-    p_ho_ten: v.hoTen,
-    p_ten_dang_nhap: v.tenDangNhap,
-    p_vai_tro: v.vaiTro,
+    p_ho_ten: v.fullName,
+    p_ten_dang_nhap: v.username,
+    p_vai_tro: v.role,
     p_kho_ids: v.khoIds,
     p_phai_doi_mat_khau: true,
   });
@@ -149,7 +149,7 @@ export async function taoNguoiDung(input: TaoNguoiDungInput): Promise<KetQuaHanh
   if (loiHoSo) {
     // Hồ sơ hỏng thì tài khoản Auth vừa tạo thành rác: xóa để lần sau tạo lại được.
     await admin.auth.admin.deleteUser(taoMoi.user.id);
-    return { ok: false, thongBao: dienGiaiLoi(loiHoSo).huongXuLy };
+    return { ok: false, thongBao: explainError(loiHoSo).action };
   }
 
   revalidatePath("/cai-dat/nguoi-dung");
@@ -169,31 +169,31 @@ export async function capNhatNguoiDung(
   const cu = await docHoSo(phien, v.id);
   if (!cu) return { ok: false, thongBao: "Không tìm thấy tài khoản này." };
 
-  const haQuyenQuanLy = cu.vai_tro === "quan_ly" && v.vaiTro !== "quan_ly";
+  const haQuyenQuanLy = cu.vai_tro === "quan_ly" && v.role !== "quan_ly";
   if (haQuyenQuanLy && !(await conQuanLyKhac(phien, v.id))) {
     return {
       ok: false,
-      truong: "vaiTro",
+      truong: "role",
       thongBao: "Phải còn ít nhất một quản lý đang hoạt động.",
     };
   }
 
   const { error } = await phien.supabase.rpc("luu_ho_so_nguoi_dung", {
     p_id: v.id,
-    p_ho_ten: v.hoTen,
+    p_ho_ten: v.fullName,
     p_ten_dang_nhap: cu.ten_dang_nhap ?? "",
-    p_vai_tro: v.vaiTro,
+    p_vai_tro: v.role,
     p_kho_ids: v.khoIds,
     p_phai_doi_mat_khau: cu.phai_doi_mat_khau,
   });
 
-  if (error) return { ok: false, thongBao: dienGiaiLoi(error).huongXuLy };
+  if (error) return { ok: false, thongBao: explainError(error).action };
 
   const doiKho =
     cu.khoIds.length !== v.khoIds.length ||
     cu.khoIds.some((k) => !v.khoIds.includes(k));
 
-  if (cu.vai_tro !== v.vaiTro || doiKho) await thuHoiPhien(v.id);
+  if (cu.vai_tro !== v.role || doiKho) await thuHoiPhien(v.id);
 
   revalidatePath("/cai-dat/nguoi-dung");
   return { ok: true };
@@ -218,13 +218,13 @@ export async function doiTrangThaiNguoiDung(input: {
     .update({ dang_hoat_dong: input.dangHoatDong })
     .eq("id", input.id);
 
-  if (error) return { ok: false, thongBao: dienGiaiLoi(error).huongXuLy };
+  if (error) return { ok: false, thongBao: explainError(error).action };
 
   const admin = createSupabaseAdminClient();
   const { error: loiBan } = await admin.auth.admin.updateUserById(input.id, {
     ban_duration: input.dangHoatDong ? "none" : KHOA_VO_THOI_HAN,
   });
-  if (loiBan) return { ok: false, thongBao: dienGiaiLoi(loiBan).huongXuLy };
+  if (loiBan) return { ok: false, thongBao: explainError(loiBan).action };
 
   if (!input.dangHoatDong) await thuHoiPhien(input.id);
 
@@ -247,9 +247,9 @@ export async function datLaiMatKhau(
 
   const admin = createSupabaseAdminClient();
   const { error: loiMatKhau } = await admin.auth.admin.updateUserById(v.id, {
-    password: v.matKhauTam,
+    password: v.tempPassword,
   });
-  if (loiMatKhau) return { ok: false, truong: "matKhauTam", thongBao: dienGiaiLoi(loiMatKhau).huongXuLy };
+  if (loiMatKhau) return { ok: false, truong: "tempPassword", thongBao: explainError(loiMatKhau).action };
 
   // Mật khẩu tạm chỉ dùng một lần: bật lại cờ để người dùng phải tự đặt mật khẩu riêng.
   const { error } = await phien.supabase.rpc("luu_ho_so_nguoi_dung", {
@@ -260,7 +260,7 @@ export async function datLaiMatKhau(
     p_kho_ids: cu.khoIds,
     p_phai_doi_mat_khau: true,
   });
-  if (error) return { ok: false, thongBao: dienGiaiLoi(error).huongXuLy };
+  if (error) return { ok: false, thongBao: explainError(error).action };
 
   await thuHoiPhien(v.id);
 

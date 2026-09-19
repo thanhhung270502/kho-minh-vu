@@ -6,9 +6,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useTransition } from "react";
 import { Controller, useForm, useWatch, type Resolver } from "react-hook-form";
 
-import { NganKeoForm } from "@/shared/components/ngan-keo-form";
-import { chuanHoaTenDangNhap } from "@/shared/lib/chuan-hoa";
-import { NHAN_VAI_TRO, type VaiTro } from "@/shared/lib/quyen";
+import { FormDrawer } from "@/shared/components/form-drawer";
+import { normalizeUsername } from "@/shared/lib/text";
+import { ROLE_LABELS, type Role } from "@/shared/lib/permissions";
 
 import { capNhatNguoiDung, taoNguoiDung } from "../actions/nguoi-dung.actions";
 import {
@@ -23,9 +23,9 @@ import {
   formTaoNguoiDungSchema,
   VAI_TRO,
 } from "../schemas/nguoi-dung.schema";
-import { OMatKhauTam, sinhMatKhauTam } from "./o-mat-khau-tam";
+import { OMatKhauTam, generateTempPassword } from "./o-mat-khau-tam";
 
-const MO_TA_VAI_TRO: Record<VaiTro, string> = {
+const MO_TA_VAI_TRO: Record<Role, string> = {
   quan_ly: "Toàn quyền, kể cả Cài đặt và giá bán",
   van_phong: "Sửa danh mục, đối tác, xem giá vốn",
   thu_kho: "Chỉ kho được gán, không xem giá vốn",
@@ -33,22 +33,22 @@ const MO_TA_VAI_TRO: Record<VaiTro, string> = {
 };
 
 type FormNguoiDung = {
-  hoTen: string;
-  tenDangNhap: string;
-  vaiTro: VaiTro;
+  fullName: string;
+  username: string;
+  role: Role;
   khoIds: string[];
-  matKhauTam: string;
+  tempPassword: string;
 };
 
-type Props = { open: boolean; nguoiDung: DongNguoiDung | null; onDong: () => void };
+type Props = { open: boolean; user: DongNguoiDung | null; onClose: () => void };
 
-export function NganKeoNguoiDung({ open, nguoiDung, onDong }: Props) {
+export function NganKeoNguoiDung({ open, user, onClose }: Props) {
   const { message, notification } = App.useApp();
   const queryClient = useQueryClient();
   const [dangChay, batDau] = useTransition();
   const kho = useQuery({ queryKey: khoaKhoHoatDong, queryFn: layKhoHoatDong });
 
-  const taoMoi = !nguoiDung;
+  const taoMoi = !user;
 
   const {
     control,
@@ -63,11 +63,11 @@ export function NganKeoNguoiDung({ open, nguoiDung, onDong }: Props) {
       taoMoi ? formTaoNguoiDungSchema : formSuaNguoiDungSchema,
     ) as unknown as Resolver<FormNguoiDung>,
     defaultValues: {
-      hoTen: "",
-      tenDangNhap: "",
-      vaiTro: "thu_kho",
+      fullName: "",
+      username: "",
+      role: "thu_kho",
       khoIds: [],
-      matKhauTam: "",
+      tempPassword: "",
     },
   });
 
@@ -75,42 +75,42 @@ export function NganKeoNguoiDung({ open, nguoiDung, onDong }: Props) {
     if (!open) return;
 
     reset(
-      nguoiDung
+      user
         ? {
-            hoTen: nguoiDung.ho_ten,
-            tenDangNhap: nguoiDung.ten_dang_nhap ?? "",
-            vaiTro: nguoiDung.vai_tro,
-            khoIds: khoCuaNguoiDung(nguoiDung).map((k) => k.id),
-            matKhauTam: "",
+            fullName: user.ho_ten,
+            username: user.ten_dang_nhap ?? "",
+            role: user.vai_tro,
+            khoIds: khoCuaNguoiDung(user).map((k) => k.id),
+            tempPassword: "",
           }
         : {
-            hoTen: "",
-            tenDangNhap: "",
-            vaiTro: "thu_kho",
+            fullName: "",
+            username: "",
+            role: "thu_kho",
             khoIds: [],
-            matKhauTam: sinhMatKhauTam(),
+            tempPassword: generateTempPassword(),
           },
     );
-  }, [open, nguoiDung, reset]);
+  }, [open, user, reset]);
 
-  const vaiTro = useWatch({ control, name: "vaiTro" });
-  const tenDangNhap = useWatch({ control, name: "tenDangNhap" });
+  const role = useWatch({ control, name: "role" });
+  const username = useWatch({ control, name: "username" });
 
-  const onLuu = handleSubmit((v) => {
+  const onSave = handleSubmit((v) => {
     batDau(async () => {
-      const kq = nguoiDung
+      const kq = user
         ? await capNhatNguoiDung({
-            id: nguoiDung.id,
-            hoTen: v.hoTen,
-            vaiTro: v.vaiTro,
-            khoIds: v.vaiTro === "thu_kho" ? v.khoIds : [],
+            id: user.id,
+            fullName: v.fullName,
+            role: v.role,
+            khoIds: v.role === "thu_kho" ? v.khoIds : [],
           })
         : await taoNguoiDung({
-            hoTen: v.hoTen,
-            tenDangNhap: v.tenDangNhap,
-            vaiTro: v.vaiTro,
-            khoIds: v.vaiTro === "thu_kho" ? v.khoIds : [],
-            matKhauTam: v.matKhauTam,
+            fullName: v.fullName,
+            username: v.username,
+            role: v.role,
+            khoIds: v.role === "thu_kho" ? v.khoIds : [],
+            tempPassword: v.tempPassword,
           });
 
       if (!kq.ok) {
@@ -125,10 +125,10 @@ export function NganKeoNguoiDung({ open, nguoiDung, onDong }: Props) {
       void queryClient.invalidateQueries({ queryKey: khoaNguoiDung });
 
       if (taoMoi) {
-        message.success(`Đã tạo tài khoản ${chuanHoaTenDangNhap(v.tenDangNhap)}`);
+        message.success(`Đã tạo tài khoản ${normalizeUsername(v.username)}`);
       } else {
-        const doiVaiTro = nguoiDung.vai_tro !== v.vaiTro;
-        const khoCu = khoCuaNguoiDung(nguoiDung).map((k) => k.id);
+        const doiVaiTro = user.vai_tro !== v.role;
+        const khoCu = khoCuaNguoiDung(user).map((k) => k.id);
         const doiKho =
           khoCu.length !== v.khoIds.length || khoCu.some((k) => !v.khoIds.includes(k));
 
@@ -143,30 +143,30 @@ export function NganKeoNguoiDung({ open, nguoiDung, onDong }: Props) {
         }
       }
 
-      onDong();
+      onClose();
     });
   });
 
   return (
-    <NganKeoForm
+    <FormDrawer
       open={open}
-      tieuDe={taoMoi ? "Thêm tài khoản" : "Sửa tài khoản"}
-      dangLuu={dangChay}
-      onDong={onDong}
-      onLuu={() => void onLuu()}
+      title={taoMoi ? "Thêm tài khoản" : "Sửa tài khoản"}
+      saving={dangChay}
+      onClose={onClose}
+      onSave={() => void onSave()}
     >
-      <Form layout="vertical" onFinish={() => void onLuu()}>
+      <Form layout="vertical" onFinish={() => void onSave()}>
         {errors.root ? (
           <Alert className="mb-4" type="error" showIcon title={errors.root.message} />
         ) : null}
 
         <Form.Item
           label="Họ tên"
-          validateStatus={errors.hoTen ? "error" : undefined}
-          help={errors.hoTen?.message}
+          validateStatus={errors.fullName ? "error" : undefined}
+          help={errors.fullName?.message}
         >
           <Controller
-            name="hoTen"
+            name="fullName"
             control={control}
             render={({ field }) => <Input {...field} autoFocus />}
           />
@@ -175,15 +175,15 @@ export function NganKeoNguoiDung({ open, nguoiDung, onDong }: Props) {
         {taoMoi ? (
           <Form.Item
             label="Tên đăng nhập"
-            validateStatus={errors.tenDangNhap ? "error" : undefined}
+            validateStatus={errors.username ? "error" : undefined}
             help={
-              errors.tenDangNhap?.message ?? (
+              errors.username?.message ?? (
                 <span>
                   Nhân viên gõ đúng tên này khi đăng nhập
-                  {tenDangNhap ? (
+                  {username ? (
                     <>
                       {" — sẽ lưu thành "}
-                      <code>{chuanHoaTenDangNhap(tenDangNhap)}</code>
+                      <code>{normalizeUsername(username)}</code>
                     </>
                   ) : null}
                 </span>
@@ -191,7 +191,7 @@ export function NganKeoNguoiDung({ open, nguoiDung, onDong }: Props) {
             }
           >
             <Controller
-              name="tenDangNhap"
+              name="username"
               control={control}
               render={({ field }) => <Input {...field} />}
             />
@@ -199,7 +199,7 @@ export function NganKeoNguoiDung({ open, nguoiDung, onDong }: Props) {
         ) : (
           <Form.Item label="Tên đăng nhập">
             <Typography.Text className="font-mono">
-              {nguoiDung.ten_dang_nhap ?? "(chưa đặt)"}
+              {user.ten_dang_nhap ?? "(chưa đặt)"}
             </Typography.Text>
             <br />
             <Typography.Text type="secondary">
@@ -211,17 +211,17 @@ export function NganKeoNguoiDung({ open, nguoiDung, onDong }: Props) {
 
         <Form.Item
           label="Vai trò"
-          validateStatus={errors.vaiTro ? "error" : undefined}
-          help={errors.vaiTro?.message}
+          validateStatus={errors.role ? "error" : undefined}
+          help={errors.role?.message}
         >
           <Controller
-            name="vaiTro"
+            name="role"
             control={control}
             render={({ field }) => (
               <Radio.Group {...field} className="flex flex-col gap-2">
                 {VAI_TRO.map((v) => (
                   <Radio key={v} value={v}>
-                    {NHAN_VAI_TRO[v]}
+                    {ROLE_LABELS[v]}
                     <div className="text-xs text-gray-500">{MO_TA_VAI_TRO[v]}</div>
                   </Radio>
                 ))}
@@ -230,7 +230,7 @@ export function NganKeoNguoiDung({ open, nguoiDung, onDong }: Props) {
           />
         </Form.Item>
 
-        {vaiTro === "thu_kho" ? (
+        {role === "thu_kho" ? (
           <Form.Item
             label="Kho được vào"
             validateStatus={errors.khoIds ? "error" : undefined}
@@ -253,14 +253,14 @@ export function NganKeoNguoiDung({ open, nguoiDung, onDong }: Props) {
         {taoMoi ? (
           <Form.Item
             label="Mật khẩu tạm"
-            validateStatus={errors.matKhauTam ? "error" : undefined}
+            validateStatus={errors.tempPassword ? "error" : undefined}
             help={
-              errors.matKhauTam?.message ??
+              errors.tempPassword?.message ??
               "Đưa mật khẩu này tận tay nhân viên. Họ phải đổi ở lần đăng nhập đầu."
             }
           >
             <Controller
-              name="matKhauTam"
+              name="tempPassword"
               control={control}
               render={({ field }) => (
                 <OMatKhauTam value={field.value} onChange={field.onChange} />
@@ -269,6 +269,6 @@ export function NganKeoNguoiDung({ open, nguoiDung, onDong }: Props) {
           </Form.Item>
         ) : null}
       </Form>
-    </NganKeoForm>
+    </FormDrawer>
   );
 }

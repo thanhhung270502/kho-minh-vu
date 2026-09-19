@@ -30,10 +30,10 @@ const KINH_DOANH = [
   { value: "tat_ca", label: "Tất cả" },
 ];
 
-function NhomLoc({ nhan, children }: { nhan: string; children: ReactNode }) {
+function NhomLoc({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <label className="mb-1 block text-[13px] text-chu-phu">{nhan}</label>
+      <label className="mb-1 block text-[13px] text-chu-phu">{label}</label>
       {children}
     </div>
   );
@@ -47,7 +47,7 @@ export function PanelLocSanPham({ boLoc, danhMucPhu, onDoi }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <NhomLoc nhan="Nhóm hàng">
+      <NhomLoc label="Nhóm hàng">
         <Select
           allowClear
           showSearch
@@ -60,7 +60,7 @@ export function PanelLocSanPham({ boLoc, danhMucPhu, onDoi }: Props) {
         />
       </NhomLoc>
 
-      <NhomLoc nhan="Công đoạn">
+      <NhomLoc label="Công đoạn">
         <Select
           allowClear
           showSearch
@@ -88,7 +88,7 @@ export function PanelLocSanPham({ boLoc, danhMucPhu, onDoi }: Props) {
         />
       </NhomLoc>
 
-      <NhomLoc nhan="Đơn vị tính">
+      <NhomLoc label="Đơn vị tính">
         <Select
           allowClear
           showSearch
@@ -101,7 +101,7 @@ export function PanelLocSanPham({ boLoc, danhMucPhu, onDoi }: Props) {
         />
       </NhomLoc>
 
-      <NhomLoc nhan="Tồn">
+      <NhomLoc label="Tồn">
         <Select
           allowClear
           className="w-full"
@@ -112,7 +112,7 @@ export function PanelLocSanPham({ boLoc, danhMucPhu, onDoi }: Props) {
         />
       </NhomLoc>
 
-      <NhomLoc nhan="Kinh doanh">
+      <NhomLoc label="Kinh doanh">
         <Select
           className="w-full"
           value={boLoc.kinhDoanh}

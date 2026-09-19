@@ -50,11 +50,11 @@ export function taoAnonClient(): SupabaseClient<Database> {
 }
 
 export const TAI_KHOAN_MAU = [
-  { email: "quanly@khominhvu.local",   hoTen: "Quản lý demo",    vaiTro: "quan_ly"   as const, maKho: [] as string[] },
-  { email: "vanphong@khominhvu.local", hoTen: "Văn phòng demo",  vaiTro: "van_phong" as const, maKho: [] as string[] },
-  { email: "thukho1@khominhvu.local",  hoTen: "Thủ kho K1",      vaiTro: "thu_kho"   as const, maKho: ["K1"] },
-  { email: "thukho2@khominhvu.local",  hoTen: "Thủ kho K1 + K2", vaiTro: "thu_kho"   as const, maKho: ["K1", "K2"] },
-  { email: "chixem@khominhvu.local",   hoTen: "Chỉ xem demo",    vaiTro: "chi_xem"   as const, maKho: [] as string[] },
+  { email: "quanly@khominhvu.local",   fullName: "Quản lý demo",    role: "quan_ly"   as const, maKho: [] as string[] },
+  { email: "vanphong@khominhvu.local", fullName: "Văn phòng demo",  role: "van_phong" as const, maKho: [] as string[] },
+  { email: "thukho1@khominhvu.local",  fullName: "Thủ kho K1",      role: "thu_kho"   as const, maKho: ["K1"] },
+  { email: "thukho2@khominhvu.local",  fullName: "Thủ kho K1 + K2", role: "thu_kho"   as const, maKho: ["K1", "K2"] },
+  { email: "chixem@khominhvu.local",   fullName: "Chỉ xem demo",    role: "chi_xem"   as const, maKho: [] as string[] },
 ];
 
 export function matKhauMau(): string {

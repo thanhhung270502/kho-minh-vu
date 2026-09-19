@@ -4,27 +4,27 @@ import { Typography } from "antd";
 import type { ReactNode } from "react";
 
 type PageHeaderProps = {
-  tieuDe: string;
-  moTa?: ReactNode;
+  title: string;
+  description?: ReactNode;
   /** Nút hành động chính của màn hình (Tạo lệnh, Xuất Excel...). */
-  hanhDong?: ReactNode;
+  actions?: ReactNode;
 };
 
-export function PageHeader({ tieuDe, moTa, hanhDong }: PageHeaderProps) {
+export function PageHeader({ title, description, actions }: PageHeaderProps) {
   return (
     <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
       <div>
         {/* `mb-1` không cần `!` vì @layer utilities đứng sau @layer antd —
             layer quyết định thắng thua trước cả độ ưu tiên selector. */}
         <Typography.Title level={4} className="mb-1">
-          {tieuDe}
+          {title}
         </Typography.Title>
-        {moTa ? (
-          <Typography.Text type="secondary">{moTa}</Typography.Text>
+        {description ? (
+          <Typography.Text type="secondary">{description}</Typography.Text>
         ) : null}
       </div>
 
-      {hanhDong ? <div className="flex gap-2">{hanhDong}</div> : null}
+      {actions ? <div className="flex gap-2">{actions}</div> : null}
     </div>
   );
 }

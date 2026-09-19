@@ -4,7 +4,7 @@ import { Button } from "antd";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { BoCucDanhSach } from "@/shared/components/bo-cuc-danh-sach";
+import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
 
 import { useDanhSachPhieu } from "../hooks/usePhieuNhap";
@@ -51,10 +51,10 @@ export function BangPhieuNhap({ coQuyenTao }: { coQuyenTao: boolean }) {
 
   return (
     <>
-      <BoCucDanhSach
-        soDieuKien={demDieuKienPhieu(boLoc)}
-        panelLoc={<PanelLocPhieu boLoc={boLoc} onDoi={doiBoLoc} />}
-        thanhCongCu={
+      <ListLayout
+        activeFilterCount={demDieuKienPhieu(boLoc)}
+        filterPanel={<PanelLocPhieu boLoc={boLoc} onDoi={doiBoLoc} />}
+        toolbar={
           <ThanhCongCuPhieu
             boLoc={boLoc}
             onDoi={doiBoLoc}
@@ -70,8 +70,8 @@ export function BangPhieuNhap({ coQuyenTao }: { coQuyenTao: boolean }) {
       >
         <QueryState
           query={danhSach}
-          laRong={(d) => d.dong.length === 0}
-          moTaRong={
+          isEmpty={(d) => d.dong.length === 0}
+          emptyDescription={
             boLoc.q ? (
               `Không có phiếu nào khớp “${boLoc.q}”.`
             ) : coLoc ? (
@@ -96,9 +96,9 @@ export function BangPhieuNhap({ coQuyenTao }: { coQuyenTao: boolean }) {
             />
           )}
         </QueryState>
-      </BoCucDanhSach>
+      </ListLayout>
 
-      <NutTaoPhieu open={taoMo} onDong={() => setTaoMo(false)} />
+      <NutTaoPhieu open={taoMo} onClose={() => setTaoMo(false)} />
     </>
   );
 }

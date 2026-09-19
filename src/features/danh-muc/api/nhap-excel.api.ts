@@ -38,11 +38,11 @@ export type PhanHoiNhap = z.infer<typeof phanHoiSchema>;
 /** Lỗi có sẵn câu tiếng Việt do route handler soạn — không cần dịch lại. */
 export class LoiNhapExcel extends Error {
   constructor(
-    readonly tieuDe: string,
-    readonly huongXuLy: string,
+    readonly title: string,
+    readonly action: string,
     readonly status: number,
   ) {
-    super(`${tieuDe}. ${huongXuLy}`);
+    super(`${title}. ${action}`);
     this.name = "LoiNhapExcel";
   }
 }
@@ -67,17 +67,17 @@ export async function guiFileNhap(
       window.location.assign("/dang-nhap?tiep_tuc=/danh-muc");
     }
 
-    let tieuDe = "Không nhập được file";
-    let huongXuLy = "Thử lại sau ít phút. Nếu vẫn lỗi, báo quản trị.";
+    let title = "Không nhập được file";
+    let action = "Thử lại sau ít phút. Nếu vẫn lỗi, báo quản trị.";
     try {
-      const j = (await res.json()) as { tieuDe?: string; huongXuLy?: string };
-      tieuDe = j.tieuDe ?? tieuDe;
-      huongXuLy = j.huongXuLy ?? huongXuLy;
+      const j = (await res.json()) as { title?: string; action?: string };
+      title = j.title ?? title;
+      action = j.action ?? action;
     } catch {
       /* server trả không phải JSON — giữ câu mặc định */
     }
 
-    throw new LoiNhapExcel(tieuDe, huongXuLy, res.status);
+    throw new LoiNhapExcel(title, action, res.status);
   }
 
   // Dữ liệu từ mạng là `unknown` cho tới khi parse.

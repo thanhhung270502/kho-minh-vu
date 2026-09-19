@@ -8,8 +8,8 @@
  */
 import ExcelJS from "exceljs";
 
-import { doChuoi, docSheetDau, doSo } from "@/shared/lib/o-excel";
-import { tachDvtCongDoan } from "@/shared/lib/tach-dvt-cong-doan";
+import { readString, readFirstSheet, readNumber } from "@/shared/lib/excel-cell";
+import { splitUnitStage } from "@/shared/lib/parse-unit-stage";
 
 import { COT_MAU, type DongNhap, type DongXuat } from "./mau-excel";
 
@@ -22,7 +22,7 @@ const CO = new Set(["co", "x", "1", "true", "yes"]);
 const KHONG = new Set(["khong", "0", "false", "no"]);
 
 function docCo(v: unknown): boolean | null {
-  const s = doChuoi(v);
+  const s = readString(v);
   if (s === null) return null;
 
   const chuan = s
@@ -37,8 +37,8 @@ function docCo(v: unknown): boolean | null {
   return null;
 }
 
-function nhanDang(tenCot: string[]): DinhDangFile {
-  const co = (k: string) => tenCot.includes(k);
+function nhanDang(headers: string[]): DinhDangFile {
+  const co = (k: string) => headers.includes(k);
 
   if (co("ma_hang") && co("don_vi_tinh") && co("cong_doan")) return "mau_moi";
   if (co("ma_hang") && co("dvt") && co("nhom_hang_3_cap")) return "kiotviet";
@@ -49,52 +49,52 @@ function nhanDang(tenCot: string[]): DinhDangFile {
   );
 }
 
-function dongMauMoi(o: Record<string, unknown>, soDong: number): DongNhap {
-  const toiDa = doSo(o["ton_toi_da"]);
+function dongMauMoi(o: Record<string, unknown>, rowNumber: number): DongNhap {
+  const toiDa = readNumber(o["ton_toi_da"]);
 
   return {
-    dong: soDong,
-    ma_hang: doChuoi(o["ma_hang"]),
-    ten_hang: doChuoi(o["ten_hang"]),
-    nhom_hang: doChuoi(o["nhom_hang"]),
-    dvt: doChuoi(o["don_vi_tinh"]),
-    cong_doan: doChuoi(o["cong_doan"]),
-    quy_doi: doSo(o["quy_doi"]),
-    kho_mac_dinh: doChuoi(o["kho_mac_dinh"]),
-    ton_toi_thieu: doSo(o["ton_toi_thieu"]),
+    dong: rowNumber,
+    ma_hang: readString(o["ma_hang"]),
+    ten_hang: readString(o["ten_hang"]),
+    nhom_hang: readString(o["nhom_hang"]),
+    dvt: readString(o["don_vi_tinh"]),
+    cong_doan: readString(o["cong_doan"]),
+    quy_doi: readNumber(o["quy_doi"]),
+    kho_mac_dinh: readString(o["kho_mac_dinh"]),
+    ton_toi_thieu: readNumber(o["ton_toi_thieu"]),
     ton_toi_da: toiDa,
-    gia_ban: doSo(o["gia_ban"]),
+    gia_ban: readNumber(o["gia_ban"]),
     dang_kinh_doanh: docCo(o["dang_kinh_doanh"]),
-    barcode: doChuoi(o["barcode"]),
-    ghi_chu: doChuoi(o["ghi_chu"]),
+    barcode: readString(o["barcode"]),
+    ghi_chu: readString(o["ghi_chu"]),
   };
 }
 
-function dongKiotViet(o: Record<string, unknown>, soDong: number): DongNhap {
-  const tach = tachDvtCongDoan(doChuoi(o["dvt"]));
-  const toiDa = doSo(o["ton_lon_nhat"]);
-  const giaBan = doSo(o["gia_ban"]);
+function dongKiotViet(o: Record<string, unknown>, rowNumber: number): DongNhap {
+  const tach = splitUnitStage(readString(o["dvt"]));
+  const toiDa = readNumber(o["ton_lon_nhat"]);
+  const giaBan = readNumber(o["gia_ban"]);
 
   return {
-    dong: soDong,
-    ma_hang: doChuoi(o["ma_hang"]),
-    ten_hang: doChuoi(o["ten_hang"]),
-    nhom_hang: doChuoi(o["nhom_hang_3_cap"]),
-    dvt: tach.maDvt,
+    dong: rowNumber,
+    ma_hang: readString(o["ma_hang"]),
+    ten_hang: readString(o["ten_hang"]),
+    nhom_hang: readString(o["nhom_hang_3_cap"]),
+    dvt: tach.unitCode,
     // Ô ĐVT của KiotViet chỉ suy được công đoạn cho hàng đã qua xử lý bề mặt.
     // 1.571 mã "CÁI" không suy được — gửi null để GIỮ NGUYÊN công đoạn người dùng
     // đã rà, và chỉ dùng MUA_NGOAI khi tạo mã mới (D-22).
-    cong_doan: tach.suyDuoc ? tach.maCongDoan : null,
+    cong_doan: tach.inferred ? tach.stageCode : null,
     cong_doan_khi_tao_moi: "MUA_NGOAI",
-    quy_doi: doSo(o["quy_doi"]) ?? 1,
+    quy_doi: readNumber(o["quy_doi"]) ?? 1,
     // Cột "Vị trí" của KiotViet chứa TÊN KHO, không phải dãy/kệ (lỗi UAT Phase 1).
-    kho_mac_dinh: doChuoi(o["vi_tri"]),
-    ton_toi_thieu: doSo(o["ton_nho_nhat"]),
+    kho_mac_dinh: readString(o["vi_tri"]),
+    ton_toi_thieu: readNumber(o["ton_nho_nhat"]),
     ton_toi_da: toiDa === null || toiDa >= KHONG_GIOI_HAN ? null : toiDa,
     // Giá bán trên hệ cũ bằng 0 cho cả 3.266 mã — gửi 0 là ghi đè giá quản lý vừa đặt.
     gia_ban: giaBan ? giaBan : null,
-    dang_kinh_doanh: doChuoi(o["dang_kinh_doanh"]) !== "0",
-    ghi_chu: doChuoi(o["mo_ta"]),
+    dang_kinh_doanh: readString(o["dang_kinh_doanh"]) !== "0",
+    ghi_chu: readString(o["mo_ta"]),
   };
 }
 
@@ -103,16 +103,16 @@ export async function docFileDanhMuc(
 ): Promise<{ dinhDang: DinhDangFile; dong: DongNhap[] }> {
   let doc;
   try {
-    doc = await docSheetDau(buf);
+    doc = await readFirstSheet(buf);
   } catch {
     throw new Error(
       "Không đọc được file Excel. Kiểm tra file còn mở được bằng Excel và đúng đuôi .xlsx.",
     );
   }
 
-  const dinhDang = nhanDang(doc.tenCot);
-  const dong = doc.dong.map((d) =>
-    dinhDang === "mau_moi" ? dongMauMoi(d.o, d.soDong) : dongKiotViet(d.o, d.soDong),
+  const dinhDang = nhanDang(doc.headers);
+  const dong = doc.rows.map((d) =>
+    dinhDang === "mau_moi" ? dongMauMoi(d.cells, d.rowNumber) : dongKiotViet(d.cells, d.rowNumber),
   );
 
   return { dinhDang, dong };
@@ -141,7 +141,7 @@ export async function taoFileMau(
   wb.created = new Date();
 
   const ws = wb.addWorksheet("Danh mục");
-  ws.columns = cot.map((c) => ({ header: c.tieuDe, key: c.khoa, width: c.rong }));
+  ws.columns = cot.map((c) => ({ header: c.title, key: c.khoa, width: c.rong }));
   ws.getRow(1).font = { bold: true };
   ws.views = [{ state: "frozen", ySplit: 1 }];
   ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: 1, column: cot.length } };

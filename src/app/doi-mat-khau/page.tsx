@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { layNguoiDungHienTai } from "@/features/xac-thuc/api/nguoi-dung-hien-tai.server";
-import { FormDoiMatKhau } from "@/features/xac-thuc/components/form-doi-mat-khau";
-import { ThongBaoMatKhauTam } from "@/features/xac-thuc/components/thong-bao-mat-khau-tam";
+import { getCurrentUser } from "@/features/auth/api/current-user.server";
+import { ChangePasswordForm } from "@/features/auth/components/change-password-form";
+import { TempPasswordNotice } from "@/features/auth/components/temp-password-notice";
 
 export const metadata: Metadata = { title: "Đổi mật khẩu" };
 
 export default async function DoiMatKhauPage() {
-  const nd = await layNguoiDungHienTai();
+  const nd = await getCurrentUser();
 
   if (!nd) redirect("/dang-nhap");
 
@@ -18,14 +18,14 @@ export default async function DoiMatKhauPage() {
       <div className="w-full max-w-sm">
         <h1 className="mb-1 text-xl font-semibold">Đặt mật khẩu mới</h1>
         <p className="mb-5 text-sm text-gray-500">
-          {nd.hoTen} · mật khẩu chỉ mình bạn biết
+          {nd.fullName} · mật khẩu chỉ mình bạn biết
         </p>
 
-        {nd.phaiDoiMatKhau ? <ThongBaoMatKhauTam /> : null}
+        {nd.mustChangePassword ? <TempPasswordNotice /> : null}
 
-        <FormDoiMatKhau />
+        <ChangePasswordForm />
 
-        {!nd.phaiDoiMatKhau ? (
+        {!nd.mustChangePassword ? (
           <div className="mt-4 text-center">
             <Link href="/" className="text-sm">
               Quay lại

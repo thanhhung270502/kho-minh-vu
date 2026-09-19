@@ -35,7 +35,7 @@ export function MauInPhieuNhap({
         }
       `}</style>
 
-      <div data-khong-in className="mb-4 flex justify-end">
+      <div data-no-print className="mb-4 flex justify-end">
         <Button type="primary" onClick={() => window.print()}>
           In phiếu
         </Button>
