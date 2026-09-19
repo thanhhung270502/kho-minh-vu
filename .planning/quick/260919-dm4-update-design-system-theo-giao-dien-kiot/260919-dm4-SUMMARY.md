@@ -7,14 +7,24 @@ completed: 2026-09-19
 
 # Quick 260919-dm4: Update design system theo giao diện KiotViet — Summary
 
-**Đổi token màu/bo góc sang bảng KiotViet (#1652F0), dựng lại shell thành top-nav pill +
-tab đáy mobile, và bố cục lại /danh-muc + /doi-tac thành panel lọc trái + bảng phải +
-hàng tổng cộng — 3 commit, không thêm thư viện mới.**
+**Đổi token màu/bo góc/font sang đúng giá trị CSS thật của KiotViet (#0070F4, trích
+xuất từ `--kv-*` trên fnb.kiotviet.vn, KHÔNG còn là ước lượng từ ảnh PNG), dựng lại
+shell thành top-nav pill + tab đáy mobile, và bố cục lại /danh-muc + /doi-tac thành
+panel lọc trái + bảng phải + hàng tổng cộng — 5 commit, không thêm thư viện mới.**
+
+> **Cập nhật quan trọng (đợt 2, sau khi 3 commit đầu đã xong):** bảng màu dùng ở 3
+> commit đầu (`#1652F0`...) là **ước lượng bằng mắt từ ảnh PNG**, sai lệch khá nhiều so
+> với CSS thật. Người dùng đã chạy script trích xuất trực tiếp trên
+> `https://fnb.kiotviet.vn/hoffee/man/#/WareHouse` (1.235–1.401 phần tử quét được qua
+> 2 lần chạy, `lan1.json`/`lan2.json` — KHÔNG commit, chỉ là dữ liệu thô tạm), giải hết
+> alias `--kv-*` (1.466 biến) và quy đổi rem→px đúng gốc 10px của họ (dự án mình KHÔNG
+> đổi root font-size). Xem mục "Cập nhật token (đợt 2)" bên dưới để biết chi tiết giá
+> trị mới và commit nào sửa gì.
 
 ## Kết quả `npm run check`
 
-Chạy 5 lần trong lúc thực thi (sau mỗi lần sửa và trước mỗi commit). Lần cuối cùng
-(sau khi cả 3 task đã xong):
+Chạy 7 lần trong lúc thực thi (sau mỗi lần sửa và trước mỗi commit, cả 2 đợt). Lần
+cuối cùng (sau commit font, đợt 2):
 
 ```
 > kiotviet@0.1.0 check
@@ -30,25 +40,32 @@ Chạy 5 lần trong lúc thực thi (sau mỗi lần sửa và trước mỗi c
 
 > kiotviet@0.1.0 build
 > next build
-✓ Compiled successfully
-  Finished TypeScript ...
-✓ Generating static pages using 10 workers (20/20)
+✓ Compiled successfully in 1723ms
+  Finished TypeScript in 1192ms ...
+✓ Generating static pages using 10 workers (20/20) in 389ms
   Finalizing page optimization ...
-(build ra đủ 20 route, không có route nào lỗi)
+(build ra đủ 20 route, không có route nào lỗi — bao gồm cả việc Next.js tải font
+Inter thành công lúc build, xác nhận subsets/weight khai báo hợp lệ)
 ```
 
-Tất cả 3 lần chạy `npm run check` trước 3 commit đều **xanh tuyệt đối** — không có
+Tất cả 5 lần chạy `npm run check` trước 5 commit đều **xanh tuyệt đối** — không có
 lỗi typecheck, không có lỗi lint, build thành công cho toàn bộ 20 route.
 
-## Ba commit
+## Năm commit
 
 | # | Hash | Commit message |
 |---|------|-----------------|
-| 1 | `4006200` | `feat(ui): rút token thiết kế theo bảng màu KiotViet` |
+| 1 | `4006200` | `feat(ui): rút token thiết kế theo bảng màu KiotViet` (đợt 1 — **giá trị đã bị thay ở #4**) |
 | 2 | `cd4222d` | `feat(ui): đổi shell sang thanh điều hướng ngang và tab đáy cho mobile` |
 | 3 | `39da902` | `feat(ui): dựng lại bố cục trang danh sách theo giao diện KiotViet` |
+| 4 | `25d6ef7` | `fix(ui): thay token thiết kế bằng giá trị trích xuất thật từ KiotViet` (đợt 2) |
+| 5 | `1edd542` | `feat(ui): đổi font sang Inter khớp KiotViet` (đợt 2, tách riêng để dễ revert) |
 
 ### Commit 1 — `4006200` (Task 1, DS-01)
+
+> **Giá trị màu ở commit này đã LỖI THỜI — xem Commit 4.** Giữ mục này để biết lịch sử
+> (file nào động tới), nhưng đừng dùng hex `#1652F0`/`#F0F2F5`... làm tài liệu tham
+> chiếu, hãy dùng bảng ở Commit 4.
 
 File đã sửa/tạo:
 - `src/providers/antd-theme.ts` (sửa) — `colorPrimary/colorLink/colorInfo = #1652F0`,
@@ -110,6 +127,71 @@ File đã sửa/tạo/xoá:
   `Tag bordered={false}` cho cả Loại và Trạng thái.
 - `src/features/doi-tac/components/thanh-loc-doi-tac.tsx` — **đã xoá**.
 
+### Commit 4 — `25d6ef7` — Cập nhật token (đợt 2): giá trị trích xuất thật từ KiotViet
+
+**Nguồn:** script trích xuất chạy trên `https://fnb.kiotviet.vn/hoffee/man/#/WareHouse`,
+đọc toàn bộ biến CSS `--kv-*` (1.466 biến), giải hết alias, quy đổi rem→px theo đúng
+gốc rem của KiotViet (10px — **không** đổi root font-size của project mình).
+
+**Bảng màu đúng (thay hoàn toàn bảng ở Commit 1):**
+
+| | 500 (mốc chính) | 600 (hover) | 700 (active) | 50 |
+|---|---|---|---|---|
+| primary | `#0070F4` | `#005AC3` | `#004392` | `#E6F1FE` |
+| neutral | `#677484` | `#525D6A` | `#3E464F` | `#F0F1F3` |
+| success | `#00B63E` | `#009232` | — | `#E6F8EC` |
+| warning | `#FF8800` | `#CC6D00` | — | `#FFF3E6` |
+| danger | `#FF0000` | `#CC0000` | — | `#FFE6E6` |
+
+Khác biệt lớn nhất so với bản ước lượng: **mốc chính nằm ở bậc 500 (`#0070F4`), không
+phải bậc 600 như bản đoán từ ảnh (`#1652F0`)** — comment ràng buộc ở cả `antd-theme.ts`
+và `globals.css` đã sửa lại cho khớp.
+
+File đã sửa:
+- `src/providers/antd-theme.ts` — viết lại gần như toàn bộ: thêm `colorPrimaryHover/
+  Active`, `colorTextTertiary/Quaternary`, `colorFillSecondary/Tertiary`, `fontSizeSM/
+  LG`, `lineHeight`, `controlHeight`; thêm mới component `Card`, `Form`, `DatePicker`;
+  sửa `Table` (header/border/rowSelected/padding), `Button` (bo 12, `fontWeight: 600`,
+  đổ bóng theo màu chính thay vì `none`), `Input`/`Select` (viền hover/active, `Modal`
+  (bo 24, `titleColor`/`contentBg`/`headerBg`/`footerBg`/`boxShadow`).
+- `src/app/globals.css` — thay hết 10 bậc `--color-brand-*` cũ bằng đủ 18 bậc theo
+  đúng thang KiotViet (25→950); thêm thang `--color-trung-tinh-*` (18 bậc) hoàn toàn
+  mới; cập nhật `--color-nen-trang/nen-the/vien/chu-chinh/chu-phu/header-bang/nen-tong`
+  theo giá trị neutral/primary thật; `--shadow-the` đổi từ 2 lớp bóng sang 1 lớp
+  `-8px 8px 24px 0 rgba(0,0,0,.04)` (đúng `boxShadowTertiary` mới của antd).
+- `src/shared/components/top-nav.tsx` — nền pill đổi từ `bg-brand-600` (màu đặc) sang
+  gradient thật `linear-gradient(0deg, #0070F4 0%, #338DF6 100%)` + viền 1px + đổ bóng
+  `0 0 4px rgba(0,112,244,.15)`; mục đang mở bỏ pill nền `bg-brand-400`, thay bằng gạch
+  chân trắng 3px/rộng 32px dưới chữ; mọi mục nav giờ luôn chữ trắng (bỏ `text-white/80`
+  cho mục chưa mở), hover dùng `bg-white/25`. **Giữ nguyên cấu trúc component** (vẫn
+  `Link` + `.map()` + `MenuTaiKhoan` như commit `cd4222d`), chỉ đổi class/style.
+- `src/features/doi-tac/components/bang-doi-tac.tsx` — bỏ `bordered={false}` ở 2 Tag
+  (Loại, Trạng thái): KiotViet dùng Tag dạng **viền `#D1D5DA` nền trong suốt**, bản đợt
+  1 làm ngược (nền xám không viền).
+- `src/shared/lib/mau-thiet-ke.ts` — `MAU_BIEU_DO`/`MAU_NGU_NGHIA` cập nhật theo
+  primary/success/warning/danger thật; ghi rõ trong comment là dãy biểu đồ **vẫn là
+  suy ra** (xem mục Giả định #4 bên dưới).
+
+**Kiểm tra key hợp lệ trước khi viết:** trước khi thêm token mới (`Card`, `Form`,
+`DatePicker`, `colorPrimaryHover`...), đã tra `node_modules/antd/es/**/style/*.d.ts`
+và `node_modules/antd/es/theme/interface/**` để xác nhận từng key tồn tại trong antd
+v6.6.3 — tránh vừa ép kiểu vừa phải đoán. Một token bị **bỏ hẳn** vì không tồn tại:
+`Select.activeShadow` (Select chỉ có `activeOutlineColor`, không có `activeShadow` —
+token đó chỉ thuộc `Input`/`DatePicker`). Đã áp dụng đúng luật "token antd không nhận
+thì bỏ, không ép kiểu".
+
+### Commit 5 — `1edd542` — Đổi font sang Inter
+
+- `src/app/layout.tsx` — `Be_Vietnam_Pro` → `Inter` (`next/font/google`, `subsets:
+  ["latin", "vietnamese"]`, `weight: ["400","500","600","700","800"]`, giữ nguyên biến
+  `variable: "--font-app-sans"` nên không phải sửa chỗ nào khác dùng `font-sans`). Đã
+  kiểm `node_modules/next/dist/compiled/@next/font/dist/google/font-data.json` xác
+  nhận Inter hỗ trợ đủ 2 subset và cả 5 weight trước khi viết.
+- `src/app/globals.css` — `--font-sans` đổi chuỗi fallback thành
+  `Inter, Roboto, Helvetica, Arial, sans-serif` đúng CSS thật của KiotViet.
+- Tách riêng commit này (không gộp vào Commit 4) để người dùng revert một lệnh
+  (`git revert 1edd542`) nếu muốn giữ lại Be Vietnam Pro mà không mất phần token.
+
 ## Giả định đã đặt (theo yêu cầu plan phải ghi lại)
 
 1. **Tag "Trạng thái" đối tác đổi sang trung tính không viền** — theo đúng chỉ dẫn
@@ -123,6 +205,20 @@ File đã sửa/tạo/xoá:
    v6.6.3 có prop `vertical` riêng để xếp dọc thật sự (`block` một mình chỉ kéo full
    width theo chiều ngang). Dùng cả hai để khớp đúng ý "xếp dọc, chiếm hết bề rộng
    panel".
+4. **Dãy màu biểu đồ `MAU_BIEU_DO` vẫn là SUY RA, chưa phải trích xuất trực tiếp**
+   (đợt 2) — lần chạy script trích xuất chỉ ở trang Kho hàng
+   (`fnb.kiotviet.vn/hoffee/man/#/WareHouse`), không có dashboard nào ở đó để bắt màu
+   biểu đồ thật. Đã dựng tạm 6 màu từ chính thang primary/success/warning/danger vừa
+   trích xuất được (`#0070F4 · #00B63E · #FF8800 · #FF0000 · #66A9F8 · #66D38B`) và ghi
+   rõ trong comment của `mau-thiet-ke.ts` — cần trích xuất lại khi có dashboard thật.
+5. **Gạch chân "active" trên top-nav đặt ở `top-[18px]` tính từ mép trên của TEXT
+   nhãn** (không phải từ mép trên của cả nút nav) — số đo `18px` trong yêu cầu (kèm dày
+   3px, rộng tối đa 32px) khớp với cách diễn giải "gạch chân nằm sát dưới một dòng chữ
+   cỡ 14px/line-height 20px" (18+3=21 ≈ 20px chiều cao dòng chữ), nên đã bọc riêng
+   nhãn `{m.nhan}` trong một `<span className="relative">` và đặt gạch chân bên trong
+   span đó — không đặt tương đối theo cả nút (link) vì nút còn có icon + padding, đặt
+   theo nút sẽ đẩy gạch chân ra ngoài rất xa vị trí thật. Đây là DIỄN GIẢI, chưa xác
+   minh trực quan trên trình duyệt thật.
 
 ## Chỗ lệch khỏi plan (và vì sao)
 
@@ -188,6 +284,14 @@ vi 3 task** này (không đụng tới theo đúng SCOPE BOUNDARY):
 2. **Dashboard dùng `MAU_BIEU_DO`/`MAU_NGU_NGHIA`** — đúng như plan đã nói trước, chưa
    có màn hình nào dùng hai hằng số này (Phase 5 chưa tới). Card KPI viền trái màu
    cũng chưa có màn hình nào áp dụng.
+3. **(đợt 2) Chưa xác minh trực quan 3 chi tiết mới:** gradient + viền + đổ bóng của
+   pill top-nav, vị trí chính xác của gạch chân "active" (xem Giả định #5), và việc
+   font Inter tải/hiển thị đúng trên trình duyệt thật (build chỉ xác nhận Next.js
+   fetch được font lúc build, không xác nhận cách nó render). Cùng lý do với mục 1 —
+   môi trường thực thi không có công cụ trình duyệt. Đề nghị người dùng mở
+   `npm run dev`, xem `/` ở ≥1280px, kiểm gạch chân dưới mục đang mở có nằm đúng ngay
+   dưới chữ hay bị lệch/tràn ra ngoài pill — nếu lệch, chỉnh lại `top-[18px]` trong
+   `src/shared/components/top-nav.tsx` cho khớp mắt thường.
 
 ## Tự kiểm tra (self-check)
 
@@ -210,5 +314,22 @@ FOUND commit 4006200
 FOUND commit cd4222d
 FOUND commit 39da902
 ```
+
+**Đợt 2 (sau khi sửa token):**
+
+```
+FOUND commit 25d6ef7
+FOUND commit 1edd542
+grep -c "0070F4" src/providers/antd-theme.ts  -> 6
+grep -c "0070F4" src/app/globals.css          -> 2
+grep -n "Inter(" src/app/layout.tsx           -> const fontSans = Inter({
+npm run check (lần cuối, sau commit 1edd542)  -> xanh, build 20/20 route
+npx tsx scripts/kiem-tra-quyen-route.ts       -> 50/50 ô đúng
+grep -rn "bordered={false}" src/              -> không còn dòng nào (đã bỏ ở bang-doi-tac.tsx)
+```
+
+Raw extraction files `lan1.json`, `lan2.json` và thư mục `.claude/` (config IDE cục
+bộ) — đã xác nhận **KHÔNG có trong bất kỳ commit nào** (`git status --short` sau commit
+cuối vẫn liệt kê chúng là `??` chưa track).
 
 ## Self-Check: PASSED
