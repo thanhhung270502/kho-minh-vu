@@ -21,13 +21,33 @@
     var(--font-app-sans), system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
 
-  /* Màu thương hiệu — giữ trùng với token antd trong src/providers/antd-theme.ts */
-  --color-brand-50: #e6f4ff;
-  --color-brand-100: #bae0ff;
-  --color-brand-300: #69b1ff;
-  --color-brand-500: #1677ff;
-  --color-brand-600: #0958d9;
-  --color-brand-700: #003eb3;
+  /*
+   * Màu thương hiệu — trùng khít với token trong src/providers/antd-theme.ts.
+   * colorPrimary/colorLink/colorInfo của antd = --color-brand-600. Sửa một
+   * chỗ phải sửa cả hai, không thì nút antd và link Tailwind lệch màu nhau.
+   */
+  --color-brand-50: #EEF4FF;
+  --color-brand-100: #DBE7FF;
+  --color-brand-200: #BBD0FF;
+  --color-brand-300: #8FB0FF;
+  --color-brand-400: #5C87FB;
+  --color-brand-500: #2D68F8;
+  --color-brand-600: #1652F0;
+  --color-brand-700: #0F3FC4;
+  --color-brand-800: #0E3499;
+  --color-brand-900: #102C6E;
+
+  /* Nền/chữ/viền dùng chung — khớp colorBgLayout/colorText/colorBorder ở antd-theme.ts */
+  --color-nen-trang: #F0F2F5;
+  --color-nen-the: #FFFFFF;
+  --color-vien: #E5E7EB;
+  --color-chu-chinh: #1F2A37;
+  --color-chu-phu: #6B7280;
+  --color-header-bang: #E8F0FE;
+  --color-nen-tong: #F7F8FA;
+
+  --shadow-the: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+  --radius-the: 12px;
 }
 
 html,
@@ -37,4 +57,7 @@ body {
 
 body {
   font-family: var(--font-sans);
+  /* Trang /dang-nhap, /doi-mat-khau nằm ngoài Layout của antd nên không nhận
+     colorBgLayout — đặt trực tiếp để không bị trắng phẳng. */
+  background: var(--color-nen-trang);
 }
