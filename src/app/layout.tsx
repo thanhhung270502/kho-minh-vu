@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
-import { Be_Vietnam_Pro } from "next/font/google";
+import { Inter } from "next/font/google";
 
 import { AppProviders } from "@/providers/app-providers";
 
 import "./globals.css";
 
-const fontSans = Be_Vietnam_Pro({
+// KiotViet dùng Inter, Roboto, Helvetica, Arial — đổi từ Be Vietnam Pro để
+// giao diện gần với cái người dùng đang quen. Weight 800 dùng cho số liệu
+// nổi bật trên dashboard (Phase 5).
+const fontSans = Inter({
   subsets: ["latin", "vietnamese"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
   variable: "--font-app-sans",
 });
