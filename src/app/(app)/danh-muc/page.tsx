@@ -8,7 +8,7 @@ import { hasPermission } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Danh mục hàng" };
 
-export default async function DanhMucPage() {
+export default async function ProductsPage() {
   const user = await requirePermission("view-catalog");
 
   return (

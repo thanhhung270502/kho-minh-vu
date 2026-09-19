@@ -8,7 +8,7 @@ import { TempPasswordNotice } from "@/features/auth/components/temp-password-not
 
 export const metadata: Metadata = { title: "Đổi mật khẩu" };
 
-export default async function DoiMatKhauPage() {
+export default async function ChangePasswordPage() {
   const nd = await getCurrentUser();
 
   if (!nd) redirect("/dang-nhap");

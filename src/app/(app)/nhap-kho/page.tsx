@@ -8,7 +8,7 @@ import { hasPermission } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Phiếu nhập" };
 
-export default async function NhapKhoPage() {
+export default async function StockInPage() {
   const user = await requirePermission("view-catalog");
 
   return (

@@ -5,7 +5,7 @@ import { PageHeader } from "@/shared/components/page-header";
 
 export const metadata: Metadata = { title: "Tổng quan" };
 
-export default function TongQuanPage() {
+export default function DashboardPage() {
   return (
     <>
       <PageHeader title="Tổng quan" description="Tình hình kho trong ngày" />
