@@ -109,14 +109,24 @@ select is(
   'movement của dòng B mang kho_id của DÒNG, không phải của phiếu'
 );
 
--- ─── 6: thủ kho Kho 2 phải thấy phiếu dù header là Kho 1 ────────────────────
+-- ─── 6: thủ kho CHỈ có Kho 2 phải thấy phiếu dù header là Kho 1 ─────────────
+-- Seed không có thủ kho nào CHỈ có Kho 2 (thukho1 = K1, thukho2 = K1+K2), nên
+-- "thấy phiếu nhờ DÒNG" sẽ pass sai lý do nếu dùng thukho2. Gán lại thukho1 chỉ
+-- còn K2 ngay trong transaction — cả file rollback nên dữ liệu thật không đổi.
 select pg_temp.dang_xuat();
-select pg_temp.dang_nhap_nhu('thukho2@khominhvu.local');
+
+delete from public.nguoi_dung_kho
+where nguoi_dung_id = (select id from auth.users where email = 'thukho1@khominhvu.local');
+
+insert into public.nguoi_dung_kho (nguoi_dung_id, kho_id)
+select (select id from auth.users where email = 'thukho1@khominhvu.local'), pg_temp.kho_id('K2');
+
+select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 
 select is(
   (select count(*) from public.chung_tu where so_ct = 'PN-KD-ZQX'),
   1::bigint,
-  'thủ kho Kho 2 thấy phiếu vì có dòng thuộc kho mình (header là Kho 1)'
+  'thủ kho chỉ có Kho 2 vẫn thấy phiếu vì có dòng thuộc kho mình (header Kho 1)'
 );
 
 select * from finish();

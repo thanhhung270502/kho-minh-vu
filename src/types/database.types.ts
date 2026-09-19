@@ -1066,6 +1066,28 @@ export type Database = {
       }
       ap_dung_goi_y_cong_doan: { Args: { p_ids: string[] }; Returns: number }
       bo_quyet_ghi_chu: { Args: { p_gia_tri: string }; Returns: undefined }
+      chi_tiet_chung_tu: {
+        Args: { p_id: string }
+        Returns: {
+          created_at: string
+          doi_tac_id: string
+          ghi_chu: string
+          ho_ten_nguoi_tao: string
+          id: string
+          kho_id: string
+          loai_ct: Database["public"]["Enums"]["loai_ct"]
+          ma_doi_tac: string
+          ngay_ct: string
+          ngay_ghi_so: string
+          nguon_nhap: Database["public"]["Enums"]["nguon_nhap"]
+          so_ct: string
+          ten_doi_tac: string
+          ten_kho: string
+          tong_so_luong: number
+          tong_tien: number
+          trang_thai: Database["public"]["Enums"]["trang_thai_ct"]
+        }[]
+      }
       chi_tiet_san_pham: {
         Args: { p_id: string }
         Returns: {
@@ -1113,6 +1135,37 @@ export type Database = {
           so_hien_tai: number
           tien_to: string
           vi_du: string
+        }[]
+      }
+      danh_sach_chung_tu: {
+        Args: {
+          p_den_ngay?: string
+          p_doi_tac_id?: string
+          p_kho_id?: string
+          p_kich_thuoc?: number
+          p_loai_ct?: Database["public"]["Enums"]["loai_ct"]
+          p_nguon_nhap?: Database["public"]["Enums"]["nguon_nhap"]
+          p_trang?: number
+          p_trang_thai?: Database["public"]["Enums"]["trang_thai_ct"]
+          p_tu_khoa?: string
+          p_tu_ngay?: string
+        }
+        Returns: {
+          doi_tac_id: string
+          ho_ten_nguoi_tao: string
+          id: string
+          loai_ct: Database["public"]["Enums"]["loai_ct"]
+          ngay_ct: string
+          ngay_ghi_so: string
+          nguon_nhap: Database["public"]["Enums"]["nguon_nhap"]
+          so_ct: string
+          so_dong: number
+          ten_doi_tac: string
+          ten_kho: string
+          tong_so_dong: number
+          tong_so_luong: number
+          tong_tien: number
+          trang_thai: Database["public"]["Enums"]["trang_thai_ct"]
         }[]
       }
       danh_sach_doi_tac: {
@@ -1212,6 +1265,22 @@ export type Database = {
           san_pham_id: string
           ton_theo_bang: number
           ton_theo_so_cai: number
+        }[]
+      }
+      dong_chung_tu: {
+        Args: { p_id: string }
+        Returns: {
+          don_gia: number
+          ghi_chu: string
+          id: string
+          kho_id: string
+          ma_hang: string
+          san_pham_id: string
+          so_luong: number
+          ten_dvt: string
+          ten_hang: string
+          ten_kho: string
+          thanh_tien: number
         }[]
       }
       f_unaccent: { Args: { "": string }; Returns: string }
