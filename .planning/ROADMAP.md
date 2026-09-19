@@ -84,13 +84,13 @@ luyện cơ chế trước khi nhân bản sang Phase 4.
 ### Phase 4: Đơn đặt hàng & Phiếu xuất
 **Goal**: Cơ chế chứng từ tôi luyện ở Phase 3 được nhân bản cho chiều xuất — khối
 lượng nghiệp vụ chính của hệ thống (923 phiếu/tuần) — liên kết với đơn đặt hàng, và
-vận hành được cả trên máy tính văn phòng lẫn điện thoại thủ kho ngoài kho.
+vận hành trọn luồng trên máy tính văn phòng.
 **Depends on**: Phase 3
-**Requirements**: DDH-01, DDH-02, DDH-03, DDH-04, XUAT-01, XUAT-02, XUAT-03, XUAT-04, XUAT-05, XUAT-06, XUAT-07, XUAT-08, XUAT-09
+**Requirements**: DDH-01, DDH-02, DDH-03, DDH-04, XUAT-01, XUAT-02, XUAT-04, XUAT-05, XUAT-06, XUAT-07, XUAT-09
 **Success Criteria** (what must be TRUE):
-  1. Tạo đơn đặt hàng theo khách với nhiều dòng và ngày giao dự kiến; xem số đã xuất/còn lại của từng dòng; trạng thái đơn tự chuyển `MOI` → `DA_XUAT_MOT_PHAN` → `DA_XUAT_DU` theo phiếu xuất
+  1. Tạo đơn đặt hàng theo người nhận với nhiều dòng và ngày giao dự kiến; xem số đã xuất/còn lại của từng dòng; trạng thái đơn chạy `TAM` → `DA_XAC_NHAN` → `HOAN_THANH` theo bước duyệt, còn tiến độ giao tính khi đọc từ số đã xuất
   2. Tạo phiếu xuất thẳng từ đơn đặt hàng (các dòng bê nguyên vẹn) và ghi sổ trong dưới 20 giây khi kho chỉ xác nhận số thực xuất; tạo được phiếu xuất mới không cần đơn đặt hàng; nhập liệu hoàn toàn bằng bàn phím (Enter xuống dòng mới, Tab sang ô số lượng)
-  3. Thêm dòng bằng quét barcode qua camera điện thoại; màn xuất hàng dùng được trên điện thoại (nút đủ to, bảng cuộn ngang trong khung riêng)
+  3. Quản lý xác nhận đơn rồi in được phiếu đi lấy hàng có cột trống để kho ghi tay số thực lấy; đơn đã xác nhận chỉ quản lý mở khóa được về `TAM`
   4. Khi số xuất làm tồn xuống dưới 0, hệ thống cảnh báo và bắt buộc chọn lý do trước khi cho ghi sổ; ghi sổ phiếu xuất làm tồn giảm đúng và cập nhật tiến độ đơn đặt hàng liên quan; in được phiếu giao hàng
   5. Trả hàng khách (`TRA_KHACH`, tồn tăng) và trả hàng NCC (`TRA_NCC`, tồn giảm) là hai loại chứng từ riêng, đều bắt buộc tham chiếu chứng từ gốc
 **Plans**: TBD
@@ -117,9 +117,10 @@ KiotViet), dữ liệu lịch sử tra cứu được, và hệ thống ở tr�
 bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở
 KiotViet để đối chiếu.
 **Depends on**: Phase 5
-**Requirements**: KKE-01, KKE-02, KKE-03, KKE-04, DLIEU-05, DLIEU-06, DLIEU-07
+**Requirements**: KKE-01, KKE-02, KKE-03, KKE-04, DLIEU-05, DLIEU-06, DLIEU-07, XUAT-03, XUAT-08
 **Success Criteria** (what must be TRUE):
   1. Mở phiên kiểm kê theo kho và nhóm hàng, hệ thống chốt tồn sổ tại đúng thời điểm đếm; đếm bằng quét mã trên điện thoại
+  1b. Màn xuất hàng dùng được trên điện thoại và thêm dòng bằng quét barcode qua camera (XUAT-03, XUAT-08 — dời từ Phase 4 sang vì dùng chung thư viện quét và khuôn màn mobile với kiểm kê; chốt 20/09). Chặn trước: 0/3.270 mã đang có barcode — phải quyết in tem hay quét mã nhà sản xuất
   2. Xem bảng lệch giữa số đếm thực tế và tồn sổ; duyệt phiên kiểm kê sinh phiếu điều chỉnh đưa tồn về đúng số đã đếm
   3. Giá vốn khởi đầu của toàn bộ danh mục được nạp một lần từ Excel trước go-live
   4. Tồn đầu kỳ của toàn hệ thống được set từ kết quả kiểm kê thực tế, không bê nguyên số 389.671 từ KiotViet

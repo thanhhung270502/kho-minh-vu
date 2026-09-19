@@ -25,10 +25,9 @@ cho chiều xuất.
 - **XUAT-08 màn xuất dùng trên điện thoại** — làm sau khi luồng máy tính chạy ổn.
 - Ảnh sản phẩm + màn danh mục mobile (hoãn từ Phase 3, và từ phản hồi 19/09 lượt 1).
 
-> **Việc phải làm ngoài code:** ROADMAP.md và REQUIREMENTS.md đang xếp XUAT-03 và
-> XUAT-08 vào Phase 4. Hai yêu cầu này dời sang đợt sau nên roadmap phải cập nhật
-> (tách Phase 4.1, hoặc dời sang Phase 5/6). **Chưa sửa** — chờ người dùng quyết
-> cách xếp.
+> **Đã xếp lại (chốt 20/09):** XUAT-03 và XUAT-08 **dời sang Phase 6**, nơi đã có
+> KKE-02 "đếm bằng quét mã trên điện thoại" — gộp lại thì chỉ phải chốt thư viện quét
+> và dựng khuôn màn mobile một lần. ROADMAP.md và REQUIREMENTS.md đã cập nhật.
 
 </domain>
 
