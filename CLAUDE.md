@@ -60,10 +60,12 @@ npm run db:test:linked   # chạy pgTAP trên cloud
 npm run seed:users       # tạo 4 tài khoản mẫu
 npm run verify:hook      # xác nhận JWT có vai_tro/kho_id
 
-npx tsx scripts/kiem-tra-ham-thuan.ts     # hàm thuần: bộ lọc URL, tên khách, CSV lỗi
-npx tsx scripts/kiem-tra-doc-excel.ts     # đọc file KiotViet thật + quay vòng xuất/nhập
-npx tsx scripts/kiem-tra-quyen-route.ts   # ma trận quyền route × 4 vai trò (cần npm run dev)
+npx tsx scripts/test-pure-functions.ts      # hàm thuần: bộ lọc URL, tên khách, CSV lỗi
+npx tsx scripts/test-excel-reader.ts        # đọc file KiotViet thật + quay vòng xuất/nhập
+npx tsx scripts/test-route-permissions.ts   # ma trận quyền route × 4 vai trò (cần npm run dev)
 npm run import:kiotviet -- --mau   # thử nạp dữ liệu trên file mẫu
+npm run import:sample              # sinh file Excel mẫu để thử
+npm run test:concurrency           # hai người ghi sổ cùng lúc
 ```
 
 ## Tech stack
@@ -122,8 +124,43 @@ Component chỉ dùng một chỗ thì để trong feature. Chỉ nâng lên `sr
 có **ít nhất 2** feature dùng thật. Feature không import trực tiếp từ thư mục nội
 bộ của feature khác.
 
-Tên file và route: tiếng Việt **không dấu**, nối bằng gạch ngang (`san-xuat`,
-`nhap-kho`). Không trộn tiếng Anh nửa vời.
+### Đặt tên: code tiếng Anh, hiển thị tiếng Việt
+
+Ranh giới cứng, không có vùng xám:
+
+| Thứ | Ngôn ngữ | Ví dụ |
+|---|---|---|
+| Tên file, thư mục, feature | **tiếng Anh**, kebab-case | `product-table.tsx`, `features/stock-in/` |
+| Hàm, biến, type, prop, query key | **tiếng Anh**, camelCase/PascalCase | `fetchProducts`, `ProductRow`, `canEdit` |
+| Chuỗi hiển thị cho người dùng | **tiếng Việt có dấu** | `"Không tải được dữ liệu"` |
+| **URL / route / tham số truy vấn** | **tiếng Việt không dấu** | `/nhap-kho`, `?tiep_tuc=`, `?kinh_doanh=dang` |
+| **Tên bảng, cột, RPC, giá trị enum của database** | **tiếng Việt** | `san_pham.ma_hang`, `rpc("tim_san_pham")`, `"NHAP_LIEU"` |
+
+URL là bề mặt người dùng nhìn thấy (thủ kho đã quen, bookmark đã lưu) nên giữ
+tiếng Việt. Thư mục trong `src/app/` CHÍNH LÀ URL nên cũng giữ — chỉ ruột bên
+trong là tiếng Anh.
+
+**Database không đổi.** Mọi tên bảng/cột/RPC giữ nguyên tiếng Việt; lớp `api/`
+là nơi DUY NHẤT được chạm vào chúng và phải map sang mô hình miền tiếng Anh:
+
+```ts
+// features/products/types.ts — mapper, chỗ duy nhất biết tên cột
+export function toProductRow(row: ProductRowDb): ProductRow {
+  return { id: row.id, code: row.ma_hang, name: row.ten_hang, ... };
+}
+// chiều ngược lại khi ghi
+export function toProductInsert(input: ProductInput): ProductInsert {
+  return { ma_hang: input.code, ten_hang: input.name, ... };
+}
+```
+
+Component và hook KHÔNG bao giờ thấy `ma_hang`. Thấy snake_case ngoài `api/`
+hoặc `types.ts` là dấu hiệu mapper bị bỏ qua.
+
+Ngoại lệ có chủ đích, giữ snake_case vì là **hợp đồng với database**:
+khóa jsonb gửi cho RPC `nhap_danh_muc`, nhãn cột của nhật ký sửa
+(`nhat_ky_sua.truong`), và giá trị enum (`sua_o`, `hang_loat`, `con_hang`).
+Mỗi chỗ như vậy phải có comment nói rõ vì sao.
 
 ## Bước 3 — Kiểu dữ liệu đi trước
 
@@ -161,8 +198,8 @@ Tên file và route: tiếng Việt **không dấu**, nối bằng gạch ngang 
 - Xác thực: dùng `supabase.auth.getUser()`, **không dùng `getSession()`**.
   `getSession()` chỉ đọc cookie nên giả mạo được; chỉ `getUser()` mới hỏi lại server.
 - Hết phiên (401) và không đủ quyền (403) là hai luồng khác nhau, không gộp.
-  `dienGiaiLoi()` trong `src/shared/lib/errors.ts` đã tách sẵn: `het-phien` →
-  về đăng nhập; `khong-du-quyen` → báo liên hệ quản trị. Thêm mã lỗi mới vào đó.
+  `explainError()` trong `src/shared/lib/errors.ts` đã tách sẵn: `session-expired`
+  → về đăng nhập; `forbidden` → báo liên hệ quản trị. Thêm mã lỗi mới vào đó.
 
 ## Bước 5 — UI: bốn trạng thái, không được thiếu
 
@@ -326,14 +363,14 @@ if (laLoiPostgrest(e) && e.code === "23514") …   // cần đọc e.message
 ```
 
 Lần vấp: "mã trùng" và "nhóm đang có mã hàng dùng" đều hiện *"Không tải được dữ
-liệu"*, và `nenThuLai()` cho TanStack Query thử lại lỗi 400 hai lần (3 request).
+liệu"*, và `shouldRetry()` cho TanStack Query thử lại lỗi 400 hai lần (3 request).
 `AuthError` thì ngược lại — auth-js dựng instance thật, `instanceof` dùng được.
 
 ### 9. Hàm export từ file `"use client"` không gọi được ở Server Component
 
-Mặt kia của bẫy 1. `tabDauTien()` để trong `components/tab-cai-dat.tsx` rồi
-`app/(app)/cai-dat/page.tsx` gọi → *"Attempted to call tabDauTien() from the server
-but tabDauTien is on the client"*, bấm menu Cài đặt ra trang lỗi.
+Mặt kia của bẫy 1. `firstTabForRole()` để trong `components/settings-tabs.tsx` rồi
+`app/(app)/cai-dat/page.tsx` gọi → *"Attempted to call firstTabForRole() from the
+server but firstTabForRole is on the client"*, bấm menu Cài đặt ra trang lỗi.
 
 **Quy tắc: hằng số và hàm thuần để ở `features/<x>/lib/*.ts` (không `"use client"`),
 cả hai phía cùng import.** Component client chỉ giữ phần JSX.
@@ -361,7 +398,7 @@ Viết component antd mới thì **mở console một lần** trước khi báo 
 
 ### 12. Chốt chặn hồi quy quyền route
 
-`scripts/kiem-tra-quyen-route.ts` phải liệt kê **mọi route thật**, kể cả route chỉ
+`scripts/test-route-permissions.ts` phải liệt kê **mọi route thật**, kể cả route chỉ
 redirect như `/cai-dat`. Thêm màn mới thì thêm dòng vào ma trận — lần trước thiếu
 đúng `/cai-dat` nên script báo 45/45 xanh trong khi trang đó crash.
 
@@ -398,8 +435,8 @@ dở, nhưng khiến mã luân chuyển nhiều đè lên mã vừa gõ đầy �
 "Enter chọn kết quả đầu tiên" đều phải tìm mã khớp tuyệt đối trước:
 
 ```ts
-const khopHan = ds.find((sp) => sp.ma_hang.toLowerCase() === q.trim().toLowerCase());
-onChon(khopHan ?? ds[0]);
+const exactMatch = items.find((p) => p.code.toLowerCase() === query.trim().toLowerCase());
+onSelect(exactMatch ?? items[0]);
 ```
 
 Chọn nhầm mã ở màn nhập kho là nhập sai hàng vào sổ, không phải lỗi hiển thị.
