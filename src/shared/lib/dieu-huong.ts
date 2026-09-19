@@ -3,7 +3,7 @@
 // (file client) — cách chắc chắn để Server Component vẫn import được từ đây.
 import { coQuyen, type Quyen, type VaiTro } from "@/shared/lib/quyen";
 
-export type MaIcon = "tong-quan" | "danh-muc" | "doi-tac" | "cai-dat";
+export type MaIcon = "tong-quan" | "nhap-kho" | "danh-muc" | "doi-tac" | "cai-dat";
 
 export type MucDieuHuong = {
   duongDan: string;
@@ -26,12 +26,21 @@ export const MUC_DIEU_HUONG: MucDieuHuong[] = [
     uuTienMobile: 1,
   },
   {
+    // Nghiệp vụ hằng ngày đứng trước dữ liệu nền.
+    duongDan: "/nhap-kho",
+    nhan: "Nhập kho",
+    nhanNgan: "Nhập",
+    icon: "nhap-kho",
+    quyen: "xem_danh_muc",
+    uuTienMobile: 2,
+  },
+  {
     duongDan: "/danh-muc",
     nhan: "Danh mục hàng",
     nhanNgan: "Hàng",
     icon: "danh-muc",
     quyen: "xem_danh_muc",
-    uuTienMobile: 2,
+    uuTienMobile: 3,
   },
   {
     duongDan: "/doi-tac",
@@ -39,7 +48,7 @@ export const MUC_DIEU_HUONG: MucDieuHuong[] = [
     nhanNgan: "Đối tác",
     icon: "doi-tac",
     quyen: "xem_danh_muc",
-    uuTienMobile: 3,
+    uuTienMobile: 4,
   },
   {
     duongDan: "/cai-dat",

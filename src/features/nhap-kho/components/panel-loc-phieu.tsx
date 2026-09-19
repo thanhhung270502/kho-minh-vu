@@ -1,0 +1,123 @@
+"use client";
+
+import { Button, DatePicker, Select } from "antd";
+import dayjs from "dayjs";
+import type { ReactNode } from "react";
+
+import { useDanhMucPhu } from "@/features/danh-muc/hooks/useSanPham";
+import { useDanhSachDoiTac } from "@/features/doi-tac/hooks/useDoiTac";
+import { BO_LOC_DOI_TAC_MAC_DINH } from "@/features/doi-tac/types";
+
+import {
+  BO_LOC_PHIEU_MAC_DINH,
+  demDieuKienPhieu,
+  type BoLocPhieu,
+} from "../schemas/phieu-nhap.schema";
+import { NHAN_NGUON_NHAP, NHAN_TRANG_THAI } from "../types";
+
+function NhomLoc({ nhan, children }: { nhan: string; children: ReactNode }) {
+  return (
+    <div>
+      <label className="mb-1 block text-[13px] text-chu-phu">{nhan}</label>
+      {children}
+    </div>
+  );
+}
+
+export function PanelLocPhieu({
+  boLoc,
+  onDoi,
+}: {
+  boLoc: BoLocPhieu;
+  onDoi: (b: BoLocPhieu) => void;
+}) {
+  const danhMucPhu = useDanhMucPhu();
+  // Danh sách NCC đang hoạt động — dùng lại RPC đối tác của Phase 2.
+  const ncc = useDanhSachDoiTac({ ...BO_LOC_DOI_TAC_MAC_DINH, loai: "NCC" });
+
+  /** Đổi điều kiện nào cũng về trang 1 — giữ trang cũ dễ rơi vào trang trống. */
+  function doi(thayDoi: Partial<BoLocPhieu>) {
+    onDoi({ ...boLoc, ...thayDoi, trang: 1 });
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <NhomLoc nhan="Trạng thái">
+        <Select
+          allowClear
+          className="w-full"
+          placeholder="Tất cả"
+          value={boLoc.trangThai}
+          options={(["NHAP_LIEU", "HOAN_THANH", "DA_HUY"] as const).map((t) => ({
+            value: t,
+            label: NHAN_TRANG_THAI[t],
+          }))}
+          onChange={(v) => doi({ trangThai: v ?? null })}
+        />
+      </NhomLoc>
+
+      <NhomLoc nhan="Nhà cung cấp">
+        <Select
+          allowClear
+          showSearch
+          optionFilterProp="label"
+          className="w-full"
+          placeholder="Tất cả"
+          value={boLoc.doiTacId}
+          loading={ncc.isPending}
+          options={(ncc.data?.dong ?? []).map((d) => ({ value: d.id, label: d.ten }))}
+          onChange={(v) => doi({ doiTacId: v ?? null })}
+        />
+      </NhomLoc>
+
+      <NhomLoc nhan="Nguồn nhập">
+        <Select
+          allowClear
+          className="w-full"
+          placeholder="Tất cả"
+          value={boLoc.nguonNhap}
+          options={(["NCC", "NHA_MAY"] as const).map((n) => ({
+            value: n,
+            label: NHAN_NGUON_NHAP[n],
+          }))}
+          onChange={(v) => doi({ nguonNhap: v ?? null })}
+        />
+      </NhomLoc>
+
+      <NhomLoc nhan="Kho">
+        <Select
+          allowClear
+          className="w-full"
+          placeholder="Tất cả"
+          value={boLoc.khoId}
+          options={(danhMucPhu.data?.kho ?? []).map((k) => ({ value: k.id, label: k.ten }))}
+          onChange={(v) => doi({ khoId: v ?? null })}
+        />
+      </NhomLoc>
+
+      <NhomLoc nhan="Khoảng ngày">
+        <DatePicker.RangePicker
+          className="w-full"
+          format="DD/MM/YYYY"
+          value={
+            boLoc.tuNgay && boLoc.denNgay
+              ? [dayjs(boLoc.tuNgay), dayjs(boLoc.denNgay)]
+              : null
+          }
+          onChange={(v) =>
+            doi({
+              tuNgay: v?.[0] ? v[0].format("YYYY-MM-DD") : null,
+              denNgay: v?.[1] ? v[1].format("YYYY-MM-DD") : null,
+            })
+          }
+        />
+      </NhomLoc>
+
+      {demDieuKienPhieu(boLoc) > 0 ? (
+        <Button onClick={() => onDoi({ ...BO_LOC_PHIEU_MAC_DINH, q: boLoc.q })}>
+          Xóa bộ lọc
+        </Button>
+      ) : null}
+    </div>
+  );
+}

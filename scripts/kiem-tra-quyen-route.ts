@@ -22,11 +22,23 @@ type VaiTroTest = "quanly" | "vanphong" | "thukho1" | "chixem" | "khach";
 /** "200" = tải được; "quyen" = bị đẩy sang /khong-du-quyen; "dangnhap" = về đăng nhập; "401" = JSON 401. */
 type KyVong = "200" | "quyen" | "dangnhap" | "401" | "goc" | `→${string}`;
 
-const MA_TRAN: Array<{ route: string; ky_vong: Record<VaiTroTest, KyVong> }> = [
+type Dong = { route: string; ky_vong: Record<VaiTroTest, KyVong> };
+
+/** Mọi vai trò xem được, khách bị đẩy về đăng nhập. */
+const AI_CUNG_XEM: Record<VaiTroTest, KyVong> = {
+  quanly: "200",
+  vanphong: "200",
+  thukho1: "200",
+  chixem: "200",
+  khach: "dangnhap",
+};
+
+const MA_TRAN: Dong[] = [
   { route: "/", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   // /cai-dat chỉ redirect sang tab đầu tiên theo quyền. UAT Phase 2 bắt được
   // lỗi trang này crash vì gọi hàm client từ server — ma trận cũ thiếu đúng nó.
   { route: "/cai-dat", ky_vong: { quanly: "→/cai-dat/nguoi-dung", vanphong: "→/cai-dat/nhom-hang", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
+  { route: "/nhap-kho", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/danh-muc", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/doi-tac", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/doi-tac/ra-ghi-chu", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
@@ -74,6 +86,34 @@ async function layCookie(email: string): Promise<string> {
   return [...kho].map(([n, v]) => `${n}=${encodeURIComponent(v)}`).join("; ");
 }
 
+/** Lấy một id phiếu nhập có thật để kiểm route chi tiết. */
+async function layIdPhieuNhap(): Promise<string | null> {
+  const kho = new Map<string, string>();
+  const sb = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    {
+      cookies: {
+        getAll: () => [...kho].map(([name, value]) => ({ name, value })),
+        setAll: (ds) => ds.forEach((c) => kho.set(c.name, c.value)),
+      },
+    },
+  );
+
+  const { error } = await sb.auth.signInWithPassword({
+    email: TAI_KHOAN.quanly,
+    password: matKhauMau(),
+  });
+  if (error) return null;
+
+  const { data } = await sb.rpc("danh_sach_chung_tu", {
+    p_loai_ct: "NHAP",
+    p_trang: 1,
+    p_kich_thuoc: 1,
+  });
+  return data?.[0]?.id ?? null;
+}
+
 async function doMot(route: string, cookie: string): Promise<KyVong | string> {
   const res = await fetch(`${BASE_URL}${route}`, {
     headers: cookie ? { cookie } : {},
@@ -118,6 +158,18 @@ async function main() {
     chixem: await layCookie(TAI_KHOAN.chixem),
     khach: "",
   };
+
+  // Route chi tiết cần id THẬT — không hard-code uuid. Không có phiếu nào thì
+  // bỏ qua hai dòng đó và nói rõ, thay vì giả vờ đã kiểm.
+  const idPhieu = await layIdPhieuNhap();
+  if (idPhieu) {
+    MA_TRAN.push(
+      { route: `/nhap-kho/${idPhieu}`, ky_vong: AI_CUNG_XEM },
+      { route: `/nhap-kho/${idPhieu}/in`, ky_vong: AI_CUNG_XEM },
+    );
+  } else {
+    console.warn("⚠ chưa có phiếu nhập nào — bỏ qua 2 route chi tiết");
+  }
 
   const vaiTro = Object.keys(cookie) as VaiTroTest[];
   const lech: string[] = [];

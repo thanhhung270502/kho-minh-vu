@@ -3,7 +3,7 @@
 -- Ghi sổ atomic · hủy sinh bút toán đảo · đánh số không trùng
 -- =============================================================================
 begin;
-select plan(18);
+select plan(20);
 
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
@@ -176,6 +176,28 @@ select is(
   (10 - 9999)::numeric(18,4),
   'tồn sp1 phản ánh đúng nhập 10 và xuất 9999'
 );
+
+-- Một phiếu nhập CÒN NHAP_LIEU để chứng minh luật D-11 chỉ siết phiếu đã ghi sổ.
+insert into public.chung_tu (so_ct, loai_ct, ngay_ct, kho_id, doi_tac_id)
+select 'PN-TEST-3-NHAPLIEU', 'NHAP', current_date, k1, dt from t_id;
+insert into public.chung_tu_dong (chung_tu_id, san_pham_id, so_luong, don_gia)
+select (select id from public.chung_tu where so_ct = 'PN-TEST-3-NHAPLIEU'), sp1, 1, 100 from t_id;
+
+-- D-11 (0046): phiếu NHẬP đã ghi sổ chỉ quản lý hủy được. Văn phòng phải bị
+-- chặn Ở DATABASE, không chỉ ở nút — kiểm trước rồi mới đổi vai để hủy thật.
+select throws_ok(
+  $$ select public.huy_chung_tu((select id from public.chung_tu where so_ct = 'PN-TEST-1'), 'thử hủy') $$,
+  '42501', null,
+  'văn phòng KHÔNG hủy được phiếu nhập đã ghi sổ'
+);
+
+select lives_ok(
+  $$ select public.huy_chung_tu((select id from public.chung_tu where so_ct = 'PN-TEST-3-NHAPLIEU'), 'phiếu nháp bỏ') $$,
+  'văn phòng vẫn tự hủy được phiếu nhập CHƯA ghi sổ'
+);
+
+select pg_temp.dang_xuat();
+select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 
 select public.huy_chung_tu((select id from public.chung_tu where so_ct = 'PN-TEST-1'), 'Nhập nhầm nhà cung cấp');
 

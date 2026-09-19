@@ -8,11 +8,13 @@ lại PROJECT.md, CLAUDE.md hay code.
 - **Phase 1 — Nền dữ liệu:** xong, UAT 6/6 đạt (lỗi dữ liệu kho sai cột đã sửa ở 0025).
 - **Phase 2 — Khung ứng dụng:** xong 21 plan, UAT 12 đạt / 0 lỗi còn lại / 2 bài chờ
   phiên quản lý. 199 pgTAP, quyền route 50/50 ô.
-- Database: Supabase cloud `kho-vu-tru` (ap-southeast-1), 25 migration.
+- Database: Supabase cloud `kho-vu-tru` (ap-southeast-1), 48 migration (mới nhất 0048).
 - Dữ liệu thật đã nạp: 3.266 sản phẩm, 90 nhóm, 23 NCC, 594 + 4.732 dòng lưu trữ.
 - Kho mặc định của sản phẩm ở `san_pham.kho_mac_dinh_id`, KHÔNG ở `vi_tri_ke`.
-- Test: 199 pgTAP + test đồng thời + verify:hook + hàm thuần + đọc Excel + quyền route,
-  xanh trên dữ liệu thật. 36 migration.
+- Test: 225 pgTAP + test đồng thời + verify:hook + hàm thuần + đọc Excel + quyền route,
+  xanh trên dữ liệu thật.
+- **Đếm assert phải đếm cả dòng ERROR:** một file pgTAP chết giữa chừng không sinh
+  `not ok` nào — chỉ đếm `not ok` sẽ ra "0 lỗi" trong khi 34 assert không hề chạy.
 
 ## Patterns
 
