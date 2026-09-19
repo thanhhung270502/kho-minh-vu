@@ -8,11 +8,20 @@ lại PROJECT.md, CLAUDE.md hay code.
 - **Phase 1 — Nền dữ liệu:** xong, UAT 6/6 đạt (lỗi dữ liệu kho sai cột đã sửa ở 0025).
 - **Phase 2 — Khung ứng dụng:** xong 21 plan, UAT 12 đạt / 0 lỗi còn lại / 2 bài chờ
   phiên quản lý. 199 pgTAP, quyền route 50/50 ô.
-- Database: Supabase cloud `kho-vu-tru` (ap-southeast-1), 48 migration (mới nhất 0048).
+- **Phase 3 — Phiếu nhập:** xong 13 plan, UAT 12/12 đạt sau khi đóng 5 khuyết.
+  225 pgTAP, quyền route 65/65 ô. Migration mới nhất 0049.
+- Database: Supabase cloud `kho-vu-tru` (ap-southeast-1), 49 migration (mới nhất 0049).
 - Dữ liệu thật đã nạp: 3.266 sản phẩm, 90 nhóm, 23 NCC, 594 + 4.732 dòng lưu trữ.
 - Kho mặc định của sản phẩm ở `san_pham.kho_mac_dinh_id`, KHÔNG ở `vi_tri_ke`.
 - Test: 225 pgTAP + test đồng thời + verify:hook + hàm thuần + đọc Excel + quyền route,
   xanh trên dữ liệu thật.
+- **pgTAP không neo vào bộ đếm sống:** assertion `sinh_so_ct(...) = 'PN26-000001'`
+  xanh đúng một lần rồi đỏ vĩnh viễn kể từ phiếu thật đầu tiên của năm. Dùng năm
+  2091–2093 hoặc so tương đối.
+- **Phím giả lập của công cụ trình duyệt có thể có `event.key` rỗng** (tên `Return`).
+  Mọi handler `if (e.key !== "Enter")` đều trượt → trông y như thư viện hỏng. Đo
+  `document.addEventListener("keydown", e => console.log(e.key), true)` trước khi
+  kết luận. Dùng đúng tên `Enter`.
 - **Đếm assert phải đếm cả dòng ERROR:** một file pgTAP chết giữa chừng không sinh
   `not ok` nào — chỉ đếm `not ok` sẽ ra "0 lỗi" trong khi 34 assert không hề chạy.
 
