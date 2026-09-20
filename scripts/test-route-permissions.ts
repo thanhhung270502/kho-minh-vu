@@ -39,6 +39,9 @@ const MA_TRAN: Dong[] = [
   // lỗi page này crash vì gọi hàm client từ server — ma trận cũ thiếu đúng nó.
   { route: "/cai-dat", ky_vong: { quanly: "→/cai-dat/nguoi-dung", vanphong: "→/cai-dat/nhom-hang", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/nhap-kho", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
+  // Cùng quyền xem với /nhap-kho — nút "Tạo đơn" ẩn/hiện là trang trí ở client
+  // (canCreate), chặn thật nằm ở bốn policy ghi trên don_dat_hang (plan 04-02).
+  { route: "/dat-hang", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/danh-muc", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/doi-tac", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/doi-tac/ra-ghi-chu", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
