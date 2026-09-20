@@ -59,7 +59,7 @@
 
 - [x] **DDH-01**: Tạo đơn đặt hàng theo khách với nhiều dòng và ngày giao dự kiến
 - [x] **DDH-02**: Xem số đã xuất và còn lại của từng dòng đơn đặt hàng
-- [x] **DDH-03**: Trạng thái đơn tự chuyển `MOI` → `DA_XUAT_MOT_PHAN` → `DA_XUAT_DU` theo phiếu xuất
+- [x] **DDH-03**: Trạng thái đơn chạy `TAM` → `DA_XAC_NHAN` → `HOAN_THANH` theo bước duyệt; tiến độ giao (đã xuất / còn lại) tính khi đọc từ số đã xuất của từng dòng *(đổi trục theo D-04, chốt 20/09)*
 - [x] **DDH-04**: Tạo phiếu xuất thẳng từ đơn đặt hàng, các dòng được bê sang nguyên vẹn
 
 ### Phiếu xuất & trả hàng (XUAT)
@@ -69,8 +69,8 @@
 - [ ] **XUAT-03**: Thêm dòng bằng cách quét barcode qua camera điện thoại *(dời sang Phase 6 — chốt 20/09)*
 - [x] **XUAT-04**: Khi số xuất làm tồn xuống dưới 0, hệ thống cảnh báo và bắt buộc chọn lý do trước khi cho ghi sổ
 - [x] **XUAT-05**: Ghi sổ phiếu xuất làm tồn giảm và cập nhật tiến độ đơn đặt hàng liên quan
-- [ ] **XUAT-06**: In phiếu giao hàng
-- [ ] **XUAT-07**: Nhập liệu hoàn toàn bằng bàn phím — Enter xuống dòng mới, Tab sang ô số lượng, không cần chạm chuột
+- [x] **XUAT-06**: In phiếu giao hàng
+- [x] **XUAT-07**: Nhập liệu hoàn toàn bằng bàn phím — Enter xuống dòng mới, Tab sang ô số lượng, không cần chạm chuột
 - [ ] **XUAT-08**: Màn xuất hàng dùng được trên điện thoại: nút đủ to, bảng cuộn ngang trong khung riêng *(dời sang Phase 6 — chốt 20/09)*
 - [x] **XUAT-09**: Trả hàng khách (`TRA_KHACH`, tồn tăng) và trả hàng NCC (`TRA_NCC`, tồn giảm) là hai loại chứng từ riêng, đều bắt buộc tham chiếu chứng từ gốc
 
@@ -208,8 +208,8 @@
 | XUAT-03 | Phase 6 | Pending |
 | XUAT-04 | Phase 4 | Complete |
 | XUAT-05 | Phase 4 | Complete |
-| XUAT-06 | Phase 4 | Pending |
-| XUAT-07 | Phase 4 | Pending |
+| XUAT-06 | Phase 4 | Complete |
+| XUAT-07 | Phase 4 | Complete |
 | XUAT-08 | Phase 6 | Pending |
 | XUAT-09 | Phase 4 | Complete |
 | TON-01 | Phase 5 | Pending |
