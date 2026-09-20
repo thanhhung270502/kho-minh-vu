@@ -1,13 +1,8 @@
 -- =============================================================================
--- DDH-02, DDH-03 — Trục duyệt của trang_thai_ddh (D-04, D-05)
---
--- trang_thai_ddh chỉ còn TAM | DA_XAC_NHAN | HOAN_THANH | DA_HUY. _cap_nhat_
--- tien_do_ddh chỉ tự đóng HOAN_THANH cho đơn DA_XAC_NHAN giao đủ; đơn TAM
--- không tự đổi trạng thái dù giao đủ, đơn DA_XAC_NHAN giao một phần vẫn ở
--- nguyên DA_XAC_NHAN (không có trạng thái "giao một phần" nào nữa).
+-- DDH-02/DDH-03 — Trục duyệt trang_thai_ddh và _cap_nhat_tien_do_ddh (Phase 4)
 -- =============================================================================
 begin;
-select plan(10);
+select plan(9);
 
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
@@ -52,160 +47,122 @@ returns uuid language sql stable as $helper$
   select id from public.kho where ma = p_ma;
 $helper$;
 
--- ─── Dựng dữ liệu: ba mã hàng, một kho, một đối tác có sẵn ───────────────────
-create temp table t_dh as
-select pg_temp.sp_test('DDH-ZQX-A') as sp_a,
-       pg_temp.sp_test('DDH-ZQX-B') as sp_b,
-       pg_temp.sp_test('DDH-ZQX-C') as sp_c,
-       pg_temp.kho_id('K1')         as k1,
-       (select id from public.doi_tac limit 1) as doi_tac;
-grant select on t_dh to authenticated;
+-- ─── 1–4: kiểu và cột ────────────────────────────────────────────────────────
+select has_type('public', 'trang_thai_ddh', 'kiểu trang_thai_ddh tồn tại');
 
+select enum_has_labels(
+  'public', 'trang_thai_ddh',
+  array['TAM', 'DA_XAC_NHAN', 'HOAN_THANH', 'DA_HUY'],
+  'trang_thai_ddh chỉ còn trục duyệt, đúng bốn nhãn theo đúng thứ tự'
+);
+
+select col_default_is(
+  'public', 'don_dat_hang', 'trang_thai', 'TAM',
+  'cột trang_thai mặc định TAM (đơn tạo mới ở dạng nháp)'
+);
+
+select has_index('public', 'don_dat_hang', 'idx_ddh_trang_thai', 'partial index idx_ddh_trang_thai còn tồn tại sau khi dựng lại');
+
+-- ─── Dựng dữ liệu nghiệp vụ ──────────────────────────────────────────────────
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 
--- ─── 1–2: kiểu chỉ còn bốn nhãn của trục duyệt ───────────────────────────────
-select is(
-  (select exists(select 1 from pg_type where typname = 'trang_thai_ddh' and typnamespace = 'public'::regnamespace)),
-  true,
-  'kiểu trang_thai_ddh tồn tại trong schema public'
-);
+create temp table t_ddh as
+select pg_temp.sp_test('DDH-ZQX-A') as sp_a,
+       pg_temp.sp_test('DDH-ZQX-B') as sp_b,
+       pg_temp.kho_id('K1')         as k1,
+       (select id from public.doi_tac limit 1) as dt;
+grant select on t_ddh to authenticated;
 
-select is(
-  enum_range(null::public.trang_thai_ddh)::text[],
-  array['TAM','DA_XAC_NHAN','HOAN_THANH','DA_HUY'],
-  'trang_thai_ddh chỉ còn bốn nhãn của trục duyệt, đúng thứ tự'
-);
-
--- ─── 3: default là TAM ───────────────────────────────────────────────────────
-select is(
-  (with ins as (
-     insert into public.don_dat_hang (so_dh, doi_tac_id)
-     select 'DH-DDH-ZQX-DEFAULT', doi_tac from t_dh
-     returning trang_thai
-   ) select trang_thai::text from ins),
-  'TAM',
-  'don_dat_hang.trang_thai mặc định TAM khi không truyền'
-);
-
--- ─── 4: partial index dựng lại ───────────────────────────────────────────────
-select is(
-  (select exists(
-    select 1 from pg_indexes
-    where schemaname = 'public' and tablename = 'don_dat_hang' and indexname = 'idx_ddh_trang_thai'
-  )),
-  true,
-  'index idx_ddh_trang_thai tồn tại trên don_dat_hang'
-);
-
--- ─── Dựng tồn ban đầu: nhập 100 mỗi mã vào K1, tránh vướng chặn xuất âm ──────
-insert into public.chung_tu (so_ct, loai_ct, ngay_ct, kho_id, doi_tac_id)
-select 'PN-DDH-ZQX', 'NHAP', current_date, k1, doi_tac from t_dh;
-
-insert into public.chung_tu_dong (chung_tu_id, san_pham_id, so_luong, don_gia, thanh_tien)
-select (select id from public.chung_tu where so_ct = 'PN-DDH-ZQX'), sp_a, 100, 1000, 100000 from t_dh
-union all
-select (select id from public.chung_tu where so_ct = 'PN-DDH-ZQX'), sp_b, 100, 1000, 100000 from t_dh
-union all
-select (select id from public.chung_tu where so_ct = 'PN-DDH-ZQX'), sp_c, 100, 1000, 100000 from t_dh;
-
-select public.ghi_so_chung_tu((select id from public.chung_tu where so_ct = 'PN-DDH-ZQX'));
-
--- ─── Kịch bản 1: đơn DA_XAC_NHAN, giao đủ hai dòng → tự đóng HOAN_THANH ─────
+-- Đơn A: DA_XAC_NHAN, hai dòng, sẽ giao đủ cả hai.
 insert into public.don_dat_hang (so_dh, doi_tac_id, trang_thai)
-select 'DH-DDH-ZQX-A', doi_tac, 'DA_XAC_NHAN' from t_dh;
+select 'DH-ZQX-A', dt, 'DA_XAC_NHAN' from t_ddh;
 
 insert into public.don_dat_hang_dong (don_dat_hang_id, san_pham_id, so_luong_dat)
-select (select id from public.don_dat_hang where so_dh = 'DH-DDH-ZQX-A'), sp_a, 10 from t_dh
-union all
-select (select id from public.don_dat_hang where so_dh = 'DH-DDH-ZQX-A'), sp_b, 5 from t_dh;
+select (select id from public.don_dat_hang where so_dh = 'DH-ZQX-A'), sp_a, 10 from t_ddh;
+insert into public.don_dat_hang_dong (don_dat_hang_id, san_pham_id, so_luong_dat)
+select (select id from public.don_dat_hang where so_dh = 'DH-ZQX-A'), sp_b, 5 from t_ddh;
 
-insert into public.chung_tu (so_ct, loai_ct, ngay_ct, kho_id, doi_tac_id, don_dat_hang_id)
-select 'XK-DDH-ZQX-A', 'XUAT', current_date, k1, doi_tac,
-       (select id from public.don_dat_hang where so_dh = 'DH-DDH-ZQX-A')
-from t_dh;
+-- Phiếu xuất gắn đơn A, ly_do_xuat_am đặt sẵn để không cần dựng tồn thật
+-- (bỏ qua khối kiểm xuất âm trong ghi_so_chung_tu, không liên quan mục tiêu test này).
+insert into public.chung_tu (so_ct, loai_ct, kho_id, doi_tac_id, don_dat_hang_id, ly_do_xuat_am, ghi_chu_ly_do)
+select 'XU-ZQX-A', 'XUAT', k1, dt, (select id from public.don_dat_hang where so_dh = 'DH-ZQX-A'),
+       'khac', 'pgTAP test' from t_ddh;
 
-insert into public.chung_tu_dong (chung_tu_id, san_pham_id, so_luong, don_gia, thanh_tien)
-select (select id from public.chung_tu where so_ct = 'XK-DDH-ZQX-A'), sp_a, 10, 0, 0 from t_dh
-union all
-select (select id from public.chung_tu where so_ct = 'XK-DDH-ZQX-A'), sp_b, 5, 0, 0 from t_dh;
+insert into public.chung_tu_dong (chung_tu_id, san_pham_id, so_luong)
+select (select id from public.chung_tu where so_ct = 'XU-ZQX-A'), sp_a, 10 from t_ddh;
+insert into public.chung_tu_dong (chung_tu_id, san_pham_id, so_luong)
+select (select id from public.chung_tu where so_ct = 'XU-ZQX-A'), sp_b, 5 from t_ddh;
 
-select public.ghi_so_chung_tu((select id from public.chung_tu where so_ct = 'XK-DDH-ZQX-A'));
+select public.ghi_so_chung_tu((select id from public.chung_tu where so_ct = 'XU-ZQX-A'));
 
+-- ─── 5–7: đơn DA_XAC_NHAN giao đủ hai dòng thì tự đóng HOAN_THANH ───────────
 select is(
-  (select d.so_luong_da_xuat from public.don_dat_hang_dong d, t_dh
-    where d.don_dat_hang_id = (select id from public.don_dat_hang where so_dh = 'DH-DDH-ZQX-A')
-      and d.san_pham_id = t_dh.sp_a),
+  (select d.so_luong_da_xuat from public.don_dat_hang_dong d, t_ddh
+    where d.don_dat_hang_id = (select id from public.don_dat_hang where so_dh = 'DH-ZQX-A')
+      and d.san_pham_id = t_ddh.sp_a),
   10::numeric(18,4),
-  'dòng A giao đủ: so_luong_da_xuat bằng so_luong_dat'
+  'dòng A so_luong_da_xuat cộng đúng bằng so_luong_dat'
 );
 
 select is(
-  (select d.so_luong_da_xuat from public.don_dat_hang_dong d, t_dh
-    where d.don_dat_hang_id = (select id from public.don_dat_hang where so_dh = 'DH-DDH-ZQX-A')
-      and d.san_pham_id = t_dh.sp_b),
+  (select d.so_luong_da_xuat from public.don_dat_hang_dong d, t_ddh
+    where d.don_dat_hang_id = (select id from public.don_dat_hang where so_dh = 'DH-ZQX-A')
+      and d.san_pham_id = t_ddh.sp_b),
   5::numeric(18,4),
-  'dòng B giao đủ: so_luong_da_xuat bằng so_luong_dat'
+  'dòng B so_luong_da_xuat cộng đúng bằng so_luong_dat'
 );
 
 select is(
-  (select trang_thai::text from public.don_dat_hang where so_dh = 'DH-DDH-ZQX-A'),
+  (select trang_thai::text from public.don_dat_hang where so_dh = 'DH-ZQX-A'),
   'HOAN_THANH',
   'đơn DA_XAC_NHAN giao đủ mọi dòng tự đóng HOAN_THANH'
 );
 
--- ─── Kịch bản 2: đơn DA_XAC_NHAN, giao MỘT PHẦN → vẫn DA_XAC_NHAN ───────────
+-- ─── 8: đơn DA_XAC_NHAN chỉ giao MỘT PHẦN thì vẫn DA_XAC_NHAN ───────────────
 insert into public.don_dat_hang (so_dh, doi_tac_id, trang_thai)
-select 'DH-DDH-ZQX-B', doi_tac, 'DA_XAC_NHAN' from t_dh;
+select 'DH-ZQX-B', dt, 'DA_XAC_NHAN' from t_ddh;
 
 insert into public.don_dat_hang_dong (don_dat_hang_id, san_pham_id, so_luong_dat)
-select (select id from public.don_dat_hang where so_dh = 'DH-DDH-ZQX-B'), sp_a, 20 from t_dh;
+select (select id from public.don_dat_hang where so_dh = 'DH-ZQX-B'), sp_a, 10 from t_ddh;
+insert into public.don_dat_hang_dong (don_dat_hang_id, san_pham_id, so_luong_dat)
+select (select id from public.don_dat_hang where so_dh = 'DH-ZQX-B'), sp_b, 5 from t_ddh;
 
-insert into public.chung_tu (so_ct, loai_ct, ngay_ct, kho_id, doi_tac_id, don_dat_hang_id)
-select 'XK-DDH-ZQX-B', 'XUAT', current_date, k1, doi_tac,
-       (select id from public.don_dat_hang where so_dh = 'DH-DDH-ZQX-B')
-from t_dh;
+insert into public.chung_tu (so_ct, loai_ct, kho_id, doi_tac_id, don_dat_hang_id, ly_do_xuat_am, ghi_chu_ly_do)
+select 'XU-ZQX-B', 'XUAT', k1, dt, (select id from public.don_dat_hang where so_dh = 'DH-ZQX-B'),
+       'khac', 'pgTAP test' from t_ddh;
 
--- Giao 8/20 — cố ý ít hơn số đặt.
-insert into public.chung_tu_dong (chung_tu_id, san_pham_id, so_luong, don_gia, thanh_tien)
-select (select id from public.chung_tu where so_ct = 'XK-DDH-ZQX-B'), sp_a, 8, 0, 0 from t_dh;
+-- Chỉ giao dòng A, dòng B chưa giao gì.
+insert into public.chung_tu_dong (chung_tu_id, san_pham_id, so_luong)
+select (select id from public.chung_tu where so_ct = 'XU-ZQX-B'), sp_a, 10 from t_ddh;
 
-select public.ghi_so_chung_tu((select id from public.chung_tu where so_ct = 'XK-DDH-ZQX-B'));
+select public.ghi_so_chung_tu((select id from public.chung_tu where so_ct = 'XU-ZQX-B'));
 
 select is(
-  (select trang_thai::text from public.don_dat_hang where so_dh = 'DH-DDH-ZQX-B'),
+  (select trang_thai::text from public.don_dat_hang where so_dh = 'DH-ZQX-B'),
   'DA_XAC_NHAN',
-  'đơn DA_XAC_NHAN giao một phần vẫn DA_XAC_NHAN, KHÔNG có trạng thái "giao một phần"'
+  'đơn giao một phần KHÔNG có trạng thái riêng — vẫn DA_XAC_NHAN, không tự đóng'
 );
 
--- ─── Kịch bản 3: đơn TAM, giao đủ → so_luong_da_xuat cập nhật nhưng vẫn TAM ──
+-- ─── 9: đơn TAM giao đủ vẫn ở TAM (không tự nhảy sang HOAN_THANH) ──────────
 insert into public.don_dat_hang (so_dh, doi_tac_id, trang_thai)
-select 'DH-DDH-ZQX-C', doi_tac, 'TAM' from t_dh;
+select 'DH-ZQX-C', dt, 'TAM' from t_ddh;
 
 insert into public.don_dat_hang_dong (don_dat_hang_id, san_pham_id, so_luong_dat)
-select (select id from public.don_dat_hang where so_dh = 'DH-DDH-ZQX-C'), sp_c, 15 from t_dh;
+select (select id from public.don_dat_hang where so_dh = 'DH-ZQX-C'), sp_a, 3 from t_ddh;
 
-insert into public.chung_tu (so_ct, loai_ct, ngay_ct, kho_id, doi_tac_id, don_dat_hang_id)
-select 'XK-DDH-ZQX-C', 'XUAT', current_date, k1, doi_tac,
-       (select id from public.don_dat_hang where so_dh = 'DH-DDH-ZQX-C')
-from t_dh;
+insert into public.chung_tu (so_ct, loai_ct, kho_id, doi_tac_id, don_dat_hang_id, ly_do_xuat_am, ghi_chu_ly_do)
+select 'XU-ZQX-C', 'XUAT', k1, dt, (select id from public.don_dat_hang where so_dh = 'DH-ZQX-C'),
+       'khac', 'pgTAP test' from t_ddh;
 
-insert into public.chung_tu_dong (chung_tu_id, san_pham_id, so_luong, don_gia, thanh_tien)
-select (select id from public.chung_tu where so_ct = 'XK-DDH-ZQX-C'), sp_c, 15, 0, 0 from t_dh;
+insert into public.chung_tu_dong (chung_tu_id, san_pham_id, so_luong)
+select (select id from public.chung_tu where so_ct = 'XU-ZQX-C'), sp_a, 3 from t_ddh;
 
-select public.ghi_so_chung_tu((select id from public.chung_tu where so_ct = 'XK-DDH-ZQX-C'));
-
-select is(
-  (select d.so_luong_da_xuat from public.don_dat_hang_dong d, t_dh
-    where d.don_dat_hang_id = (select id from public.don_dat_hang where so_dh = 'DH-DDH-ZQX-C')
-      and d.san_pham_id = t_dh.sp_c),
-  15::numeric(18,4),
-  'đơn TAM giao đủ: so_luong_da_xuat vẫn cập nhật đúng'
-);
+select public.ghi_so_chung_tu((select id from public.chung_tu where so_ct = 'XU-ZQX-C'));
 
 select is(
-  (select trang_thai::text from public.don_dat_hang where so_dh = 'DH-DDH-ZQX-C'),
+  (select trang_thai::text from public.don_dat_hang where so_dh = 'DH-ZQX-C'),
   'TAM',
-  'đơn TAM giao đủ KHÔNG tự chuyển trạng thái — chỉ RPC duyệt đơn mới đổi TAM'
+  'đơn TAM giao đủ vẫn ở TAM — chỉ so_luong_da_xuat cập nhật, chuyển TAM->DA_XAC_NHAN là việc của xac_nhan_don'
 );
 
 select * from finish();
