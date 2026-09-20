@@ -122,7 +122,7 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 04-04-PLAN.md — RPC tạo phiếu xuất từ đơn và RPC tạo phiếu trả từ chứng từ gốc
+- [x] 04-04-PLAN.md — RPC tạo phiếu xuất từ đơn và RPC tạo phiếu trả từ chứng từ gốc
 
 **Wave 5** *(blocked on Wave 4 completion)*
 

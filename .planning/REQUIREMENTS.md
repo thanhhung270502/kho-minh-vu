@@ -60,11 +60,11 @@
 - [x] **DDH-01**: Tạo đơn đặt hàng theo khách với nhiều dòng và ngày giao dự kiến
 - [x] **DDH-02**: Xem số đã xuất và còn lại của từng dòng đơn đặt hàng
 - [x] **DDH-03**: Trạng thái đơn tự chuyển `MOI` → `DA_XUAT_MOT_PHAN` → `DA_XUAT_DU` theo phiếu xuất
-- [ ] **DDH-04**: Tạo phiếu xuất thẳng từ đơn đặt hàng, các dòng được bê sang nguyên vẹn
+- [x] **DDH-04**: Tạo phiếu xuất thẳng từ đơn đặt hàng, các dòng được bê sang nguyên vẹn
 
 ### Phiếu xuất & trả hàng (XUAT)
 
-- [ ] **XUAT-01**: Tạo và ghi sổ một phiếu xuất từ đơn đặt hàng có sẵn trong dưới 20 giây — kho chỉ xác nhận số thực xuất, không gõ lại mã
+- [x] **XUAT-01**: Tạo và ghi sổ một phiếu xuất từ đơn đặt hàng có sẵn trong dưới 20 giây — kho chỉ xác nhận số thực xuất, không gõ lại mã
 - [ ] **XUAT-02**: Tạo phiếu xuất mới không cần đơn đặt hàng
 - [ ] **XUAT-03**: Thêm dòng bằng cách quét barcode qua camera điện thoại *(dời sang Phase 6 — chốt 20/09)*
 - [x] **XUAT-04**: Khi số xuất làm tồn xuống dưới 0, hệ thống cảnh báo và bắt buộc chọn lý do trước khi cho ghi sổ
@@ -72,7 +72,7 @@
 - [ ] **XUAT-06**: In phiếu giao hàng
 - [ ] **XUAT-07**: Nhập liệu hoàn toàn bằng bàn phím — Enter xuống dòng mới, Tab sang ô số lượng, không cần chạm chuột
 - [ ] **XUAT-08**: Màn xuất hàng dùng được trên điện thoại: nút đủ to, bảng cuộn ngang trong khung riêng *(dời sang Phase 6 — chốt 20/09)*
-- [ ] **XUAT-09**: Trả hàng khách (`TRA_KHACH`, tồn tăng) và trả hàng NCC (`TRA_NCC`, tồn giảm) là hai loại chứng từ riêng, đều bắt buộc tham chiếu chứng từ gốc
+- [x] **XUAT-09**: Trả hàng khách (`TRA_KHACH`, tồn tăng) và trả hàng NCC (`TRA_NCC`, tồn giảm) là hai loại chứng từ riêng, đều bắt buộc tham chiếu chứng từ gốc
 
 ### Tồn kho (TON)
 
@@ -202,8 +202,8 @@
 | DDH-01 | Phase 4 | Complete |
 | DDH-02 | Phase 4 | Complete |
 | DDH-03 | Phase 4 | Complete |
-| DDH-04 | Phase 4 | Pending |
-| XUAT-01 | Phase 4 | Pending |
+| DDH-04 | Phase 4 | Complete |
+| XUAT-01 | Phase 4 | Complete |
 | XUAT-02 | Phase 4 | Pending |
 | XUAT-03 | Phase 6 | Pending |
 | XUAT-04 | Phase 4 | Complete |
@@ -211,7 +211,7 @@
 | XUAT-06 | Phase 4 | Pending |
 | XUAT-07 | Phase 4 | Pending |
 | XUAT-08 | Phase 6 | Pending |
-| XUAT-09 | Phase 4 | Pending |
+| XUAT-09 | Phase 4 | Complete |
 | TON-01 | Phase 5 | Pending |
 | TON-02 | Phase 5 | Pending |
 | TON-03 | Phase 5 | Pending |

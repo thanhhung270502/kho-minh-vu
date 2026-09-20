@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 04-03-PLAN.md
-last_updated: "2026-09-20T03:52:24.226Z"
+stopped_at: Completed 04-04-PLAN.md
+last_updated: "2026-09-20T04:12:53.108Z"
 last_activity: 2026-09-20
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 64
-  completed_plans: 26
+  completed_plans: 27
 ---
 
 # Project State
@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 ## Current Position
 
 Phase: 04 (don-dat-hang-phieu-xuat) — EXECUTING
-Plan: 3 of 15 complete (04-01, 04-02, 04-03 done; 04-04 next)
+Plan: 4 of 15 complete (04-01, 04-02, 04-03, 04-04 done; 04-05 next)
 
 _Sửa lại 2026-09-20: vị trí trước đó ghi nhầm "Phase 02 Plan 7/21" — Phase 02 thực
 tế đã xong toàn bộ 21/21 plan (xem .planning/phases/02-khung-ung-dung/*-SUMMARY.md),
@@ -60,6 +60,7 @@ plan 04-01 gây ra — sửa lại cho khớp thực tế khi thực thi 04-01._
 | Phase 04 P01 | 46min | 3 tasks | 5 files |
 | Phase 04 P02 | 19min | 3 tasks | 6 files |
 | Phase 04 P03 | 24min | 3 tasks | 5 files |
+| Phase 04 P04 | 19min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,8 @@ Recent decisions affecting current work:
 - [Phase 04]: chuoi_so_dh tach rieng khoi chuoi_so_ct - chuoi_so_ct khoa theo enum loai_ct (bay loai chung tu), don dat hang khong phai mot loai_ct
 - [Phase 04]: danh_sach_don/chi_tiet_don/dong_don doc ca bon vai tro, khong loc theo kho - chan that o chieu ghi cua 0052
 - [Phase 04]: de_nghi_gop_ma chi ghi lai de nghi gop ma, khong dung ton_kho/kho_movement/san_pham - gop that la phase rieng
+- [Phase 04]: tao_phieu_xuat_tu_don: chan ma thieu kho_mac_dinh_id TRUOC insert dau tien, khong doan kho, khong de lai chung tu rac
+- [Phase 04]: tao_phieu_tra khong nhan tham so chon loai — TRA_KHACH/TRA_NCC suy 100% tu loai_ct cua chung tu goc, giu nguyen kho_id cua DONG GOC (khong phai kho dau phieu)
 
 ### Pending Todos
 
@@ -104,7 +107,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-20T03:52:24.224Z
-Stopped at: Completed 04-03-PLAN.md
+Last session: 2026-09-20T04:12:53.106Z
+Stopped at: Completed 04-04-PLAN.md
 Last activity: 2026-09-20
 Resume file: None
