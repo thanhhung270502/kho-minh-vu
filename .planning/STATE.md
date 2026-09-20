@@ -141,6 +141,40 @@ không có trình duyệt, không được tự đánh giá thay. Người dùng
 đếm plan hoàn thành** — chỉ đóng khi người dùng trả lời "đạt" hoặc mọi bước
 lệch đã sửa xong, theo đúng tiền lệ của `04-05`/`04-09`._
 
+_Ghi lại 2026-09-20 khi thực thi 04-12 (CHƯA XONG — checkpoint đang mở): Task
+1-3 đã có commit thật (`e89d5bf` nút xác nhận/mở khóa/đóng sớm +
+`order-status-dialog.tsx`, `e65653f` nút "Tạo phiếu xuất" gọi
+`tao_phieu_xuat_tu_don`, `0e6068a` mẫu in phiếu đi lấy hàng + route
+`/dat-hang/[id]/in` + hàm thuần `group-lines-by-warehouse.ts`). `npm run
+check` xanh toàn bộ ở cả ba lần commit riêng. Thêm `/dat-hang/[id]/in` vào
+`scripts/test-route-permissions.ts` (cùng quyền xem với `/dat-hang/[id]`,
+T-04-61 chấp nhận thu_kho/chi_xem mở thẳng tờ đi lấy hàng) — **90/90 ô đúng**
+sau khi tạo dữ liệu thử.
+
+**Đã tự tạo một đơn thật để kiểm chứng ngoài `npm run check`** (agent không có
+trình duyệt): `DH26-000001` (id `7edccba7-17da-411d-a287-fec641e6e25a`,
+trạng thái `TAM`, đối tác "Khách lẻ"), bốn dòng trải trên **hai kho khác
+nhau** (`LGPCX` số 5 + `HSP-20A-I` số 3 tại Kho 1; `VITAL165` số 7 +
+`VITAL164` số 2 tại Kho 2) — đúng kịch bản "ít nhất 4 dòng, hai kho khác
+nhau" mà bước 1 của checkpoint Task 4 cần, để người kiểm khỏi phải tự gõ đơn
+mới. Đã xác nhận qua gọi HTTP với cookie phiên thật (`quan_ly`) rằng cả
+`/dat-hang/{id}` và `/dat-hang/{id}/in` trả 200, không có "Application
+error", `<title>` đúng "Đơn đặt hàng · Kho Minh Vũ" và "In phiếu đi lấy hàng
+· Kho Minh Vũ". **Chưa xác nhận bằng mắt** thứ tự nhóm theo kho khi in
+(Ctrl+P), hành vi nút ẩn/hiện theo vai trò, modal lý do mở khóa/đóng sớm, hay
+luồng "Tạo phiếu xuất" — đó là đúng phạm vi checkpoint Task 4.
+
+**Task 4 là `checkpoint:human-verify` (gate="blocking") — CHƯA đóng.** Agent
+không có trình duyệt, không được tự đánh giá thay. Người dùng cần tự đăng
+xuất/đăng nhập lần lượt `vanphong@khominhvu.local` rồi
+`quanly@khominhvu.local`, mở `http://localhost:3000/dat-hang/7edccba7-17da-411d-a287-fec641e6e25a`
+(đơn đã tạo sẵn ở trên), rồi làm đúng tám bước ở `04-12-PLAN.md` Task 4.
+**Chưa có `04-12-SUMMARY.md`, STATE.md chưa tăng bộ đếm plan hoàn thành** —
+đúng tiền lệ của `04-05`/`04-09`/`04-11`: không tạo SUMMARY.md khi checkpoint
+còn mở, để `state update-progress`/`roadmap update-plan-progress` (đếm theo
+số file SUMMARY.md có trên đĩa) không báo nhầm phase đã tiến thêm một plan.
+Chỉ đóng khi người dùng trả lời "đạt" hoặc mọi bước lệch đã sửa xong._
+
 ## Performance Metrics
 
 **Velocity:**
@@ -211,6 +245,8 @@ Recent decisions affecting current work:
 - [Phase 04]: Thêm /dat-hang vào scripts/test-route-permissions.ts ngay ở plan 04-08 (sớm hơn dự kiến 04-15) vì success criteria của lượt thực thi yêu cầu script phải chạy qua — 70/70 ô đúng
 - [Phase 04]: order-line-table.tsx (04-09) vuot 200 dong, tach thanh order-line-table (dieu phoi) + order-line-columns (cot thuan) + order-line-entry-row (hang nhap lieu ban phim) - onKeyDownCapture that su nam trong ProductSearchInput dung chung (04-05), khong lap lai o file dieu phoi
 - [Phase 04]: IssueRow (04-10) mo rong DocumentRow them orderId/orderNo thay vi sua chu ky RPC danh_sach_chung_tu (dung chung nhap/xuat/tra) - issue.api.ts tu noi du lieu bang hai luot doc rieng (chung_tu -> don_dat_hang), tranh migration DROP+CREATE function tren database that
+- [Phase 04]: group-lines-by-warehouse.ts (04-12) la ham thuan rieng, khong dat trong types.ts/order-status.ts - gom dong theo (ten kho, ma hang) roi tra mang xen ke {kind:"group"}|{kind:"line"}, ma thieu kho mac dinh gom vao nhom "Chua gan kho" o CUOI (khong xen giua cac kho da co ten) vi don da xac nhan van co the chua ma thieu kho mac dinh - RPC chi chan luc tao phieu xuat (0056), khong chan luc them dong vao don
+- [Phase 04]: order-actions.tsx (04-12) goi ca hai hook useUnlockOrder/useCloseOrderEarly khong dieu kien trong OrderStatusDialog du chi mot cai dung theo mode - giu dung Rules of Hooks, don gian hon viec dieu kien hoa hook theo prop mode co the doi
 
 ### Pending Todos
 
