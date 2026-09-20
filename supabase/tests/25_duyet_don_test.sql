@@ -69,6 +69,7 @@ select throws_ok(
   'thukho1 insert don_dat_hang bi tu choi 42501'
 );
 
+select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('chixem@khominhvu.local');
 select throws_ok(
   $$ insert into public.don_dat_hang (so_dh, doi_tac_id)
@@ -77,6 +78,7 @@ select throws_ok(
   'chi_xem insert don_dat_hang bi tu choi 42501'
 );
 
+select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 insert into public.don_dat_hang (so_dh, doi_tac_id)
 select 'DH-TEST-VANPHONG', doi_tac_id from t_ddh;
@@ -85,6 +87,7 @@ select ok(
   'van_phong insert don_dat_hang thanh cong'
 );
 
+select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 insert into public.don_dat_hang (so_dh, doi_tac_id)
 select 'DH-TEST-QUANLY', doi_tac_id from t_ddh;
@@ -105,6 +108,7 @@ select (select don_id from t_don), sp_a, 10 from t_ddh;
 -- 5-6: don_dat_hang_dong insert khi don TAM — thu_kho 42501, van_phong thanh cong
 -- (dòng của van_phong ở trên đã chứng minh van_phong; thêm một dòng nữa).
 -- =============================================================================
+select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 select throws_ok(
   format($$ insert into public.don_dat_hang_dong (don_dat_hang_id, san_pham_id, so_luong_dat)
@@ -113,6 +117,7 @@ select throws_ok(
   'thukho1 insert don_dat_hang_dong vao don TAM bi tu choi 42501'
 );
 
+select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select ok(
   (select count(*) = 1 from public.don_dat_hang_dong where don_dat_hang_id = (select don_id from t_don)),
@@ -122,6 +127,7 @@ select ok(
 -- =============================================================================
 -- 7-9: xac_nhan_don — van_phong 42501, quan_ly thanh cong, goi lan hai 23514
 -- =============================================================================
+select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select throws_ok(
   format($$ select public.xac_nhan_don(%L) $$, (select don_id from t_don)),
@@ -129,6 +135,7 @@ select throws_ok(
   'van_phong goi xac_nhan_don bi tu choi 42501'
 );
 
+select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 select public.xac_nhan_don((select don_id from t_don));
 select is(
@@ -146,6 +153,7 @@ select throws_ok(
 -- =============================================================================
 -- 10-11: don DA_XAC_NHAN khong sua duoc bang PATCH thang, sua duoc sau mo_khoa_don
 -- =============================================================================
+select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 update public.don_dat_hang set ghi_chu = 'thu sua khi da xac nhan'
 where id = (select don_id from t_don);
@@ -155,9 +163,11 @@ select is(
   'van_phong update don DA_XAC_NHAN bi RLS loc, 0 dong bi sua'
 );
 
+select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 select public.mo_khoa_don((select don_id from t_don), 'mo khoa de sua lai so luong');
 
+select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 update public.don_dat_hang set ghi_chu = 'da sua duoc sau khi mo khoa'
 where id = (select don_id from t_don);
@@ -170,6 +180,7 @@ select is(
 -- =============================================================================
 -- 12: mo_khoa_don voi ly do qua ngan -> 23514
 -- =============================================================================
+select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 select public.xac_nhan_don((select don_id from t_don));
 select throws_ok(
@@ -191,7 +202,10 @@ select is(
 -- =============================================================================
 -- 14-15: nhat_ky_sua co dong voi bang='don_dat_hang', truong='trang_thai'.
 -- KHONG dung order by cot thoi gian: trong mot transaction now() khong doi.
+-- nhat_ky_sua bi REVOKE ALL khoi anon/authenticated (0027) - doc truc tiep
+-- phai o ngu canh khong JWT (dang_xuat), dung khuon 70_nhat_ky_sua_test.sql.
 -- =============================================================================
+select pg_temp.dang_xuat();
 select ok(
   exists (
     select 1 from public.nhat_ky_sua

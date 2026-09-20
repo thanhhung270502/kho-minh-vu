@@ -69,6 +69,7 @@ select isnt(
 );
 
 -- ─── 5-7: quyen theo vai tro (D-06) ─────────────────────────────────────────
+select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('chixem@khominhvu.local');
 select throws_ok(
   $$ select public.sinh_so_dh(2091::smallint) $$,
@@ -76,6 +77,7 @@ select throws_ok(
   'chi_xem goi sinh_so_dh bi tu choi 42501'
 );
 
+select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 select throws_ok(
   $$ select public.sinh_so_dh(2091::smallint) $$,
@@ -83,6 +85,7 @@ select throws_ok(
   'thukho1 goi sinh_so_dh bi tu choi 42501 - D-06 ep o tang database'
 );
 
+select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select lives_ok(
   $$ select public.sinh_so_dh(2091::smallint) $$,

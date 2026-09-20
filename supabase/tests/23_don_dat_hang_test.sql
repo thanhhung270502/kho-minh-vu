@@ -73,14 +73,20 @@ select pg_temp.sp_test('DDH-ZQX-A') as sp_a,
        (select id from public.doi_tac limit 1) as dt;
 grant select on t_ddh to authenticated;
 
--- Đơn A: DA_XAC_NHAN, hai dòng, sẽ giao đủ cả hai.
+-- Đơn A: hai dòng, sẽ giao đủ cả hai.
+-- [Rule 1 - fix từ 0052] Chèn dòng khi đơn còn TAM (policy "tao dong don dat
+-- hang" của 0052 đòi cha đang TAM lúc insert dòng), rồi chuyển DA_XAC_NHAN
+-- bằng UPDATE trực tiếp — "sua don dat hang" của 0052 chỉ chặn theo TRẠNG
+-- THÁI HIỆN TẠI của dòng (using: trang_thai = 'TAM'), không chặn giá trị đích.
 insert into public.don_dat_hang (so_dh, doi_tac_id, trang_thai)
-select 'DH-ZQX-A', dt, 'DA_XAC_NHAN' from t_ddh;
+select 'DH-ZQX-A', dt, 'TAM' from t_ddh;
 
 insert into public.don_dat_hang_dong (don_dat_hang_id, san_pham_id, so_luong_dat)
 select (select id from public.don_dat_hang where so_dh = 'DH-ZQX-A'), sp_a, 10 from t_ddh;
 insert into public.don_dat_hang_dong (don_dat_hang_id, san_pham_id, so_luong_dat)
 select (select id from public.don_dat_hang where so_dh = 'DH-ZQX-A'), sp_b, 5 from t_ddh;
+
+update public.don_dat_hang set trang_thai = 'DA_XAC_NHAN' where so_dh = 'DH-ZQX-A';
 
 -- Phiếu xuất gắn đơn A, ly_do_xuat_am đặt sẵn để không cần dựng tồn thật
 -- (bỏ qua khối kiểm xuất âm trong ghi_so_chung_tu, không liên quan mục tiêu test này).
@@ -119,13 +125,16 @@ select is(
 );
 
 -- ─── 8: đơn DA_XAC_NHAN chỉ giao MỘT PHẦN thì vẫn DA_XAC_NHAN ───────────────
+-- Cùng khuôn TAM -> insert dòng -> UPDATE sang DA_XAC_NHAN như đơn A ở trên.
 insert into public.don_dat_hang (so_dh, doi_tac_id, trang_thai)
-select 'DH-ZQX-B', dt, 'DA_XAC_NHAN' from t_ddh;
+select 'DH-ZQX-B', dt, 'TAM' from t_ddh;
 
 insert into public.don_dat_hang_dong (don_dat_hang_id, san_pham_id, so_luong_dat)
 select (select id from public.don_dat_hang where so_dh = 'DH-ZQX-B'), sp_a, 10 from t_ddh;
 insert into public.don_dat_hang_dong (don_dat_hang_id, san_pham_id, so_luong_dat)
 select (select id from public.don_dat_hang where so_dh = 'DH-ZQX-B'), sp_b, 5 from t_ddh;
+
+update public.don_dat_hang set trang_thai = 'DA_XAC_NHAN' where so_dh = 'DH-ZQX-B';
 
 insert into public.chung_tu (so_ct, loai_ct, kho_id, doi_tac_id, don_dat_hang_id, ly_do_xuat_am, ghi_chu_ly_do)
 select 'XU-ZQX-B', 'XUAT', k1, dt, (select id from public.don_dat_hang where so_dh = 'DH-ZQX-B'),
