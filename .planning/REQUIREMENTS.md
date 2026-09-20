@@ -57,7 +57,7 @@
 
 ### Đơn đặt hàng (DDH)
 
-- [ ] **DDH-01**: Tạo đơn đặt hàng theo khách với nhiều dòng và ngày giao dự kiến
+- [x] **DDH-01**: Tạo đơn đặt hàng theo khách với nhiều dòng và ngày giao dự kiến
 - [x] **DDH-02**: Xem số đã xuất và còn lại của từng dòng đơn đặt hàng
 - [x] **DDH-03**: Trạng thái đơn tự chuyển `MOI` → `DA_XUAT_MOT_PHAN` → `DA_XUAT_DU` theo phiếu xuất
 - [ ] **DDH-04**: Tạo phiếu xuất thẳng từ đơn đặt hàng, các dòng được bê sang nguyên vẹn
@@ -199,7 +199,7 @@
 | NHAP-06 | Phase 3 | Pending |
 | NHAP-07 | Phase 3 | Pending |
 | NHAP-08 | Phase 3 | Pending |
-| DDH-01 | Phase 4 | Pending |
+| DDH-01 | Phase 4 | Complete |
 | DDH-02 | Phase 4 | Complete |
 | DDH-03 | Phase 4 | Complete |
 | DDH-04 | Phase 4 | Pending |

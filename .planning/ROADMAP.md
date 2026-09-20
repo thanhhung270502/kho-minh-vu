@@ -114,7 +114,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 04-02-PLAN.md — RPC duyệt đơn (xác nhận / mở khóa / đóng sớm), khóa sửa đơn đã duyệt, bộ cấp số đơn
+- [x] 04-02-PLAN.md — RPC duyệt đơn (xác nhận / mở khóa / đóng sớm), khóa sửa đơn đã duyệt, bộ cấp số đơn
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
