@@ -5,21 +5,19 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
+import {
+  addDocumentLine,
+  deleteDocumentLine,
+  fetchDocumentDetail,
+  fetchDocumentLines,
+  postDocument,
+  updateDocumentHeader,
+  updateDocumentLine,
+  voidDocument,
+} from "@/features/documents/api/document.api";
 import { productKeys } from "@/features/products/api/product.keys";
 
-import {
-  addReceiptLine,
-  createReceipt,
-  deleteReceiptLine,
-  fetchReceiptDetail,
-  fetchReceiptLines,
-  fetchReceipts,
-  postReceipt,
-  updateReceiptHeader,
-  updateReceiptLine,
-  voidReceipt,
-  type NewReceiptHeader,
-} from "../api/receipt.api";
+import { createReceipt, fetchReceipts, type NewReceiptHeader } from "../api/receipt.api";
 import { receiptKeys } from "../api/receipt.keys";
 import type {
   DocumentHeaderInput,
@@ -38,7 +36,7 @@ export function useReceipts(filter: ReceiptFilter) {
 export function useReceiptDetail(id: string) {
   return useQuery({
     queryKey: receiptKeys.detail(id),
-    queryFn: () => fetchReceiptDetail(id),
+    queryFn: () => fetchDocumentDetail(id),
     // Ngăn kéo/tạo mới truyền id rỗng — không chặn là bắn RPC uuid rỗng (bẫy 10).
     enabled: id !== "",
   });
@@ -47,7 +45,7 @@ export function useReceiptDetail(id: string) {
 export function useReceiptLines(id: string) {
   return useQuery({
     queryKey: receiptKeys.lines(id),
-    queryFn: () => fetchReceiptLines(id),
+    queryFn: () => fetchDocumentLines(id),
     enabled: id !== "",
   });
 }
@@ -77,7 +75,7 @@ export function useUpdateReceiptHeader(id: string) {
   const refresh = useRefreshReceipt(id);
   return useMutation({
     mutationFn: (input: Partial<DocumentHeaderInput>) =>
-      updateReceiptHeader(id, input),
+      updateDocumentHeader(id, input),
     onSuccess: refresh,
   });
 }
@@ -85,7 +83,7 @@ export function useUpdateReceiptHeader(id: string) {
 export function useAddReceiptLine(documentId: string) {
   const refresh = useRefreshReceipt(documentId);
   return useMutation({
-    mutationFn: (line: DocumentLineInput) => addReceiptLine(documentId, line),
+    mutationFn: (line: DocumentLineInput) => addDocumentLine(documentId, line),
     onSuccess: refresh,
   });
 }
@@ -94,7 +92,7 @@ export function useUpdateReceiptLine(documentId: string) {
   const refresh = useRefreshReceipt(documentId);
   return useMutation({
     mutationFn: (input: { id: string; values: Partial<DocumentLineInput> }) =>
-      updateReceiptLine(input.id, input.values),
+      updateDocumentLine(input.id, input.values),
     onSuccess: refresh,
   });
 }
@@ -102,7 +100,7 @@ export function useUpdateReceiptLine(documentId: string) {
 export function useDeleteReceiptLine(documentId: string) {
   const refresh = useRefreshReceipt(documentId);
   return useMutation({
-    mutationFn: (id: string) => deleteReceiptLine(id),
+    mutationFn: (id: string) => deleteDocumentLine(id),
     onSuccess: refresh,
   });
 }
@@ -123,13 +121,13 @@ function useRefreshAfterPosting(id: string) {
 
 export function usePostReceipt(id: string) {
   const refresh = useRefreshAfterPosting(id);
-  return useMutation({ mutationFn: () => postReceipt(id), onSuccess: refresh });
+  return useMutation({ mutationFn: () => postDocument(id), onSuccess: refresh });
 }
 
 export function useVoidReceipt(id: string) {
   const refresh = useRefreshAfterPosting(id);
   return useMutation({
-    mutationFn: (reason: string) => voidReceipt(id, reason),
+    mutationFn: (reason: string) => voidDocument(id, reason),
     onSuccess: refresh,
   });
 }
