@@ -15,6 +15,7 @@ import {
   writeIssueFilterToUrl,
   type IssueFilter,
 } from "../schemas/issue.schema";
+import { CreateIssueButton } from "./create-issue-button";
 import { IssueFilterPanel } from "./issue-filter-panel";
 import { IssueTableBody } from "./issue-table-body";
 import { IssueToolbar } from "./issue-toolbar";
@@ -55,13 +56,7 @@ export function IssueTable({ canCreate }: { canCreate: boolean }) {
         <IssueToolbar
           filter={filter}
           onChange={changeFilter}
-          addButton={
-            canCreate ? (
-              <Button type="primary" disabled>
-                Tạo phiếu xuất
-              </Button>
-            ) : null
-          }
+          addButton={canCreate ? <CreateIssueButton /> : null}
         />
       }
     >
@@ -81,11 +76,7 @@ export function IssueTable({ canCreate }: { canCreate: boolean }) {
           ) : (
             <div className="flex flex-col items-center gap-3">
               <span>Chưa có phiếu xuất nào.</span>
-              {canCreate ? (
-                <Button type="primary" disabled>
-                  Tạo phiếu xuất
-                </Button>
-              ) : null}
+              {canCreate ? <CreateIssueButton label="Tạo phiếu đầu tiên" /> : null}
             </div>
           )
         }
