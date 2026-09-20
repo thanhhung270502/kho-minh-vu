@@ -42,6 +42,9 @@ const MA_TRAN: Dong[] = [
   // Cùng quyền xem với /nhap-kho — nút "Tạo đơn" ẩn/hiện là trang trí ở client
   // (canCreate), chặn thật nằm ở bốn policy ghi trên don_dat_hang (plan 04-02).
   { route: "/dat-hang", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
+  // Cùng quyền xem với /nhap-kho và /dat-hang — nút "Tạo phiếu xuất" ẩn/hiện
+  // là trang trí ở client (canCreate), chặn thật ở policy ghi trên chung_tu (0016).
+  { route: "/xuat-kho", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/danh-muc", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/doi-tac", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/doi-tac/ra-ghi-chu", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
