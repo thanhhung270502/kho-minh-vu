@@ -5,28 +5,36 @@ import { useState } from "react";
 
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 
-import { useVoidIssue } from "../hooks/useIssues";
-import type { IssueDetail } from "../types";
+import { useVoidDocument } from "../hooks/useDocuments";
+import type { DocumentDetail } from "../types";
 
-type Props = { issue: IssueDetail; canVoid: boolean };
+type ExtraKeys = ReadonlyArray<readonly unknown[]>;
+
+type Props = {
+  document: DocumentDetail;
+  canVoid: boolean;
+  extraInvalidateKeys?: ExtraKeys;
+};
 
 /**
- * Chỉ quản lý hủy được phiếu xuất đã ghi sổ (D-06) — hàm hủy ở tầng database
- * chặn mọi vai trò khác. Hủy sinh bút toán đảo, không xóa gì; tồn quay lại
- * nhưng giá vốn KHÔNG quay lại (hành vi đã chốt từ Phase 3). Tự chứa cả nút
- * bấm lẫn hộp thoại — chỉ hiện khi phiếu đã ghi sổ và tài khoản có quyền.
+ * Nâng từ `features/stock-out/components/void-issue-dialog.tsx` lên đây —
+ * `features/returns` dùng lại nguyên vẹn. Chỉ quản lý hủy được chứng từ đã
+ * ghi sổ (D-06/D-15) — hàm hủy ở tầng database chặn mọi vai trò khác. Hủy
+ * sinh bút toán đảo, không xóa gì; tồn quay lại nhưng giá vốn KHÔNG quay lại.
+ * Tự chứa cả nút bấm lẫn hộp thoại — chỉ hiện khi phiếu đã ghi sổ và tài
+ * khoản có quyền.
  */
-export function VoidIssueDialog({ issue, canVoid }: Props) {
+export function VoidDocumentDialog({ document, canVoid, extraInvalidateKeys }: Props) {
   const { message } = App.useApp();
-  const voidIssue = useVoidIssue(issue.id);
+  const voidDoc = useVoidDocument(document.id, { extraKeys: extraInvalidateKeys });
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  if (issue.status !== "HOAN_THANH" || !canVoid) return null;
+  if (document.status !== "HOAN_THANH" || !canVoid) return null;
 
   function close() {
-    if (voidIssue.isPending) return;
+    if (voidDoc.isPending) return;
     setOpen(false);
     setReason("");
     setError(null);
@@ -38,12 +46,12 @@ export function VoidIssueDialog({ issue, canVoid }: Props) {
       return;
     }
     try {
-      await voidIssue.mutateAsync(reason.trim());
-      message.success(`Đã hủy phiếu ${issue.docNo}`);
+      await voidDoc.mutateAsync(reason.trim());
+      message.success(`Đã hủy phiếu ${document.docNo}`);
       close();
     } catch (caught) {
       if (errorCode(caught) === "42501") {
-        setError("Chỉ quản lý hủy được phiếu xuất đã ghi sổ.");
+        setError("Chỉ quản lý hủy được chứng từ đã ghi sổ.");
         return;
       }
       if (isPostgrestError(caught) && caught.code === "23514") {
@@ -63,11 +71,11 @@ export function VoidIssueDialog({ issue, canVoid }: Props) {
 
       <Modal
         open={open}
-        title={`Hủy phiếu ${issue.docNo}?`}
+        title={`Hủy phiếu ${document.docNo}?`}
         okText="Hủy phiếu"
         okButtonProps={{ danger: true }}
         cancelText="Thôi"
-        confirmLoading={voidIssue.isPending}
+        confirmLoading={voidDoc.isPending}
         mask={{ closable: false }}
         onOk={() => void run()}
         onCancel={close}
@@ -86,7 +94,9 @@ export function VoidIssueDialog({ issue, canVoid }: Props) {
                 <strong>Giá vốn KHÔNG quay lại</strong> — bình quân gia quyền là trung bình lịch
                 sử, không hoàn tác được.
               </li>
-              <li>Tiến độ đơn gắn với phiếu này (nếu có) sẽ tính lại theo số đã xuất còn lại.</li>
+              {document.orderId ? (
+                <li>Tiến độ đơn gắn với phiếu này sẽ tính lại theo số đã xuất còn lại.</li>
+              ) : null}
             </ul>
           }
         />

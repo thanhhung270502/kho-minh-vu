@@ -3,16 +3,17 @@ import { z } from "zod";
 import { readDate, readUuid } from "@/features/documents/lib/url-filter";
 import type { Database } from "@/types/database.types";
 
-import { NEGATIVE_REASONS } from "../lib/negative-reasons";
 import type { DocStatus } from "../types";
 
 export {
   documentHeaderSchema,
   documentLineSchema,
+  negativeReasonSchema,
   toDocumentLineUpdate,
   toDocumentUpdate,
   type DocumentHeaderInput,
   type DocumentLineInput,
+  type NegativeReasonInput,
 } from "@/features/documents/schemas/document.schema";
 
 // --- Bộ lọc trên URL (`/xuat-kho`) -------------------------------------------
@@ -98,29 +99,6 @@ export function toIssueListRpcArgs(filter: IssueFilter): ListArgs {
     p_kich_thuoc: ISSUE_PAGE_SIZE,
   };
 }
-
-// --- Lý do xuất âm (D-11) -----------------------------------------------------
-
-export const negativeReasonSchema = z
-  .object({
-    code: z.enum(NEGATIVE_REASONS),
-    note: z
-      .string()
-      .trim()
-      .nullable()
-      .transform((value) => value || null),
-  })
-  .superRefine((value, ctx) => {
-    if (value.code === "KHAC" && (value.note?.length ?? 0) < 5) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["note"],
-        message: "Chọn Khác thì phải ghi rõ lý do",
-      });
-    }
-  });
-
-export type NegativeReasonInput = z.infer<typeof negativeReasonSchema>;
 
 // --- Tạo phiếu xuất không cần đơn (XUAT-02) -----------------------------------
 

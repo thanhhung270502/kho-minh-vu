@@ -139,6 +139,16 @@ export function toDocumentDetail(row: DocumentDetailDb): DocumentDetail {
   };
 }
 
+/**
+ * D-12: dòng đổi màu ngay khi số ghi sổ vượt tồn hiện tại. Chỉ có ý nghĩa
+ * với chứng từ làm GIẢM tồn (`XUAT`, `TRA_NCC`) — gọi cho chứng từ khác thì
+ * phép so sánh vẫn đúng cú pháp nhưng vô nghĩa nghiệp vụ, caller tự lọc bằng
+ * `documentCanGoNegative()` (`lib/doc-type-labels.ts`) trước khi dùng.
+ */
+export function exceedsStock(line: DocumentLine): boolean {
+  return line.quantity > line.currentStock;
+}
+
 export function toDocumentLine(row: DocumentLineDb): DocumentLine {
   return {
     id: row.id,

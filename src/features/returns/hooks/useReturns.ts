@@ -2,18 +2,24 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { documentKeys } from "@/features/documents/api/document.keys";
-import { productKeys } from "@/features/products/api/product.keys";
+import {
+  usePostDocument,
+  useVoidDocument,
+} from "@/features/documents/hooks/useDocuments";
 
 import {
   createReturn,
   deleteReturnLine,
   fetchReturnDetail,
   fetchReturnLines,
-  postReturn,
   returnKeys,
   updateReturnLine,
 } from "../api/return.api";
+
+export {
+  useSaveNegativeReason,
+  useClearNegativeReason,
+} from "@/features/documents/hooks/useDocuments";
 
 export function useCreateReturn() {
   const queryClient = useQueryClient();
@@ -68,16 +74,15 @@ export function useDeleteReturnLine(id: string) {
   });
 }
 
-/** Ghi sổ phiếu trả đổi tồn — làm mới cả cache danh mục lẫn mọi danh sách chứng từ. */
+/**
+ * Ghi sổ/hủy phiếu trả — dùng chung hook của `features/documents` (nâng lên
+ * plan 04-14, xem `stock-out/hooks/useIssues.ts`). Không có `extraKeys`
+ * riêng: phiếu trả không gắn tiến độ đơn nào cần làm mới thêm.
+ */
 export function usePostReturn(id: string) {
-  const queryClient = useQueryClient();
-  const refresh = useRefreshReturn(id);
-  return useMutation({
-    mutationFn: () => postReturn(id),
-    onSuccess: () => {
-      refresh();
-      void queryClient.invalidateQueries({ queryKey: productKeys.all });
-      void queryClient.invalidateQueries({ queryKey: documentKeys.all });
-    },
-  });
+  return usePostDocument(id);
+}
+
+export function useVoidReturn(id: string) {
+  return useVoidDocument(id);
 }

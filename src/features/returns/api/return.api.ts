@@ -12,10 +12,14 @@ export const returnKeys = {
 export {
   fetchDocumentDetail as fetchReturnDetail,
   fetchDocumentLines as fetchReturnLines,
-  postDocument as postReturn,
   updateDocumentLine as updateReturnLine,
   deleteDocumentLine as deleteReturnLine,
   voidDocument as voidReturn,
+  saveNegativeReason,
+  clearNegativeReason,
+  // `TRA_NCC` là loại phiếu trả duy nhất có thể làm tồn âm (D-15) — dùng
+  // đúng hàm ghi sổ có lưu lý do trước, giống `postIssue` của `stock-out`.
+  postDocumentWithReason as postReturn,
 } from "@/features/documents/api/document.api";
 
 /**

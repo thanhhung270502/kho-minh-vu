@@ -8,6 +8,7 @@ export type { DocStatus } from "@/features/documents/types";
 export {
   DOC_STATUS_COLORS,
   DOC_STATUS_LABELS,
+  exceedsStock,
   toDocumentDetail,
   toDocumentLine,
   toDocumentRow,
@@ -66,12 +67,4 @@ export function toSimilarCode(row: SimilarCodeDb): SimilarCode {
     stock: Number(row.ton),
     similarity: Number(row.do_giong),
   };
-}
-
-/**
- * D-12: dòng đổi màu ngay khi số xuất vượt tồn, và quyết định có bắt buộc
- * chọn lý do xuất âm hay không trước khi ghi sổ.
- */
-export function exceedsStock(line: IssueLine): boolean {
-  return line.quantity > line.currentStock;
 }

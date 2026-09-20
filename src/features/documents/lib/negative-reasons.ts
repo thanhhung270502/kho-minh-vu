@@ -3,6 +3,11 @@
  * File thuần, không gắn chỉ thị client component nào (bẫy 9): màn in và
  * Server Component cũng có thể cần đọc nhãn.
  *
+ * Dùng chung cho HAI chiều làm giảm tồn: `XUAT` (stock-out) và `TRA_NCC`
+ * (trả hàng NCC, features/returns) — `ghi_so_chung_tu` ép `ly_do_xuat_am`
+ * cho cả hai loại này (0011/0041). `TRA_KHACH` không dùng file này vì trả
+ * hàng khách làm tồn TĂNG, không bao giờ cần lý do.
+ *
  * Thứ tự có ý nghĩa: `MA_BI_TACH` đứng đầu vì đó là nguyên nhân gốc người dùng
  * chỉ ra (mã bị tách/xuất nhầm mã do quy chuẩn mã thay đổi giữa chừng — xem
  * 04-CONTEXT.md mục <specifics>), sẽ là lựa chọn nằm trên cùng trong giao diện.

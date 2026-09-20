@@ -3,18 +3,23 @@
 import { Alert, Button, Space, Tag } from "antd";
 import Link from "next/link";
 
+import { NegativeStockPanel } from "@/features/documents/components/negative-stock-panel";
+import { PostDocumentButton } from "@/features/documents/components/post-document-button";
+import { VoidDocumentDialog } from "@/features/documents/components/void-document-dialog";
+import { negativeReasonLabel } from "@/features/documents/lib/negative-reasons";
+import { ReturnButton } from "@/features/returns/components/return-button";
+import { orderKeys } from "@/features/sales-order/api/order.keys";
 import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
 
 import { useIssueDetail, useIssueLines } from "../hooks/useIssues";
-import { negativeReasonLabel } from "../lib/negative-reasons";
 import { DOC_STATUS_COLORS, DOC_STATUS_LABELS } from "../types";
 import type { IssuePermissions } from "../types";
 import { IssueHeader } from "./issue-header";
 import { IssueLineTable } from "./issue-line-table";
-import { NegativeStockPanel } from "./negative-stock-panel";
-import { PostIssueButton } from "./post-issue-button";
-import { VoidIssueDialog } from "./void-issue-dialog";
+import { SimilarCodeHint } from "./similar-code-hint";
+
+const ORDER_KEYS = [orderKeys.all];
 
 export function IssueDetailView({
   id,
@@ -50,16 +55,6 @@ export function IssueDetailView({
         const editable = permissions.canEdit && issue.status === "NHAP_LIEU";
         const issueLines = lines.data ?? [];
 
-        // Nguồn gốc của phiếu này: hoặc sinh từ đơn (XUAT thường), hoặc là
-        // phiếu trả có chứng từ gốc (TRA_KHACH/TRA_NCC — dùng chung component
-        // này cho màn phiếu trả của plan 04-14 nếu route đó thuận tiện; nếu
-        // không thì 04-14 tự dựng view riêng, phần dưới đây vẫn đúng vì tự
-        // suy route theo docType, không hard-code "/xuat-kho").
-        const sourceHref =
-          issue.docType === "TRA_NCC"
-            ? `/nhap-kho/${issue.sourceDocId}`
-            : `/xuat-kho/${issue.sourceDocId}`;
-
         return (
           <>
             <Link href="/xuat-kho" className="mb-2 inline-block text-sm">
@@ -79,19 +74,21 @@ export function IssueDetailView({
                       Từ đơn {issue.orderNo}
                     </Link>
                   ) : null}
-                  {issue.sourceDocId ? (
-                    <Link href={sourceHref} className="text-sm">
-                      Từ chứng từ {issue.sourceDocNo}
-                    </Link>
-                  ) : null}
                 </span>
               }
               actions={
-                // Nút in phiếu giao hàng và nút "Khách trả hàng" cắm vào đây ở
-                // plan 04-14.
                 <Space wrap>
-                  <VoidIssueDialog issue={issue} canVoid={permissions.canVoid} />
-                  <PostIssueButton issue={issue} lines={issueLines} canEdit={permissions.canEdit} />
+                  <Link href={`/xuat-kho/${id}/in`} target="_blank">
+                    <Button>In phiếu giao hàng</Button>
+                  </Link>
+                  <ReturnButton document={issue} canEdit={permissions.canEdit} />
+                  <VoidDocumentDialog document={issue} canVoid={permissions.canVoid} />
+                  <PostDocumentButton
+                    document={issue}
+                    lines={issueLines}
+                    canEdit={permissions.canEdit}
+                    extraInvalidateKeys={ORDER_KEYS}
+                  />
                 </Space>
               }
             />
@@ -109,7 +106,7 @@ export function IssueDetailView({
             <IssueHeader issue={issue} canEdit={permissions.canEdit} />
 
             <NegativeStockPanel
-              issueId={issue.id}
+              documentId={issue.id}
               lines={issueLines}
               reason={
                 issue.negativeReason
@@ -117,6 +114,7 @@ export function IssueDetailView({
                   : null
               }
               editable={editable}
+              renderLineExtra={(line) => <SimilarCodeHint issueId={issue.id} line={line} />}
             />
 
             <div className="mt-4">

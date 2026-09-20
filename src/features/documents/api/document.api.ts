@@ -16,6 +16,7 @@ import {
   type DocumentLine,
   type DocumentRow,
 } from "../types";
+import type { NegativeReasonCode } from "../lib/negative-reasons";
 
 type ListArgs = Database["public"]["Functions"]["danh_sach_chung_tu"]["Args"];
 
@@ -137,4 +138,55 @@ export async function voidDocument(id: string, reason: string): Promise<void> {
     p_ly_do: reason,
   });
   if (error) throw error;
+}
+
+/** Lưu lý do xuất âm (D-11) vào đầu phiếu. Ghi chú `null` khi không phải "Khác". */
+export async function saveNegativeReason(
+  id: string,
+  reason: { code: NegativeReasonCode; note: string | null },
+): Promise<void> {
+  const { error, count } = await getSupabaseBrowserClient()
+    .from("chung_tu")
+    .update(
+      { ly_do_xuat_am: reason.code, ghi_chu_ly_do: reason.note },
+      { count: "exact" },
+    )
+    .eq("id", id);
+  if (error) throw error;
+  if (!count) {
+    throw new Error(
+      "Không lưu được lý do xuất âm — phiếu đã ghi sổ hoặc thiếu quyền.",
+    );
+  }
+}
+
+/** Người dùng bỏ chọn lý do — phải xóa cả hai cột, không thì phiếu sau vẫn mang lý do cũ. */
+export async function clearNegativeReason(id: string): Promise<void> {
+  const { error, count } = await getSupabaseBrowserClient()
+    .from("chung_tu")
+    .update({ ly_do_xuat_am: null, ghi_chu_ly_do: null }, { count: "exact" })
+    .eq("id", id);
+  if (error) throw error;
+  if (!count) {
+    throw new Error(
+      "Không xóa được lý do xuất âm — phiếu đã ghi sổ hoặc thiếu quyền.",
+    );
+  }
+}
+
+/**
+ * Hàm ghi sổ ở tầng database đọc `ly_do_xuat_am` từ đầu phiếu ĐÃ LƯU, không
+ * nhận lý do qua tham số. Vì vậy lý do (nếu có) phải được lưu TRƯỚC khi gọi
+ * `postDocument` — sai thứ tự này thì ghi sổ trả về 23514 "phải chọn lý do"
+ * dù người dùng đã chọn. Dùng cho cả `XUAT` (stock-out) và `TRA_NCC` (returns)
+ * — hai loại duy nhất có thể làm tồn âm.
+ */
+export async function postDocumentWithReason(
+  id: string,
+  reason?: { code: NegativeReasonCode; note: string | null },
+): Promise<void> {
+  if (reason) {
+    await saveNegativeReason(id, reason);
+  }
+  await postDocument(id);
 }

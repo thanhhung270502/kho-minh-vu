@@ -15,22 +15,17 @@ import {
   updateDocumentHeader,
   updateDocumentLine,
 } from "@/features/documents/api/document.api";
-import { productKeys } from "@/features/products/api/product.keys";
+import { usePostDocument, useVoidDocument } from "@/features/documents/hooks/useDocuments";
 import { orderKeys } from "@/features/sales-order/api/order.keys";
 
 import {
-  clearNegativeReason,
   createIssue,
   fetchIssues,
   fetchSimilarCodes,
-  postIssue,
   proposeMerge,
-  saveNegativeReason,
-  voidIssue,
   type NewIssueInput,
 } from "../api/issue.api";
 import { issueKeys } from "../api/issue.keys";
-import type { NegativeReasonCode } from "../lib/negative-reasons";
 import type { DocumentHeaderInput, DocumentLineInput, IssueFilter } from "../schemas/issue.schema";
 
 export function useIssues(filter: IssueFilter) {
@@ -124,58 +119,23 @@ export function useDeleteIssueLine(documentId: string) {
   });
 }
 
-export function useSaveNegativeReason(id: string) {
-  const refresh = useRefreshIssue(id);
-  return useMutation({
-    mutationFn: (reason: { code: NegativeReasonCode; note: string | null }) =>
-      saveNegativeReason(id, reason),
-    onSuccess: refresh,
-  });
-}
-
-/** Bỏ chọn lý do — chọn nhầm phải sửa được, và hết âm sau khi sửa số thì lý do cũ phải xóa đi được. */
-export function useClearNegativeReason(id: string) {
-  const refresh = useRefreshIssue(id);
-  return useMutation({
-    mutationFn: () => clearNegativeReason(id),
-    onSuccess: refresh,
-  });
-}
-
 /**
- * Ghi sổ và hủy làm ĐỔI TỒN và GIÁ VỐN — phải làm mới cả cache danh mục sản
- * phẩm, không chỉ cache phiếu (giống `useRefreshAfterPosting` của `stock-in`).
- * Riêng ghi sổ phiếu xuất còn gắn đơn: `so_luong_da_xuat` và trạng thái đơn
- * đổi theo (XUAT-05) nên phải làm mới thêm cache đơn.
+ * Ghi sổ/hủy dùng chung hook của `features/documents` (nâng lên plan 04-14 —
+ * `returns` dùng lại nguyên vẹn cho `TRA_KHACH`/`TRA_NCC`). Lý do xuất âm
+ * (`useSaveNegativeReason`/`useClearNegativeReason`) giờ gọi thẳng từ
+ * `@/features/documents/hooks/useDocuments` ở `NegativeStockPanel` — không
+ * còn wrapper riêng của `stock-out` vì không còn nơi nào khác cần đổi tên.
+ *
+ * Ghi sổ phiếu xuất còn gắn đơn: `so_luong_da_xuat` và trạng thái đơn đổi
+ * theo (XUAT-05) nên phải làm mới thêm cache đơn.
  */
-function useRefreshAfterPosting(id: string, refreshOrders: boolean) {
-  const queryClient = useQueryClient();
-  const refreshIssue = useRefreshIssue(id);
-
-  return () => {
-    refreshIssue();
-    void queryClient.invalidateQueries({ queryKey: productKeys.all });
-    if (refreshOrders) {
-      void queryClient.invalidateQueries({ queryKey: orderKeys.all });
-    }
-  };
-}
-
 export function usePostIssue(id: string) {
-  const refresh = useRefreshAfterPosting(id, true);
-  return useMutation({
-    mutationFn: (reason?: { code: NegativeReasonCode; note: string | null }) =>
-      postIssue(id, reason),
-    onSuccess: refresh,
-  });
+  return usePostDocument(id, { extraKeys: [orderKeys.all] });
 }
 
+/** Hủy phiếu xuất không cần làm mới cache đơn — hành vi giữ nguyên như trước plan 04-14. */
 export function useVoidIssue(id: string) {
-  const refresh = useRefreshAfterPosting(id, false);
-  return useMutation({
-    mutationFn: (reason: string) => voidIssue(id, reason),
-    onSuccess: refresh,
-  });
+  return useVoidDocument(id);
 }
 
 export function useSimilarCodes(productId: string, warehouseId: string) {

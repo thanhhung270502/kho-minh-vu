@@ -4,6 +4,7 @@ import { Button, Space } from "antd";
 import Link from "next/link";
 import { useState } from "react";
 
+import { ReturnButton } from "@/features/returns/components/return-button";
 import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
 
@@ -74,6 +75,8 @@ export function ReceiptDetailView({
                     lines={receiptLines}
                     canEdit={permissions.canEdit}
                   />
+
+                  <ReturnButton document={receipt} canEdit={permissions.canEdit} />
                 </Space>
               }
             />

@@ -1,20 +1,20 @@
 "use client";
 
 import { Alert, App, Button, Input, Radio, Space, Typography } from "antd";
-import { useState } from "react";
+import { Fragment, useState } from "react";
+import type { ReactNode } from "react";
 
 import { errorCode, explainError } from "@/shared/lib/errors";
 
-import { useClearNegativeReason, useSaveNegativeReason } from "../hooks/useIssues";
+import { useClearNegativeReason, useSaveNegativeReason } from "../hooks/useDocuments";
 import {
   NEGATIVE_REASONS,
   NEGATIVE_REASON_LABELS,
   negativeReasonLabel,
   type NegativeReasonCode,
 } from "../lib/negative-reasons";
-import { negativeReasonSchema } from "../schemas/issue.schema";
-import { exceedsStock, type IssueLine } from "../types";
-import { SimilarCodeHint } from "./similar-code-hint";
+import { negativeReasonSchema } from "../schemas/document.schema";
+import { exceedsStock, type DocumentLine } from "../types";
 
 function formatNumber(value: number): string {
   return Number(value).toLocaleString("vi-VN");
@@ -32,10 +32,16 @@ export const NEGATIVE_PANEL_DOM_ID = "khu-vuc-ly-do-xuat-am";
 type SavedReason = { code: string; note: string | null } | null;
 
 type Props = {
-  issueId: string;
-  lines: IssueLine[];
+  documentId: string;
+  lines: DocumentLine[];
   reason: SavedReason;
   editable: boolean;
+  /**
+   * Khe cắm mở rộng theo TỪNG dòng vượt tồn — `stock-out` dùng để hiện gợi ý
+   * mã gần giống + nút đề nghị gộp (D-14, `SimilarCodeHint`); `returns`
+   * (TRA_NCC) không cần, để trống.
+   */
+  renderLineExtra?: (line: DocumentLine) => ReactNode;
 };
 
 /**
@@ -43,11 +49,21 @@ type Props = {
  * không cần. Lưu ngay khi đổi lựa chọn/rời ô ghi chú, không đợi lúc ghi sổ,
  * để đóng tab quay lại vẫn còn lý do đã chọn. Chốt chặn THẬT nằm ở hàm ghi sổ
  * ở tầng database — khối này chỉ thu thập lý do và nói trước hậu quả.
+ *
+ * Nâng lên từ `features/stock-out` — `features/returns` (plan 04-14) dùng
+ * lại cho `TRA_NCC` (loại trả duy nhất có thể làm tồn âm). Caller tự quyết
+ * có hiện panel này hay không (`TRA_KHACH` không bao giờ hiện).
  */
-export function NegativeStockPanel({ issueId, lines, reason, editable }: Props) {
+export function NegativeStockPanel({
+  documentId,
+  lines,
+  reason,
+  editable,
+  renderLineExtra,
+}: Props) {
   const { message } = App.useApp();
-  const save = useSaveNegativeReason(issueId);
-  const clear = useClearNegativeReason(issueId);
+  const save = useSaveNegativeReason(documentId);
+  const clear = useClearNegativeReason(documentId);
 
   const overLines = lines.filter(exceedsStock);
 
@@ -113,7 +129,7 @@ export function NegativeStockPanel({ issueId, lines, reason, editable }: Props) 
             {overLines.map((line) => (
               <li key={line.id}>
                 {line.productCode} — {line.warehouseName ?? "—"} — tồn{" "}
-                {formatNumber(line.currentStock)} — xuất {formatNumber(line.quantity)}
+                {formatNumber(line.currentStock)} — số ghi sổ {formatNumber(line.quantity)}
               </li>
             ))}
           </ul>
@@ -175,9 +191,9 @@ export function NegativeStockPanel({ issueId, lines, reason, editable }: Props) 
         </Typography.Text>
       )}
 
-      {overLines.map((line) => (
-        <SimilarCodeHint key={line.id} issueId={issueId} line={line} />
-      ))}
+      {renderLineExtra
+        ? overLines.map((line) => <Fragment key={line.id}>{renderLineExtra(line)}</Fragment>)
+        : null}
     </div>
   );
 }

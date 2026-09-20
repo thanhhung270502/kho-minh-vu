@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import type { Database } from "@/types/database.types";
 
+import { NEGATIVE_REASONS } from "../lib/negative-reasons";
+
 /** KHÔNG dùng z.coerce.number(): InputNumber của antd đã trả number|null (bẫy 11). */
 export const documentHeaderSchema = z.object({
   partnerId: z.string().uuid("Chọn nhà cung cấp"),
@@ -44,6 +46,29 @@ export function toDocumentUpdate(
   if (input.note !== undefined) update.ghi_chu = input.note;
   return update;
 }
+
+// --- Lý do xuất âm (D-11) — dùng chung cho `XUAT` (stock-out) và `TRA_NCC` (returns) ---
+
+export const negativeReasonSchema = z
+  .object({
+    code: z.enum(NEGATIVE_REASONS),
+    note: z
+      .string()
+      .trim()
+      .nullable()
+      .transform((value) => value || null),
+  })
+  .superRefine((value, ctx) => {
+    if (value.code === "KHAC" && (value.note?.length ?? 0) < 5) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["note"],
+        message: "Chọn Khác thì phải ghi rõ lý do",
+      });
+    }
+  });
+
+export type NegativeReasonInput = z.infer<typeof negativeReasonSchema>;
 
 /** Ranh giới duy nhất đổi khóa miền sang tên cột `chung_tu_dong`. */
 export function toDocumentLineUpdate(
