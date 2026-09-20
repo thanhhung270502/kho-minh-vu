@@ -19,6 +19,7 @@ import { productKeys } from "@/features/products/api/product.keys";
 import { orderKeys } from "@/features/sales-order/api/order.keys";
 
 import {
+  clearNegativeReason,
   createIssue,
   fetchIssues,
   fetchSimilarCodes,
@@ -128,6 +129,15 @@ export function useSaveNegativeReason(id: string) {
   return useMutation({
     mutationFn: (reason: { code: NegativeReasonCode; note: string | null }) =>
       saveNegativeReason(id, reason),
+    onSuccess: refresh,
+  });
+}
+
+/** Bỏ chọn lý do — chọn nhầm phải sửa được, và hết âm sau khi sửa số thì lý do cũ phải xóa đi được. */
+export function useClearNegativeReason(id: string) {
+  const refresh = useRefreshIssue(id);
+  return useMutation({
+    mutationFn: () => clearNegativeReason(id),
     onSuccess: refresh,
   });
 }
