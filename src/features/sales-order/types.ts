@@ -120,3 +120,11 @@ export function toOrderLine(row: OrderLineDb): OrderLine {
 export function isFullyShipped(line: OrderLine): boolean {
   return line.remainingQuantity <= 0;
 }
+
+/** Ẩn/hiện ở client — chặn thật nằm ở bốn policy ghi của plan 04-02. */
+export type OrderPermissions = {
+  /** Tạo/sửa đơn còn ở trạng thái tạm, thêm/sửa/xóa dòng (D-06). */
+  canEdit: boolean;
+  /** Xác nhận, mở lại đơn đã xác nhận, đóng sớm — chỉ quản lý (D-06/D-07). */
+  canApprove: boolean;
+};
