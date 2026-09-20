@@ -202,6 +202,39 @@ async function layIdPhieuXuat(): Promise<string | null> {
   return data?.[0]?.id ?? null;
 }
 
+/** Lấy một id phiếu trả có thật để kiểm route chi tiết `/tra-hang/[id]` (plan 04-14). */
+async function layIdPhieuTra(): Promise<string | null> {
+  const kho = new Map<string, string>();
+  const sb = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    {
+      cookies: {
+        getAll: () => [...kho].map(([name, value]) => ({ name, value })),
+        setAll: (ds) => ds.forEach((c) => kho.set(c.name, c.value)),
+      },
+    },
+  );
+
+  const { error } = await sb.auth.signInWithPassword({
+    email: TAI_KHOAN.quanly,
+    password: samplePassword(),
+  });
+  if (error) return null;
+
+  // TRA_NCC hoặc TRA_KHACH đều được — route không phân biệt, chỉ cần MỘT
+  // phiếu trả có thật (bất kỳ loại nào) để kiểm ma trận quyền.
+  for (const loai of ["TRA_NCC", "TRA_KHACH"] as const) {
+    const { data } = await sb.rpc("danh_sach_chung_tu", {
+      p_loai_ct: loai,
+      p_trang: 1,
+      p_kich_thuoc: 1,
+    });
+    if (data?.[0]?.id) return data[0].id;
+  }
+  return null;
+}
+
 async function main() {
   try {
     await fetch(BASE_URL, { redirect: "manual" });
@@ -246,9 +279,22 @@ async function main() {
 
   const idPhieuXuat = await layIdPhieuXuat();
   if (idPhieuXuat) {
-    MA_TRAN.push({ route: `/xuat-kho/${idPhieuXuat}`, ky_vong: AI_CUNG_XEM });
+    // /in cùng quyền xem với trang chi tiết — bẫy 12, plan 04-14.
+    MA_TRAN.push(
+      { route: `/xuat-kho/${idPhieuXuat}`, ky_vong: AI_CUNG_XEM },
+      { route: `/xuat-kho/${idPhieuXuat}/in`, ky_vong: AI_CUNG_XEM },
+    );
   } else {
-    console.warn("⚠ chưa có phiếu xuất nào — bỏ qua route /xuat-kho/[id]");
+    console.warn("⚠ chưa có phiếu xuất nào — bỏ qua route /xuat-kho/[id] và /in");
+  }
+
+  const idPhieuTra = await layIdPhieuTra();
+  if (idPhieuTra) {
+    // Bẫy 12 (04-14-PLAN.md): route DUY NHẤT dạng này, không có màn danh
+    // sách /tra-hang — vẫn phải có dòng riêng trong ma trận, không đợi 04-15.
+    MA_TRAN.push({ route: `/tra-hang/${idPhieuTra}`, ky_vong: AI_CUNG_XEM });
+  } else {
+    console.warn("⚠ chưa có phiếu trả nào — bỏ qua route /tra-hang/[id]");
   }
 
   const role = Object.keys(cookie) as VaiTroTest[];
