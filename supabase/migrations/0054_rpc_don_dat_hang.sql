@@ -1,15 +1,19 @@
 -- =============================================================================
--- 0054 — RPC đọc đơn đặt hàng (Phase 4, plan 04-03)
+-- 0054 — RPC đọc cho màn đơn đặt hàng (DDH-01, DDH-02)
 --
--- DỰNG LẠI TỪ DATABASE (2026-09-20). Version này đã được áp lên cloud bởi một
--- phiên làm việc khác, file nguồn không có trong repo. Trích từ `pg_get_functiondef`.
+-- Cùng khuôn `danh_sach_chung_tu` / `chi_tiet_chung_tu` / `dong_chung_tu` của
+-- migration 0045: lọc và phân trang chạy ở server, `tong_so_dong` đi kèm mỗi
+-- dòng để giao diện khỏi gọi thêm một lượt đếm.
 --
--- Cùng khuôn `danh_sach_chung_tu` của 0045: lọc và phân trang chạy ở server,
--- `tong_so_dong` đi kèm mỗi dòng để giao diện khỏi gọi thêm một lượt đếm.
+-- Quyết định phân quyền đọc (chốt ở 04-03-PLAN.md, không lặp lại ở 04-CONTEXT.md
+-- cũ): cả BỐN vai trò đọc đơn, KHÔNG lọc theo kho — policy "doc don dat hang"
+-- của 0016 đã là `using (true)`, và tờ phiếu đi lấy hàng in ra là để thủ kho
+-- cầm. Chặn thật nằm ở chiều GHI (0052). Vì vậy ba hàm dưới đây chỉ kiểm
+-- "đã đăng nhập chưa", không kiểm vai trò/kho như `danh_sach_chung_tu`.
 --
--- D-04: bảng chỉ lưu trục DUYỆT. Trục GIAO không có cột nào — `chi_tiet_don` và
--- `danh_sach_don` cộng `so_luong_dat` với `so_luong_da_xuat` khi đọc, giao diện
--- tự suy ra "đã giao đủ / còn thiếu". Không có enum thứ hai.
+-- D-04: KHÔNG trả cột "còn lại" — `dong_don` trả cả `so_luong_dat` và
+-- `so_luong_da_xuat`, phép trừ làm ở mapper `types.ts` tầng client.
+-- Chốt 19/09 câu 7: đơn không để giá — không hàm nào dưới đây đọc cột đơn giá.
 -- =============================================================================
 
 create or replace function public.danh_sach_don(
@@ -23,9 +27,9 @@ create or replace function public.danh_sach_don(
 )
 returns table (
   id uuid, so_dh text, ngay_dh date, trang_thai public.trang_thai_ddh,
-  ngay_giao_du_kien date, doi_tac_id uuid, ten_doi_tac text,
-  so_dong bigint, tong_so_luong_dat numeric, tong_so_luong_da_xuat numeric,
-  ho_ten_nguoi_tao text, ghi_chu text, created_at timestamptz, tong_so_dong bigint
+  ngay_giao_du_kien date, doi_tac_id uuid, ten_doi_tac text, so_dong bigint,
+  tong_so_luong_dat numeric, tong_so_luong_da_xuat numeric, ho_ten_nguoi_tao text,
+  ghi_chu text, created_at timestamptz, tong_so_dong bigint
 )
 language plpgsql
 stable
@@ -79,6 +83,7 @@ begin
 end;
 $$;
 
+-- --- Chi tiết: header ---------------------------------------------------------
 create or replace function public.chi_tiet_don(p_id uuid)
 returns table (
   id uuid, so_dh text, ngay_dh date, trang_thai public.trang_thai_ddh,
@@ -110,6 +115,7 @@ begin
 end;
 $$;
 
+-- --- Chi tiết: các dòng -------------------------------------------------------
 create or replace function public.dong_don(p_id uuid)
 returns table (
   id uuid, san_pham_id uuid, ma_hang text, ten_hang text, ten_dvt text,
@@ -157,3 +163,10 @@ revoke all    on function public.chi_tiet_don(uuid) from public, anon;
 grant execute on function public.chi_tiet_don(uuid) to authenticated;
 revoke all    on function public.dong_don(uuid) from public, anon;
 grant execute on function public.dong_don(uuid) to authenticated;
+
+comment on function public.danh_sach_don(public.trang_thai_ddh, uuid, date, date, text, integer, integer) is
+  'Danh sách đơn đặt hàng, lọc + phân trang ở server, tong_so_dong là tổng đơn khớp bộ lọc trước phân trang. Cả bốn vai trò đọc được, không lọc theo kho (chặn ghi đã siết ở 0052).';
+comment on function public.chi_tiet_don(uuid) is
+  'Header đơn đặt hàng kèm tổng số lượng đặt/đã xuất của mọi dòng.';
+comment on function public.dong_don(uuid) is
+  'Các dòng của đơn đặt hàng. Không trả cột đơn giá (đơn không có giá) và không trả cột "còn lại" (D-04 — tính ở mapper client từ so_luong_dat - so_luong_da_xuat).';
