@@ -497,6 +497,29 @@ git config user.email "<email đã verify trên GitHub vutru-productionplanning-
 Không sửa được bằng code trong repo. Trước khi đào log build, kiểm tra state:
 `BLOCKED` là chuyện quyền, `ERROR` mới là chuyện code.
 
+### 17. Màn hình trắng khi khung trình duyệt bị ẩn — KHÔNG phải lỗi ứng dụng
+
+React 19 xếp hàng việc "hé" nội dung của `<Suspense>` qua view transition. Khi tài liệu
+đang ẩn (`document.hidden === true` — khung trình duyệt của Claude không được hiển thị,
+hoặc tab chạy nền), view transition không bao giờ khởi động, nên ranh giới Suspense nằm
+mãi ở trạng thái xếp hàng: **vỏ trang hiện ra, phần nội dung trắng trơn, không một lời
+lỗi nào trong console, và không một request API nào được bắn đi.**
+
+Dấu nhận biết nằm ngay trong DOM:
+
+| Dấu | Nghĩa |
+|---|---|
+| `<!--$-->` | đã hé xong |
+| `<!--$?-->` | đang chờ, fallback đang hiện |
+| `<!--$~-->` | **đã có nội dung, đang xếp hàng chờ lộ diện** ← trường hợp này |
+
+Thấy `<!--$~-->` kèm `<template id="B:0">` rỗng thì **kiểm `document.hidden` trước tiên**,
+đừng đi sửa code. Bật khung trình duyệt lên là trang hiện bình thường.
+
+Đây là cái bẫy anh em với bẫy 13: công cụ kiểm thử nói dối, không phải ứng dụng hỏng.
+Lần này suýt ghi nhầm thành "refactor plan 04-05 làm vỡ mọi màn danh sách" — đã kiểm
+chứng bằng cách quay về commit TRƯỚC refactor và thấy trắng y hệt.
+
 ---
 
 # Không tự ý làm
