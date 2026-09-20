@@ -3,15 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Phase 4 context gathered
-last_updated: "2026-09-19T19:08:33.281Z"
-last_activity: 2026-09-19
+stopped_at: Completed 04-01-PLAN.md
+last_updated: "2026-09-20T03:15:00.223Z"
+last_activity: 2026-09-20
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 64
-  completed_plans: 23
-  percent: 17
+  completed_plans: 24
 ---
 
 # Project State
@@ -21,12 +20,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-12)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Phase 02 — khung-ung-dung
+**Current focus:** Phase 04 — don-dat-hang-phieu-xuat
 
 ## Current Position
 
-Phase: 02 (khung-ung-dung) — EXECUTING
-Plan: 6 of 21
+Phase: 04 (don-dat-hang-phieu-xuat) — EXECUTING
+Plan: 1 of 15 complete (04-01 done; 04-02 next)
+
+_Sửa lại 2026-09-20: vị trí trước đó ghi nhầm "Phase 02 Plan 7/21" — Phase 02 thực
+tế đã xong toàn bộ 21/21 plan (xem .planning/phases/02-khung-ung-dung/*-SUMMARY.md),
+Phase 03 cũng đã xong (03-SUMMARY.md). Con số này trôi từ phiên trước, không phải do
+plan 04-01 gây ra — sửa lại cho khớp thực tế khi thực thi 04-01._
 
 ## Performance Metrics
 
@@ -53,6 +57,7 @@ Plan: 6 of 21
 | Phase 02 P03 | 15 | 1 tasks | 2 files |
 | Phase 02 P04 | 25 | 1 tasks | 2 files |
 | Phase 02 P05 | 55min | 3 tasks | 25 files |
+| Phase 04 P01 | 46min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -74,6 +79,8 @@ Recent decisions affecting current work:
 - [Phase 02]: select 1 from bang / count(*) from bang không cần quyền cột nào trong Postgres — chỉ câu lệnh tham chiếu cột cụ thể mới bị kiểm quyền cột. Xác nhận bằng transaction rollback trên cloud trước khi sửa test, tránh sửa nhầm assertion không cần sửa.
 - [Phase 02]: proxy.ts chép cookie phiên đã refresh sang response redirect (chuyenHuong helper) để tránh mất phiên
 - [Phase 02]: (app)/layout.tsx signOut() + redirect ?loi=vo-hieu-hoa khi hồ sơ nguoi_dung thiếu/bị khóa, tránh vòng lặp qua proxy
+- [Phase 04]: ghi_so_chung_tu goi _cap_nhat_tien_do_ddh TRUOC khi update trang_thai='HOAN_THANH' - bug thuc tu 0011, sua trong 0051 bang cach chuyen xuong SAU
+- [Phase 04]: db:test:linked bi Docker treo tren may nay - fallback chay psql truc tiep tung file supabase/tests/*.sql (pgtap da bat tren cloud)
 
 ### Pending Todos
 
@@ -91,7 +98,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-19T17:13:01.818Z
-Stopped at: Phase 4 context gathered
-Last activity: 2026-09-19
-Resume file: .planning/phases/04-don-dat-hang-phieu-xuat/04-CONTEXT.md
+Last session: 2026-09-20T03:15:00.221Z
+Stopped at: Completed 04-01-PLAN.md
+Last activity: 2026-09-20
+Resume file: None

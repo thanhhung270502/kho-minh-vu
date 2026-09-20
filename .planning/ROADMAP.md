@@ -110,7 +110,7 @@ vận hành trọn luồng trên máy tính văn phòng.
 Plans:
 **Wave 1**
 
-- [ ] 04-01-PLAN.md — đổi trục trạng thái đơn sang trục duyệt, mở rộng RPC chứng từ, vá kho theo dòng cho chiều xuất
+- [x] 04-01-PLAN.md — đổi trục trạng thái đơn sang trục duyệt, mở rộng RPC chứng từ, vá kho theo dòng cho chiều xuất
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
