@@ -2,11 +2,12 @@
 
 import { App, Button, Space } from "antd";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 
-import { useApproveOrder } from "../hooks/useOrders";
+import { useApproveOrder, useCreateIssueFromOrder } from "../hooks/useOrders";
 import type { OrderDetail, OrderLine, OrderPermissions } from "../types";
 import { OrderStatusDialog } from "./order-status-dialog";
 
@@ -24,7 +25,9 @@ type Props = {
  */
 export function OrderActions({ orderId, order, lines, permissions }: Props) {
   const { message, modal } = App.useApp();
+  const router = useRouter();
   const approve = useApproveOrder(orderId);
+  const createIssue = useCreateIssueFromOrder(orderId);
 
   const [statusDialog, setStatusDialog] = useState<{
     mode: "unlock" | "close-early";
@@ -57,6 +60,47 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
     });
   }
 
+  function confirmCreateIssue() {
+    modal.confirm({
+      title: `Tạo phiếu xuất từ đơn ${order.orderNo}?`,
+      width: 560,
+      content: `Sinh phiếu xuất từ đơn ${order.orderNo}: ${lines.length} dòng, mọi dòng điền sẵn số lượng bằng số đặt. Kho từng dòng lấy theo kho mặc định của mã hàng. Sửa lại dòng nào kho lấy thiếu rồi ghi sổ.`,
+      okText: "Tạo phiếu xuất",
+      cancelText: "Thôi",
+      onOk: async () => {
+        try {
+          const issueId = await createIssue.mutateAsync();
+          router.push(`/xuat-kho/${issueId}`);
+        } catch (error) {
+          // 23514 hay gặp nhất: mã thiếu kho mặc định (liệt kê đúng mã) hoặc
+          // đơn vừa bị mở khóa — hiện nguyên văn message RPC (bẫy 8).
+          if (isPostgrestError(error) && error.code === "23514") {
+            modal.error({
+              title: "Không tạo được phiếu xuất",
+              content: (
+                <Space direction="vertical">
+                  <span>{error.message}</span>
+                  <Link href="/danh-muc">
+                    <Button type="link" className="px-0">
+                      Đi sửa kho mặc định ở Danh mục
+                    </Button>
+                  </Link>
+                </Space>
+              ),
+            });
+            return;
+          }
+          if (errorCode(error) === "42501") {
+            message.error("Tài khoản không có quyền tạo phiếu xuất.");
+            return;
+          }
+          const explained = explainError(error);
+          message.error(`${explained.title}. ${explained.action}`);
+        }
+      },
+    });
+  }
+
   const canShowPrint = order.status !== "TAM" && order.status !== "DA_HUY";
 
   return (
@@ -79,7 +123,11 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
           </>
         ) : null}
 
-        {/* Nút "Tạo phiếu xuất" cắm vào đây ở Task 2. */}
+        {order.status === "DA_XAC_NHAN" && permissions.canEdit ? (
+          <Button loading={createIssue.isPending} onClick={confirmCreateIssue}>
+            Tạo phiếu xuất
+          </Button>
+        ) : null}
 
         {canShowPrint ? (
           <Link href={`/dat-hang/${orderId}/in`} target="_blank">
