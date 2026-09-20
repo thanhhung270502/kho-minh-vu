@@ -1694,6 +1694,72 @@ export type Database = {
         Returns: string
       }
       sinh_so_dh: { Args: { p_nam?: number }; Returns: string }
+      tao_phieu_tra: {
+        Args: { p_goc_id: string }
+        Returns: {
+          chung_tu_goc_id: string | null
+          created_at: string
+          doi_tac_id: string | null
+          don_dat_hang_id: string | null
+          ghi_chu: string | null
+          ghi_chu_ly_do: string | null
+          giam_gia: number
+          id: string
+          kho_den_id: string | null
+          kho_id: string
+          loai_ct: Database["public"]["Enums"]["loai_ct"]
+          ly_do_xuat_am: string | null
+          ngay_ct: string
+          ngay_ghi_so: string | null
+          nguoi_duyet_id: string | null
+          nguoi_tao_id: string | null
+          nguon_nhap: Database["public"]["Enums"]["nguon_nhap"] | null
+          so_ct: string
+          tong_so_luong: number
+          tong_tien: number
+          trang_thai: Database["public"]["Enums"]["trang_thai_ct"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "chung_tu"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      tao_phieu_xuat_tu_don: {
+        Args: { p_don_id: string }
+        Returns: {
+          chung_tu_goc_id: string | null
+          created_at: string
+          doi_tac_id: string | null
+          don_dat_hang_id: string | null
+          ghi_chu: string | null
+          ghi_chu_ly_do: string | null
+          giam_gia: number
+          id: string
+          kho_den_id: string | null
+          kho_id: string
+          loai_ct: Database["public"]["Enums"]["loai_ct"]
+          ly_do_xuat_am: string | null
+          ngay_ct: string
+          ngay_ghi_so: string | null
+          nguoi_duyet_id: string | null
+          nguoi_tao_id: string | null
+          nguon_nhap: Database["public"]["Enums"]["nguon_nhap"] | null
+          so_ct: string
+          tong_so_luong: number
+          tong_tien: number
+          trang_thai: Database["public"]["Enums"]["trang_thai_ct"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "chung_tu"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       ten_danh_muc: { Args: { p_bang: string; p_id: string }; Returns: string }
       the_kho_san_pham: {
         Args: {
