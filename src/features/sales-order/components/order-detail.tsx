@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Button, Space, Tag, Typography } from "antd";
+import { Alert, Button, Tag } from "antd";
 import Link from "next/link";
 
 import { PageHeader } from "@/shared/components/page-header";
@@ -9,6 +9,7 @@ import { QueryState } from "@/shared/components/query-state";
 import { useOrderDetail, useOrderLines } from "../hooks/useOrders";
 import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from "../lib/order-status";
 import type { OrderPermissions } from "../types";
+import { OrderActions } from "./order-actions";
 import { OrderHeader } from "./order-header";
 import { OrderLineTable } from "./order-line-table";
 
@@ -21,6 +22,7 @@ export function OrderDetailView({
 }) {
   const detail = useOrderDetail(id);
   const lines = useOrderLines(id);
+  const orderLines = lines.data ?? [];
 
   return (
     <QueryState
@@ -61,15 +63,12 @@ export function OrderDetailView({
                 </span>
               }
               actions={
-                // Nút xác nhận / mở lại / đóng sớm / in / tạo phiếu xuất cắm vào
-                // đúng chỗ này ở plan 04-12 — dùng permissions.canApprove để
-                // ẩn/hiện nút xác nhận (chỉ quản lý bấm được, D-06).
-                <Space wrap>
-                  <Typography.Text type="secondary" className="text-xs">
-                    Nút xác nhận / mở lại / đóng sớm / in / tạo phiếu xuất — plan
-                    04-12
-                  </Typography.Text>
-                </Space>
+                <OrderActions
+                  orderId={id}
+                  order={order}
+                  lines={orderLines}
+                  permissions={permissions}
+                />
               }
             />
 
