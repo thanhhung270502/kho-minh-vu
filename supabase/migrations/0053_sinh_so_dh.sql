@@ -1,32 +1,41 @@
 -- =============================================================================
--- 0053 — Bộ cấp số đơn đặt hàng (Phase 4, plan 04-02 Task 2)
+-- 0053 — Bộ cấp số đơn đặt hàng (so_dh), an toàn với gọi đồng thời.
 --
--- DỰNG LẠI TỪ DATABASE (2026-09-20). Version này đã được áp lên cloud bởi một
--- phiên làm việc khác, file nguồn không có trong repo. Trích từ `pg_get_functiondef`.
---
--- Vì sao KHÔNG dùng lại `chuoi_so_ct`/`sinh_so_ct`: bộ đếm đó khóa theo cặp
--- (loai_ct, năm) với `loai_ct` là enum chứng từ. Đơn đặt hàng KHÔNG phải một
--- `loai_ct` — nó là bảng riêng. Nên sao chép kỹ thuật chống trùng, không sao
--- chép bộ đếm.
+-- KHÔNG dùng lại chuoi_so_ct/sinh_so_ct: cau_hinh_so_ct/chuoi_so_ct khóa theo
+-- loai_ct — enum bảy giá trị chứng từ (0028). Đơn đặt hàng không phải một
+-- loai_ct, và thêm một giá trị enum giả sẽ làm ô nhiễm mọi chỗ đang phân
+-- nhánh theo đúng bảy loại chứng từ thật (case trong ghi_so_chung_tu, nhãn
+-- hiển thị ở tầng UI). Chép NGUYÊN VẸN kỹ thuật atomic của sinh_so_ct
+-- (0047/0048), không chép bảng.
 -- =============================================================================
 
-create table if not exists public.chuoi_so_dh (
-  nam smallint primary key,
+create table public.chuoi_so_dh (
+  nam smallint not null primary key,
   so_hien_tai integer not null default 0
 );
-
-comment on table public.chuoi_so_dh is
-  'Bộ đếm số đơn đặt hàng theo năm. Chỉ ghi qua sinh_so_dh (SECURITY DEFINER).';
-
 alter table public.chuoi_so_dh enable row level security;
 
--- Không cấp quyền ghi trực tiếp cho client: mọi lần tăng đi qua sinh_so_dh.
-revoke insert, update, delete on public.chuoi_so_dh from anon, authenticated;
-
-drop policy if exists "doc chuoi so dh" on public.chuoi_so_dh;
+-- Không policy ghi nào — client chỉ chạm qua RPC SECURITY DEFINER bên dưới.
+-- Cho đọc số hiện tại (màn Cài đặt sau này có thể muốn hiện số kế tiếp), cùng
+-- khuôn "doc chuoi so ct" ở 0016.
 create policy "doc chuoi so dh" on public.chuoi_so_dh
   for select to authenticated using (true);
+revoke insert, update, delete on public.chuoi_so_dh from anon, authenticated;
 
+comment on table public.chuoi_so_dh is
+  'Bộ đếm số đơn đặt hàng theo năm, tách riêng khỏi chuoi_so_ct vì bảng đó khóa theo loai_ct (enum bảy loại chứng từ) — đơn đặt hàng không phải một loai_ct. Ghi duy nhất qua sinh_so_dh().';
+
+-- -----------------------------------------------------------------------------
+-- sinh_so_dh: MỘT câu lệnh insert ... on conflict ... returning, không đọc-
+-- rồi-ghi — đúng kỹ thuật chống trùng số khi hai người tạo cùng lúc của
+-- sinh_so_ct (0009/0047/0048).
+--
+-- Quy ước 0048: CHỈ chặn 'chi_xem', KHÔNG chặn null (ngữ cảnh không JWT —
+-- migration, script nạp dữ liệu, pgTAP chạy dưới postgres). D-06 (04-CONTEXT)
+-- nói thủ kho không tạo đơn, và cấp số rồi bỏ đó cũng là tiêu số, nên siết
+-- thêm xuống chỉ hai vai trò quan_ly/van_phong (khác sinh_so_ct chỉ chặn
+-- chi_xem) — dùng "not in (...)" thay vì toán tử so sánh "khác" hai ký tự.
+-- -----------------------------------------------------------------------------
 create or replace function public.sinh_so_dh(p_nam smallint default null)
 returns text
 language plpgsql
@@ -53,9 +62,22 @@ begin
   return format('DH%s-%s', to_char(v_nam % 100, 'FM00'), lpad(v_so::text, 6, '0'));
 end;
 $$;
-
-comment on function public.sinh_so_dh(smallint) is
-  'Cấp số đơn dạng DH{YY}-{000001}, chống trùng bằng insert..on conflict do update..returning trong MỘT câu lệnh. Chỉ quản lý và văn phòng (D-06); ngữ cảnh không có JWT (migration/script/pgTAP) được đi qua theo quy ước 0048.';
-
 revoke all    on function public.sinh_so_dh(smallint) from public, anon;
 grant execute on function public.sinh_so_dh(smallint) to authenticated;
+comment on function public.sinh_so_dh(smallint) is
+  'Cấp số đơn đặt hàng dạng DH{YY}-{6 chữ số}, atomic (insert ... on conflict ... returning). Không dùng chuoi_so_ct vì bảng đó khóa theo enum loai_ct và đơn đặt hàng không phải một loai_ct. Chỉ quan_ly/van_phong cấp được số (D-06); ngữ cảnh không JWT được coi như quan_ly.';
+
+-- -----------------------------------------------------------------------------
+-- Tự kiểm: không sót bảng nào chưa bật RLS.
+-- -----------------------------------------------------------------------------
+do $$
+declare v_thieu text;
+begin
+  select string_agg(tablename, ', ') into v_thieu
+  from pg_tables
+  where schemaname = 'public' and rowsecurity = false;
+
+  if v_thieu is not null then
+    raise exception 'Còn bảng chưa bật RLS: %', v_thieu;
+  end if;
+end $$;
