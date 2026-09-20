@@ -1,28 +1,33 @@
 -- =============================================================================
--- 0051 — RPC chứng từ mở rộng cho chiều xuất (Phase 4, plan 04-01 Task 2)
+-- 0051 — Mở rộng RPC chứng từ cho chiều xuất + vá kho theo dòng còn sót (Phase 4)
 --
--- DỰNG LẠI TỪ DATABASE (2026-09-20). Migration mang version 0051 đã được áp lên
--- cloud bởi một phiên làm việc khác nhưng file nguồn không có trong repo — giống
--- hệt tình huống của 0033. Nội dung dưới đây trích thẳng từ `pg_get_functiondef`
--- của chính database đang chạy, nên chạy lại trên database rỗng cho ra đúng
--- trạng thái hiện tại.
+-- Ba việc trong một file:
+-- (a) chi_tiet_chung_tu: thêm đơn gốc, chứng từ gốc, lý do xuất âm, người duyệt
+--     — bốn thứ màn phiếu xuất bắt buộc phải có.
+-- (b) dong_chung_tu: thêm ton_hien_tai để giao diện tô màu dòng vượt tồn.
+-- (c) _ghi_so_xuat/_ghi_so_tra_ncc/_ghi_so_tra_khach: ghi kho_movement vào kho
+--     của DÒNG (coalesce(p_dong.kho_id, p_ct.kho_id)) thay vì kho đầu phiếu.
+--     Migration 0041 chỉ sửa _ghi_so_nhap và khối kiểm tồn âm — nếu để nguyên
+--     ba hàm này thì cảnh báo xuất âm đọc tồn của DÒNG (0041) trong khi sổ cái
+--     lại trừ kho ĐẦU PHIẾU: kho này âm, kho kia dư, không ai thấy cho tới lúc
+--     kiểm kê. D-13 cho kho sửa từng dòng trên phiếu xuất nên lỗi này sẽ nổ
+--     ngay ngày đầu nếu không vá trước khi dựng giao diện.
+-- (d) huy_chung_tu: siết quyền hủy cho XUAT/TRA_NCC/TRA_KHACH đã ghi sổ giống
+--     hệt mức đã siết cho NHAP ở 0046 — hủy phiếu xuất đã ghi sổ cũng viết lại
+--     sổ cái và đảo tồn nên phải cùng một mức quyền.
 --
--- ĐỪNG chép thân ba hàm `_ghi_so_*` từ file 0011 trong repo. Bản 0011 vẫn ghi
--- `p_ct.kho_id`, trong khi bản ĐANG CHẠY đã dùng `coalesce(p_dong.kho_id,
--- p_ct.kho_id)`. Chép từ 0011 là ghi đè bản đúng bằng bản cũ.
---
--- Bốn việc trong file này:
---   (a) `chi_tiet_chung_tu` trả thêm đơn gốc, chứng từ gốc, lý do xuất âm, người duyệt
---   (b) `dong_chung_tu` trả thêm `ton_hien_tai` theo kho của TỪNG DÒNG
---   (c) `_ghi_so_xuat` / `_ghi_so_tra_ncc` / `_ghi_so_tra_khach` ghi sổ theo kho của dòng
---   (d) `huy_chung_tu` siết quyền cho cả bốn loại chứng từ viết sổ cái
+-- _ghi_so_chuyen_kho GIỮ NGUYÊN — chuyển kho theo bản chất là chuyện của cả
+-- phiếu (kho đi -> kho đến), không phải của từng dòng (đúng comment 0041).
+-- CHUYEN_KHO/KIEM_KE/DIEU_CHINH trong huy_chung_tu cũng giữ nguyên — chưa có
+-- giao diện, sẽ quyết ở phase của chúng.
 -- =============================================================================
 
--- --- (a) Chi tiết header: thêm 7 cột ------------------------------------------
--- CREATE OR REPLACE không đổi được kiểu trả về nên phải drop trước (tiền lệ 0029).
-drop function if exists public.chi_tiet_chung_tu(uuid);
+-- -----------------------------------------------------------------------------
+-- (a) chi_tiet_chung_tu — đổi kiểu trả về nên phải drop rồi create lại.
+-- -----------------------------------------------------------------------------
+drop function public.chi_tiet_chung_tu(uuid);
 
-create or replace function public.chi_tiet_chung_tu(p_id uuid)
+create function public.chi_tiet_chung_tu(p_id uuid)
 returns table (
   id uuid, so_ct text, ngay_ct date, loai_ct public.loai_ct,
   nguon_nhap public.nguon_nhap, trang_thai public.trang_thai_ct,
@@ -73,17 +78,20 @@ begin
 end;
 $$;
 
--- --- (b) Chi tiết dòng: thêm ton_hien_tai theo kho của DÒNG -------------------
--- Số này để giao diện tô màu dòng làm tồn xuống dưới 0 (D-12, XUAT-04). Kho hiệu
--- lực phải là `coalesce(dòng, header)` giống hệt khối kiểm tồn âm trong
--- `ghi_so_chung_tu` (0041) — lệch chỗ này thì cảnh báo báo nhầm kho.
-drop function if exists public.dong_chung_tu(uuid);
+revoke all    on function public.chi_tiet_chung_tu(uuid) from public, anon;
+grant execute on function public.chi_tiet_chung_tu(uuid) to authenticated;
 
-create or replace function public.dong_chung_tu(p_id uuid)
+-- -----------------------------------------------------------------------------
+-- (b) dong_chung_tu — thêm ton_hien_tai theo kho của DÒNG.
+-- -----------------------------------------------------------------------------
+drop function public.dong_chung_tu(uuid);
+
+create function public.dong_chung_tu(p_id uuid)
 returns table (
   id uuid, san_pham_id uuid, ma_hang text, ten_hang text, ten_dvt text,
   so_luong numeric, don_gia numeric, thanh_tien numeric,
-  kho_id uuid, ten_kho text, ghi_chu text, ton_hien_tai numeric
+  kho_id uuid, ten_kho text, ghi_chu text,
+  ton_hien_tai numeric
 )
 language plpgsql
 stable
@@ -118,15 +126,13 @@ begin
 end;
 $$;
 
--- --- (c) Ghi sổ chiều xuất theo kho của DÒNG ----------------------------------
--- 0041 chỉ sửa `_ghi_so_nhap`. Ba hàm dưới đây cũng phải theo kho của dòng, nếu
--- không thì cảnh báo đọc tồn kho DÒNG còn sổ cái lại trừ kho ĐẦU PHIẾU — kho này
--- âm, kho kia dư, không ai thấy cho tới lúc kiểm kê. D-13 cho kho sửa từng dòng
--- trên phiếu xuất nên sai chỗ này là nổ ngay ngày đầu.
---
--- Hàm ghi sổ của loại CHUYEN_KHO cố ý KHÔNG có mặt ở đây: chuyển kho theo bản
--- chất là chuyện của cả phiếu (kho đi → kho đến), đúng comment đã ghi ở đầu 0041.
+revoke all    on function public.dong_chung_tu(uuid) from public, anon;
+grant execute on function public.dong_chung_tu(uuid) to authenticated;
 
+-- -----------------------------------------------------------------------------
+-- (c) Ghi sổ chiều xuất theo kho của DÒNG — chép nguyên văn 0011, đổi đúng một
+--     đối số kho_id ở mỗi hàm, giống hệt khuôn _ghi_so_nhap đã sửa ở 0041.
+-- -----------------------------------------------------------------------------
 create or replace function public._ghi_so_xuat(p_ct public.chung_tu, p_dong public.chung_tu_dong)
 returns void language plpgsql security definer set search_path = '' as $$
 declare v_gia_von numeric(18,4);
@@ -166,7 +172,14 @@ begin
   );
 end; $$;
 
--- --- (d) Siết quyền hủy cho mọi chứng từ viết sổ cái --------------------------
+revoke all on function public._ghi_so_xuat(public.chung_tu, public.chung_tu_dong)      from public, anon, authenticated;
+revoke all on function public._ghi_so_tra_ncc(public.chung_tu, public.chung_tu_dong)   from public, anon, authenticated;
+revoke all on function public._ghi_so_tra_khach(public.chung_tu, public.chung_tu_dong) from public, anon, authenticated;
+
+-- -----------------------------------------------------------------------------
+-- (d) huy_chung_tu — siết quyền hủy cho chiều xuất, chép nguyên từ bản ĐANG
+--     CHẠY ở 0046, đổi đúng một điều kiện.
+-- -----------------------------------------------------------------------------
 create or replace function public.huy_chung_tu(p_chung_tu_id uuid, p_ly_do text)
 returns public.chung_tu
 language plpgsql
@@ -242,16 +255,7 @@ end;
 $$;
 
 comment on function public.huy_chung_tu(uuid, text) is
-  'Hủy chứng từ bằng bút toán đảo. Mọi chứng từ viết sổ cái (NHAP/XUAT/TRA_NCC/TRA_KHACH) đã ghi sổ chỉ quản lý hủy được. LƯU Ý: bút toán đảo của phiếu NHẬP có so_luong âm nên trigger giá vốn KHÔNG tính lại — giá vốn không tự quay về số trước khi nhập. Đó là hành vi đúng của bình quân gia quyền di động.';
+  'Hủy chứng từ bằng bút toán đảo. Phiếu NHAP/XUAT/TRA_NCC/TRA_KHACH đã ghi sổ chỉ quản lý hủy được (0046 + 0051) — hủy đều viết lại sổ cái và đảo tồn nên cùng một mức quyền. CHUYEN_KHO/KIEM_KE/DIEU_CHINH chưa siết, chưa có giao diện. LƯU Ý: bút toán đảo của phiếu NHẬP có so_luong âm nên trigger giá vốn KHÔNG tính lại — giá vốn không tự quay về số trước khi nhập. Đó là hành vi đúng của bình quân gia quyền di động.';
 
--- --- Quyền ------------------------------------------------------------------
--- Hai hàm đọc bị drop nên mất quyền đã cấp ở 0045, phải cấp lại.
-revoke all    on function public.chi_tiet_chung_tu(uuid) from public, anon;
-grant execute on function public.chi_tiet_chung_tu(uuid) to authenticated;
-revoke all    on function public.dong_chung_tu(uuid) from public, anon;
-grant execute on function public.dong_chung_tu(uuid) to authenticated;
-
--- Ba hàm ghi sổ là hàm nội bộ, chỉ `ghi_so_chung_tu` gọi. Client không được gọi.
-revoke all on function public._ghi_so_xuat(public.chung_tu, public.chung_tu_dong)      from public, anon, authenticated;
-revoke all on function public._ghi_so_tra_ncc(public.chung_tu, public.chung_tu_dong)   from public, anon, authenticated;
-revoke all on function public._ghi_so_tra_khach(public.chung_tu, public.chung_tu_dong) from public, anon, authenticated;
+revoke all    on function public.huy_chung_tu(uuid, text) from public, anon;
+grant execute on function public.huy_chung_tu(uuid, text) to authenticated;
