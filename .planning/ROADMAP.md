@@ -8,10 +8,10 @@ chưa có giao diện. Chặng 2 dựng khung ứng dụng (đăng nhập, layou
 đầu tiên (danh mục, đối tác) cộng màn Cài đặt để có đủ dữ liệu nền cho các chặng sau.
 Chặng 3 tôi luyện cơ chế chứng từ lần đầu qua Phiếu nhập — ít phiếu hơn, phù hợp để
 bắt lỗi cơ chế trước khi nhân bản. Chặng 4 nhân bản cơ chế đó cho chiều xuất (khối
-lượng nghiệp vụ chính: 923 phiếu/tuần) và nối với Đơn đặt hàng. Chặng 5 dựng các màn
-đọc-nhiều (tồn kho, thẻ kho, tổng quan) trên dữ liệu đã sinh ra ở các chặng trước.
-Chặng 6 đóng vòng bằng Kiểm kê, chốt số liệu chuyển đổi cuối cùng, và đưa hệ thống
-vào trạng thái sẵn sàng thay thế hoàn toàn KiotViet.
+lượng nghiệp vụ chính: 923 phiếu/tuần) và nối với Đơn đặt hàng. Chặng 5 dựng hai màn
+đọc cốt lõi (tồn kho theo mã × kho, thẻ kho có tồn lũy kế) cộng cảnh báo sắp hết.
+Chặng 6 đóng vòng bằng Kiểm kê, trang tổng quan, các màn mobile, chốt số liệu chuyển
+đổi cuối cùng, và đưa hệ thống vào trạng thái sẵn sàng thay thế hoàn toàn KiotViet.
 
 Thứ tự này bám sát nguyên trạng đề xuất trong tài liệu thiết kế gốc (6 tuần). Điểm
 khác biệt duy nhất: các yêu cầu RLS theo vai trò (AUTH-03..06) được gộp vào Chặng 1
@@ -32,7 +32,7 @@ sau cần dùng ngay.
 - [ ] **Phase 2: Khung ứng dụng, Danh mục, Đối tác, Cài đặt** - Đăng nhập, danh mục 3.266 mã, đối tác NCC/khách chung danh sách, cấu hình dữ liệu nền
 - [ ] **Phase 3: Phiếu nhập** - Luồng chứng từ hoàn chỉnh đầu tiên: tạo, thêm dòng, ghi sổ, hủy đảo, in — giá vốn bình quân chạy thật
 - [ ] **Phase 4: Đơn đặt hàng & Phiếu xuất** - Nhân bản cơ chế chứng từ cho chiều xuất, đơn đặt → duyệt → in đi lấy hàng → phiếu xuất, chạy trọn luồng trên máy tính văn phòng
-- [ ] **Phase 5: Tồn kho & Tổng quan** - Tồn theo kho/công đoạn, thẻ kho, tuổi tồn, dashboard tổng quan
+- [ ] **Phase 5: Tồn kho & Thẻ kho** - Tồn theo mã × kho, thẻ kho có tồn lũy kế, đề xuất định mức và cảnh báo sắp hết
 - [ ] **Phase 6: Kiểm kê & Go-live** - Kiểm kê mobile, chốt số liệu chuyển đổi cuối cùng, hệ thống sẵn sàng thay KiotViet
 
 ## Phase Details
@@ -161,20 +161,25 @@ Plans:
 
 **UI hint**: yes
 
-### Phase 5: Tồn kho & Tổng quan
+### Phase 5: Tồn kho & Thẻ kho
 
-**Goal**: Người quản lý và thủ kho nhìn thấy đúng bức tranh tồn kho hiện tại và xu
-hướng biến động trên dữ liệu thật đã sinh ra từ Phase 3 và 4, không cần hỏi hay tính
-tay.
+**Goal**: Người quản lý và thủ kho nhìn thấy đúng số tồn hiện tại mà không phải hỏi ai,
+truy được mọi biến động của một mã về đúng chứng từ sinh ra nó, và biết TRƯỚC mã nào
+sắp hết thay vì biết sau.
 **Depends on**: Phase 4
-**Requirements**: TON-01, TON-02, TON-03, TON-04, TON-05, TQAN-01, TQAN-02, TQAN-03, TQAN-04, TQAN-05, TQAN-06
+**Requirements**: TON-01, TON-02, TQAN-02
 **Success Criteria** (what must be TRUE):
 
-  1. Xem tồn theo từng kho, lọc theo nhóm hàng và công đoạn; xem thẻ kho của một mã với mọi biến động kèm link mở đúng chứng từ sinh ra nó
-  2. Xem tuổi tồn và danh sách hàng không luân chuyển; chuyển hàng giữa hai kho bằng một chứng từ `CHUYEN_KHO`; màn tồn kho dùng được trên điện thoại
-  3. Trang tổng quan hiển thị tồn theo nhóm hàng và theo công đoạn, cùng tổng giá trị tồn kho
-  4. Trang tổng quan hiển thị danh sách mã dưới định mức tồn tối thiểu và danh sách hàng không luân chuyển quá 30 ngày
-  5. Trang tổng quan hiển thị biểu đồ nhập–xuất 30 ngày gần nhất và báo cáo các lần xuất âm trong ngày kèm lý do đã chọn
+  1. Xem tồn của cả 3.266 mã với mỗi mã một dòng và kho là cột, lọc theo nhóm hàng/công đoạn/kho và tìm bằng một ô theo mã và tên gõ không dấu; phân trang và lọc chạy phía server
+  2. Xem thẻ kho của một mã với mọi biến động, mỗi dòng kèm **tồn lũy kế tại thời điểm đó** và link mở đúng chứng từ sinh ra nó
+  3. Hệ đề xuất định mức tồn tối thiểu cho từng mã từ lịch sử bán (mã chưa từng bán lấy trung bình nhóm), hiện rõ căn cứ của từng con số, và chỉ ghi vào `san_pham.ton_toi_thieu` sau khi có người duyệt
+  4. Xem danh sách mã đang dưới định mức tồn tối thiểu
+  5. Nạp được tồn tạm từ cột tồn của file danh mục KiotViet qua **một chứng từ `DIEU_CHINH`** gắn nhãn rõ là số tạm chưa đếm — để các màn trên có dữ liệu thật mà kiểm, và để kiểm kê Phase 6 đè lên bằng bút toán điều chỉnh
+
+> Tám yêu cầu còn lại của chặng này (TON-03, TON-04, TON-05, TQAN-01, TQAN-03, TQAN-04,
+> TQAN-05, TQAN-06) **dời sang Phase 6** — chốt 20/09. Lý do: bản hẹp nhất để học là
+> "biết tồn thật" + "biết trước khi hết"; phần còn lại là trang tổng quan và chuyển kho,
+> đọc trên cùng dữ liệu nên làm sau không mất gì.
 
 **Plans**: TBD
 **UI hint**: yes
@@ -186,7 +191,13 @@ KiotViet), dữ liệu lịch sử tra cứu được, và hệ thống ở tr�
 bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở
 KiotViet để đối chiếu.
 **Depends on**: Phase 5
-**Requirements**: KKE-01, KKE-02, KKE-03, KKE-04, DLIEU-05, DLIEU-06, DLIEU-07, XUAT-03, XUAT-08
+**Requirements**: KKE-01, KKE-02, KKE-03, KKE-04, DLIEU-05, DLIEU-06, DLIEU-07, XUAT-03, XUAT-08, TON-03, TON-04, TON-05, TQAN-01, TQAN-03, TQAN-04, TQAN-05, TQAN-06
+
+> ⚠️ **Chặng này đang gánh 17 yêu cầu** sau hai lần dời (XUAT-03/08 từ Phase 4 ngày
+> 20/09; tám yêu cầu tồn kho & tổng quan từ Phase 5 cùng ngày). Vai trò gốc của nó là
+> chốt số liệu để go-live. **Nên tách trước khi lập kế hoạch** — ba nhóm tách được rõ:
+> kiểm kê + chốt số liệu (gốc) · trang tổng quan (TQAN-01, 03, 04, 05, 06 + TON-03) ·
+> màn mobile & quét mã (XUAT-03, XUAT-08, TON-05, KKE-02).
 **Success Criteria** (what must be TRUE):
 
   1. Mở phiên kiểm kê theo kho và nhóm hàng, hệ thống chốt tồn sổ tại đúng thời điểm đếm; đếm bằng quét mã trên điện thoại
