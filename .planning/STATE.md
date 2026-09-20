@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 04-04-PLAN.md
-last_updated: "2026-09-20T04:12:53.108Z"
+stopped_at: Completed 04-06-PLAN.md
+last_updated: "2026-09-20T04:48:54.661Z"
 last_activity: 2026-09-20
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 64
-  completed_plans: 27
+  completed_plans: 28
 ---
 
 # Project State
@@ -25,12 +25,23 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 ## Current Position
 
 Phase: 04 (don-dat-hang-phieu-xuat) — EXECUTING
-Plan: 4 of 15 complete (04-01, 04-02, 04-03, 04-04 done; 04-05 next)
+Plan: 5 of 15 có SUMMARY.md (04-01, 04-02, 04-03, 04-04, 04-06 done); 04-05 CHƯA
+có SUMMARY.md
 
 _Sửa lại 2026-09-20: vị trí trước đó ghi nhầm "Phase 02 Plan 7/21" — Phase 02 thực
 tế đã xong toàn bộ 21/21 plan (xem .planning/phases/02-khung-ung-dung/*-SUMMARY.md),
 Phase 03 cũng đã xong (03-SUMMARY.md). Con số này trôi từ phiên trước, không phải do
 plan 04-01 gây ra — sửa lại cho khớp thực tế khi thực thi 04-01._
+
+_Ghi lại 2026-09-20 khi thực thi 04-06: `04-05-PLAN.md` có `autonomous: false` —
+Task 1/2 (rút lớp `features/documents`, nối lại `stock-in`) đã có commit thật
+(`819ef7e`, `7a6044f`), nhưng Task 3 là `checkpoint:human-verify` (mở `/nhap-kho`
+trên trình duyệt, sáu bước kiểm mắt) vẫn CHƯA có ai trả lời — nên plan 04-05 chưa
+đóng, chưa có `04-05-SUMMARY.md`. Plan 04-06 (`src/features/sales-order/`) không
+phụ thuộc kết quả checkpoint đó nên được thực thi trước, độc lập. **Việc còn treo:**
+mở `http://localhost:3000/nhap-kho`, làm đúng sáu bước ở `04-05-PLAN.md` Task 3,
+rồi mới coi Wave 5 của Phase 4 là xong hẳn. `04-07` trở đi (giao diện đơn) dùng
+lớp dữ liệu của `04-06`, không bị chặn bởi checkpoint này._
 
 ## Performance Metrics
 
@@ -61,6 +72,7 @@ plan 04-01 gây ra — sửa lại cho khớp thực tế khi thực thi 04-01._
 | Phase 04 P02 | 19min | 3 tasks | 6 files |
 | Phase 04 P03 | 24min | 3 tasks | 5 files |
 | Phase 04 P04 | 19min | 3 tasks | 5 files |
+| Phase 04 P06 | 28min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -90,6 +102,8 @@ Recent decisions affecting current work:
 - [Phase 04]: de_nghi_gop_ma chi ghi lai de nghi gop ma, khong dung ton_kho/kho_movement/san_pham - gop that la phase rieng
 - [Phase 04]: tao_phieu_xuat_tu_don: chan ma thieu kho_mac_dinh_id TRUOC insert dau tien, khong doan kho, khong de lai chung tu rac
 - [Phase 04]: tao_phieu_tra khong nhan tham so chon loai — TRA_KHACH/TRA_NCC suy 100% tu loai_ct cua chung tu goc, giu nguyen kho_id cua DONG GOC (khong phai kho dau phieu)
+- [Phase 04]: orderKeys tach rieng khoi documentKeys - don dat hang khong phai chung tu (loai_ct), namespace ["orders", ...] rieng
+- [Phase 04]: addOrderLine khong truyen don_gia trong payload insert - cot don_dat_hang_dong.don_gia giu mac dinh 0 o tang database
 
 ### Pending Todos
 
@@ -98,6 +112,7 @@ None yet.
 ### Blockers/Concerns
 
 - [Phase 2]: CLAUDE.md và `src/shared/components/app-shell.tsx` còn mô tả phạm vi cũ (theo dõi sản xuất 5 xưởng) — phải viết lại khi Phase 2 chạm vào app shell.
+- [Phase 04] 04-05-PLAN.md Task 3 (checkpoint:human-verify, kiem mat man /nhap-kho) van dang mo - chua ai chay 6 buoc, chua co 04-05-SUMMARY.md. Khong chan 04-06/04-07 nhung phai dong truoc khi coi Wave 5 xong.
 
 ### Quick Tasks Completed
 
@@ -107,7 +122,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-20T04:12:53.106Z
-Stopped at: Completed 04-04-PLAN.md
+Last session: 2026-09-20T04:48:40.727Z
+Stopped at: Completed 04-06-PLAN.md
 Last activity: 2026-09-20
 Resume file: None

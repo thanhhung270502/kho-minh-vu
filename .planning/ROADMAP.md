@@ -130,7 +130,7 @@ Plans:
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
-- [ ] 04-06-PLAN.md — lớp dữ liệu đơn đặt hàng: kiểu, schema, bộ lọc URL, query key, api, hook
+- [x] 04-06-PLAN.md — lớp dữ liệu đơn đặt hàng: kiểu, schema, bộ lọc URL, query key, api, hook
 - [ ] 04-07-PLAN.md — lớp dữ liệu phiếu xuất và phiếu trả, danh sách lý do xuất âm
 
 **Wave 7** *(blocked on Wave 6 completion)*
