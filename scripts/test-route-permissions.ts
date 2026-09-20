@@ -1,9 +1,11 @@
 /**
  * Ma trận quyền route × 4 vai trò, kiểm bằng HTTP thật trên phiên thật.
  *
- * Vì sao cần: `src/shared/lib/permissions.ts` chỉ ẩn/hiện nút. Thứ chặn thật là
- * `requirePermission()` trong Server Component và `proxy.ts`. Gõ tay URL là cách người
- * dùng (và người tò mò) vượt giao diện — script này gõ hộ, cho cả 4 vai trò.
+ * Vì sao cần: `src/shared/lib/permissions.ts` chỉ ẩn/hiện nút. Thứ chặn thật 100% nằm ở
+ * `requirePermission()` gọi trong từng Server Component `page.tsx` — middleware phiên
+ * đăng nhập chỉ lo 401/chuyển hướng về `/dang-nhap`, không kiểm tra vai trò nào cả. Gõ
+ * tay URL là cách người dùng (và người tò mò) vượt giao diện — script này gõ hộ, cho cả
+ * 4 vai trò.
  *
  * Chạy: `npm run dev` ở một cửa sổ, rồi `npx tsx scripts/test-route-permissions.ts`.
  */
