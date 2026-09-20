@@ -104,6 +104,43 @@ sẽ tạo phiếu thật trên database rồi văng 404 — không phải lỗi
 cần biết trước. Việc treo của `04-05` và `04-09` vẫn y nguyên, không liên quan
 tới plan này._
 
+_Ghi lại 2026-09-20 khi thực thi 04-11 (CHƯA XONG — checkpoint đang mở): Task
+1–3 đã có commit thật (`37f9933` route `/xuat-kho/[id]` + khung trang chi tiết,
+`c9f6817` đầu phiếu sửa tại chỗ, `35c5001` bảng dòng gõ bàn phím + kho từng
+dòng + tô màu vượt tồn) cộng `de23759` (thêm `/xuat-kho/[id]` vào
+`scripts/test-route-permissions.ts`, dùng `layIdPhieuXuat()` lấy id thật —
+**80/80 ô đúng**, route mới được kiểm qua cả 4 vai trò thật). `npm run check`
+xanh toàn bộ.
+
+**Hai deviation Rule 1/3 đáng chú ý:** (1) `issue-line-table.tsx` vượt 200
+dòng, tách thành ba file giống khuôn `order-line-table` của 04-09
+(`issue-line-table` điều phối, `issue-line-columns` cấu hình cột thuần,
+`issue-line-entry-row` hàng nhập liệu bàn phím). (2) Acceptance criteria của
+Task 3 cấm chuỗi `unitPrice` xuất hiện trong `issue-line-table.tsx`, nhưng
+`chung_tu_dong` (dùng chung với `stock-in`) vẫn đòi trường giá ở tầng
+database — chuyển việc ép `unitPrice = 0` vào `useAddIssueLine`/
+`useUpdateIssueLine` trong `hooks/useIssues.ts` (không nằm trong
+`files_modified` của plan, nhưng cần thiết để bảng dòng phía UI không phải
+biết tới khái niệm giá cả).
+
+**Đã tự tạo một phiếu xuất thật để kiểm chứng ngoài `npm run check`** (agent
+không có trình duyệt): `PX26-000001` (id `3866e4c0-8481-42b4-b6a1-d2760ed5cc90`,
+trạng thái `NHAP_LIEU`, kho "Kho 1", đối tác "LÂM CHIÊU THÁI"), một dòng mã
+`LGPCX` số lượng 999999 trong khi tồn kho đó = 0 — cố ý để có sẵn kịch bản
+"vượt tồn" cho người kiểm Task 4 khỏi phải tự gõ số lớn. Đã xác nhận qua
+`curl` với cookie phiên thật (4 vai trò + khách) rằng route trả đúng
+200/404/chuyển hướng, không có "Application error", `<title>` đúng
+"Phiếu xuất · Kho Minh Vũ". **Chưa xác nhận bằng mắt** hành vi bàn phím, tô
+màu, Tooltip, hay responsive dưới 992px — đó là đúng phạm vi checkpoint Task 4.
+
+**Task 4 là `checkpoint:human-verify` (gate="blocking") — CHƯA đóng.** Agent
+không có trình duyệt, không được tự đánh giá thay. Người dùng cần tự mở
+`http://localhost:3000/xuat-kho/3866e4c0-8481-42b4-b6a1-d2760ed5cc90` (phiếu
+đã tạo sẵn ở trên) hoặc tạo phiếu mới từ `/xuat-kho`, rồi làm đúng bảy bước ở
+`04-11-PLAN.md` Task 4. **Chưa có `04-11-SUMMARY.md`, STATE.md chưa tăng bộ
+đếm plan hoàn thành** — chỉ đóng khi người dùng trả lời "đạt" hoặc mọi bước
+lệch đã sửa xong, theo đúng tiền lệ của `04-05`/`04-09`._
+
 ## Performance Metrics
 
 **Velocity:**
