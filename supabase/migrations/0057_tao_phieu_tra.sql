@@ -1,16 +1,16 @@
 -- =============================================================================
--- 0057 — Sinh phiếu trả hàng từ chứng từ gốc (Phase 4, plan 04-04, XUAT-09)
+-- 0057 — tao_phieu_tra: sinh phiếu trả hàng từ chứng từ gốc đã ghi sổ (D-15, XUAT-09)
 --
--- DỰNG LẠI TỪ DATABASE (2026-09-20). Version này đã được áp lên cloud bởi một
--- phiên làm việc khác, file nguồn không có trong repo. Trích từ `pg_get_functiondef`.
+-- Nút nằm trên CHỨNG TỪ GỐC đã ghi sổ: phiếu xuất -> "Khách trả hàng"
+-- (TRA_KHACH, tồn tăng); phiếu nhập -> "Trả NCC" (TRA_NCC, tồn giảm). Loại
+-- phiếu trả SUY RA từ chứng từ gốc, RPC không nhận tham số chọn loại — bớt
+-- một đường để client truyền sai.
 --
--- D-15: trả hàng luôn sinh từ NÚT TRÊN CHỨNG TỪ GỐC, không phải từ màn trống.
--- Phiếu xuất đã ghi sổ → "Khách trả hàng" (TRA_KHACH, tồn tăng).
--- Phiếu nhập đã ghi sổ → "Trả NCC" (TRA_NCC, tồn giảm).
--- Nhờ vậy ràng buộc `ck_tra_hang_co_goc` (0007) tự thỏa mãn, không cần người
--- dùng đi tìm chứng từ gốc bằng tay.
+-- Dòng bê nguyên từ chứng từ gốc để văn phòng sửa số trả trước khi ghi sổ.
+-- Ghi sổ dùng lại NGUYÊN _ghi_so_tra_khach/_ghi_so_tra_ncc đã có (0011, vá
+-- kho theo dòng ở 0051) — KHÔNG viết lại hàm ghi sổ nào ở migration này. Tạo
+-- chứng từ và ghi sổ chứng từ là hai việc tách biệt.
 -- =============================================================================
-
 create or replace function public.tao_phieu_tra(p_goc_id uuid)
 returns public.chung_tu
 language plpgsql
@@ -78,8 +78,8 @@ begin
 end;
 $$;
 
-comment on function public.tao_phieu_tra(uuid) is
-  'Sinh phiếu trả NHAP_LIEU từ một chứng từ đã ghi sổ: XUAT → TRA_KHACH, NHAP → TRA_NCC (D-15, XUAT-09). Dòng bê sang giữ nguyên kho của dòng gốc để văn phòng sửa số trả.';
-
 revoke all    on function public.tao_phieu_tra(uuid) from public, anon;
 grant execute on function public.tao_phieu_tra(uuid) to authenticated;
+
+comment on function public.tao_phieu_tra(uuid) is
+  'D-15/XUAT-09: sinh TRA_KHACH từ phiếu XUAT đã ghi sổ, TRA_NCC từ phiếu NHAP đã ghi sổ — loại suy từ chứng từ gốc, không nhận tham số. Ghi sổ dùng lại _ghi_so_tra_khach/_ghi_so_tra_ncc sẵn có, không viết lại.';
