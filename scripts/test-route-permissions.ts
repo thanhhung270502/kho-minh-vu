@@ -89,6 +89,33 @@ async function layCookie(email: string): Promise<string> {
   return [...kho].map(([n, v]) => `${n}=${encodeURIComponent(v)}`).join("; ");
 }
 
+/** Lấy một id đơn đặt hàng có thật để kiểm route chi tiết `/dat-hang/[id]`. */
+async function layIdDon(): Promise<string | null> {
+  const kho = new Map<string, string>();
+  const sb = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    {
+      cookies: {
+        getAll: () => [...kho].map(([name, value]) => ({ name, value })),
+        setAll: (ds) => ds.forEach((c) => kho.set(c.name, c.value)),
+      },
+    },
+  );
+
+  const { error } = await sb.auth.signInWithPassword({
+    email: TAI_KHOAN.quanly,
+    password: samplePassword(),
+  });
+  if (error) return null;
+
+  const { data } = await sb.rpc("danh_sach_don", {
+    p_trang: 1,
+    p_kich_thuoc: 1,
+  });
+  return data?.[0]?.id ?? null;
+}
+
 /** Lấy một id phiếu nhập có thật để kiểm route chi tiết. */
 async function layIdPhieuNhap(): Promise<string | null> {
   const kho = new Map<string, string>();
@@ -172,6 +199,13 @@ async function main() {
     );
   } else {
     console.warn("⚠ chưa có phiếu nhập nào — bỏ qua 2 route chi tiết");
+  }
+
+  const idDon = await layIdDon();
+  if (idDon) {
+    MA_TRAN.push({ route: `/dat-hang/${idDon}`, ky_vong: AI_CUNG_XEM });
+  } else {
+    console.warn("⚠ chưa có đơn đặt hàng nào — bỏ qua route /dat-hang/[id]");
   }
 
   const role = Object.keys(cookie) as VaiTroTest[];
