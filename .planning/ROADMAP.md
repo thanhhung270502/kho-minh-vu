@@ -135,7 +135,7 @@ Plans:
 
 **Wave 7** *(blocked on Wave 6 completion)*
 
-- [ ] 04-08-PLAN.md — màn danh sách đơn, ô tìm người nhận kèm tạo đối tác tại chỗ, nút tạo đơn
+- [x] 04-08-PLAN.md — màn danh sách đơn, ô tìm người nhận kèm tạo đối tác tại chỗ, nút tạo đơn
 
 **Wave 8** *(blocked on Wave 7 completion)*
 

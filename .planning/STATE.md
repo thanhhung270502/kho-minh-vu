@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 04-07-PLAN.md
-last_updated: "2026-09-20T05:03:05.900Z"
+stopped_at: Completed 04-08-PLAN.md
+last_updated: "2026-09-20T05:19:32.439Z"
 last_activity: 2026-09-20
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 64
-  completed_plans: 29
+  completed_plans: 30
 ---
 
 # Project State
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 ## Current Position
 
 Phase: 04 (don-dat-hang-phieu-xuat) — EXECUTING
-Plan: 6 of 15 có SUMMARY.md (04-01, 04-02, 04-03, 04-04, 04-06, 04-07 done); 04-05
-CHƯA có SUMMARY.md (checkpoint kiểm mắt vẫn mở, xem ghi chú dưới)
+Plan: 7 of 15 có SUMMARY.md (04-01, 04-02, 04-03, 04-04, 04-06, 04-07, 04-08 done);
+04-05 CHƯA có SUMMARY.md (checkpoint kiểm mắt vẫn mở, xem ghi chú dưới)
 
 _Sửa lại 2026-09-20: vị trí trước đó ghi nhầm "Phase 02 Plan 7/21" — Phase 02 thực
 tế đã xong toàn bộ 21/21 plan (xem .planning/phases/02-khung-ung-dung/*-SUMMARY.md),
@@ -51,6 +51,18 @@ của `04-05`. Tám file mới, chưa có component nào. Cũng độc lập v�
 `postIssue` lưu `ly_do_xuat_am` vào đầu phiếu TRƯỚC khi gọi ghi sổ (thứ tự bắt buộc,
 sai thì ghi sổ trả 23514 dù đã chọn lý do). pgTAP vẫn 324/0/0 — plan này không đụng
 migration. Việc treo của `04-05` vẫn y nguyên, chưa ai đóng._
+
+_Ghi lại 2026-09-20 khi thực thi 04-08: plan UI đầu tiên của Phase 4 — route
+`/dat-hang` (danh sách đơn, bộ lọc trên URL) + `PartnerSearchInput` dùng chung ở
+`shared/components/` (tìm người nhận server-side, tạo đối tác mới tại chỗ) +
+`CreateOrderButton` (cấp số qua `sinh_so_dh`, chuyển sang `/dat-hang/{id}`). Đã
+thêm `/dat-hang` vào `scripts/test-route-permissions.ts` luôn (70/70 ô đúng),
+sớm hơn dự kiến của `04-CONTEXT.md` (vốn để dành 04-15) — 04-15 không cần làm
+lại route này nữa. **Chưa kiểm bằng mắt trên trình duyệt** — agent không có
+trình duyệt, chỉ xác nhận `npm run check` xanh, build liệt kê đúng route, và
+một lượt GET có cookie phiên thật trả 200 không có error boundary. Người dùng
+cần tự mở `/dat-hang` một lần trước khi coi Wave 7 là xong hẳn. Việc treo của
+`04-05` vẫn y nguyên, không liên quan tới plan này._
 
 ## Performance Metrics
 
@@ -83,6 +95,7 @@ migration. Việc treo của `04-05` vẫn y nguyên, chưa ai đóng._
 | Phase 04 P04 | 19min | 3 tasks | 5 files |
 | Phase 04 P06 | 28min | 2 tasks | 6 files |
 | Phase 04 P07 | 35min | 2 tasks | 8 files |
+| Phase 04 P08 | 45min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -116,6 +129,8 @@ Recent decisions affecting current work:
 - [Phase 04]: addOrderLine khong truyen don_gia trong payload insert - cot don_dat_hang_dong.don_gia giu mac dinh 0 o tang database
 - [Phase 04]: postIssue goi saveNegativeReason TRUOC postDocument - ham ghi so database doc ly_do_xuat_am tu dau phieu da luu, khong nhan qua tham so
 - [Phase 04]: exceedsStock dat trong stock-out/types.ts, khong tach file lib rieng - theo tien le isFullyShipped cua sales-order/types.ts
+- [Phase 04]: PartnerSearchInput.onChange nhận string|undefined (không chỉ string) để order-filter-panel xóa được lựa chọn người nhận riêng lẻ
+- [Phase 04]: Thêm /dat-hang vào scripts/test-route-permissions.ts ngay ở plan 04-08 (sớm hơn dự kiến 04-15) vì success criteria của lượt thực thi yêu cầu script phải chạy qua — 70/70 ô đúng
 
 ### Pending Todos
 
@@ -134,7 +149,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-20T05:03:05.897Z
-Stopped at: Completed 04-07-PLAN.md
+Last session: 2026-09-20T05:19:32.436Z
+Stopped at: Completed 04-08-PLAN.md
 Last activity: 2026-09-20
 Resume file: None
