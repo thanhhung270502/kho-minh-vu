@@ -140,7 +140,7 @@ Plans:
 **Wave 8** *(blocked on Wave 7 completion)*
 
 - [ ] 04-09-PLAN.md — chi tiết đơn: đầu đơn sửa tại chỗ và bảng dòng gõ bàn phím
-- [ ] 04-10-PLAN.md — màn danh sách phiếu xuất và nút tạo phiếu xuất không cần đơn
+- [x] 04-10-PLAN.md — màn danh sách phiếu xuất và nút tạo phiếu xuất không cần đơn
 
 **Wave 9** *(blocked on Wave 8 completion)*
 

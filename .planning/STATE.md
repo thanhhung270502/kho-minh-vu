@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 04-08-PLAN.md
-last_updated: "2026-09-20T05:19:32.439Z"
+stopped_at: Completed 04-10-PLAN.md
+last_updated: "2026-09-20T05:50:18.241Z"
 last_activity: 2026-09-20
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 64
-  completed_plans: 30
+  completed_plans: 31
 ---
 
 # Project State
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 ## Current Position
 
 Phase: 04 (don-dat-hang-phieu-xuat) — EXECUTING
-Plan: 7 of 15 có SUMMARY.md (04-01, 04-02, 04-03, 04-04, 04-06, 04-07, 04-08 done);
-04-05 CHƯA có SUMMARY.md (checkpoint kiểm mắt vẫn mở, xem ghi chú dưới)
+Plan: 9 of 15 có SUMMARY.md (04-01, 04-02, 04-03, 04-04, 04-06, 04-07, 04-08, 04-10 done);
+04-05 và 04-09 CHƯA có SUMMARY.md (cả hai đang mở checkpoint kiểm mắt, xem ghi chú dưới)
 
 _Sửa lại 2026-09-20: vị trí trước đó ghi nhầm "Phase 02 Plan 7/21" — Phase 02 thực
 tế đã xong toàn bộ 21/21 plan (xem .planning/phases/02-khung-ung-dung/*-SUMMARY.md),
@@ -82,6 +82,28 @@ giao dự kiến rồi tải lại trang; thu cửa sổ dưới 992px). **Chưa
 `04-09-SUMMARY.md`, `STATE.md` chưa tăng bộ đếm plan hoàn thành** — chỉ đóng
 khi người dùng trả lời "đạt" hoặc mọi bước lệch đã sửa xong._
 
+_Ghi lại 2026-09-20 khi thực thi 04-10 (XONG — cả hai task autonomous, không có
+checkpoint): route `/xuat-kho` (danh sách phiếu xuất, khuôn 1:1 `/dat-hang` của
+04-08) + `CreateIssueButton` (XUAT-02, tạo phiếu không cần đơn, cấp số qua
+`sinh_so_ct`). **Phát hiện trước khi code (đọc kỹ migration 0045 theo
+`<read_first>`):** RPC `danh_sach_chung_tu` dùng chung ba chiều nhập/xuất/trả
+KHÔNG trả `don_dat_hang_id`/`so_dh`, nên cột "Đơn gốc" mà plan yêu cầu không có
+sẵn trên `IssueRow` như văn bản plan ngầm giả định. Thay vì sửa chữ ký RPC
+(đòi `DROP FUNCTION` + `db:push` lên database thật — loại migration CLAUDE.md
+yêu cầu hỏi trước), `IssueRow` được mở rộng thêm `orderId`/`orderNo` và
+`issue.api.ts` tự nối bằng hai lượt đọc riêng (`chung_tu.don_dat_hang_id` rồi
+`don_dat_hang.so_dh` — cả hai bảng đã có policy SELECT theo phạm vi từ 0016,
+không cần quyền mới, không cần migration). Thêm `/xuat-kho` vào
+`scripts/test-route-permissions.ts` ngay trong plan này (giống 04-08 làm sớm
+với `/dat-hang`) — **75/70 → 75/75 ô đúng**. `npm run check` xanh toàn bộ.
+**Chưa kiểm bằng mắt trên trình duyệt** — agent không có trình duyệt. **Lưu ý
+cho người kiểm:** `CreateIssueButton` điều hướng `router.push("/xuat-kho/{id}")`
+nhưng route đó (trang chi tiết phiếu xuất) CHƯA tồn tại — 04-11 mới tạo, đúng
+thứ tự như `CreateOrderButton`/`04-09` trước đó. Bấm "Tạo phiếu xuất" lúc này
+sẽ tạo phiếu thật trên database rồi văng 404 — không phải lỗi, nhưng người kiểm
+cần biết trước. Việc treo của `04-05` và `04-09` vẫn y nguyên, không liên quan
+tới plan này._
+
 ## Performance Metrics
 
 **Velocity:**
@@ -114,6 +136,7 @@ khi người dùng trả lời "đạt" hoặc mọi bước lệch đã sửa x
 | Phase 04 P06 | 28min | 2 tasks | 6 files |
 | Phase 04 P07 | 35min | 2 tasks | 8 files |
 | Phase 04 P08 | 45min | 3 tasks | 8 files |
+| Phase 04 P10 | 40min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -150,6 +173,7 @@ Recent decisions affecting current work:
 - [Phase 04]: PartnerSearchInput.onChange nhận string|undefined (không chỉ string) để order-filter-panel xóa được lựa chọn người nhận riêng lẻ
 - [Phase 04]: Thêm /dat-hang vào scripts/test-route-permissions.ts ngay ở plan 04-08 (sớm hơn dự kiến 04-15) vì success criteria của lượt thực thi yêu cầu script phải chạy qua — 70/70 ô đúng
 - [Phase 04]: order-line-table.tsx (04-09) vuot 200 dong, tach thanh order-line-table (dieu phoi) + order-line-columns (cot thuan) + order-line-entry-row (hang nhap lieu ban phim) - onKeyDownCapture that su nam trong ProductSearchInput dung chung (04-05), khong lap lai o file dieu phoi
+- [Phase 04]: IssueRow (04-10) mo rong DocumentRow them orderId/orderNo thay vi sua chu ky RPC danh_sach_chung_tu (dung chung nhap/xuat/tra) - issue.api.ts tu noi du lieu bang hai luot doc rieng (chung_tu -> don_dat_hang), tranh migration DROP+CREATE function tren database that
 
 ### Pending Todos
 
@@ -168,7 +192,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-20T05:19:32.436Z
-Stopped at: Completed 04-08-PLAN.md
+Last session: 2026-09-20T05:50:18.238Z
+Stopped at: Completed 04-10-PLAN.md
 Last activity: 2026-09-20
 Resume file: None
