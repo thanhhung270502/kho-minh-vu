@@ -15,6 +15,7 @@ import {
   writeOrderFilterToUrl,
   type OrderFilter,
 } from "../schemas/order.schema";
+import { CreateOrderButton } from "./create-order-button";
 import { OrderFilterPanel } from "./order-filter-panel";
 import { OrderTableBody } from "./order-table-body";
 import { OrderToolbar } from "./order-toolbar";
@@ -55,14 +56,7 @@ export function OrderTable({ canCreate }: { canCreate: boolean }) {
         <OrderToolbar
           filter={filter}
           onChange={changeFilter}
-          addButton={
-            // Task 04-08/3 thay chỗ này bằng CreateOrderButton thật.
-            canCreate ? (
-              <Button type="primary" disabled>
-                Tạo đơn
-              </Button>
-            ) : null
-          }
+          addButton={canCreate ? <CreateOrderButton /> : null}
         />
       }
     >
@@ -80,7 +74,10 @@ export function OrderTable({ canCreate }: { canCreate: boolean }) {
               </Button>
             </div>
           ) : (
-            "Chưa có đơn đặt hàng nào."
+            <div className="flex flex-col items-center gap-3">
+              <span>Chưa có đơn đặt hàng nào.</span>
+              {canCreate ? <CreateOrderButton label="Tạo đơn đầu tiên" /> : null}
+            </div>
           )
         }
       >
