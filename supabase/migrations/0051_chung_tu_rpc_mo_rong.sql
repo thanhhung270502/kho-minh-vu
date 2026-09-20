@@ -20,7 +20,104 @@
 -- phiếu (kho đi -> kho đến), không phải của từng dòng (đúng comment 0041).
 -- CHUYEN_KHO/KIEM_KE/DIEU_CHINH trong huy_chung_tu cũng giữ nguyên — chưa có
 -- giao diện, sẽ quyết ở phase của chúng.
+--
+-- (e) BUG THẬT phát hiện khi chạy pgTAP 23: ghi_so_chung_tu (0011/0041) gọi
+--     _cap_nhat_tien_do_ddh TRƯỚC KHI update chung_tu.trang_thai = 'HOAN_THANH'.
+--     _cap_nhat_tien_do_ddh tính so_luong_da_xuat bằng subquery lọc
+--     ct.trang_thai = 'HOAN_THANH' trên chính bảng chung_tu — tại thời điểm gọi,
+--     chứng từ ĐANG GHI SỔ vẫn còn NHAP_LIEU trong database nên subquery bỏ sót
+--     đúng chứng từ vừa xử lý. don_dat_hang có 0 dòng suốt Phase 1-3 nên lỗi
+--     này chưa từng lộ ra tới khi pgTAP 23 dựng kịch bản nghiệp vụ đầu tiên.
+--     Sửa bằng cách chuyển lệnh perform xuống SAU khối update trang_thai.
 -- =============================================================================
+create or replace function public.ghi_so_chung_tu(p_chung_tu_id uuid)
+returns public.chung_tu
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_ct public.chung_tu;
+  v_dong public.chung_tu_dong;
+  v_so_dong integer;
+  v_ton_hien_tai numeric(18,4);
+begin
+  select * into v_ct from public.chung_tu where id = p_chung_tu_id for update;
+
+  if v_ct.id is null then
+    raise exception 'Không tìm thấy chứng từ %', p_chung_tu_id using errcode = '23514';
+  end if;
+
+  if v_ct.trang_thai <> 'NHAP_LIEU' then
+    raise exception 'Chứng từ % đang ở trạng thái %, không ghi sổ lại được', v_ct.so_ct, v_ct.trang_thai
+      using errcode = '23514';
+  end if;
+
+  -- SECURITY DEFINER bỏ qua RLS nên phải kiểm quyền TƯỜNG MINH tại đây.
+  if (select public.vai_tro_hien_tai()) = 'chi_xem' then
+    raise exception 'Vai trò chỉ xem không được ghi sổ chứng từ' using errcode = '42501';
+  end if;
+
+  select count(*) into v_so_dong from public.chung_tu_dong where chung_tu_id = p_chung_tu_id;
+  if v_so_dong = 0 then
+    raise exception 'Chứng từ % không có dòng nào, không ghi sổ được', v_ct.so_ct
+      using errcode = '23514';
+  end if;
+
+  for v_dong in
+    select * from public.chung_tu_dong where chung_tu_id = p_chung_tu_id order by created_at, id
+  loop
+    -- Chặn xuất âm khi chưa chọn lý do.
+    if v_ct.loai_ct in ('XUAT','TRA_NCC') and v_ct.ly_do_xuat_am is null then
+      select coalesce(so_luong, 0) into v_ton_hien_tai
+      from public.ton_kho
+      where kho_id = coalesce(v_dong.kho_id, v_ct.kho_id) and san_pham_id = v_dong.san_pham_id;
+
+      if coalesce(v_ton_hien_tai, 0) - v_dong.so_luong < 0 then
+        raise exception
+          'Xuất quá tồn cho sản phẩm % (tồn %, xuất %). Phải chọn lý do xuất âm trước khi ghi sổ.',
+          v_dong.san_pham_id, coalesce(v_ton_hien_tai, 0), v_dong.so_luong
+          using errcode = '23514';
+      end if;
+    end if;
+
+    case v_ct.loai_ct
+      when 'NHAP'       then perform public._ghi_so_nhap(v_ct, v_dong);
+      when 'XUAT'       then perform public._ghi_so_xuat(v_ct, v_dong);
+      when 'TRA_NCC'    then perform public._ghi_so_tra_ncc(v_ct, v_dong);
+      when 'TRA_KHACH'  then perform public._ghi_so_tra_khach(v_ct, v_dong);
+      when 'CHUYEN_KHO' then perform public._ghi_so_chuyen_kho(v_ct, v_dong);
+      when 'KIEM_KE'    then perform public._ghi_so_kiem_ke(v_ct, v_dong);
+      when 'DIEU_CHINH' then perform public._ghi_so_dieu_chinh(v_ct, v_dong);
+    end case;
+  end loop;
+
+  -- KHÔNG bọc vòng lặp trên trong `exception when others` — làm vậy sẽ nuốt lỗi
+  -- và phá đúng tính chất atomic cần có. Lỗi ở dòng thứ n phải rollback cả n-1
+  -- dòng trước, và transaction ngầm định của RPC lo việc đó.
+
+  update public.chung_tu
+  set trang_thai = 'HOAN_THANH',
+      ngay_ghi_so = now(),
+      nguoi_duyet_id = auth.uid(),
+      tong_so_luong = (select coalesce(sum(so_luong),0) from public.chung_tu_dong where chung_tu_id = p_chung_tu_id),
+      tong_tien     = (select coalesce(sum(thanh_tien),0) from public.chung_tu_dong where chung_tu_id = p_chung_tu_id)
+  where id = p_chung_tu_id
+  returning * into v_ct;
+
+  -- Đặt SAU khi chứng từ đã HOAN_THANH (xem mục (e) ở đầu file): subquery bên
+  -- trong _cap_nhat_tien_do_ddh lọc trang_thai = 'HOAN_THANH' trên bảng
+  -- chung_tu, phải thấy đúng chứng từ vừa ghi sổ này.
+  if v_ct.loai_ct = 'XUAT' and v_ct.don_dat_hang_id is not null then
+    perform public._cap_nhat_tien_do_ddh(v_ct.don_dat_hang_id);
+  end if;
+
+  return v_ct;
+end;
+$$;
+
+revoke all    on function public.ghi_so_chung_tu(uuid) from public, anon;
+grant execute on function public.ghi_so_chung_tu(uuid) to authenticated;
 
 -- -----------------------------------------------------------------------------
 -- (a) chi_tiet_chung_tu — đổi kiểu trả về nên phải drop rồi create lại.

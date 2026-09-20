@@ -1069,18 +1069,25 @@ export type Database = {
       chi_tiet_chung_tu: {
         Args: { p_id: string }
         Returns: {
+          chung_tu_goc_id: string
           created_at: string
           doi_tac_id: string
+          don_dat_hang_id: string
           ghi_chu: string
+          ghi_chu_ly_do: string
           ho_ten_nguoi_tao: string
           id: string
           kho_id: string
           loai_ct: Database["public"]["Enums"]["loai_ct"]
+          ly_do_xuat_am: string
           ma_doi_tac: string
           ngay_ct: string
           ngay_ghi_so: string
+          nguoi_duyet_id: string
           nguon_nhap: Database["public"]["Enums"]["nguon_nhap"]
           so_ct: string
+          so_ct_goc: string
+          so_dh: string
           ten_doi_tac: string
           ten_kho: string
           tong_so_luong: number
@@ -1281,6 +1288,7 @@ export type Database = {
           ten_hang: string
           ten_kho: string
           thanh_tien: number
+          ton_hien_tai: number
         }[]
       }
       f_unaccent: { Args: { "": string }; Returns: string }
@@ -1534,7 +1542,7 @@ export type Database = {
       loai_doi_tac: "NCC" | "KHACH" | "CA_HAI"
       nguon_nhap: "NCC" | "NHA_MAY"
       trang_thai_ct: "NHAP_LIEU" | "HOAN_THANH" | "DA_HUY"
-      trang_thai_ddh: "MOI" | "DA_XUAT_MOT_PHAN" | "DA_XUAT_DU" | "DA_HUY"
+      trang_thai_ddh: "TAM" | "DA_XAC_NHAN" | "HOAN_THANH" | "DA_HUY"
       vai_tro: "quan_ly" | "van_phong" | "thu_kho" | "chi_xem"
     }
     CompositeTypes: {
@@ -1675,7 +1683,7 @@ export const Constants = {
       loai_doi_tac: ["NCC", "KHACH", "CA_HAI"],
       nguon_nhap: ["NCC", "NHA_MAY"],
       trang_thai_ct: ["NHAP_LIEU", "HOAN_THANH", "DA_HUY"],
-      trang_thai_ddh: ["MOI", "DA_XUAT_MOT_PHAN", "DA_XUAT_DU", "DA_HUY"],
+      trang_thai_ddh: ["TAM", "DA_XAC_NHAN", "HOAN_THANH", "DA_HUY"],
       vai_tro: ["quan_ly", "van_phong", "thu_kho", "chi_xem"],
     },
   },
