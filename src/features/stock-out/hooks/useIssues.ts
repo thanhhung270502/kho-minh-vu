@@ -87,10 +87,21 @@ export function useUpdateIssueHeader(id: string) {
   });
 }
 
+/**
+ * Phiếu xuất không mang giá — `chung_tu_dong` (dùng chung với `stock-in`) vẫn
+ * đòi trường giá ở tầng database, nên đơn giá luôn ép về 0 NGAY TẠI ĐÂY (tầng
+ * dữ liệu), để bảng dòng phía trên (`issue-line-table.tsx`) không phải biết
+ * tới khái niệm giá cả — component đó chỉ truyền mã hàng, số lượng, kho.
+ */
+const NO_PRICE = 0;
+
+type IssueLineDraft = Omit<DocumentLineInput, "unitPrice">;
+
 export function useAddIssueLine(documentId: string) {
   const refresh = useRefreshIssue(documentId);
   return useMutation({
-    mutationFn: (line: DocumentLineInput) => addDocumentLine(documentId, line),
+    mutationFn: (line: IssueLineDraft) =>
+      addDocumentLine(documentId, { ...line, unitPrice: NO_PRICE }),
     onSuccess: refresh,
   });
 }
@@ -98,8 +109,8 @@ export function useAddIssueLine(documentId: string) {
 export function useUpdateIssueLine(documentId: string) {
   const refresh = useRefreshIssue(documentId);
   return useMutation({
-    mutationFn: (input: { id: string; values: Partial<DocumentLineInput> }) =>
-      updateDocumentLine(input.id, input.values),
+    mutationFn: (input: { id: string; values: Partial<IssueLineDraft> }) =>
+      updateDocumentLine(input.id, { ...input.values, unitPrice: NO_PRICE }),
     onSuccess: refresh,
   });
 }
