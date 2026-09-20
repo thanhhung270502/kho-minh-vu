@@ -3,7 +3,14 @@
 // (file client) — cách chắc chắn để Server Component vẫn import được từ đây.
 import { hasPermission, type Permission, type Role } from "@/shared/lib/permissions";
 
-export type NavIconId = "dashboard" | "stock-in" | "catalog" | "partners" | "settings";
+export type NavIconId =
+  | "dashboard"
+  | "stock-in"
+  | "sales-order"
+  | "stock-out"
+  | "catalog"
+  | "partners"
+  | "settings";
 
 export type NavItem = {
   /** Đường dẫn giữ tiếng Việt: URL là bề mặt người dùng nhìn thấy. */
@@ -17,6 +24,12 @@ export type NavItem = {
   mobilePriority: number | null;
 };
 
+// mobilePriority (Phase 4, plan 04-15): thanh tab đáy chỉ có 4 ô chính, và
+// đây là chỗ thủ kho cầm điện thoại dùng nhiều nhất. Chọn theo nhịp vận hành
+// thật: ~92 phiếu xuất/ngày so với ~8 phiếu nhập/ngày (xem CLAUDE.md), nên
+// "Xuất kho" đứng trước "Nhập kho". "Danh mục hàng" và "Đối tác" là màn tra
+// cứu thỉnh thoảng, chuyển vào "Khác" (mobilePriority: null) để nhường chỗ
+// cho "Đặt hàng" — băn khoăn hằng ngày của văn phòng khi lên đơn cho khách.
 export const NAV_ITEMS: NavItem[] = [
   {
     href: "/",
@@ -33,6 +46,22 @@ export const NAV_ITEMS: NavItem[] = [
     shortLabel: "Nhập",
     icon: "stock-in",
     permission: "view-catalog",
+    mobilePriority: 3,
+  },
+  {
+    href: "/dat-hang",
+    label: "Đặt hàng",
+    shortLabel: "Đặt hàng",
+    icon: "sales-order",
+    permission: "view-catalog",
+    mobilePriority: 4,
+  },
+  {
+    href: "/xuat-kho",
+    label: "Xuất kho",
+    shortLabel: "Xuất",
+    icon: "stock-out",
+    permission: "view-catalog",
     mobilePriority: 2,
   },
   {
@@ -41,7 +70,7 @@ export const NAV_ITEMS: NavItem[] = [
     shortLabel: "Hàng",
     icon: "catalog",
     permission: "view-catalog",
-    mobilePriority: 3,
+    mobilePriority: null,
   },
   {
     href: "/doi-tac",
@@ -49,7 +78,7 @@ export const NAV_ITEMS: NavItem[] = [
     shortLabel: "Đối tác",
     icon: "partners",
     permission: "view-catalog",
-    mobilePriority: 4,
+    mobilePriority: null,
   },
   {
     href: "/cai-dat",

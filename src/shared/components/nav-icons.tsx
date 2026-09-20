@@ -3,8 +3,10 @@
 import {
   AppstoreOutlined,
   DashboardOutlined,
+  ExportOutlined,
   ImportOutlined,
   SettingOutlined,
+  ShoppingCartOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
 import type { ReactNode } from "react";
@@ -15,6 +17,8 @@ import type { NavIconId } from "@/shared/lib/navigation";
 export const NAV_ICONS: Record<NavIconId, ReactNode> = {
   dashboard: <DashboardOutlined />,
   "stock-in": <ImportOutlined />,
+  "sales-order": <ShoppingCartOutlined />,
+  "stock-out": <ExportOutlined />,
   catalog: <AppstoreOutlined />,
   partners: <TeamOutlined />,
   settings: <SettingOutlined />,
