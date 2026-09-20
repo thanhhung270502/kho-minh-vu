@@ -177,18 +177,24 @@ export async function fetchSimilarCodes(
   return (data ?? []).map(toSimilarCode);
 }
 
+/** Kết quả ghi đề nghị — `createdAt` cho phía giao diện biết đây là dòng vừa
+ * tạo hay dòng đã có sẵn (bấm lần hai trên cùng cặp, unique index có điều
+ * kiện trả về đúng dòng đang chờ thay vì tạo dòng mới). */
+export type ProposeMergeResult = { id: string; createdAt: string };
+
 /** D-14: chỉ ghi lại đề nghị gộp, không gộp gì — Phase 4 không thực hiện gộp thật. */
 export async function proposeMerge(
   productIdA: string,
   productIdB: string,
   docId: string,
   note?: string,
-): Promise<void> {
-  const { error } = await getSupabaseBrowserClient().rpc("ghi_de_nghi_gop_ma", {
+): Promise<ProposeMergeResult> {
+  const { data, error } = await getSupabaseBrowserClient().rpc("ghi_de_nghi_gop_ma", {
     p_san_pham_id_a: productIdA,
     p_san_pham_id_b: productIdB,
     p_chung_tu_id: docId,
     ...(note ? { p_ghi_chu: note } : {}),
   });
   if (error) throw error;
+  return { id: data.id, createdAt: data.created_at };
 }
