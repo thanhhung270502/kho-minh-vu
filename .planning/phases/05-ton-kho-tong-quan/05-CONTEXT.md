@@ -136,11 +136,13 @@ xuất âm).
 |---|---|---|
 | `ton_kho` + trigger tự cập nhật | migration 0008 | TON-01 — chỉ cần RPC đọc |
 | `the_kho_san_pham` | migration 0031 | TON-02 — chỉ cần thêm cột lũy kế |
+| **Thẻ kho ĐÃ CHẠY trên giao diện** | `src/features/products/components/stock-card.tsx`, tab trong `product-detail.tsx` | TON-02 — mở rộng, KHÔNG dựng mới |
+| **Bộ lọc `duoi_dinh_muc` ĐÃ CÓ** | `danh_sach_san_pham` (0030 dòng 105) + `product-filter-panel.tsx` | TQAN-02 — `/danh-muc?ton=duoi_dinh_muc` lọc được ngay, chỉ rỗng vì `ton_toi_thieu`=0 |
 | `danh_sach_san_pham` với bộ lọc đầy đủ | migration 0030 | khuôn cho RPC tồn kho |
 | `san_pham.ton_toi_thieu` (cột đã có, mặc định 0) | migration 0005 | TQAN-02 — chỉ thiếu dữ liệu |
 | `_ghi_so_dieu_chinh` | migration 0011 | D-05 nạp tồn tạm |
 | `luu_tru_hoa_don_kiotviet` 4.732 dòng | migration lưu trữ | D-04 suy định mức |
-| Đọc Excel phía server | `src/shared/lib/o-excel.ts` | nạp file danh mục KiotViet |
+| Đọc Excel phía server | `src/shared/lib/excel-cell.ts` (`readFirstSheet`) | nạp file danh mục KiotViet |
 | Khuôn màn danh sách | `src/shared/components/list-layout.tsx` | màn tồn kho |
 | 4 trạng thái bắt buộc | `src/shared/components/query-state.tsx` | mọi màn đọc |
 
@@ -152,7 +154,8 @@ xuất âm).
 
 ### Integration Points
 - Route mới: `src/app/(app)/ton-kho` (+ màn dưới định mức, + màn duyệt đề xuất định mức)
-- Thẻ kho nằm trong trang chi tiết mã hàng đã có: `src/app/(app)/danh-muc/[id]`
+- Thẻ kho nằm ở tab trong `src/features/products/components/product-detail.tsx`, component
+  `stock-card.tsx` — KHÔNG phải ở `app/(app)/danh-muc/[id]/page.tsx`
 - `scripts/test-route-permissions.ts` phải thêm dòng cho mọi route mới (bẫy 12)
 
 </code_context>

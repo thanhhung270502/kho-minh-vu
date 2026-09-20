@@ -66,9 +66,9 @@ cũng không được `update ton_kho` — nguyên tắc kiến trúc số 1 và
 | WU | Việc | File | Yêu cầu |
 |---|---|---|---|
 | **WU-7** | Màn tồn kho `/ton-kho`: bảng mã × kho theo khuôn `ListLayout`, bộ lọc trên URL, 4 trạng thái của `QueryState`, **không có cột giá trị** | `app/(app)/ton-kho/page.tsx`, `features/inventory/components/stock-table.tsx`, `components/stock-filter-panel.tsx` | TON-01, D-01, D-02 |
-| **WU-8** | Thẻ kho có **cột tồn lũy kế**, mỗi dòng link mở đúng chứng từ; gắn vào trang chi tiết mã hàng đã có | `features/inventory/components/stock-card-table.tsx`, `app/(app)/danh-muc/[id]/page.tsx` | TON-02, D-03 |
+| **WU-8** | **Mở rộng thẻ kho ĐÃ CÓ** — thêm cột tồn lũy kế và link mở chứng từ. Không dựng component mới | `features/products/components/stock-card.tsx`, `features/products/types.ts`, `features/products/api/product.api.ts` | TON-02, D-03 |
 | **WU-9** | Màn duyệt đề xuất định mức: bảng đề xuất kèm **căn cứ** (bao nhiêu ngày, bao nhiêu lần bán, theo mã hay theo nhóm), chọn dòng để duyệt | `app/(app)/ton-kho/dinh-muc/page.tsx`, `features/inventory/components/reorder-level-table.tsx` | TQAN-02, D-04 |
-| **WU-10** | Màn "dưới định mức" + route đọc file danh mục KiotViet và xem trước trước khi nạp tồn tạm | `app/(app)/ton-kho/duoi-dinh-muc/page.tsx`, `app/api/ton-kho/nap-tam/route.ts`, `features/inventory/components/provisional-stock-preview.tsx` | TQAN-02, D-05 |
+| **WU-10** | Nạp tồn tạm: route đọc file danh mục KiotViet + màn xem trước rồi mới ghi. **Không dựng màn "dưới định mức" mới** — `/danh-muc?ton=duoi_dinh_muc` đã lọc được, chỉ cần một lối vào từ màn tồn kho | `app/api/ton-kho/nap-tam/route.ts`, `features/inventory/components/provisional-stock-preview.tsx` | D-05 |
 
 ⚠️ **WU-9 phải hiện rõ chất lượng dữ liệu**: lịch sử chỉ 10 ngày (03/09→12/09), phủ
 1.223/3.266 mã. Người duyệt cần biết con số nào dựa trên dữ liệu thật của mã đó, con số
@@ -77,7 +77,9 @@ nào chỉ là trung bình nhóm. Không hiện thì duyệt mù.
 ⚠️ **Bẫy 11** — antd v6 bỏ prop của v5, chỉ cảnh báo lúc chạy còn build vẫn xanh.
 Mở console một lần trên từng màn mới trước khi báo xong.
 
-⚠️ **Bẫy 7** — đọc Excel chỉ ở server, và giữ cả hai đường reader (stream + thường).
+⚠️ **Bẫy 7** — đọc Excel chỉ ở server, giữ cả hai đường reader. **Đường dẫn trong bẫy 7
+của CLAUDE.md SAI**: file thật là `src/shared/lib/excel-cell.ts` (`readFirstSheet`), không
+phải `o-excel.ts`.
 
 ---
 
