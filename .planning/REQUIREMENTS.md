@@ -65,7 +65,7 @@
 ### Phiếu xuất & trả hàng (XUAT)
 
 - [x] **XUAT-01**: Tạo và ghi sổ một phiếu xuất từ đơn đặt hàng có sẵn trong dưới 20 giây — kho chỉ xác nhận số thực xuất, không gõ lại mã
-- [ ] **XUAT-02**: Tạo phiếu xuất mới không cần đơn đặt hàng
+- [x] **XUAT-02**: Tạo phiếu xuất mới không cần đơn đặt hàng
 - [ ] **XUAT-03**: Thêm dòng bằng cách quét barcode qua camera điện thoại *(dời sang Phase 6 — chốt 20/09)*
 - [x] **XUAT-04**: Khi số xuất làm tồn xuống dưới 0, hệ thống cảnh báo và bắt buộc chọn lý do trước khi cho ghi sổ
 - [x] **XUAT-05**: Ghi sổ phiếu xuất làm tồn giảm và cập nhật tiến độ đơn đặt hàng liên quan
@@ -204,7 +204,7 @@
 | DDH-03 | Phase 4 | Complete |
 | DDH-04 | Phase 4 | Complete |
 | XUAT-01 | Phase 4 | Complete |
-| XUAT-02 | Phase 4 | Pending |
+| XUAT-02 | Phase 4 | Complete |
 | XUAT-03 | Phase 6 | Pending |
 | XUAT-04 | Phase 4 | Complete |
 | XUAT-05 | Phase 4 | Complete |

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 04-06-PLAN.md
-last_updated: "2026-09-20T04:48:54.661Z"
+stopped_at: Completed 04-07-PLAN.md
+last_updated: "2026-09-20T05:03:05.900Z"
 last_activity: 2026-09-20
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 64
-  completed_plans: 28
+  completed_plans: 29
 ---
 
 # Project State
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 ## Current Position
 
 Phase: 04 (don-dat-hang-phieu-xuat) — EXECUTING
-Plan: 5 of 15 có SUMMARY.md (04-01, 04-02, 04-03, 04-04, 04-06 done); 04-05 CHƯA
-có SUMMARY.md
+Plan: 6 of 15 có SUMMARY.md (04-01, 04-02, 04-03, 04-04, 04-06, 04-07 done); 04-05
+CHƯA có SUMMARY.md (checkpoint kiểm mắt vẫn mở, xem ghi chú dưới)
 
 _Sửa lại 2026-09-20: vị trí trước đó ghi nhầm "Phase 02 Plan 7/21" — Phase 02 thực
 tế đã xong toàn bộ 21/21 plan (xem .planning/phases/02-khung-ung-dung/*-SUMMARY.md),
@@ -42,6 +42,15 @@ phụ thuộc kết quả checkpoint đó nên được thực thi trước, đ�
 mở `http://localhost:3000/nhap-kho`, làm đúng sáu bước ở `04-05-PLAN.md` Task 3,
 rồi mới coi Wave 5 của Phase 4 là xong hẳn. `04-07` trở đi (giao diện đơn) dùng
 lớp dữ liệu của `04-06`, không bị chặn bởi checkpoint này._
+
+_Ghi lại 2026-09-20 khi thực thi 04-07: câu trên đoán sai — `04-07-PLAN.md` không
+phải giao diện đơn, mà là lớp dữ liệu (`src/features/stock-out/` +
+`src/features/returns/`) cho phiếu xuất và phiếu trả, mỏng trên `features/documents`
+của `04-05`. Tám file mới, chưa có component nào. Cũng độc lập với checkpoint
+`04-05` còn mở (chỉ dùng code đã commit của 04-05, không phụ thuộc bước kiểm mắt).
+`postIssue` lưu `ly_do_xuat_am` vào đầu phiếu TRƯỚC khi gọi ghi sổ (thứ tự bắt buộc,
+sai thì ghi sổ trả 23514 dù đã chọn lý do). pgTAP vẫn 324/0/0 — plan này không đụng
+migration. Việc treo của `04-05` vẫn y nguyên, chưa ai đóng._
 
 ## Performance Metrics
 
@@ -73,6 +82,7 @@ lớp dữ liệu của `04-06`, không bị chặn bởi checkpoint này._
 | Phase 04 P03 | 24min | 3 tasks | 5 files |
 | Phase 04 P04 | 19min | 3 tasks | 5 files |
 | Phase 04 P06 | 28min | 2 tasks | 6 files |
+| Phase 04 P07 | 35min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -104,6 +114,8 @@ Recent decisions affecting current work:
 - [Phase 04]: tao_phieu_tra khong nhan tham so chon loai — TRA_KHACH/TRA_NCC suy 100% tu loai_ct cua chung tu goc, giu nguyen kho_id cua DONG GOC (khong phai kho dau phieu)
 - [Phase 04]: orderKeys tach rieng khoi documentKeys - don dat hang khong phai chung tu (loai_ct), namespace ["orders", ...] rieng
 - [Phase 04]: addOrderLine khong truyen don_gia trong payload insert - cot don_dat_hang_dong.don_gia giu mac dinh 0 o tang database
+- [Phase 04]: postIssue goi saveNegativeReason TRUOC postDocument - ham ghi so database doc ly_do_xuat_am tu dau phieu da luu, khong nhan qua tham so
+- [Phase 04]: exceedsStock dat trong stock-out/types.ts, khong tach file lib rieng - theo tien le isFullyShipped cua sales-order/types.ts
 
 ### Pending Todos
 
@@ -122,7 +134,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-20T04:48:40.727Z
-Stopped at: Completed 04-06-PLAN.md
+Last session: 2026-09-20T05:03:05.897Z
+Stopped at: Completed 04-07-PLAN.md
 Last activity: 2026-09-20
 Resume file: None
