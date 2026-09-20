@@ -13,8 +13,18 @@ export {
   toDocumentRow,
 } from "@/features/documents/types";
 
-/** Alias tên miền của chiều xuất — KHÔNG định nghĩa lại, chỉ đổi tên hiển thị. */
-export type IssueRow = DocumentRow;
+/**
+ * Alias tên miền của chiều xuất — KHÔNG định nghĩa lại, chỉ đổi tên hiển thị.
+ *
+ * `IssueRow` mở rộng thêm `orderId`/`orderNo`: `danh_sach_chung_tu` (RPC dùng
+ * chung với `stock-in`/`returns`) không trả đơn gốc, nên cột "Đơn gốc" của
+ * `/xuat-kho` được nối thêm ở tầng `api/issue.api.ts` bằng hai lượt đọc riêng
+ * của chiều xuất, không sửa RPC chung chỉ để phục vụ một cột của một màn.
+ */
+export type IssueRow = DocumentRow & {
+  orderId: string | null;
+  orderNo: string | null;
+};
 export type IssueDetail = DocumentDetail;
 export type IssueLine = DocumentLine;
 

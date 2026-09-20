@@ -1,6 +1,7 @@
 import { fetchDocuments } from "@/features/documents/api/document.api";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Page } from "@/shared/types";
+import type { DocumentRow } from "@/features/documents/types";
 
 import { toIssueListRpcArgs, type IssueFilter } from "../schemas/issue.schema";
 import type { NegativeReasonCode } from "../lib/negative-reasons";
@@ -21,7 +22,57 @@ export {
 // Mọi lượt gọi Supabase đều kiểm `error`: supabase-js không tự ném lỗi.
 
 export async function fetchIssues(filter: IssueFilter): Promise<Page<IssueRow>> {
-  return fetchDocuments(toIssueListRpcArgs(filter));
+  const page = await fetchDocuments(toIssueListRpcArgs(filter));
+  return { rows: await attachOrderNo(page.rows), total: page.total };
+}
+
+/**
+ * `danh_sach_chung_tu` dùng chung với `stock-in`/`returns` nên không trả đơn
+ * gốc. Nối thêm bằng hai lượt đọc riêng của chiều xuất (`chung_tu.don_dat_hang_id`
+ * rồi `don_dat_hang.so_dh`) — cả hai bảng đều cho phép SELECT theo phạm vi hiện
+ * tại (policy 0016), không cần sửa RPC chỉ để phục vụ một cột của một màn.
+ */
+async function attachOrderNo(rows: DocumentRow[]): Promise<IssueRow[]> {
+  if (rows.length === 0) return [];
+
+  const supabase = getSupabaseBrowserClient();
+  const ids = rows.map((row) => row.id);
+
+  const { data: docs, error: docsError } = await supabase
+    .from("chung_tu")
+    .select("id, don_dat_hang_id")
+    .in("id", ids);
+  if (docsError) throw docsError;
+
+  const orderIdByDocId = new Map(
+    (docs ?? []).map((doc) => [doc.id, doc.don_dat_hang_id] as const),
+  );
+  const orderIds = Array.from(
+    new Set(
+      Array.from(orderIdByDocId.values()).filter(
+        (id): id is string => id !== null,
+      ),
+    ),
+  );
+
+  const orderNoById = new Map<string, string>();
+  if (orderIds.length > 0) {
+    const { data: orders, error: ordersError } = await supabase
+      .from("don_dat_hang")
+      .select("id, so_dh")
+      .in("id", orderIds);
+    if (ordersError) throw ordersError;
+    for (const order of orders ?? []) orderNoById.set(order.id, order.so_dh);
+  }
+
+  return rows.map((row) => {
+    const orderId = orderIdByDocId.get(row.id) ?? null;
+    return {
+      ...row,
+      orderId,
+      orderNo: orderId ? (orderNoById.get(orderId) ?? null) : null,
+    };
+  });
 }
 
 export type NewIssueInput = {
