@@ -175,6 +175,69 @@ còn mở, để `state update-progress`/`roadmap update-plan-progress` (đếm 
 số file SUMMARY.md có trên đĩa) không báo nhầm phase đã tiến thêm một plan.
 Chỉ đóng khi người dùng trả lời "đạt" hoặc mọi bước lệch đã sửa xong._
 
+_Ghi lại 2026-09-20 khi thực thi 04-13 (CHƯA XONG — checkpoint đang mở): Task
+1-3 đã có commit thật (`efff155` gợi ý mã gần giống + nút đề nghị gộp
+`similar-code-hint.tsx` (D-14), `f96db09` khối chọn lý do xuất âm
+`negative-stock-panel.tsx` (D-11), `8aea54d` nút ghi sổ + hủy phiếu xuất +
+nâng `PostingSummary` lên `shared/components/`). Thứ tự commit đảo Task 2
+trước Task 1 so với thứ tự trong PLAN — `negative-stock-panel.tsx` (Task 1)
+import thẳng `SimilarCodeHint` (Task 2) nên phải có file đó trước để mỗi
+commit tự build được độc lập; nội dung từng task không đổi so với đặc tả.
+`npm run check` xanh toàn bộ ở cả ba lần commit riêng, `scripts/test-route-permissions.ts`
+vẫn **90/90 ô đúng** sau khi tạo dữ liệu thử (không có route mới ở plan này).
+
+**Hai deviation ngoài `files_modified` của plan, cả hai đều Rule 1/3 (cần
+thiết để hoàn thành task, không đổi hợp đồng đã có):**
+1. `hooks/useIssues.ts` thêm `useClearNegativeReason` (nút "Bỏ chọn lý do"
+   của Task 1 cần, plan không liệt kê hook mới nhưng mô tả hành vi đòi hỏi nó).
+2. `api/issue.api.ts` đổi `proposeMerge` từ trả `Promise<void>` sang
+   `Promise<{ id, createdAt }>` — cần `createdAt` để giao diện phân biệt "vừa
+   ghi" (hiện thông báo thành công) với "đã ghi từ trước" (hiện thông báo
+   thông tin) khi bấm lại đúng cặp mã lần hai, đúng yêu cầu bước 4 của
+   checkpoint. So sánh bằng ngưỡng 5 giây kể từ `created_at` — không có cách
+   nào khác phân biệt hai trường hợp từ giá trị RPC trả về (unique index có
+   điều kiện của 0055 chủ ý trả cùng một dòng cho cả hai lần gọi).
+
+**Đã nâng `PostingSummary` từ `features/stock-in/components/` lên
+`shared/components/posting-summary.tsx`** (lần dùng thứ hai, đủ điều kiện
+theo CLAUDE.md) — component giữ khung chung (`docNo`, `headline`, `children`,
+cảnh báo), mỗi chiều chứng từ tự soạn nội dung con: `stock-in` giữ nguyên
+"tồn sẽ tăng ở kho nào", `stock-out` thêm mới "nhắc lại từng dòng vượt tồn +
+lý do xuất âm + tiến độ đơn liên quan". `post-receipt-button.tsx` đã đổi
+import, file cũ `features/stock-in/components/posting-summary.tsx` đã xóa —
+`grep -rln "PostingSummary" src/` chỉ còn hai chỗ (component dùng chung +
+nơi gọi mới của stock-in; stock-out gọi trực tiếp `post-issue-button.tsx`).
+
+**Đã tự tạo dữ liệu thử để kiểm chứng ngoài `npm run check`** (agent không có
+trình duyệt): hai mã `PX-UAT-A` (tồn 0) / `PX-UAT-B` ("Nhông xích 428" /
+"Nhong xich 428 loai 2" — tên gần giống đúng kịch bản D-14), nhập kho
+`PX-UAT-B` 50 cái ở Kho 1 qua một phiếu nhập thật đã ghi sổ (`PN26-000002`,
+id `a813aa2f-f451-4e17-8dfa-1a1852b627c7` — đi qua đúng luồng ghi sổ, không
+ghi thẳng vào `ton_kho`, giữ nguyên tắc kiến trúc số 1). Đã tạo sẵn một phiếu
+xuất `PX26-000002` (id `f04caf4c-6190-4395-8eaa-b69ac8b59282`, trạng thái
+`NHAP_LIEU`, kho "Kho 1", đối tác "Khách lẻ", một dòng `PX-UAT-A` số lượng 10
+trong khi tồn 0) — đúng kịch bản bước 1-8 của checkpoint Task 4, người kiểm
+mở thẳng phiếu này thay vì phải tự tạo. Đã xác nhận qua cookie phiên thật
+(`van_phong` và `quan_ly`) rằng `/xuat-kho/f04caf4c-6190-4395-8eaa-b69ac8b59282`
+trả 200, không có "Application error", `<title>` đúng "Phiếu xuất · Kho Minh
+Vũ". **Chưa xác nhận bằng mắt** khối lý do xuất âm, gợi ý mã gần giống, hộp
+tóm tắt trước khi ghi sổ, hay luồng hủy phiếu — đó là đúng phạm vi checkpoint
+Task 4.
+
+**Task 4 là `checkpoint:human-verify` (gate="blocking") — CHƯA đóng.** Agent
+không có trình duyệt, không được tự đánh giá thay. Người dùng cần đăng nhập
+`vanphong@khominhvu.local`, mở
+`http://localhost:3000/xuat-kho/f04caf4c-6190-4395-8eaa-b69ac8b59282` (phiếu
+đã tạo sẵn ở trên), rồi làm đúng mười một bước ở `04-13-PLAN.md` Task 4 (bấm
+"Đề nghị gộp hai mã" với gợi ý `PX-UAT-B`, chọn lý do "Mã bị tách", ghi sổ,
+kiểm tồn `PX-UAT-A` xuống −10, đăng nhập `quanly@khominhvu.local` hủy phiếu
+rồi kiểm tồn về 0). **Chưa có `04-13-SUMMARY.md`, STATE.md chưa tăng bộ đếm
+plan hoàn thành** — đúng tiền lệ của `04-05`/`04-09`/`04-11`/`04-12`: không
+tạo SUMMARY.md khi checkpoint còn mở. Chỉ đóng khi người dùng trả lời "đạt"
+hoặc mọi bước lệch đã sửa xong. Dọn dẹp cuối: đánh dấu `PX-UAT-A`/`PX-UAT-B`
+ngừng kinh doanh sau khi kiểm xong, như đã làm với `PN-UAT-A`/`PN-UAT-B` ở
+Phase 3._
+
 ## Performance Metrics
 
 **Velocity:**
@@ -247,6 +310,9 @@ Recent decisions affecting current work:
 - [Phase 04]: IssueRow (04-10) mo rong DocumentRow them orderId/orderNo thay vi sua chu ky RPC danh_sach_chung_tu (dung chung nhap/xuat/tra) - issue.api.ts tu noi du lieu bang hai luot doc rieng (chung_tu -> don_dat_hang), tranh migration DROP+CREATE function tren database that
 - [Phase 04]: group-lines-by-warehouse.ts (04-12) la ham thuan rieng, khong dat trong types.ts/order-status.ts - gom dong theo (ten kho, ma hang) roi tra mang xen ke {kind:"group"}|{kind:"line"}, ma thieu kho mac dinh gom vao nhom "Chua gan kho" o CUOI (khong xen giua cac kho da co ten) vi don da xac nhan van co the chua ma thieu kho mac dinh - RPC chi chan luc tao phieu xuat (0056), khong chan luc them dong vao don
 - [Phase 04]: order-actions.tsx (04-12) goi ca hai hook useUnlockOrder/useCloseOrderEarly khong dieu kien trong OrderStatusDialog du chi mot cai dung theo mode - giu dung Rules of Hooks, don gian hon viec dieu kien hoa hook theo prop mode co the doi
+- [Phase 04]: PostingSummary (04-13) nang tu features/stock-in len shared/components voi khung chung (docNo/headline/children/canh bao), moi chieu chung tu tu soan noi dung con - dung lan thu hai du dieu kien theo CLAUDE.md
+- [Phase 04]: proposeMerge (04-13) tra ve { id, createdAt } thay vi void - giao dien so sanh createdAt voi nguong 5 giay de phan biet "vua ghi" voi "da ghi truoc do" khi bam lai dung mot cap ma, vi RPC ghi_de_nghi_gop_ma co y tra cung mot dong cho ca hai lan goi (unique index co dieu kien 0055)
+- [Phase 04]: negative-stock-panel.tsx (04-13) khoi tao state tu prop bang lazy initializer thay vi useEffect+setState - react-hooks/purity/set-state-in-effect chan pattern dong bo state tu prop trong effect; component chi mount sau khi phieu da tai xong (QueryState) nen khong can dong bo lai
 
 ### Pending Todos
 
