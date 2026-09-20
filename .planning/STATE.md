@@ -64,6 +64,24 @@ một lượt GET có cookie phiên thật trả 200 không có error boundary. 
 cần tự mở `/dat-hang` một lần trước khi coi Wave 7 là xong hẳn. Việc treo của
 `04-05` vẫn y nguyên, không liên quan tới plan này._
 
+_Ghi lại 2026-09-20 khi thực thi 04-09 (CHƯA XONG — checkpoint đang mở): Task
+1–3 đã có commit thật (`6ad2f78` route + khung trang, `d555b16` đầu đơn sửa tại
+chỗ, `fafd21b` bảng dòng gõ bàn phím) cộng `7da1d77` (thêm `/dat-hang/[id]` vào
+`scripts/test-route-permissions.ts`, dùng `danh_sach_don` để lấy id thật — hiện
+`don_dat_hang` vẫn 0 dòng nên script tự bỏ qua dòng đó, không giả vờ đã kiểm;
+70/70 ô còn lại vẫn đúng). `npm run check` xanh toàn bộ. `order-line-table.tsx`
+vượt 200 dòng nên tách thành ba file: `order-line-table.tsx` (điều phối +
+hook), `order-line-columns.tsx` (cấu hình cột thuần), `order-line-entry-row.tsx`
+(hàng nhập liệu bàn phím) — không đổi hành vi, chỉ tách theo trách nhiệm.
+**Task 4 là `checkpoint:human-verify` (gate="blocking") — CHƯA đóng.** Agent
+không có trình duyệt, không được tự đánh giá thay. Người dùng cần tự mở
+`http://localhost:3000/dat-hang`, tạo một đơn thử, rồi làm đúng bảy bước ở
+`04-09-PLAN.md` Task 4 (gõ mã → Enter → số lượng → Enter → dòng lưu, con trỏ
+quay về ô mã; gõ mã đầy đủ Enter ngay phải chọn đúng mã đó — bẫy 15; sửa ngày
+giao dự kiến rồi tải lại trang; thu cửa sổ dưới 992px). **Chưa có
+`04-09-SUMMARY.md`, `STATE.md` chưa tăng bộ đếm plan hoàn thành** — chỉ đóng
+khi người dùng trả lời "đạt" hoặc mọi bước lệch đã sửa xong._
+
 ## Performance Metrics
 
 **Velocity:**
@@ -131,6 +149,7 @@ Recent decisions affecting current work:
 - [Phase 04]: exceedsStock dat trong stock-out/types.ts, khong tach file lib rieng - theo tien le isFullyShipped cua sales-order/types.ts
 - [Phase 04]: PartnerSearchInput.onChange nhận string|undefined (không chỉ string) để order-filter-panel xóa được lựa chọn người nhận riêng lẻ
 - [Phase 04]: Thêm /dat-hang vào scripts/test-route-permissions.ts ngay ở plan 04-08 (sớm hơn dự kiến 04-15) vì success criteria của lượt thực thi yêu cầu script phải chạy qua — 70/70 ô đúng
+- [Phase 04]: order-line-table.tsx (04-09) vuot 200 dong, tach thanh order-line-table (dieu phoi) + order-line-columns (cot thuan) + order-line-entry-row (hang nhap lieu ban phim) - onKeyDownCapture that su nam trong ProductSearchInput dung chung (04-05), khong lap lai o file dieu phoi
 
 ### Pending Todos
 
