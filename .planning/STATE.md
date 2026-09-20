@@ -26,7 +26,8 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 04 (don-dat-hang-phieu-xuat) — EXECUTING
 Plan: 9 of 15 có SUMMARY.md (04-01, 04-02, 04-03, 04-04, 04-06, 04-07, 04-08, 04-10 done);
-04-05 và 04-09 CHƯA có SUMMARY.md (cả hai đang mở checkpoint kiểm mắt, xem ghi chú dưới)
+04-05, 04-09, 04-11, 04-12, 04-13, 04-14 CHƯA có SUMMARY.md (đều đang mở
+checkpoint kiểm mắt, xem ghi chú dưới)
 
 _Sửa lại 2026-09-20: vị trí trước đó ghi nhầm "Phase 02 Plan 7/21" — Phase 02 thực
 tế đã xong toàn bộ 21/21 plan (xem .planning/phases/02-khung-ung-dung/*-SUMMARY.md),
@@ -237,6 +238,61 @@ tạo SUMMARY.md khi checkpoint còn mở. Chỉ đóng khi người dùng trả
 hoặc mọi bước lệch đã sửa xong. Dọn dẹp cuối: đánh dấu `PX-UAT-A`/`PX-UAT-B`
 ngừng kinh doanh sau khi kiểm xong, như đã làm với `PN-UAT-A`/`PN-UAT-B` ở
 Phase 3._
+
+_Ghi lại 2026-09-20 khi thực thi 04-14 (CHƯA XONG — checkpoint đang mở): Task
+1-3 đã có commit thật (`42ad963` mẫu in phiếu giao hàng + route
+`/xuat-kho/[id]/in`, `c2ef88f` nút trả hàng + nâng cấp hạ tầng dùng chung,
+`1232834` trang chi tiết phiếu trả `/tra-hang/[id]`) cộng `3f16905` (thêm hai
+route mới vào `scripts/test-route-permissions.ts` ngay ở plan này, giống tiền
+lệ `04-08`/`04-10` — **100/100 ô đúng**). `npm run check` xanh toàn bộ ở cả
+bốn lần commit riêng.
+
+**Deviation Rule 1/3 lớn nhất — nâng bốn thứ từ `features/stock-out` lên
+`features/documents/` thay vì chép lại cho `features/returns`:**
+`PostIssueButton`→`PostDocumentButton`, `VoidIssueDialog`→`VoidDocumentDialog`,
+`negative-stock-panel.tsx`, và `lib/negative-reasons.ts` (+ `negativeReasonSchema`
+từ `issue.schema.ts`, + `exceedsStock` từ `stock-out/types.ts`). Lý do bắt
+buộc, không phải tùy chọn: plan 04-14 tự nêu hai lựa chọn ("dùng lại nếu đủ
+tổng quát, hoặc nâng lên `features/documents/components/`") nhưng
+`usePostIssue`/`useVoidIssue` cũ gắn cứng vào `issueKeys` (cache riêng của
+`stock-out`) nên không thể tái dùng thẳng cho phiếu trả mà không làm sai cache
+— và CLAUDE.md cấm "feature import trực tiếp từ thư mục nội bộ của feature
+khác", nên chỉ còn đường nâng lên. Hàm ghi sổ/hủy/lý do xuất âm giờ tổng quát
+theo `document.docType` (`lib/doc-type-labels.ts`: `DOC_TYPE_ACTION_LABEL`,
+`DOC_TYPE_STOCK_VERB`, `documentCanGoNegative()` — chỉ `XUAT`/`TRA_NCC` mới
+hỏi lý do xuất âm, `TRA_KHACH` làm tồn TĂNG nên không bao giờ cần). `stock-out`
+(`hooks/useIssues.ts`, `api/issue.api.ts`, `types.ts`, `schemas/issue.schema.ts`)
+đổi sang gọi/re-export từ `features/documents`, hành vi giữ nguyên y hệt
+trước — xác nhận bằng `npm run check` xanh và `grep -rln "PostIssueButton"`
+trả rỗng (không còn định nghĩa cũ nào sót lại).
+
+**Một đơn giản hóa nhỏ ngoài `files_modified`:** `issue-detail.tsx` bỏ khối
+"Từ chứng từ {so_ct_goc}" (dành cho trường hợp view này lỡ tải một chứng từ
+`TRA_*`) — comment gốc của 04-11 để ngỏ khả năng dùng chung view này cho màn
+phiếu trả, nhưng 04-14 đã dựng `ReturnDetailView` riêng (`features/returns`)
+nên nhánh đó không còn đường nào gọi tới, giữ lại chỉ là code chết.
+
+**Đã tự tạo MỘT phiếu trả thật qua RPC (không phải migration)** để có id thật
+cho `scripts/test-route-permissions.ts`: gọi
+`tao_phieu_tra('a813aa2f-f451-4e17-8dfa-1a1852b627c7')` (chứng từ gốc
+`PN26-000002`, đã `HOAN_THANH` từ trước) → sinh `TN26-000002` (`TRA_NCC`, id
+`2fbb4d99-d765-4baf-bc14-7d8c885d8e5a`, trạng thái `NHAP_LIEU`, 1 dòng số
+lượng 50 bê từ dòng gốc). **Chưa ghi sổ, chưa kiểm bằng mắt** — chỉ dùng để
+route-permission script có route thật để gọi, KHÔNG phải dữ liệu thử của
+checkpoint Task 4 (checkpoint tự tạo `TRA-UAT-A` riêng theo kịch bản của nó).
+Người kiểm cần biết `TN26-000002` tồn tại trên database khi rà danh sách
+chứng từ, tránh nhầm với dữ liệu tự tạo.
+
+**Task 4 là `checkpoint:human-verify` (gate="blocking") — CHƯA đóng.** Agent
+không có trình duyệt, không được tự đánh giá thay. Người dùng cần tạo mã thử
+`TRA-UAT-A` (nhập kho 100 cái ở Kho 1), đăng nhập `vanphong@khominhvu.local`,
+mở DevTools Console, rồi làm đúng mười một bước ở `04-14-PLAN.md` Task 4 (in
+phiếu giao hàng bản nháp/đã ghi sổ, "Khách trả hàng" tồn tăng, "Trả hàng NCC"
+tồn giảm kèm lý do xuất âm khi vượt tồn, hủy phiếu trả bằng `quan_ly`, nút trả
+hàng ẩn khi chứng từ gốc chưa ghi sổ). **Chưa có `04-14-SUMMARY.md`, STATE.md
+chưa tăng bộ đếm plan hoàn thành** — chỉ đóng khi người dùng trả lời "đạt"
+hoặc mọi bước lệch đã sửa xong, theo đúng tiền lệ của `04-05`/`04-09`/`04-11`/
+`04-12`/`04-13`. Dọn dẹp cuối cùng ghi vào SUMMARY: `TRA-UAT-A` và `TN26-000002`._
 
 ## Performance Metrics
 
