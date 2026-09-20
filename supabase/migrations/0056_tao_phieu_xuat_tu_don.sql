@@ -1,19 +1,20 @@
 -- =============================================================================
--- 0056 — Sinh phiếu xuất từ đơn đã xác nhận (Phase 4, plan 04-04, DDH-04/XUAT-01)
+-- 0056 — tao_phieu_xuat_tu_don: sinh phiếu xuất từ đơn đã xác nhận (D-10, XUAT-01)
 --
--- DỰNG LẠI TỪ DATABASE (2026-09-20). Version này đã được áp lên cloud bởi một
--- phiên làm việc khác, file nguồn không có trong repo. Trích từ `pg_get_functiondef`.
+-- D-10 (04-CONTEXT.md): phiếu xuất sinh từ đơn ĐIỀN SẴN mọi dòng bằng số đặt
+-- (so_luong_dat), để văn phòng chỉ phải gõ lại dòng nào kho lấy thiếu rồi ghi
+-- sổ — đây là đường đạt mốc dưới 20 giây một phiếu (XUAT-01).
 --
--- Đây là đường đạt mốc "dưới 20 giây một phiếu" (XUAT-01): mọi dòng được điền
--- sẵn `so_luong = so_luong_dat` (D-10), kho từng dòng lấy từ
--- `san_pham.kho_mac_dinh_id` (D-13 + chốt 19/09 câu 8). Văn phòng chỉ gõ lại
--- dòng nào kho lấy thiếu rồi ghi sổ.
+-- Cấp số + bê dòng + resolve kho mặc định phải nằm CHUNG một RPC, một
+-- transaction: giữa hai lượt gọi từ client có thể có người khác sửa đơn, và
+-- nguyên tắc kiến trúc số 4 (ghi sổ phải atomic) áp dụng y hệt cho việc sinh
+-- chứng từ, không chỉ lúc ghi sổ.
 --
--- Cả hàm nằm trong MỘT transaction ngầm định của RPC — nguyên tắc kiến trúc số
--- 4 (ghi sổ phải atomic). Cố ý KHÔNG bọc exception: lỗi ở bước nào thì rollback
--- toàn bộ, không để lại chứng từ mồ côi.
+-- D-13 + Claude's Discretion (04-CONTEXT.md): đo 20/09, 3.266/3.270 mã có
+-- kho_mac_dinh_id. 4 mã còn thiếu là việc người dùng phải sửa ở Danh mục —
+-- chặn TRƯỚC khi tạo bất cứ thứ gì, liệt kê đúng mã hàng đang thiếu, không
+-- đoán kho và không rơi về kho bất kỳ.
 -- =============================================================================
-
 create or replace function public.tao_phieu_xuat_tu_don(p_don_id uuid)
 returns public.chung_tu
 language plpgsql
@@ -105,8 +106,8 @@ begin
 end;
 $$;
 
-comment on function public.tao_phieu_xuat_tu_don(uuid) is
-  'Sinh phiếu xuất NHAP_LIEU từ một đơn DA_XAC_NHAN, điền sẵn số lượng = số đặt và kho từng dòng = kho mặc định của mã (D-10, D-13). Chặn sớm nếu có mã chưa gán kho mặc định.';
-
 revoke all    on function public.tao_phieu_xuat_tu_don(uuid) from public, anon;
 grant execute on function public.tao_phieu_xuat_tu_don(uuid) to authenticated;
+
+comment on function public.tao_phieu_xuat_tu_don(uuid) is
+  'D-10/XUAT-01: sinh phiếu xuất từ đơn đã xác nhận trong MỘT transaction — cấp số, resolve kho_mac_dinh_id từng dòng, và điền sẵn so_luong = so_luong_dat đều phải atomic vì giữa hai round-trip từ client có thể có người khác sửa đơn.';
