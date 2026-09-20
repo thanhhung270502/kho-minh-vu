@@ -118,7 +118,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 04-03-PLAN.md — RPC đọc đơn (danh sách / chi tiết / dòng) và bảng đề nghị gộp mã + gợi ý mã trùng
+- [x] 04-03-PLAN.md — RPC đọc đơn (danh sách / chi tiết / dòng) và bảng đề nghị gộp mã + gợi ý mã trùng
 
 **Wave 4** *(blocked on Wave 3 completion)*
 

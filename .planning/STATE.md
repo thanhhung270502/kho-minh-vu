@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 04-02-PLAN.md
-last_updated: "2026-09-20T03:35:54.891Z"
+stopped_at: Completed 04-03-PLAN.md
+last_updated: "2026-09-20T03:52:24.226Z"
 last_activity: 2026-09-20
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 64
-  completed_plans: 25
+  completed_plans: 26
 ---
 
 # Project State
@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 ## Current Position
 
 Phase: 04 (don-dat-hang-phieu-xuat) — EXECUTING
-Plan: 2 of 15 complete (04-01, 04-02 done; 04-03 next)
+Plan: 3 of 15 complete (04-01, 04-02, 04-03 done; 04-04 next)
 
 _Sửa lại 2026-09-20: vị trí trước đó ghi nhầm "Phase 02 Plan 7/21" — Phase 02 thực
 tế đã xong toàn bộ 21/21 plan (xem .planning/phases/02-khung-ung-dung/*-SUMMARY.md),
@@ -59,6 +59,7 @@ plan 04-01 gây ra — sửa lại cho khớp thực tế khi thực thi 04-01._
 | Phase 02 P05 | 55min | 3 tasks | 25 files |
 | Phase 04 P01 | 46min | 3 tasks | 5 files |
 | Phase 04 P02 | 19min | 3 tasks | 6 files |
+| Phase 04 P03 | 24min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,8 @@ Recent decisions affecting current work:
 - [Phase 04]: db:test:linked bi Docker treo tren may nay - fallback chay psql truc tiep tung file supabase/tests/*.sql (pgtap da bat tren cloud)
 - [Phase 04]: bon policy ghi don_dat_hang/don_dat_hang_dong siet tu <> chi_xem xuong in(quan_ly,van_phong) - va lo thu_kho insert thang qua PostgREST bo qua sinh_so_dh
 - [Phase 04]: chuoi_so_dh tach rieng khoi chuoi_so_ct - chuoi_so_ct khoa theo enum loai_ct (bay loai chung tu), don dat hang khong phai mot loai_ct
+- [Phase 04]: danh_sach_don/chi_tiet_don/dong_don doc ca bon vai tro, khong loc theo kho - chan that o chieu ghi cua 0052
+- [Phase 04]: de_nghi_gop_ma chi ghi lai de nghi gop ma, khong dung ton_kho/kho_movement/san_pham - gop that la phase rieng
 
 ### Pending Todos
 
@@ -101,7 +104,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-20T03:35:54.889Z
-Stopped at: Completed 04-02-PLAN.md
+Last session: 2026-09-20T03:52:24.224Z
+Stopped at: Completed 04-03-PLAN.md
 Last activity: 2026-09-20
 Resume file: None
