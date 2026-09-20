@@ -234,9 +234,14 @@ async function main() {
 
   const idDon = await layIdDon();
   if (idDon) {
-    MA_TRAN.push({ route: `/dat-hang/${idDon}`, ky_vong: AI_CUNG_XEM });
+    // /dat-hang/[id]/in cùng quyền xem: T-04-61 chấp nhận thu_kho/chi_xem mở
+    // thẳng tờ đi lấy hàng, route vẫn chặn khách chưa đăng nhập.
+    MA_TRAN.push(
+      { route: `/dat-hang/${idDon}`, ky_vong: AI_CUNG_XEM },
+      { route: `/dat-hang/${idDon}/in`, ky_vong: AI_CUNG_XEM },
+    );
   } else {
-    console.warn("⚠ chưa có đơn đặt hàng nào — bỏ qua route /dat-hang/[id]");
+    console.warn("⚠ chưa có đơn đặt hàng nào — bỏ qua route /dat-hang/[id] và /in");
   }
 
   const idPhieuXuat = await layIdPhieuXuat();

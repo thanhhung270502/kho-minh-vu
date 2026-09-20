@@ -24,6 +24,11 @@ import {
   toListRpcArgs,
   type ProductFilter,
 } from "../src/features/products/schemas/filter.schema";
+import {
+  groupLinesByWarehouse,
+  UNASSIGNED_WAREHOUSE_LABEL,
+} from "../src/features/sales-order/lib/group-lines-by-warehouse";
+import type { OrderLine } from "../src/features/sales-order/types";
 
 assert.equal(removeDiacritics("Đặng Thị Ngọc"), "Dang Thi Ngoc");
 assert.equal(normalizeUsername("  Kim.Chi "), "kim.chi");
@@ -128,6 +133,44 @@ assert.equal(
   "ô tìm KHÔNG tính vào số điều kiện của panel lọc",
 );
 assert.equal(toReceiptListRpcArgs(DEFAULT_RECEIPT_FILTER).p_loai_ct, "NHAP", "màn phiếu nhập luôn khóa loại NHAP");
+
+// --- Nhóm dòng theo kho cho phiếu đi lấy hàng (04-12, D-09) -----------------
+function sampleOrderLine(overrides: Partial<OrderLine>): OrderLine {
+  return {
+    id: overrides.id ?? "line-1",
+    productId: "product-1",
+    productCode: "MA-001",
+    productName: "Sản phẩm mẫu",
+    unitName: "Cái",
+    orderedQuantity: 1,
+    shippedQuantity: 0,
+    remainingQuantity: 1,
+    defaultWarehouseId: "kho-1",
+    defaultWarehouseName: "Kho 1",
+    createdAt: "2026-09-20T00:00:00Z",
+    ...overrides,
+  };
+}
+
+const groupedRows = groupLinesByWarehouse([
+  sampleOrderLine({ id: "b-kho2", productCode: "B002", defaultWarehouseId: "k2", defaultWarehouseName: "Kho 2" }),
+  sampleOrderLine({ id: "a-kho1", productCode: "A002", defaultWarehouseId: "k1", defaultWarehouseName: "Kho 1" }),
+  sampleOrderLine({ id: "c-khong-kho", productCode: "C003", defaultWarehouseId: null, defaultWarehouseName: null }),
+  sampleOrderLine({ id: "d-kho1", productCode: "A001", defaultWarehouseId: "k1", defaultWarehouseName: "Kho 1" }),
+]);
+
+// Thứ tự mong đợi: nhóm "Kho 1" (mã A001 rồi A002), nhóm "Kho 2" (B002), nhóm
+// "Chưa gán kho" (C003) ở cuối cùng — dù thứ tự đầu vào ngược lại hoàn toàn.
+assert.deepEqual(
+  groupedRows.map((row) => (row.kind === "group" ? `nhom:${row.warehouseName}` : row.line.id)),
+  ["nhom:Kho 1", "d-kho1", "a-kho1", "nhom:Kho 2", "b-kho2", `nhom:${UNASSIGNED_WAREHOUSE_LABEL}`, "c-khong-kho"],
+  "gom nhóm theo kho rồi theo mã hàng, mã thiếu kho mặc định gom nhóm cuối",
+);
+assert.deepEqual(
+  groupedRows.filter((row) => row.kind === "line").map((row) => row.index),
+  [1, 2, 3, 4],
+  "STT liên tục trong cả tờ, không đánh lại từ 1 ở mỗi kho",
+);
 
 // tsx biên dịch ra CJS nên KHÔNG có top-level await — bọc phần bất đồng bộ lại.
 async function kiemCsvLoi() {
