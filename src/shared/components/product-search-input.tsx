@@ -9,7 +9,7 @@ import {
   productSearchKeys,
   searchProducts,
   type ProductSearchResult,
-} from "../api/product-search.api";
+} from "@/shared/api/product-search.api";
 
 export type { ProductSearchResult };
 

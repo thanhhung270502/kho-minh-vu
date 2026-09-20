@@ -16,7 +16,7 @@ import {
   useUpdateReceiptLine,
 } from "../hooks/useReceipts";
 import type { DocumentDetail, DocumentLine } from "../types";
-import { ProductSearchInput, type ProductSearchResult } from "./product-search-input";
+import { ProductSearchInput, type ProductSearchResult } from "@/shared/components/product-search-input";
 
 function formatNumber(value: number | string | null): string {
   return value === null ? "" : Number(value).toLocaleString("vi-VN");
