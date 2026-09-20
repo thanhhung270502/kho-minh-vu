@@ -24,10 +24,12 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 ## Current Position
 
-Phase: 04 (don-dat-hang-phieu-xuat) — EXECUTING
-Plan: 9 of 15 có SUMMARY.md (04-01, 04-02, 04-03, 04-04, 04-06, 04-07, 04-08, 04-10 done);
-04-05, 04-09, 04-11, 04-12, 04-13, 04-14 CHƯA có SUMMARY.md (đều đang mở
-checkpoint kiểm mắt, xem ghi chú dưới)
+Phase: 04 (don-dat-hang-phieu-xuat) — EXECUTING (plan cuối 04-15 đã chạy hết phần
+tự động, đang chờ checkpoint)
+Plan: 8 of 15 có SUMMARY.md (04-01, 04-02, 04-03, 04-04, 04-06, 04-07, 04-08, 04-10 done);
+04-05, 04-09, 04-11, 04-12, 04-13, 04-14, 04-15 CHƯA có SUMMARY.md (đều đang mở
+checkpoint kiểm mắt, xem ghi chú dưới — 04-15 Task 1-3 đã xong và có commit
+thật, chỉ còn Task 4 chờ người dùng)
 
 _Sửa lại 2026-09-20: vị trí trước đó ghi nhầm "Phase 02 Plan 7/21" — Phase 02 thực
 tế đã xong toàn bộ 21/21 plan (xem .planning/phases/02-khung-ung-dung/*-SUMMARY.md),
@@ -293,6 +295,51 @@ hàng ẩn khi chứng từ gốc chưa ghi sổ). **Chưa có `04-14-SUMMARY.md
 chưa tăng bộ đếm plan hoàn thành** — chỉ đóng khi người dùng trả lời "đạt"
 hoặc mọi bước lệch đã sửa xong, theo đúng tiền lệ của `04-05`/`04-09`/`04-11`/
 `04-12`/`04-13`. Dọn dẹp cuối cùng ghi vào SUMMARY: `TRA-UAT-A` và `TN26-000002`._
+
+_Ghi lại 2026-09-20 khi thực thi 04-15 (CHƯA XONG — checkpoint đang mở, plan
+CUỐI của Phase 4): Task 1-3 đã có commit thật (`2fc5ecd` thêm "Đặt hàng"/"Xuất
+kho" vào `NAV_ITEMS` + icon `ShoppingCartOutlined`/`ExportOutlined` (không cài
+thư viện mới) + tính lại `mobilePriority` (`/` 1, `/xuat-kho` 2, `/nhap-kho` 3,
+`/dat-hang` 4 — kho làm phiếu xuất nhiều nhất, `/danh-muc`/`/doi-tac` chuyển
+vào "Khác"), `c2388bc` sửa comment sai "requirePermission() ... VÀ proxy.ts"
+(proxy.ts không có kiểm tra vai trò nào) + xác nhận **100/100 ô đúng** —
+bảy route Phase 4 đã được thêm sẵn từ 04-08/04-10/04-11/04-12/04-14, plan này
+chỉ còn việc dọn câu comment, `ebe987e` sửa `REQUIREMENTS.md`: DDH-03 viết lại
+theo trục duyệt `TAM → DA_XAC_NHAN → HOAN_THANH` (D-04), đánh dấu xong
+XUAT-06/XUAT-07. **`ROADMAP.md` không cần sửa** — mục Phase 4 đã có sẵn
+"15 plans" + đủ danh sách 15 wave từ lần chạy `roadmap update-plan-progress`
+trước đó (khớp đúng 8 plan có SUMMARY.md hiện tại), không còn `TBD`.
+
+**Phát hiện ngoài phạm vi, đã ghi vào
+`.planning/phases/04-don-dat-hang-phieu-xuat/deferred-items.md` thay vì tự
+sửa** (SCOPE BOUNDARY — không phải route do Phase 4 tạo): đối chiếu
+`find "src/app/(app)" -name "page.tsx"` với `MA_TRAN` phát hiện năm route từ
+Phase 2 (`/cai-dat/cong-doan`, `/cai-dat/don-vi-tinh`, `/cai-dat/kho`,
+`/danh-muc/[id]`, `/doi-tac/[id]`) chưa có dòng riêng trong ma trận quyền.
+`/khong-du-quyen` không phải gap — trang không gọi `requirePermission()`.
+
+**Bộ kiểm cuối chạy thật, số liệu thật** (dev server đã chạy sẵn ở cổng 3000):
+`npm run check` exit 0 (typecheck + lint + build); pgTAP chạy trực tiếp bằng
+`psql "$DATABASE_URL" -f <file>` cho cả 25 file `supabase/tests/*.sql` (Docker
+treo trên máy này, không dùng `npm run db:test:linked`) — **324 ok / 0 not ok /
+0 ERROR**; `npm run verify:hook` ✓ 5/5 tài khoản; `npx tsx
+scripts/test-pure-functions.ts` ✓; `npx tsx scripts/test-excel-reader.ts` ✓;
+`npx tsx scripts/test-route-permissions.ts` ✓ **100/100 ô đúng** (không có
+route nào bị bỏ qua vì thiếu dữ liệu — đơn, phiếu xuất, phiếu trả đều đã có
+dữ liệu thật từ các plan trước).
+
+**Task 4 là `checkpoint:human-verify` (gate="blocking") — CHƯA đóng, và đây
+cũng là checkpoint CUỐI của Phase 4.** Agent không có trình duyệt, không được
+tự đánh giá thay. Người dùng cần làm đúng tám bước ở `04-15-PLAN.md` Task 4
+(kiểm menu "Đặt hàng"/"Xuất kho" theo vai trò, thanh tab đáy 375px 4 ô + "Khác",
+`findActiveHref` đúng ở `/dat-hang/{id}/in`, quyết định dữ liệu thử còn lại
+trên database thật, và báo trạng thái ba việc WU-0 — rà 17 tên lớn thành đối
+tác, gán `kho_mac_dinh_id` cho 4 mã còn thiếu, xóa 3 bản ghi rác UAT Phase 2).
+**Chưa có `04-15-SUMMARY.md`, STATE.md chưa tăng bộ đếm plan hoàn thành, Phase
+4 CHƯA được coi là xong** — ngoài checkpoint của chính 04-15, sáu checkpoint
+của `04-05`/`04-09`/`04-11`/`04-12`/`04-13`/`04-14` cũng vẫn đang mở, chưa ai
+trả lời. Chỉ đóng khi người dùng trả lời "đạt" cho từng plan hoặc mọi bước
+lệch đã sửa xong._
 
 ## Performance Metrics
 
