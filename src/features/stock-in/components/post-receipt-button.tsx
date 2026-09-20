@@ -1,12 +1,16 @@
 "use client";
 
-import { App, Button, Tooltip } from "antd";
+import { App, Button, Tooltip, Typography } from "antd";
 
+import { PostingSummary } from "@/shared/components/posting-summary";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 
 import { usePostReceipt } from "../hooks/useReceipts";
 import type { DocumentDetail, DocumentLine } from "../types";
-import { PostingSummary } from "./posting-summary";
+
+function formatNumber(value: number): string {
+  return Number(value).toLocaleString("vi-VN");
+}
 
 type Props = {
   receipt: DocumentDetail;
@@ -35,10 +39,36 @@ export function PostReceiptButton({ receipt, lines, canEdit }: Props) {
         : null;
 
   function confirmThenPost() {
+    const totalQuantity = lines.reduce((sum, line) => sum + Number(line.quantity), 0);
+    const totalAmount = lines.reduce(
+      (sum, line) => sum + Number(line.quantity) * Number(line.unitPrice),
+      0,
+    );
+    const affectedWarehouses = [
+      ...new Set(lines.map((line) => line.warehouseName).filter(Boolean)),
+    ];
+
     modal.confirm({
       title: "Ghi sổ phiếu nhập?",
       width: 560,
-      content: <PostingSummary receipt={receipt} lines={lines} />,
+      content: (
+        <PostingSummary
+          docNo={receipt.docNo}
+          headline={
+            <>
+              {lines.length} dòng, tổng số lượng <strong>{formatNumber(totalQuantity)}</strong>,
+              tổng tiền <strong>{formatNumber(totalAmount)}</strong>.
+            </>
+          }
+          warningTitle="Ghi sổ xong không sửa được"
+          warningDescription="Sai thì phải hủy phiếu và lập lại. Giá vốn đã tính sẽ KHÔNG tự quay về số cũ — bình quân gia quyền là trung bình lịch sử, không hoàn tác được."
+        >
+          <Typography.Paragraph className="mb-0">
+            Tồn sẽ tăng ở:{" "}
+            <strong>{affectedWarehouses.join(", ") || (receipt.warehouseName ?? "—")}</strong>.
+          </Typography.Paragraph>
+        </PostingSummary>
+      ),
       okText: "Ghi sổ",
       cancelText: "Xem lại",
       onOk: async () => {

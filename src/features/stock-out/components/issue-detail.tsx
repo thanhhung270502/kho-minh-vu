@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Button, Space, Tag, Typography } from "antd";
+import { Alert, Button, Space, Tag } from "antd";
 import Link from "next/link";
 
 import { PageHeader } from "@/shared/components/page-header";
@@ -12,6 +12,9 @@ import { DOC_STATUS_COLORS, DOC_STATUS_LABELS } from "../types";
 import type { IssuePermissions } from "../types";
 import { IssueHeader } from "./issue-header";
 import { IssueLineTable } from "./issue-line-table";
+import { NegativeStockPanel } from "./negative-stock-panel";
+import { PostIssueButton } from "./post-issue-button";
+import { VoidIssueDialog } from "./void-issue-dialog";
 
 export function IssueDetailView({
   id,
@@ -45,6 +48,7 @@ export function IssueDetailView({
         // D-04/D-06: phiếu còn nhập liệu mới sửa được ở giao diện; đã ghi sổ
         // thì khóa. Chặn thật ở policy "chi sua chung tu dang nhap lieu" (0016).
         const editable = permissions.canEdit && issue.status === "NHAP_LIEU";
+        const issueLines = lines.data ?? [];
 
         // Nguồn gốc của phiếu này: hoặc sinh từ đơn (XUAT thường), hoặc là
         // phiếu trả có chứng từ gốc (TRA_KHACH/TRA_NCC — dùng chung component
@@ -83,15 +87,11 @@ export function IssueDetailView({
                 </span>
               }
               actions={
-                // Nút ghi sổ + khối cảnh báo xuất âm cắm vào đây ở plan 04-13;
-                // nút in phiếu giao hàng và nút "Khách trả hàng" cắm vào đây ở
-                // plan 04-14. permissions.canVoid dành cho nút hủy phiếu đã ghi
-                // sổ (chỉ quản lý, D-06) — cắm cùng lúc với plan 04-13.
+                // Nút in phiếu giao hàng và nút "Khách trả hàng" cắm vào đây ở
+                // plan 04-14.
                 <Space wrap>
-                  <Typography.Text type="secondary" className="text-xs">
-                    Nút ghi sổ / cảnh báo xuất âm — plan 04-13. Nút in / khách
-                    trả hàng — plan 04-14.
-                  </Typography.Text>
+                  <VoidIssueDialog issue={issue} canVoid={permissions.canVoid} />
+                  <PostIssueButton issue={issue} lines={issueLines} canEdit={permissions.canEdit} />
                 </Space>
               }
             />
@@ -107,6 +107,17 @@ export function IssueDetailView({
             ) : null}
 
             <IssueHeader issue={issue} canEdit={permissions.canEdit} />
+
+            <NegativeStockPanel
+              issueId={issue.id}
+              lines={issueLines}
+              reason={
+                issue.negativeReason
+                  ? { code: issue.negativeReason, note: issue.negativeReasonNote }
+                  : null
+              }
+              editable={editable}
+            />
 
             <div className="mt-4">
               <QueryState query={lines} isEmpty={() => false} emptyDescription="">
