@@ -329,6 +329,68 @@ export type Database = {
         }
         Relationships: []
       }
+      de_nghi_gop_ma: {
+        Row: {
+          chung_tu_id: string | null
+          created_at: string
+          ghi_chu: string | null
+          id: string
+          nguoi_de_nghi_id: string | null
+          san_pham_id_a: string
+          san_pham_id_b: string
+          trang_thai: string
+        }
+        Insert: {
+          chung_tu_id?: string | null
+          created_at?: string
+          ghi_chu?: string | null
+          id?: string
+          nguoi_de_nghi_id?: string | null
+          san_pham_id_a: string
+          san_pham_id_b: string
+          trang_thai?: string
+        }
+        Update: {
+          chung_tu_id?: string | null
+          created_at?: string
+          ghi_chu?: string | null
+          id?: string
+          nguoi_de_nghi_id?: string | null
+          san_pham_id_a?: string
+          san_pham_id_b?: string
+          trang_thai?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "de_nghi_gop_ma_chung_tu_id_fkey"
+            columns: ["chung_tu_id"]
+            isOneToOne: false
+            referencedRelation: "chung_tu"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "de_nghi_gop_ma_nguoi_de_nghi_id_fkey"
+            columns: ["nguoi_de_nghi_id"]
+            isOneToOne: false
+            referencedRelation: "nguoi_dung"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "de_nghi_gop_ma_san_pham_id_a_fkey"
+            columns: ["san_pham_id_a"]
+            isOneToOne: false
+            referencedRelation: "san_pham"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "de_nghi_gop_ma_san_pham_id_b_fkey"
+            columns: ["san_pham_id_b"]
+            isOneToOne: false
+            referencedRelation: "san_pham"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       doi_tac: {
         Row: {
           created_at: string
@@ -1110,6 +1172,24 @@ export type Database = {
           trang_thai: Database["public"]["Enums"]["trang_thai_ct"]
         }[]
       }
+      chi_tiet_don: {
+        Args: { p_id: string }
+        Returns: {
+          created_at: string
+          doi_tac_id: string
+          ghi_chu: string
+          ho_ten_nguoi_tao: string
+          id: string
+          ma_doi_tac: string
+          ngay_dh: string
+          ngay_giao_du_kien: string
+          so_dh: string
+          ten_doi_tac: string
+          tong_so_luong_da_xuat: number
+          tong_so_luong_dat: number
+          trang_thai: Database["public"]["Enums"]["trang_thai_ddh"]
+        }[]
+      }
       chi_tiet_san_pham: {
         Args: { p_id: string }
         Returns: {
@@ -1214,6 +1294,33 @@ export type Database = {
           updated_at: string
         }[]
       }
+      danh_sach_don: {
+        Args: {
+          p_den_ngay?: string
+          p_doi_tac_id?: string
+          p_kich_thuoc?: number
+          p_trang?: number
+          p_trang_thai?: Database["public"]["Enums"]["trang_thai_ddh"]
+          p_tu_khoa?: string
+          p_tu_ngay?: string
+        }
+        Returns: {
+          created_at: string
+          doi_tac_id: string
+          ghi_chu: string
+          ho_ten_nguoi_tao: string
+          id: string
+          ngay_dh: string
+          ngay_giao_du_kien: string
+          so_dh: string
+          so_dong: number
+          ten_doi_tac: string
+          tong_so_dong: number
+          tong_so_luong_da_xuat: number
+          tong_so_luong_dat: number
+          trang_thai: Database["public"]["Enums"]["trang_thai_ddh"]
+        }[]
+      }
       danh_sach_ghi_chu_kiotviet: {
         Args: {
           p_kich_thuoc?: number
@@ -1306,6 +1413,21 @@ export type Database = {
           ton_hien_tai: number
         }[]
       }
+      dong_don: {
+        Args: { p_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          kho_mac_dinh_id: string
+          ma_hang: string
+          san_pham_id: string
+          so_luong_da_xuat: number
+          so_luong_dat: number
+          ten_dvt: string
+          ten_hang: string
+          ten_kho_mac_dinh: string
+        }[]
+      }
       dong_don_som: {
         Args: { p_id: string; p_ly_do: string }
         Returns: {
@@ -1331,6 +1453,30 @@ export type Database = {
       gan_hang_loat: {
         Args: { p_ids: string[]; p_nguon?: string; p_thay_doi: Json }
         Returns: number
+      }
+      ghi_de_nghi_gop_ma: {
+        Args: {
+          p_chung_tu_id?: string
+          p_ghi_chu?: string
+          p_san_pham_id_a: string
+          p_san_pham_id_b: string
+        }
+        Returns: {
+          chung_tu_id: string | null
+          created_at: string
+          ghi_chu: string | null
+          id: string
+          nguoi_de_nghi_id: string | null
+          san_pham_id_a: string
+          san_pham_id_b: string
+          trang_thai: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "de_nghi_gop_ma"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       ghi_so_chung_tu: {
         Args: { p_chung_tu_id: string }
@@ -1382,6 +1528,18 @@ export type Database = {
           ten_cong_doan_de_xuat: string
           ten_hang: string
           ten_nhom_hang: string
+        }[]
+      }
+      goi_y_ma_trung: {
+        Args: { p_gioi_han?: number; p_kho_id: string; p_san_pham_id: string }
+        Returns: {
+          do_giong: number
+          kho_id: string
+          ma_hang: string
+          san_pham_id: string
+          ten_hang: string
+          ten_kho: string
+          ton: number
         }[]
       }
       huy_chung_tu: {
