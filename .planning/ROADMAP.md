@@ -181,20 +181,21 @@ sắp hết thay vì biết sau.
 > "biết tồn thật" + "biết trước khi hết"; phần còn lại là trang tổng quan và chuyển kho,
 > đọc trên cùng dữ liệu nên làm sau không mất gì.
 
-**Plans**: 11 plans trong 5 wave
+**Plans**: 12 plans trong 6 wave
 
 Plans:
+- [ ] 05-00-PLAN.md — [CHẶN] trang bị bản làm việc: npm install, .env.local, supabase login, file KiotViet (wave 1)
 - [ ] 05-01-PLAN.md — RPC `danh_sach_ton_kho`: tồn theo mã × kho, lọc + phân trang server (wave 1)
-- [ ] 05-02-PLAN.md — Thêm cột tồn lũy kế vào `the_kho_san_pham` (wave 1)
-- [ ] 05-03-PLAN.md — RPC đề xuất và duyệt định mức tồn tối thiểu (wave 1)
-- [ ] 05-04-PLAN.md — RPC `nap_ton_tam` qua một chứng từ DIEU_CHINH (wave 1)
-- [ ] 05-05-PLAN.md — [CHẶN] trang bị máy, db:push, db:types, chạy pgTAP (wave 2)
-- [ ] 05-06-PLAN.md — Lớp dữ liệu feature inventory: kiểu, bộ lọc URL, api, hook (wave 3)
-- [ ] 05-07-PLAN.md — Màn tồn kho `/ton-kho` (wave 4)
+- [ ] 05-02-PLAN.md — Thêm cột tồn lũy kế vào `the_kho_san_pham` (wave 2)
+- [ ] 05-03-PLAN.md — RPC đề xuất và duyệt định mức tồn tối thiểu (wave 2)
+- [ ] 05-04-PLAN.md — RPC `nap_ton_tam` qua một chứng từ DIEU_CHINH (wave 2)
+- [ ] 05-05-PLAN.md — [BLOCKING] db:push, db:types, chạy toàn bộ pgTAP (wave 3)
+- [ ] 05-06-PLAN.md — Lớp dữ liệu feature inventory: kiểu, bộ lọc URL, api, hook (wave 4)
+- [ ] 05-07-PLAN.md — Màn tồn kho `/ton-kho` (wave 5)
 - [ ] 05-08-PLAN.md — Mở rộng thẻ kho đã có: cột lũy kế + link chứng từ (wave 4)
-- [ ] 05-09-PLAN.md — Màn duyệt đề xuất định mức `/ton-kho/dinh-muc` (wave 4)
-- [ ] 05-10-PLAN.md — Nạp tồn tạm từ file KiotViet `/ton-kho/nap-tam` (wave 4)
-- [ ] 05-11-PLAN.md — Menu, ma trận quyền route, bộ kiểm toàn dự án, UAT (wave 5)
+- [ ] 05-09-PLAN.md — Màn duyệt đề xuất định mức `/ton-kho/dinh-muc` (wave 5)
+- [ ] 05-10-PLAN.md — Nạp tồn tạm từ file KiotViet `/ton-kho/nap-tam` (wave 5)
+- [ ] 05-11-PLAN.md — Menu, ma trận quyền route, bộ kiểm toàn dự án, UAT (wave 6)
 
 **UI hint**: yes
 
