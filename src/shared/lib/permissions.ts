@@ -13,6 +13,7 @@ export type Permission =
   | "manage-lookups"
   | "manage-users"
   | "manage-warehouses"
+  | "load-provisional-stock"
   | "manage-doc-numbering";
 
 const PERMISSION_MATRIX: Record<Permission, readonly Role[]> = {
@@ -24,6 +25,8 @@ const PERMISSION_MATRIX: Record<Permission, readonly Role[]> = {
   "manage-users": ["quan_ly"],
   "manage-warehouses": ["quan_ly"],
   "manage-doc-numbering": ["quan_ly"],
+  // Nạp tồn tạm từ KiotViet (D-05). Chặn thật: RPC nap_ton_tam trả 42501 cho vai trò khác.
+  "load-provisional-stock": ["quan_ly"],
 };
 
 export function hasPermission(
