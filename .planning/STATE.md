@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to execute
-stopped_at: Completed 05-10-PLAN.md
-last_updated: "2026-09-21T12:12:00.000Z"
+status: Awaiting human verification
+stopped_at: 05-11 Task 3 — checkpoint UAT Phase 5 (Task 1-2 xong)
+last_updated: "2026-09-21T15:30:00.000Z"
 last_activity: 2026-09-21
 progress:
   total_phases: 6
@@ -27,7 +27,12 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 5 (ton-kho-tong-quan) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 11 of 12
+Plan: 12 of 12 — 05-11 Task 1-2 xong (menu `ce7fe36`, ma trận quyền 120/120 `6e9cff2`),
+Task 3 là checkpoint UAT chờ người dùng: CHƯA có 05-11-SUMMARY.md, chưa tăng bộ đếm plan
+hoàn thành (tiền lệ 04-05/04-09). Thứ tự UAT bắt buộc: nạp tồn tạm TRƯỚC, soi màn sau.
+Ngoài phạm vi đã sửa trong lúc chạy: `c51391d` (client nhập Excel/giá vốn đầu kỳ đọc
+`ketQua` sau khi route đổi sang `result` ở 9ec9b1f — lỗi đã lên production),
+`55d0b29` (Statistic valueStyle), `2222851` (thủ kho thấy cột 0 giả của kho khác).
 04-05, 04-09, 04-11, 04-12, 04-13, 04-14, 04-15 CHƯA có SUMMARY.md (đều đang mở
 checkpoint kiểm mắt, xem ghi chú dưới — 04-15 Task 1-3 đã xong và có commit
 thật, chỉ còn Task 4 chờ người dùng)
