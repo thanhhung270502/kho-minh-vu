@@ -1382,9 +1382,63 @@ export type Database = {
           updated_at: string
         }[]
       }
+      danh_sach_ton_kho: {
+        Args: {
+          p_cong_doan_id?: string
+          p_dang_kinh_doanh?: boolean
+          p_huong?: string
+          p_kho_id?: string
+          p_kich_thuoc?: number
+          p_nhom_hang_id?: string
+          p_sap_xep?: string
+          p_trang?: number
+          p_trang_thai_ton?: string
+          p_tu_khoa?: string
+        }
+        Returns: {
+          cong_doan_id: string
+          dang_kinh_doanh: boolean
+          id: string
+          ma_cong_doan: string
+          ma_hang: string
+          mau_cong_doan: string
+          nhom_hang_id: string
+          ten_cong_doan: string
+          ten_dvt: string
+          ten_hang: string
+          ten_nhom_hang: string
+          ton_theo_kho: Json
+          ton_toi_thieu: number
+          tong_so_dong: number
+          tong_ton: number
+        }[]
+      }
+      dat_dinh_muc: { Args: { p_ids: string[] }; Returns: number }
       dat_gia_von_dau_ky: {
         Args: { p_chi_kiem_tra?: boolean; p_du_lieu: Json }
         Returns: Json
+      }
+      de_xuat_dinh_muc: {
+        Args: {
+          p_chi_khac_hien_tai?: boolean
+          p_kich_thuoc?: number
+          p_nguon?: string
+          p_trang?: number
+        }
+        Returns: {
+          dinh_muc_de_xuat: number
+          dinh_muc_hien_tai: number
+          id: string
+          ma_hang: string
+          nguon_de_xuat: string
+          so_lan_ban: number
+          so_ma_trong_nhom_co_lich_su: number
+          so_ngay_du_lieu: number
+          ten_hang: string
+          ten_nhom_hang: string
+          tong_da_ban: number
+          tong_so_dong: number
+        }[]
       }
       doi_chieu_ton: {
         Args: never
@@ -1650,6 +1704,14 @@ export type Database = {
         }
       }
       nap_danh_muc_kiotviet: { Args: { p_du_lieu: Json }; Returns: Json }
+      nap_ton_tam: {
+        Args: {
+          p_chi_kiem_tra?: boolean
+          p_du_lieu: Json
+          p_kho_mac_dinh?: string
+        }
+        Returns: Json
+      }
       nhap_danh_muc: {
         Args: { p_chi_kiem_tra?: boolean; p_dong: Json }
         Returns: Json
@@ -1782,6 +1844,7 @@ export type Database = {
           so_luong_nhap: number
           so_luong_xuat: number
           ten_kho: string
+          ton_luy_ke: number
           tong_so_dong: number
         }[]
       }
