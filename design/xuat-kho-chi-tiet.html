@@ -78,7 +78,7 @@ KMV.page("xuat-kho-chi-tiet", function () {
       (doc.trangThai === "HOAN_THANH" && KMV.can("void") ? '<button type="button" class="kv-btn kv-btn-danger" id="btn-void">Hủy phiếu</button>' : "") +
       "</div></div>" +
 
-      (doc.trangThai === "NHAP_LIEU" && over && !doc.lyDoXuatAm ? '<p class="kv-text-sm" style="color:var(--color-error)">Ghi sổ đang bị khóa — chọn lý do xuất âm ở dưới trước.</p>' : "") +
+      (doc.trangThai === "NHAP_LIEU" && over && !doc.lyDoXuatAm ? '<p class="kv-text-sm" id="post-lock-msg" style="color:var(--color-error)">Ghi sổ đang bị khóa — chọn lý do xuất âm ở dưới trước.</p>' : "") +
 
       (doc.trangThai === "DA_HUY" ? '<div class="kv-alert kv-alert-error kv-mb-16"><div><div class="kv-alert-title">Phiếu đã hủy</div>' + (doc.lyDoHuy || "") + "</div></div>" : "") +
 
@@ -224,6 +224,8 @@ KMV.page("xuat-kho-chi-tiet", function () {
 
     var postBtn = document.getElementById("btn-post");
     if (postBtn) postBtn.disabled = hasOverStock() && !doc.lyDoXuatAm;
+    var lockMsg = document.getElementById("post-lock-msg");
+    if (lockMsg) lockMsg.hidden = !(hasOverStock() && !doc.lyDoXuatAm);
   }
 
   function renderNegReason() {
@@ -254,6 +256,8 @@ KMV.page("xuat-kho-chi-tiet", function () {
       doc.ghiChuXuatAm = note;
       var postBtn = document.getElementById("btn-post");
       if (postBtn) postBtn.disabled = hasOverStock() && !doc.lyDoXuatAm;
+      var lockMsg = document.getElementById("post-lock-msg");
+      if (lockMsg) lockMsg.hidden = !(hasOverStock() && !doc.lyDoXuatAm);
       renderNegReason();
     });
 

@@ -463,8 +463,8 @@ p { margin: 0 0 8px; }
 .kv-text-muted { color: var(--text-2); }
 .kv-text-sm { font-size: 12px; }
 .kv-text-mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-.kv-grid-2 { display: grid; grid-template-columns: 1fr; gap: 16px; }
-@media (min-width: 992px) { .kv-grid-2 { grid-template-columns: 1fr 1fr; } }
+.kv-grid-2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+@media (min-width: 992px) { .kv-grid-2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 .kv-hide-lg { }
 @media (min-width: 992px) { .kv-hide-lg { display: none !important; } }
 .kv-only-lg { display: none !important; }
