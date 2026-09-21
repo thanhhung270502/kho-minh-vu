@@ -12,7 +12,8 @@ import type { Json } from "@/types/database.types";
 // exceljs + `node:stream` — không chạy được trên Edge runtime.
 export const runtime = "nodejs";
 
-const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Số mã lặp liệt kê trong câu lỗi — đủ để người dùng tìm trong Excel, không tràn màn hình. */
 const DUPLICATE_PREVIEW_LIMIT = 10;
@@ -31,7 +32,11 @@ function errorResponse(title: string, action: string, status: number) {
 async function requireManager() {
   const user = await getCurrentUser();
   if (!user) {
-    return errorResponse("Phiên đăng nhập đã hết hạn", "Đăng nhập lại rồi thử lần nữa.", 401);
+    return errorResponse(
+      "Phiên đăng nhập đã hết hạn",
+      "Đăng nhập lại rồi thử lần nữa.",
+      401,
+    );
   }
   if (user.role !== "quan_ly") {
     return errorResponse(MANAGER_ONLY.title, MANAGER_ONLY.action, 403);
@@ -48,10 +53,15 @@ export async function POST(request: Request) {
   // Mặc định là xem trước: chỉ đúng chữ "nap" mới ghi sổ.
   const mode = form.get("che_do") === "nap" ? "nap" : "kiem_tra";
   const warehouseField = form.get("kho_mac_dinh");
-  const warehouseId = typeof warehouseField === "string" ? warehouseField.trim() : "";
+  const warehouseId =
+    typeof warehouseField === "string" ? warehouseField.trim() : "";
 
   if (!(file instanceof File)) {
-    return errorResponse("Chưa chọn file", "Chọn file danh mục KiotViet (.xlsx) rồi thử lại.", 400);
+    return errorResponse(
+      "Chưa chọn file",
+      "Chọn file danh mục KiotViet (.xlsx) rồi thử lại.",
+      400,
+    );
   }
   if (!file.name.toLowerCase().endsWith(".xlsx")) {
     return errorResponse(

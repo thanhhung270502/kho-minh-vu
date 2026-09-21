@@ -11,7 +11,11 @@
  * không cần nhận dạng mẫu file hay tách ĐVT–công đoạn. Vẫn đi qua `readFirstSheet`
  * để giữ cả hai đường đọc (stream rồi mới tới reader thường — Bẫy 7).
  */
-import { readFirstSheet, readNumber, readString } from "@/shared/lib/excel-cell";
+import {
+  readFirstSheet,
+  readNumber,
+  readString,
+} from "@/shared/lib/excel-cell";
 
 /**
  * Khóa `ma_hang` / `so_luong` giữ snake_case tiếng Việt CÓ CHỦ ĐÍCH: đây là hợp đồng
@@ -30,10 +34,15 @@ export type ProvisionalStockRow = {
 const CODE_COLUMN = "ma_hang";
 const STOCK_COLUMN = "ton_kho";
 
-export async function readStockFile(buf: Buffer): Promise<ProvisionalStockRow[]> {
+export async function readStockFile(
+  buf: Buffer,
+): Promise<ProvisionalStockRow[]> {
   const sheet = await readFirstSheet(buf);
 
-  if (!sheet.headers.includes(CODE_COLUMN) || !sheet.headers.includes(STOCK_COLUMN)) {
+  if (
+    !sheet.headers.includes(CODE_COLUMN) ||
+    !sheet.headers.includes(STOCK_COLUMN)
+  ) {
     throw new Error(
       "Dòng đầu của file phải có hai cột “Mã hàng” và “Tồn kho”. Dùng đúng file danh mục KiotViet xuất ra (DanhSachSanPham_KV…), không đổi tên cột.",
     );
