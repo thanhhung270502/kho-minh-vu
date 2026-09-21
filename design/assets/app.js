@@ -742,6 +742,211 @@
   }
 
   // ---------------------------------------------------------------------
+  // Danh sách chứng từ dùng chung (nhap-kho / dat-hang / xuat-kho / tra-hang)
+  // ---------------------------------------------------------------------
+  var WAREHOUSE_LABEL = { k1: "Kho 1", k2: "Kho 2" };
+
+  function buildDocList(rootEl, opts) {
+    opts = opts || {};
+    var dateField = opts.dateField || "ngay";
+    var warehouseField = opts.warehouseField || "kho";
+    var statusField = opts.statusField || "trangThai";
+    var creatorField = opts.creatorField || "nguoiTao";
+    var creators = Array.from(new Set(opts.rows.map(function (r) { return r[creatorField]; }).filter(Boolean)));
+
+    rootEl.innerHTML =
+      '<div class="kv-list-layout">' +
+      '<aside class="kv-list-aside" id="kv-filter-panel">' + filterPanelHtml() + "</aside>" +
+      '<section class="kv-list-section">' +
+      '<div class="kv-list-toolbar">' +
+      '<button type="button" class="kv-btn kv-filter-btn" id="kv-open-filter">' + icon("filter") + '<span id="kv-filter-count">Bộ lọc</span></button>' +
+      '<div class="kv-grow"><input type="text" class="kv-input" id="kv-quick-search" placeholder="' + (opts.searchPlaceholder || "Tìm nhanh…") + '"></div>' +
+      (opts.createButton ? '<button type="button" class="kv-btn kv-btn-primary" id="kv-create-btn">' + opts.createButton.label + "</button>" : "") +
+      (opts.extraToolbar || "") +
+      "</div>" +
+      '<div id="kv-doc-table"></div>' +
+      "</section>" +
+      "</div>";
+
+    function filterPanelHtml() {
+      var html = '<div class="kv-form-field"><label class="kv-form-label">Tìm theo số phiếu / đối tác</label><input type="text" class="kv-input" data-filter="search"></div>';
+      html += '<div class="kv-form-row"><div class="kv-form-field"><label class="kv-form-label">Từ ngày</label><input type="date" class="kv-input" data-filter="tuNgay"></div>' +
+        '<div class="kv-form-field"><label class="kv-form-label">Đến ngày</label><input type="date" class="kv-input" data-filter="denNgay"></div></div>';
+      if (opts.warehouseFilter !== false) {
+        html += '<div class="kv-form-field"><label class="kv-form-label">Kho</label>' +
+          (window.KMV_DATA.warehouses || []).map(function (w) {
+            return '<label class="kv-flex" style="font-weight:normal"><input type="checkbox" data-filter="kho" value="' + w.id + '"> ' + w.name + "</label>";
+          }).join("") + "</div>";
+      }
+      html += '<div class="kv-form-field"><label class="kv-form-label">Trạng thái</label>' +
+        (opts.statusOptions || []).map(function (s) {
+          return '<label class="kv-flex" style="font-weight:normal"><input type="checkbox" data-filter="trangThai" value="' + s.code + '"> ' + s.label + "</label>";
+        }).join("") + "</div>";
+      if (opts.creatorFilter !== false) {
+        html += '<div class="kv-form-field"><label class="kv-form-label">Người tạo</label><select class="kv-select" data-filter="nguoiTao"><option value="">Tất cả</option>' +
+          creators.map(function (c) { return '<option value="' + c + '">' + c + "</option>"; }).join("") + "</select></div>";
+      }
+      html += '<button type="button" class="kv-btn" data-filter-clear style="width:100%">Xóa bộ lọc</button>';
+      return html;
+    }
+
+    var panelEl = rootEl.querySelector("#kv-filter-panel");
+    var drawerPanel = null;
+    var quickSearch = rootEl.querySelector("#kv-quick-search");
+    var tableEl = rootEl.querySelector("#kv-doc-table");
+
+    function applyFilters(values) {
+      var term = (quickSearch.value || "").toLowerCase().trim();
+      var searchTerm = (values.search || "").toLowerCase().trim() || term;
+      var filtered = opts.rows.filter(function (row) {
+        if (searchTerm && !(opts.searchFn ? opts.searchFn(row, searchTerm) : true)) return false;
+        if (values.tuNgay && row[dateField] < values.tuNgay) return false;
+        if (values.denNgay && row[dateField] > values.denNgay) return false;
+        if (values.kho && values.kho.length > 0 && values.kho.indexOf(row[warehouseField]) === -1) return false;
+        if (values.trangThai && values.trangThai.length > 0 && values.trangThai.indexOf(row[statusField]) === -1) return false;
+        if (values.nguoiTao && row[creatorField] !== values.nguoiTao) return false;
+        return true;
+      });
+      var count = countActiveFilters(values) + (term ? 1 : 0);
+      var countLabelEl = rootEl.querySelector("#kv-filter-count");
+      countLabelEl.textContent = count > 0 ? "Bộ lọc (" + count + ")" : "Bộ lọc";
+      renderDocTable(filtered);
+    }
+
+    function renderDocTable(rows) {
+      fakeLoad(tableEl, function () {
+        renderTable(tableEl, {
+          columns: opts.columns,
+          rows: rows,
+          rowClass: opts.rowClass,
+          totalRow: opts.totalRow ? opts.totalRow(rows) : undefined,
+          emptyText: rows.length === 0 && opts.rows.length > 0
+            ? "Không có phiếu nào khớp bộ lọc — thử nới khoảng ngày."
+            : (opts.emptyText || "Chưa có dữ liệu."),
+          onRowClick: opts.onRowClick
+        });
+      }, 350);
+    }
+
+    var filterApi = bindFilters(panelEl, applyFilters);
+    quickSearch.addEventListener("input", function () { filterApi.run(); });
+
+    rootEl.querySelector("#kv-open-filter").addEventListener("click", function () {
+      drawerPanel = openDrawer(filterPanelHtml(), { title: "Bộ lọc", placement: "bottom" });
+      bindFilters(drawerPanel, function (values) {
+        // Đồng bộ lại panel gốc rồi áp dụng, giữ một nguồn sự thật duy nhất.
+        syncPanels(drawerPanel, panelEl);
+        applyFilters(values);
+      });
+    });
+
+    function syncPanels(from, to) {
+      from.querySelectorAll("[data-filter]").forEach(function (fromInput) {
+        var key = fromInput.getAttribute("data-filter");
+        var value = fromInput.value;
+        to.querySelectorAll('[data-filter="' + key + '"]').forEach(function (toInput) {
+          if (toInput.type === "checkbox") {
+            toInput.checked = fromInput.type === "checkbox" ? fromInput.checked : false;
+          } else {
+            toInput.value = value;
+          }
+        });
+      });
+    }
+
+    if (opts.createButton) {
+      rootEl.querySelector("#kv-create-btn").addEventListener("click", opts.createButton.onClick);
+    }
+
+    return { refresh: function () { filterApi.run(); } };
+  }
+
+  // ---------------------------------------------------------------------
+  // Tóm tắt trước khi ghi sổ / hủy phiếu — dùng chung mọi loại chứng từ
+  // ---------------------------------------------------------------------
+  function postingSummaryHtml(opts) {
+    return (
+      '<p>Phiếu <strong class="kv-text-mono">' + opts.docNo + "</strong> — " + opts.headline + "</p>" +
+      (opts.body || "") +
+      '<div class="kv-alert kv-alert-warning kv-mt-12"><div><div class="kv-alert-title">' + opts.warningTitle + '</div>' + opts.warningDescription + "</div></div>"
+    );
+  }
+
+  function voidDialog(opts) {
+    var reasonId = "void-reason-" + Math.random().toString(36).slice(2, 8);
+    openModal(
+      '<div class="kv-form-field"><label class="kv-form-label">Lý do hủy phiếu<span class="req">*</span></label>' +
+      '<textarea class="kv-textarea" id="' + reasonId + '" placeholder="Vì sao hủy phiếu này?"></textarea></div>' +
+      '<div class="kv-alert kv-alert-info"><div>Hủy phiếu đã ghi sổ sẽ sinh bút toán đảo trong sổ kho — không xóa dòng nào đã ghi.</div></div>',
+      {
+        title: "Hủy phiếu " + opts.docNo,
+        buttons: [
+          { label: "Đóng", onClick: function (m) { closeModal(m); } },
+          {
+            label: "Xác nhận hủy", danger: true, onClick: function (m) {
+              var reason = document.getElementById(reasonId).value.trim();
+              if (!reason) { toast("error", "Vui lòng nhập lý do hủy phiếu."); return; }
+              closeModal(m);
+              if (opts.onConfirm) opts.onConfirm(reason);
+            }
+          }
+        ]
+      }
+    );
+  }
+
+  function negativeReasonPanelHtml(selectedCode, selectedNote) {
+    var reasons = window.KMV_DATA.negativeReasons || [];
+    return (
+      '<div class="kv-alert kv-alert-warning"><div><div class="kv-alert-title">Có dòng vượt tồn</div>' +
+      "Xuất âm được phép nhưng phải chọn lý do trước khi ghi sổ được.</div></div>" +
+      '<div class="kv-negreason-grid" id="kv-negreason-grid">' +
+      reasons.map(function (r) {
+        var checked = r.code === selectedCode;
+        return (
+          '<label class="kv-negreason' + (checked ? " is-selected" : "") + '" data-negreason-item="' + r.code + '">' +
+          '<input type="radio" name="ly-do-xuat-am" value="' + r.code + '"' + (checked ? " checked" : "") + "> " +
+          "<span>" + r.label + "</span></label>"
+        );
+      }).join("") +
+      "</div>" +
+      '<div class="kv-form-field' + (selectedCode === "khac" ? "" : " kv-hide-note") + '" id="kv-negreason-note-field">' +
+      '<label class="kv-form-label">Ghi chú<span class="req">*</span></label>' +
+      '<input type="text" class="kv-input" id="kv-negreason-note" placeholder="Ghi rõ lý do khác…" value="' + (selectedNote || "") + '"></div>' +
+      '<button type="button" class="kv-btn kv-btn-sm" id="kv-negreason-clear">Bỏ chọn lý do</button>'
+    );
+  }
+
+  function bindNegativeReasonPanel(container, onChange) {
+    var selected = null;
+    var note = "";
+    container.querySelectorAll('[data-negreason-item]').forEach(function (label) {
+      label.addEventListener("click", function () {
+        selected = label.getAttribute("data-negreason-item");
+        container.querySelectorAll('[data-negreason-item]').forEach(function (l) { l.classList.remove("is-selected"); });
+        label.classList.add("is-selected");
+        var noteField = container.querySelector("#kv-negreason-note-field");
+        if (noteField) noteField.classList.toggle("kv-hide-note", selected !== "khac");
+        onChange(selected, note);
+      });
+    });
+    var noteInput = container.querySelector("#kv-negreason-note");
+    if (noteInput) {
+      noteInput.addEventListener("input", function () { note = noteInput.value; onChange(selected, note); });
+    }
+    var clearBtn = container.querySelector("#kv-negreason-clear");
+    if (clearBtn) {
+      clearBtn.addEventListener("click", function () {
+        selected = null; note = "";
+        container.querySelectorAll('[data-negreason-item]').forEach(function (l) { l.classList.remove("is-selected"); });
+        container.querySelectorAll('input[name="ly-do-xuat-am"]').forEach(function (r) { r.checked = false; });
+        onChange(null, "");
+      });
+    }
+    return { getValue: function () { return { code: selected, note: note }; } };
+  }
+
+  // ---------------------------------------------------------------------
   // Đăng ký logic riêng từng trang
   // ---------------------------------------------------------------------
   var pageHandlers = {};
@@ -788,6 +993,12 @@
     setRole: setRole,
     roleLabel: roleLabel,
     can: can,
-    page: page
+    page: page,
+    warehouseLabel: function (id) { return WAREHOUSE_LABEL[id] || id; },
+    buildDocList: buildDocList,
+    postingSummaryHtml: postingSummaryHtml,
+    voidDialog: voidDialog,
+    negativeReasonPanelHtml: negativeReasonPanelHtml,
+    bindNegativeReasonPanel: bindNegativeReasonPanel
   };
 })();

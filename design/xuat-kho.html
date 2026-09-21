@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phiếu xuất · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="xuat-kho" data-nav="xuat-kho" data-shell="app">
+<main id="page">
+
+<div class="kv-page-header">
+  <div>
+    <h1>Phiếu xuất</h1>
+    <p>Danh sách phiếu xuất kho — tạo mới độc lập hoặc từ đơn đặt hàng đã xác nhận.</p>
+  </div>
+</div>
+
+<div id="list-root"></div>
+
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("xuat-kho", function () {
+  var rows = window.KMV_DATA.issues;
+  var root = document.getElementById("list-root");
+
+  KMV.buildDocList(root, {
+    rows: rows,
+    searchPlaceholder: "Tìm theo số phiếu, người nhận…",
+    searchFn: function (row, term) {
+      return row.soCt.toLowerCase().indexOf(term) !== -1 || row.nguoiNhan.toLowerCase().indexOf(term) !== -1;
+    },
+    statusOptions: [
+      { code: "NHAP_LIEU", label: "Nhập liệu" },
+      { code: "HOAN_THANH", label: "Hoàn thành" },
+      { code: "DA_HUY", label: "Đã hủy" }
+    ],
+    columns: [
+      { key: "soCt", title: "Số phiếu", render: function (r) {
+        var cls = r.trangThai === "DA_HUY" ? "kv-strike" : "";
+        return '<a class="' + cls + '" href="xuat-kho-chi-tiet.html?id=' + r.id + '">' + r.soCt + "</a>";
+      } },
+      { key: "ngay", title: "Ngày", render: function (r) { return KMV.fmtDate(r.ngay); } },
+      { key: "nguoiNhan", title: "Người nhận" },
+      { key: "donGocId", title: "Đơn gốc", render: function (r) {
+        if (!r.donGocId) return "—";
+        var order = window.KMV_DATA.orders.filter(function (o) { return o.id === r.donGocId; })[0];
+        return order ? '<a href="dat-hang-chi-tiet.html?id=' + order.id + '">' + order.soCt + "</a>" : "—";
+      } },
+      { key: "kho", title: "Kho", render: function (r) { return KMV.warehouseLabel(r.kho); } },
+      { key: "lines", title: "Số dòng", numeric: true, render: function (r) { return r.lines.length; } },
+      { key: "tongSl", title: "Tổng số lượng", numeric: true, render: function (r) { return KMV.fmtNumber(r.lines.reduce(function (s, l) { return s + l.qty; }, 0)); } },
+      { key: "trangThai", title: "Trạng thái", render: function (r) { return KMV.statusTag(r.trangThai) + (r.lyDoXuatAm ? ' <span class="kv-tag kv-tag-red" data-tip="' + r.lyDoXuatAm + '">Xuất âm</span>' : ""); } },
+      { key: "nguoiTao", title: "Người tạo" }
+    ],
+    rowClass: function (r) { return r.trangThai === "DA_HUY" ? "kv-row-void" : ""; },
+    onRowClick: function (r) { window.location.href = "xuat-kho-chi-tiet.html?id=" + r.id; },
+    totalRow: function (rows) {
+      return {
+        soCt: "Tổng cộng " + rows.length + " phiếu",
+        lines: rows.reduce(function (s, r) { return s + r.lines.length; }, 0),
+        tongSl: rows.reduce(function (s, r) { return s + r.lines.reduce(function (s2, l) { return s2 + l.qty; }, 0); }, 0)
+      };
+    },
+    createButton: KMV.can("write") ? {
+      label: "Tạo phiếu xuất",
+      onClick: function () {
+        var seq = window.KMV_DATA.issues.length + 1;
+        var id = "px-new-" + Date.now();
+        var newDoc = {
+          id: id, soCt: window.KMV_DATA.docNo("PX", seq), loaiCt: "XUAT",
+          ngay: new Date().toISOString().slice(0, 10), nguoiNhan: window.KMV_DATA.partners[10].name,
+          doiTacId: window.KMV_DATA.partners[10].id, donGocId: null,
+          kho: "k1", trangThai: "NHAP_LIEU", nguoiTao: KMV.currentUser().fullName, lyDoXuatAm: null, lines: []
+        };
+        window.KMV_DATA.issues.push(newDoc);
+        window.location.href = "xuat-kho-chi-tiet.html?id=" + id;
+      }
+    } : null,
+    extraToolbar: '<button type="button" class="kv-btn" id="kv-export-excel">Xuất Excel</button>'
+  });
+
+  var exportBtn = document.getElementById("kv-export-excel");
+  if (exportBtn) exportBtn.addEventListener("click", function () { KMV.toast("info", "Đã xuất Excel (giả lập demo)."); });
+});
+</script>
+</body>
+</html>

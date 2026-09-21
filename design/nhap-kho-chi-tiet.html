@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phiếu nhập · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="nhap-kho-chi-tiet" data-nav="nhap-kho" data-shell="app">
+<main id="page">
+<div id="doc-root"></div>
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("nhap-kho-chi-tiet", function () {
+  var root = document.getElementById("doc-root");
+  var data = window.KMV_DATA;
+  var id = KMV.qs("id");
+  var doc = id ? data.receipts.filter(function (d) { return d.id === id; })[0] : null;
+  if (!doc) doc = data.receipts.filter(function (d) { return d.trangThai === "NHAP_LIEU"; })[0];
+
+  if (!doc) {
+    root.innerHTML = '<div class="kv-empty"><div class="kv-empty-icon">🔍</div><div>Không tìm thấy phiếu nhập.</div><a class="kv-btn kv-mt-12" href="nhap-kho.html">Về danh sách</a></div>';
+    return;
+  }
+
+  var lineApi = null;
+
+  function render() {
+    var locked = doc.trangThai !== "NHAP_LIEU";
+    var totalQty = doc.lines.reduce(function (s, l) { return s + l.qty; }, 0);
+    var totalAmount = doc.lines.reduce(function (s, l) { return s + l.qty * l.price; }, 0);
+
+    root.innerHTML =
+      '<div class="kv-page-header">' +
+      '<div><h1>Phiếu nhập ' + doc.soCt + " " + KMV.statusTag(doc.trangThai) + '</h1>' +
+      '<p>Ngày ' + KMV.fmtDate(doc.ngay) + " · " + KMV.warehouseLabel(doc.kho) + "</p></div>" +
+      '<div class="kv-page-header-actions">' +
+      '<a class="kv-btn" href="in-phieu.html?loai=nhap&id=' + doc.id + '">' + KMV.icon("print") + ' In phiếu</a>' +
+      (doc.trangThai === "HOAN_THANH" ? '<button type="button" class="kv-btn" id="btn-return">Trả hàng NCC</button>' : "") +
+      (doc.trangThai === "NHAP_LIEU" ? '<button type="button" class="kv-btn kv-btn-primary" id="btn-post">Ghi sổ</button>' : "") +
+      (doc.trangThai === "HOAN_THANH" && KMV.can("void") ? '<button type="button" class="kv-btn kv-btn-danger" id="btn-void">Hủy phiếu</button>' : "") +
+      "</div></div>" +
+
+      (doc.trangThai === "DA_HUY" ? '<div class="kv-alert kv-alert-error kv-mb-16"><div><div class="kv-alert-title">Phiếu đã hủy</div>' + (doc.lyDoHuy || "") + "</div></div>" : "") +
+
+      '<div class="kv-card kv-mb-16">' +
+      '<dl class="kv-desc kv-desc-3">' +
+      '<div class="kv-desc-item"><dt>Nhà cung cấp</dt><dd id="dd-ncc">' + doc.doiTacTen + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Kho</dt><dd id="dd-kho">' + KMV.warehouseLabel(doc.kho) + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Ngày</dt><dd id="dd-ngay">' + KMV.fmtDate(doc.ngay) + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Nguồn</dt><dd>' + doc.nguon + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Người tạo</dt><dd>' + doc.nguoiTao + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Ghi chú</dt><dd id="dd-ghichu">' + (doc.ghiChu || "—") + "</dd></div>" +
+      "</dl>" +
+      (!locked ? '<button type="button" class="kv-btn kv-btn-sm kv-mt-12" id="btn-edit-head">Sửa đầu phiếu</button>' : "") +
+      "</div>" +
+
+      '<div class="kv-card kv-mb-16">' +
+      '<h3>Dòng hàng</h3>' +
+      '<div class="kv-table-wrap"><table class="kv-table"><thead><tr>' +
+      "<th>Mã hàng</th><th>Tên hàng</th><th>ĐVT</th><th>Kho</th>" +
+      '<th class="kv-col-num">Số lượng</th><th class="kv-col-num">Đơn giá</th><th class="kv-col-num">Thành tiền</th><th></th>' +
+      "</tr></thead><tbody id=\"lines-body\"></tbody>" +
+      (doc.lines.length > 0
+        ? '<tfoot><tr class="kv-row-total"><td colspan="4">Tổng cộng</td><td class="kv-col-num">' + KMV.fmtNumber(totalQty) + '</td><td></td><td class="kv-col-num">' + KMV.fmtNumber(totalAmount) + "</td><td></td></tr></tfoot>"
+        : "") +
+      "</table></div>" +
+      "</div>" +
+
+      '<div class="kv-card">' +
+      '<h3>Nhật ký sửa</h3>' +
+      '<div class="kv-table-wrap"><table class="kv-table"><thead><tr><th>Thời gian</th><th>Người sửa</th><th>Đối tượng</th><th>Trường</th><th>Cũ</th><th>Mới</th></tr></thead><tbody>' +
+      data.auditLog.map(function (a) {
+        return "<tr><td>" + KMV.fmtDate(a.thoiGian) + "</td><td>" + a.nguoiSua + "</td><td>" + a.doiTuong + "</td><td>" + a.truong + "</td><td>" + a.cu + "</td><td>" + a.moi + "</td></tr>";
+      }).join("") +
+      "</tbody></table></div></div>";
+
+    var linesBody = document.getElementById("lines-body");
+    if (locked) {
+      linesBody.innerHTML = doc.lines.map(function (l) {
+        return "<tr><td>" + l.code + "</td><td>" + l.name + "</td><td>" + l.unit + "</td><td>" + KMV.warehouseLabel(l.warehouse) + '</td><td class="kv-col-num">' + KMV.fmtNumber(l.qty) + '</td><td class="kv-col-num">' + KMV.fmtNumber(l.price) + '</td><td class="kv-col-num">' + KMV.fmtNumber(l.qty * l.price) + "</td><td></td></tr>";
+      }).join("");
+    } else {
+      lineApi = KMV.lineEntry(linesBody, {
+        withPrice: true,
+        initialLines: doc.lines,
+        warehouse: doc.kho,
+        onChange: function (lines) { doc.lines = lines; }
+      });
+    }
+
+    bindActions();
+  }
+
+  function bindActions() {
+    var editHeadBtn = document.getElementById("btn-edit-head");
+    if (editHeadBtn) {
+      editHeadBtn.addEventListener("click", function () {
+        KMV.openDrawer(
+          '<div class="kv-form-field"><label class="kv-form-label">Nhà cung cấp</label><input type="text" class="kv-input" id="edit-ncc" value="' + doc.doiTacTen + '"></div>' +
+          '<div class="kv-form-field"><label class="kv-form-label">Kho</label><select class="kv-select" id="edit-kho">' +
+          data.warehouses.map(function (w) { return '<option value="' + w.id + '"' + (w.id === doc.kho ? " selected" : "") + ">" + w.name + "</option>"; }).join("") +
+          "</select></div>" +
+          '<div class="kv-form-field"><label class="kv-form-label">Ngày</label><input type="date" class="kv-input" id="edit-ngay" value="' + doc.ngay + '"></div>' +
+          '<div class="kv-form-field"><label class="kv-form-label">Ghi chú</label><textarea class="kv-textarea" id="edit-ghichu">' + (doc.ghiChu || "") + "</textarea></div>" +
+          '<button type="button" class="kv-btn kv-btn-primary" id="save-head" style="width:100%">Lưu</button>',
+          { title: "Sửa đầu phiếu" }
+        );
+        document.getElementById("save-head").addEventListener("click", function () {
+          doc.doiTacTen = document.getElementById("edit-ncc").value;
+          doc.kho = document.getElementById("edit-kho").value;
+          doc.ngay = document.getElementById("edit-ngay").value;
+          doc.ghiChu = document.getElementById("edit-ghichu").value;
+          KMV.closeDrawer(document.querySelector(".kv-drawer.is-open"));
+          KMV.toast("success", "Đã lưu đầu phiếu.");
+          render();
+        });
+      });
+    }
+
+    var postBtn = document.getElementById("btn-post");
+    if (postBtn) {
+      postBtn.addEventListener("click", function () {
+        if (doc.lines.length === 0) { KMV.toast("error", "Phiếu chưa có dòng hàng nào."); return; }
+        var affected = doc.lines.slice(0, 3).map(function (l) { return l.code; }).join(", ");
+        KMV.openModal(
+          KMV.postingSummaryHtml({
+            docNo: doc.soCt,
+            headline: "ghi sổ nhập kho.",
+            body: "<p>Tồn " + KMV.warehouseLabel(doc.kho) + " sẽ TĂNG ở " + doc.lines.length + " mã, tổng +" + KMV.fmtNumber(doc.lines.reduce(function (s, l) { return s + l.qty; }, 0)) + ".</p>" +
+              (KMV.can("cost") ? "<p class=\"kv-text-sm kv-text-muted\">Giá vốn bình quân của " + affected + " sẽ được tính lại theo bình quân gia quyền di động.</p>" : ""),
+            warningTitle: "Không thể sửa sau khi ghi sổ",
+            warningDescription: "Phiếu sẽ chuyển sang Hoàn thành và khóa toàn bộ chỉnh sửa."
+          }),
+          {
+            title: "Xác nhận ghi sổ",
+            buttons: [
+              { label: "Hủy" },
+              {
+                label: "Xác nhận ghi sổ", primary: true, onClick: function (m) {
+                  var btn = m.querySelector('[data-modal-btn="1"]');
+                  btn.classList.add("is-loading");
+                  btn.disabled = true;
+                  setTimeout(function () {
+                    doc.trangThai = "HOAN_THANH";
+                    KMV.closeModal(m);
+                    KMV.toast("success", "Phiếu đã ghi sổ và bị khóa.");
+                    render();
+                  }, 500);
+                }
+              }
+            ]
+          }
+        );
+      });
+    }
+
+    var voidBtn = document.getElementById("btn-void");
+    if (voidBtn) {
+      voidBtn.addEventListener("click", function () {
+        KMV.voidDialog({
+          docNo: doc.soCt,
+          onConfirm: function (reason) {
+            doc.trangThai = "DA_HUY";
+            doc.lyDoHuy = "Lý do hủy: " + reason;
+            KMV.toast("success", "Đã hủy phiếu — sinh bút toán đảo, không xóa dòng nào.");
+            render();
+          }
+        });
+      });
+    }
+
+    var returnBtn = document.getElementById("btn-return");
+    if (returnBtn) {
+      returnBtn.addEventListener("click", function () {
+        var seq = data.returns.length + 1;
+        var newReturn = {
+          id: "tn-new-" + Date.now(), soCt: data.docNo("TN", seq), loaiCt: "TRA_NCC",
+          ngay: new Date().toISOString().slice(0, 10), chungTuGoc: doc.soCt, doiTacTen: doc.doiTacTen,
+          kho: doc.kho, trangThai: "NHAP_LIEU", nguoiTao: KMV.currentUser().fullName,
+          lines: doc.lines.map(function (l) { return Object.assign({}, l, { qty: 0, maxQty: l.qty }); })
+        };
+        data.returns.push(newReturn);
+        window.location.href = "tra-hang-chi-tiet.html?id=" + newReturn.id;
+      });
+    }
+  }
+
+  render();
+});
+</script>
+</body>
+</html>

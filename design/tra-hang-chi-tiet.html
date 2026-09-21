@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phiếu trả hàng · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="tra-hang-chi-tiet" data-nav="xuat-kho" data-shell="app">
+<main id="page">
+<div id="doc-root"></div>
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("tra-hang-chi-tiet", function () {
+  var root = document.getElementById("doc-root");
+  var data = window.KMV_DATA;
+  var id = KMV.qs("id");
+  var doc = id ? data.returns.filter(function (d) { return d.id === id; })[0] : null;
+  if (!doc) doc = data.returns.filter(function (d) { return d.trangThai === "NHAP_LIEU"; })[0] || data.returns[0];
+
+  if (!doc) {
+    root.innerHTML = '<div class="kv-empty"><div class="kv-empty-icon">🔍</div><div>Không tìm thấy phiếu trả.</div><a class="kv-btn kv-mt-12" href="tra-hang.html">Về danh sách</a></div>';
+    return;
+  }
+
+  var isTraKhach = doc.loaiCt === "TRA_KHACH"; // tồn TĂNG, không hỏi lý do xuất âm
+  function stockAt(code, khoId) { return data.findProduct(code).stock[khoId] || 0; }
+  function exceedsStock(line) { return !isTraKhach && line.qty > stockAt(line.code, line.warehouse); }
+  function hasOverStock() { return doc.lines.some(exceedsStock); }
+  function overQty(line) { return line.maxQty !== undefined && line.qty > line.maxQty; }
+
+  function render() {
+    var locked = doc.trangThai !== "NHAP_LIEU";
+    var totalQty = doc.lines.reduce(function (s, l) { return s + l.qty; }, 0);
+
+    root.innerHTML =
+      '<div class="kv-page-header">' +
+      '<div><h1>Phiếu trả ' + doc.soCt + " " + KMV.statusTag(doc.trangThai) + '</h1>' +
+      '<p>' + (isTraKhach ? "Khách trả hàng — tồn TĂNG" : "Trả hàng nhà cung cấp — tồn GIẢM") + " · Từ chứng từ gốc <a href=\"" +
+      (isTraKhach ? "xuat-kho-chi-tiet.html" : "nhap-kho-chi-tiet.html") + "?id=" + (findOriginId() || "") + '">' + doc.chungTuGoc + "</a></p></div>" +
+      '<div class="kv-page-header-actions">' +
+      '<a class="kv-btn" href="in-phieu.html?loai=giao-hang&id=' + doc.id + '">' + KMV.icon("print") + ' In phiếu</a>' +
+      (doc.trangThai === "NHAP_LIEU" ? '<button type="button" class="kv-btn kv-btn-primary" id="btn-post"' + (hasOverStock() && !doc.lyDoXuatAm ? " disabled" : "") + '>Ghi sổ</button>' : "") +
+      (doc.trangThai === "HOAN_THANH" && KMV.can("void") ? '<button type="button" class="kv-btn kv-btn-danger" id="btn-void">Hủy phiếu</button>' : "") +
+      "</div></div>" +
+
+      (doc.trangThai === "DA_HUY" ? '<div class="kv-alert kv-alert-error kv-mb-16"><div><div class="kv-alert-title">Phiếu đã hủy</div>' + (doc.lyDoHuy || "") + "</div></div>" : "") +
+
+      '<div class="kv-card kv-mb-16">' +
+      '<dl class="kv-desc kv-desc-3">' +
+      '<div class="kv-desc-item"><dt>Đối tác</dt><dd>' + doc.doiTacTen + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Kho</dt><dd>' + KMV.warehouseLabel(doc.kho) + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Ngày</dt><dd>' + KMV.fmtDate(doc.ngay) + "</dd></div>" +
+      "</dl></div>" +
+
+      '<div class="kv-card kv-mb-16">' +
+      "<h3>Dòng hàng</h3>" +
+      '<div class="kv-table-wrap"><table class="kv-table"><thead><tr>' +
+      "<th>Mã hàng</th><th>Tên hàng</th><th>ĐVT</th>" +
+      '<th class="kv-col-num">SL trả</th><th class="kv-col-num">SL tối đa</th><th></th>' +
+      "</tr></thead><tbody id=\"lines-body\"></tbody>" +
+      (doc.lines.length > 0 ? '<tfoot><tr class="kv-row-total"><td colspan="3">Tổng cộng</td><td class="kv-col-num">' + KMV.fmtNumber(totalQty) + "</td><td></td><td></td></tr></tfoot>" : "") +
+      "</table></div></div>" +
+
+      '<div id="negreason-wrap"></div>';
+
+    renderLines();
+    renderNegReason();
+    bindActions();
+  }
+
+  function findOriginId() {
+    var pool = isTraKhach ? data.issues : data.receipts;
+    var found = pool.filter(function (d) { return d.soCt === doc.chungTuGoc; })[0];
+    return found ? found.id : null;
+  }
+
+  function renderLines() {
+    var locked = doc.trangThai !== "NHAP_LIEU";
+    var body = document.getElementById("lines-body");
+    body.innerHTML = doc.lines.map(function (l, i) {
+      var errCell = overQty(l) ? '<div class="kv-form-error">Vượt số lượng gốc (' + l.maxQty + ')</div>' : "";
+      var qtyCell = locked ? KMV.fmtNumber(l.qty) : '<input type="number" class="kv-input" style="width:90px" data-qty-idx="' + i + '" value="' + l.qty + '" min="0" max="' + (l.maxQty || "") + '">' + errCell;
+      return "<tr class=\"" + (exceedsStock(l) ? "kv-row-warn" : "") + "\"><td>" + l.code + "</td><td>" + l.name + "</td><td>" + l.unit + '</td><td class="kv-col-num">' + qtyCell + '</td><td class="kv-col-num">' + KMV.fmtNumber(l.maxQty) + "</td><td></td></tr>";
+    }).join("");
+
+    document.querySelectorAll("[data-qty-idx]").forEach(function (input) {
+      input.addEventListener("change", function () {
+        doc.lines[Number(input.getAttribute("data-qty-idx"))].qty = Number(input.value) || 0;
+        render();
+      });
+    });
+
+    var postBtn = document.getElementById("btn-post");
+    if (postBtn) postBtn.disabled = (hasOverStock() && !doc.lyDoXuatAm) || doc.lines.some(overQty);
+  }
+
+  function renderNegReason() {
+    var wrap = document.getElementById("negreason-wrap");
+    if (isTraKhach || !hasOverStock()) { wrap.innerHTML = ""; return; }
+    wrap.innerHTML = '<div class="kv-card">' + KMV.negativeReasonPanelHtml(doc.lyDoXuatAm, doc.ghiChuXuatAm) + "</div>";
+    KMV.bindNegativeReasonPanel(wrap, function (code, note) {
+      doc.lyDoXuatAm = code;
+      doc.ghiChuXuatAm = note;
+      renderLines();
+    });
+  }
+
+  function bindActions() {
+    var postBtn = document.getElementById("btn-post");
+    if (postBtn) postBtn.addEventListener("click", function () {
+      if (doc.lines.some(overQty)) { KMV.toast("error", "Có dòng vượt số lượng gốc — sửa lại trước khi ghi sổ."); return; }
+      if (hasOverStock() && !doc.lyDoXuatAm) { KMV.toast("error", "Chọn lý do xuất âm trước khi ghi sổ."); return; }
+      KMV.openModal(
+        KMV.postingSummaryHtml({ docNo: doc.soCt, headline: "ghi sổ phiếu trả.", body: "<p>Tồn " + KMV.warehouseLabel(doc.kho) + " sẽ " + (isTraKhach ? "TĂNG" : "GIẢM") + ".</p>", warningTitle: "Không thể sửa sau khi ghi sổ", warningDescription: "Phiếu sẽ chuyển sang Hoàn thành và khóa toàn bộ chỉnh sửa." }),
+        { title: "Xác nhận ghi sổ", buttons: [{ label: "Hủy" }, { label: "Xác nhận ghi sổ", primary: true, onClick: function (m) {
+          setTimeout(function () { doc.trangThai = "HOAN_THANH"; KMV.closeModal(m); KMV.toast("success", "Phiếu đã ghi sổ và bị khóa."); render(); }, 400);
+        } }] }
+      );
+    });
+
+    var voidBtn = document.getElementById("btn-void");
+    if (voidBtn) voidBtn.addEventListener("click", function () {
+      KMV.voidDialog({ docNo: doc.soCt, onConfirm: function (reason) {
+        doc.trangThai = "DA_HUY"; doc.lyDoHuy = "Lý do hủy: " + reason;
+        KMV.toast("success", "Đã hủy phiếu — sinh bút toán đảo, không xóa dòng nào.");
+        render();
+      } });
+    });
+  }
+
+  render();
+});
+</script>
+</body>
+</html>

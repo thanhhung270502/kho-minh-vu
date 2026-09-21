@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Đơn đặt hàng · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="dat-hang" data-nav="dat-hang" data-shell="app">
+<main id="page">
+
+<div class="kv-page-header">
+  <div>
+    <h1>Đơn đặt hàng</h1>
+    <p>Đơn khách đặt trước — xác nhận rồi tạo phiếu xuất khi giao hàng.</p>
+  </div>
+</div>
+
+<div id="list-root"></div>
+
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("dat-hang", function () {
+  var rows = window.KMV_DATA.orders;
+  var root = document.getElementById("list-root");
+
+  KMV.buildDocList(root, {
+    rows: rows,
+    dateField: "ngayDon",
+    searchPlaceholder: "Tìm theo số đơn, người nhận…",
+    searchFn: function (row, term) {
+      return row.soCt.toLowerCase().indexOf(term) !== -1 || row.nguoiNhan.toLowerCase().indexOf(term) !== -1;
+    },
+    statusOptions: [
+      { code: "TAM", label: "Đơn tạm" },
+      { code: "DA_XAC_NHAN", label: "Đã xác nhận" },
+      { code: "HOAN_THANH", label: "Hoàn thành" }
+    ],
+    columns: [
+      { key: "soCt", title: "Số đơn", render: function (r) { return '<a href="dat-hang-chi-tiet.html?id=' + r.id + '">' + r.soCt + "</a>"; } },
+      { key: "ngayDon", title: "Ngày đơn", render: function (r) { return KMV.fmtDate(r.ngayDon); } },
+      { key: "nguoiNhan", title: "Người nhận" },
+      { key: "ngayGiao", title: "Ngày giao dự kiến", render: function (r) { return KMV.fmtDate(r.ngayGiao); } },
+      { key: "tienDo", title: "Tiến độ", render: function (r) {
+        var dat = r.lines.reduce(function (s, l) { return s + l.qty; }, 0);
+        var xuat = r.lines.reduce(function (s, l) { return s + l.shipped; }, 0);
+        var pct = dat > 0 ? Math.round((xuat / dat) * 100) : 0;
+        return '<div style="min-width:110px"><div style="background:var(--bg-fill);border-radius:6px;height:6px;overflow:hidden"><div style="width:' + pct + '%;background:var(--color-primary);height:100%"></div></div><span class="kv-text-sm kv-text-muted">' + xuat + "/" + dat + "</span></div>";
+      } },
+      { key: "trangThai", title: "Trạng thái", render: function (r) { return KMV.statusTag(r.trangThai); } },
+      { key: "nguoiTao", title: "Người tạo" }
+    ],
+    onRowClick: function (r) { window.location.href = "dat-hang-chi-tiet.html?id=" + r.id; },
+    totalRow: function (rows) { return { soCt: "Tổng cộng " + rows.length + " đơn" }; },
+    createButton: KMV.can("write") ? {
+      label: "Tạo đơn",
+      onClick: function () {
+        var seq = window.KMV_DATA.orders.length + 1;
+        var id = "dh-new-" + Date.now();
+        var newDoc = {
+          id: id, soCt: window.KMV_DATA.docNo("DH", seq), ngayDon: new Date().toISOString().slice(0, 10),
+          ngayGiao: new Date().toISOString().slice(0, 10), nguoiNhan: window.KMV_DATA.partners[10].name,
+          doiTacId: window.KMV_DATA.partners[10].id, kho: "k1", trangThai: "TAM",
+          nguoiTao: KMV.currentUser().fullName, lines: []
+        };
+        window.KMV_DATA.orders.push(newDoc);
+        window.location.href = "dat-hang-chi-tiet.html?id=" + id;
+      }
+    } : null
+  });
+});
+</script>
+</body>
+</html>

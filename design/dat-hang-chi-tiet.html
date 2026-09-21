@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Đơn đặt hàng · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="dat-hang-chi-tiet" data-nav="dat-hang" data-shell="app">
+<main id="page">
+<div id="doc-root"></div>
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("dat-hang-chi-tiet", function () {
+  var root = document.getElementById("doc-root");
+  var data = window.KMV_DATA;
+  var id = KMV.qs("id");
+  var doc = id ? data.orders.filter(function (d) { return d.id === id; })[0] : null;
+  if (!doc) doc = data.orders.filter(function (d) { return d.trangThai === "TAM"; })[0];
+
+  if (!doc) {
+    root.innerHTML = '<div class="kv-empty"><div class="kv-empty-icon">🔍</div><div>Không tìm thấy đơn.</div><a class="kv-btn kv-mt-12" href="dat-hang.html">Về danh sách</a></div>';
+    return;
+  }
+
+  var STEPS = ["TAM", "DA_XAC_NHAN", "HOAN_THANH"];
+  var STEP_LABEL = { TAM: "Đơn tạm", DA_XAC_NHAN: "Đã xác nhận", HOAN_THANH: "Hoàn thành" };
+
+  function stepperHtml() {
+    var idx = STEPS.indexOf(doc.trangThai);
+    return '<div class="kv-flex kv-mb-16">' + STEPS.map(function (s, i) {
+      var active = i <= idx;
+      return '<span class="kv-tag ' + (active ? "kv-tag-blue" : "kv-tag-gray") + '">' + (i + 1) + ". " + STEP_LABEL[s] + "</span>" + (i < STEPS.length - 1 ? '<span class="kv-text-muted">→</span>' : "");
+    }).join("") + "</div>";
+  }
+
+  function relatedIssues() {
+    return data.issues.filter(function (i) { return i.donGocId === doc.id; });
+  }
+
+  function render() {
+    var locked = doc.trangThai !== "TAM";
+    var totalDat = doc.lines.reduce(function (s, l) { return s + l.qty; }, 0);
+    var totalXuat = doc.lines.reduce(function (s, l) { return s + l.shipped; }, 0);
+
+    root.innerHTML =
+      '<div class="kv-page-header">' +
+      '<div><h1>Đơn đặt hàng ' + doc.soCt + " " + KMV.statusTag(doc.trangThai) + '</h1>' +
+      "<p>Ngày đơn " + KMV.fmtDate(doc.ngayDon) + " · giao dự kiến " + KMV.fmtDate(doc.ngayGiao) + "</p></div>" +
+      '<div class="kv-page-header-actions" id="action-bar"></div>' +
+      "</div>" +
+
+      stepperHtml() +
+
+      '<div class="kv-card kv-mb-16">' +
+      '<dl class="kv-desc kv-desc-3">' +
+      '<div class="kv-desc-item"><dt>Người nhận</dt><dd id="dd-nguoinhan">' + doc.nguoiNhan + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Ngày đơn</dt><dd>' + KMV.fmtDate(doc.ngayDon) + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Ngày giao dự kiến</dt><dd id="dd-ngaygiao">' + KMV.fmtDate(doc.ngayGiao) + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Ghi chú</dt><dd id="dd-ghichu">' + (doc.ghiChu || "—") + "</dd></div>" +
+      "</dl>" +
+      (!locked ? '<button type="button" class="kv-btn kv-btn-sm kv-mt-12" id="btn-edit-head">Sửa đầu đơn</button>' : "") +
+      "</div>" +
+
+      '<div class="kv-card kv-mb-16">' +
+      "<h3>Dòng hàng</h3>" +
+      '<div class="kv-table-wrap"><table class="kv-table"><thead><tr>' +
+      "<th>Mã hàng</th><th>Tên hàng</th><th>Kho mặc định</th>" +
+      '<th class="kv-col-num">SL đặt</th><th class="kv-col-num">Đã xuất</th><th class="kv-col-num">Còn lại</th><th></th>' +
+      "</tr></thead><tbody id=\"lines-body\"></tbody>" +
+      (doc.lines.length > 0 ? '<tfoot><tr class="kv-row-total"><td colspan="3">Tổng cộng</td><td class="kv-col-num">' + KMV.fmtNumber(totalDat) + '</td><td class="kv-col-num">' + KMV.fmtNumber(totalXuat) + '</td><td class="kv-col-num">' + KMV.fmtNumber(totalDat - totalXuat) + "</td><td></td></tr></tfoot>" : "") +
+      "</table></div></div>" +
+
+      '<div class="kv-card">' +
+      "<h3>Phiếu xuất liên quan</h3>" +
+      '<div id="related-issues"></div>' +
+      "</div>";
+
+    renderActionBar();
+    renderLines();
+    renderRelated();
+    bindHeadEdit();
+  }
+
+  function renderActionBar() {
+    var bar = document.getElementById("action-bar");
+    var html = "";
+    if (doc.trangThai === "TAM" && KMV.can("write")) html += '<button type="button" class="kv-btn kv-btn-primary" id="btn-confirm">Xác nhận đơn</button>';
+    if (doc.trangThai === "DA_XAC_NHAN") {
+      html += '<a class="kv-btn" href="in-phieu.html?loai=lay-hang&id=' + doc.id + '">' + KMV.icon("print") + ' In phiếu đi lấy hàng</a>';
+      html += '<button type="button" class="kv-btn kv-btn-primary" id="btn-create-issue">Tạo phiếu xuất</button>';
+      html += '<button type="button" class="kv-btn" id="btn-unlock">Mở khóa</button>';
+      html += '<button type="button" class="kv-btn kv-btn-danger" id="btn-close-early">Đóng sớm</button>';
+    }
+    bar.innerHTML = html;
+
+    var confirmBtn = document.getElementById("btn-confirm");
+    if (confirmBtn) confirmBtn.addEventListener("click", function () {
+      if (doc.lines.length === 0) { KMV.toast("error", "Đơn chưa có dòng hàng nào."); return; }
+      doc.trangThai = "DA_XAC_NHAN";
+      KMV.toast("success", "Đã xác nhận đơn — không sửa được dòng nữa.");
+      render();
+    });
+
+    var createIssueBtn = document.getElementById("btn-create-issue");
+    if (createIssueBtn) createIssueBtn.addEventListener("click", function () {
+      var missing = doc.lines.filter(function (l) { return !l.warehouse; });
+      if (missing.length > 0) {
+        KMV.toast("error", "Mã " + missing.map(function (l) { return l.code; }).join(", ") + " thiếu kho mặc định — vào Danh mục hàng để gán trước.");
+        return;
+      }
+      var seq = data.issues.length + 1;
+      var newIssue = {
+        id: "px-fromorder-" + Date.now(), soCt: data.docNo("PX", seq), loaiCt: "XUAT",
+        ngay: new Date().toISOString().slice(0, 10), nguoiNhan: doc.nguoiNhan, doiTacId: doc.doiTacId,
+        donGocId: doc.id, kho: doc.lines[0].warehouse, trangThai: "NHAP_LIEU", nguoiTao: KMV.currentUser().fullName,
+        lyDoXuatAm: null, lines: doc.lines.filter(function (l) { return l.qty > l.shipped; }).map(function (l) { return { productId: l.productId, code: l.code, name: l.name, unit: l.unit, warehouse: l.warehouse, qty: l.qty - l.shipped }; })
+      };
+      data.issues.push(newIssue);
+      window.location.href = "xuat-kho-chi-tiet.html?id=" + newIssue.id;
+    });
+
+    var unlockBtn = document.getElementById("btn-unlock");
+    if (unlockBtn) unlockBtn.addEventListener("click", function () {
+      reasonModal("Mở khóa đơn", function (reason) {
+        doc.trangThai = "TAM";
+        doc.lyDoMoKhoa = reason;
+        KMV.toast("success", "Đã mở khóa đơn.");
+        render();
+      });
+    });
+    var closeEarlyBtn = document.getElementById("btn-close-early");
+    if (closeEarlyBtn) closeEarlyBtn.addEventListener("click", function () {
+      reasonModal("Đóng sớm đơn", function (reason) {
+        doc.trangThai = "HOAN_THANH";
+        doc.lyDoDongSom = reason;
+        KMV.toast("success", "Đã đóng sớm đơn.");
+        render();
+      });
+    });
+  }
+
+  function reasonModal(title, onConfirm) {
+    var fieldId = "reason-" + Date.now();
+    KMV.openModal(
+      '<div class="kv-form-field"><label class="kv-form-label">Lý do<span class="req">*</span></label><textarea class="kv-textarea" id="' + fieldId + '"></textarea></div>',
+      { title: title, buttons: [{ label: "Hủy" }, { label: "Xác nhận", primary: true, onClick: function (m) {
+        var v = document.getElementById(fieldId).value.trim();
+        if (!v) { KMV.toast("error", "Vui lòng nhập lý do."); return; }
+        KMV.closeModal(m);
+        onConfirm(v);
+      } }] }
+    );
+  }
+
+  function renderLines() {
+    var locked = doc.trangThai !== "TAM";
+    var body = document.getElementById("lines-body");
+    body.innerHTML = doc.lines.map(function (l, i) {
+      return "<tr><td>" + l.code + "</td><td>" + l.name + "</td><td>" + KMV.warehouseLabel(l.warehouse) + '</td><td class="kv-col-num">' + KMV.fmtNumber(l.qty) + '</td><td class="kv-col-num">' + KMV.fmtNumber(l.shipped) + '</td><td class="kv-col-num">' + KMV.fmtNumber(l.qty - l.shipped) + "</td><td>" +
+        (!locked ? '<button type="button" class="kv-btn kv-btn-sm" data-remove-idx="' + i + '">Xóa</button>' : "") + "</td></tr>";
+    }).join("");
+
+    if (!locked) {
+      var entryRow = document.createElement("tr");
+      entryRow.className = "kv-line-entry";
+      entryRow.innerHTML =
+        '<td colspan="7"><div class="kv-flex kv-flex-wrap">' +
+        '<input type="text" class="kv-input" style="max-width:200px" id="entry-code" placeholder="Mã hàng…" autocomplete="off">' +
+        '<input type="number" class="kv-input" style="max-width:120px" id="entry-qty" placeholder="SL đặt" min="1">' +
+        '<span class="kv-text-sm kv-text-muted">Gõ mã → Enter → số lượng → Enter để thêm dòng.</span>' +
+        "</div></td>";
+      body.appendChild(entryRow);
+
+      var selectedProduct = null;
+      var codeInput = document.getElementById("entry-code");
+      var qtyInput = document.getElementById("entry-qty");
+      KMV.productSearch(codeInput, { onSelect: function (p) { selectedProduct = p; qtyInput.focus(); } });
+      codeInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          setTimeout(function () {
+            var p = data.findProduct(codeInput.value.trim());
+            if (p && p.code.toLowerCase() === codeInput.value.trim().toLowerCase()) { selectedProduct = p; qtyInput.focus(); }
+          }, 0);
+        }
+      });
+      qtyInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          if (!selectedProduct) { KMV.toast("error", "Chưa chọn được mã hàng hợp lệ."); return; }
+          var qty = Number(qtyInput.value);
+          if (!qty || qty <= 0) { KMV.toast("error", "Số lượng phải lớn hơn 0."); return; }
+          doc.lines.push({ productId: selectedProduct.id, code: selectedProduct.code, name: selectedProduct.name, unit: selectedProduct.unit, warehouse: selectedProduct.defaultWarehouse, qty: qty, shipped: 0 });
+          selectedProduct = null;
+          render();
+          setTimeout(function () { var c = document.getElementById("entry-code"); if (c) c.focus(); }, 0);
+        }
+      });
+
+      body.querySelectorAll("[data-remove-idx]").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          doc.lines.splice(Number(btn.getAttribute("data-remove-idx")), 1);
+          render();
+        });
+      });
+    }
+  }
+
+  function renderRelated() {
+    var el = document.getElementById("related-issues");
+    var issues = relatedIssues();
+    if (issues.length === 0) { el.innerHTML = '<div class="kv-text-muted kv-text-sm">Chưa có phiếu xuất nào tạo từ đơn này.</div>'; return; }
+    el.innerHTML = issues.map(function (i) {
+      return '<div class="kv-flex"><a href="xuat-kho-chi-tiet.html?id=' + i.id + '">' + i.soCt + "</a>" + KMV.statusTag(i.trangThai) + "</div>";
+    }).join("");
+  }
+
+  function bindHeadEdit() {
+    var btn = document.getElementById("btn-edit-head");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      KMV.openDrawer(
+        '<div class="kv-form-field"><label class="kv-form-label">Người nhận</label><input type="text" class="kv-input" id="edit-nn" value="' + doc.nguoiNhan + '"></div>' +
+        '<div class="kv-form-field"><label class="kv-form-label">Ngày giao dự kiến</label><input type="date" class="kv-input" id="edit-ngaygiao" value="' + doc.ngayGiao + '"></div>' +
+        '<div class="kv-form-field"><label class="kv-form-label">Ghi chú</label><textarea class="kv-textarea" id="edit-ghichu">' + (doc.ghiChu || "") + "</textarea></div>" +
+        '<button type="button" class="kv-btn kv-btn-primary" id="save-head" style="width:100%">Lưu</button>',
+        { title: "Sửa đầu đơn" }
+      );
+      document.getElementById("save-head").addEventListener("click", function () {
+        doc.nguoiNhan = document.getElementById("edit-nn").value;
+        doc.ngayGiao = document.getElementById("edit-ngaygiao").value;
+        doc.ghiChu = document.getElementById("edit-ghichu").value;
+        KMV.closeDrawer(document.querySelector(".kv-drawer.is-open"));
+        KMV.toast("success", "Đã lưu đầu đơn.");
+        render();
+      });
+    });
+  }
+
+  render();
+});
+</script>
+</body>
+</html>

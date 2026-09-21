@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phiếu trả hàng · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="tra-hang" data-nav="xuat-kho" data-shell="app">
+<main id="page">
+
+<div class="kv-page-header">
+  <div>
+    <h1>Phiếu trả hàng</h1>
+    <p>Trả hàng cho nhà cung cấp (tồn giảm) hoặc khách trả hàng (tồn tăng).</p>
+  </div>
+</div>
+
+<div class="kv-alert kv-alert-info kv-mb-16">
+  <div>Phiếu trả tạo từ chứng từ gốc đã ghi sổ — mở
+  <a href="nhap-kho.html">Phiếu nhập</a> hoặc <a href="xuat-kho.html">Phiếu xuất</a>
+  đã <strong>Hoàn thành</strong> rồi bấm "Trả hàng" / "Khách trả hàng" ở đó.</div>
+</div>
+
+<div id="list-root"></div>
+
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("tra-hang", function () {
+  var rows = window.KMV_DATA.returns;
+  var root = document.getElementById("list-root");
+
+  KMV.buildDocList(root, {
+    rows: rows,
+    searchPlaceholder: "Tìm theo số phiếu, đối tác…",
+    searchFn: function (row, term) {
+      return row.soCt.toLowerCase().indexOf(term) !== -1 || row.doiTacTen.toLowerCase().indexOf(term) !== -1;
+    },
+    statusOptions: [
+      { code: "NHAP_LIEU", label: "Nhập liệu" },
+      { code: "HOAN_THANH", label: "Hoàn thành" },
+      { code: "DA_HUY", label: "Đã hủy" }
+    ],
+    columns: [
+      { key: "soCt", title: "Số phiếu", render: function (r) {
+        var cls = r.trangThai === "DA_HUY" ? "kv-strike" : "";
+        return '<a class="' + cls + '" href="tra-hang-chi-tiet.html?id=' + r.id + '">' + r.soCt + "</a>";
+      } },
+      { key: "loaiCt", title: "Loại", render: function (r) { return r.loaiCt === "TRA_NCC" ? "Trả NCC" : "Khách trả"; } },
+      { key: "ngay", title: "Ngày", render: function (r) { return KMV.fmtDate(r.ngay); } },
+      { key: "chungTuGoc", title: "Từ chứng từ gốc" },
+      { key: "doiTacTen", title: "Đối tác" },
+      { key: "kho", title: "Kho", render: function (r) { return KMV.warehouseLabel(r.kho); } },
+      { key: "trangThai", title: "Trạng thái", render: function (r) { return KMV.statusTag(r.trangThai); } },
+      { key: "nguoiTao", title: "Người tạo" }
+    ],
+    rowClass: function (r) { return r.trangThai === "DA_HUY" ? "kv-row-void" : ""; },
+    onRowClick: function (r) { window.location.href = "tra-hang-chi-tiet.html?id=" + r.id; },
+    totalRow: function (rows) { return { soCt: "Tổng cộng " + rows.length + " phiếu" }; }
+  });
+});
+</script>
+</body>
+</html>

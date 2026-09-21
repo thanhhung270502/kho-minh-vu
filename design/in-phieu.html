@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>In phiếu · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="in-phieu" data-nav="" data-shell="print">
+<main id="page">
+<div class="kv-print-page-bg">
+  <div class="kv-print-toolbar" data-no-print>
+    <button type="button" class="kv-btn kv-btn-primary" id="btn-print">In</button>
+    <button type="button" class="kv-btn" id="btn-back">Quay lại</button>
+  </div>
+  <div id="sheet-root"></div>
+</div>
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("in-phieu", function () {
+  var data = window.KMV_DATA;
+  var loai = KMV.qs("loai") || "nhap";
+  var id = KMV.qs("id");
+  var root = document.getElementById("sheet-root");
+
+  document.getElementById("btn-print").addEventListener("click", function () { window.print(); });
+  document.getElementById("btn-back").addEventListener("click", function () { window.history.back(); });
+
+  function groupLinesByWarehouse(lines) {
+    var byKho = {};
+    var noKho = [];
+    lines.forEach(function (l) {
+      if (!l.warehouse) { noKho.push(l); return; }
+      if (!byKho[l.warehouse]) byKho[l.warehouse] = [];
+      byKho[l.warehouse].push(l);
+    });
+    var groups = Object.keys(byKho).sort().map(function (k) { return { kho: k, lines: byKho[k] }; });
+    if (noKho.length > 0) groups.push({ kho: null, lines: noKho });
+    return groups;
+  }
+
+  function headHtml(soCt, doiTac, ngay) {
+    return (
+      '<div class="kv-print-head">' +
+      "<h2>CTY TNHH SX-TM P.TÙNG XE MÁY MINH VŨ</h2>" +
+      '<p class="kv-text-sm">Số phiếu: <strong>' + soCt + "</strong> · Ngày: " + KMV.fmtDate(ngay) + " · Đối tác: " + (doiTac || "—") + "</p>" +
+      "</div>"
+    );
+  }
+
+  function lineTableHtml(lines, withPrice) {
+    var html = '<table class="kv-table" style="width:100%"><thead><tr><th>STT</th><th>Mã hàng</th><th>Tên hàng</th><th>ĐVT</th><th class="kv-col-num">Số lượng</th>';
+    if (withPrice) html += '<th class="kv-col-num">Đơn giá</th><th class="kv-col-num">Thành tiền</th>';
+    html += "</tr></thead><tbody>";
+    lines.forEach(function (l, i) {
+      html += "<tr><td>" + (i + 1) + "</td><td>" + l.code + "</td><td>" + l.name + "</td><td>" + l.unit + '</td><td class="kv-col-num">' + KMV.fmtNumber(l.qty) + "</td>";
+      if (withPrice) html += '<td class="kv-col-num">' + KMV.fmtNumber(l.price) + '</td><td class="kv-col-num">' + KMV.fmtNumber(l.price * l.qty) + "</td>";
+      html += "</tr>";
+    });
+    html += "</tbody></table>";
+    return html;
+  }
+
+  function signBlockHtml() {
+    return (
+      '<div class="kv-grid-2" style="grid-template-columns:repeat(3,1fr);margin-top:32px;text-align:center">' +
+      "<div><p><strong>Người lập phiếu</strong></p><p class=\"kv-text-sm kv-text-muted\">(Ký, họ tên)</p></div>" +
+      "<div><p><strong>Thủ kho</strong></p><p class=\"kv-text-sm kv-text-muted\">(Ký, họ tên)</p></div>" +
+      "<div><p><strong>Người nhận / giao</strong></p><p class=\"kv-text-sm kv-text-muted\">(Ký, họ tên)</p></div>" +
+      "</div>"
+    );
+  }
+
+  var html = "";
+
+  if (loai === "nhap") {
+    var doc = data.receipts.filter(function (d) { return d.id === id; })[0] || data.receipts[0];
+    html =
+      '<div class="kv-print-sheet">' + headHtml(doc.soCt, doc.doiTacTen, doc.ngay) +
+      "<h3>PHIẾU NHẬP KHO</h3>" + lineTableHtml(doc.lines, true) + signBlockHtml() + "</div>";
+  } else if (loai === "giao-hang") {
+    var isReturn = id && id.indexOf("t") === 0;
+    var doc2 = data.issues.filter(function (d) { return d.id === id; })[0] || data.returns.filter(function (d) { return d.id === id; })[0] || data.issues[0];
+    var draft = doc2.trangThai === "NHAP_LIEU";
+    html =
+      '<div class="kv-print-sheet" style="position:relative">' +
+      (draft ? '<div class="kv-print-watermark">BẢN NHÁP</div>' : "") +
+      headHtml(doc2.soCt, doc2.nguoiNhan || doc2.doiTacTen, doc2.ngay) +
+      "<h3>PHIẾU GIAO HÀNG</h3>" + lineTableHtml(doc2.lines, false) + signBlockHtml() + "</div>";
+  } else if (loai === "lay-hang") {
+    var order = data.orders.filter(function (d) { return d.id === id; })[0] || data.orders[0];
+    var groups = groupLinesByWarehouse(order.lines);
+    var body = groups.map(function (g) {
+      var title = g.kho ? KMV.warehouseLabel(g.kho) : "Chưa gán kho";
+      return "<h4>" + title + "</h4><table class=\"kv-table\" style=\"width:100%\"><thead><tr><th style=\"width:32px\">✓</th><th>Mã hàng</th><th>Tên hàng</th><th class=\"kv-col-num\">Số lượng</th></tr></thead><tbody>" +
+        g.lines.map(function (l) { return "<tr><td><input type=\"checkbox\"></td><td>" + l.code + "</td><td>" + l.name + '</td><td class="kv-col-num">' + KMV.fmtNumber(l.qty) + "</td></tr>"; }).join("") +
+        "</tbody></table>";
+    }).join("");
+    html =
+      '<div class="kv-print-sheet">' + headHtml(order.soCt, order.nguoiNhan, order.ngayDon) +
+      "<h3>PHIẾU ĐI LẤY HÀNG</h3>" + body + "</div>";
+  }
+
+  root.innerHTML = html;
+});
+</script>
+</body>
+</html>

@@ -436,6 +436,7 @@ p { margin: 0 0 8px; }
 }
 .kv-negreason.is-selected { border-color: var(--color-primary); background: var(--brand-25); }
 .kv-negreason input { margin-top: 2px; }
+.kv-hide-note { display: none; }
 
 /* ---------- Cards for mobile line list ---------- */
 .kv-line-cards { display: flex; flex-direction: column; gap: 8px; }

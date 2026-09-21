@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phiếu xuất · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="xuat-kho-chi-tiet" data-nav="xuat-kho" data-shell="app">
+<main id="page">
+<div id="doc-root"></div>
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("xuat-kho-chi-tiet", function () {
+  var root = document.getElementById("doc-root");
+  var data = window.KMV_DATA;
+  var id = KMV.qs("id");
+  var doc = id ? data.issues.filter(function (d) { return d.id === id; })[0] : null;
+  if (!doc) doc = data.issues.filter(function (d) { return d.trangThai === "NHAP_LIEU"; })[0];
+
+  if (!doc) {
+    root.innerHTML = '<div class="kv-empty"><div class="kv-empty-icon">🔍</div><div>Không tìm thấy phiếu xuất.</div><a class="kv-btn kv-mt-12" href="xuat-kho.html">Về danh sách</a></div>';
+    return;
+  }
+
+  function stockAt(code, khoId) {
+    var p = data.findProduct(code);
+    return p.stock[khoId] || 0;
+  }
+
+  function exceedsStock(line) {
+    return line.qty > stockAt(line.code, line.warehouse);
+  }
+
+  function hasOverStock() {
+    return doc.lines.some(exceedsStock);
+  }
+
+  function similarCodes(code) {
+    var p = data.findProduct(code);
+    var base = p.name.toLowerCase().split(" ").slice(0, 2).join(" ");
+    return data.products.filter(function (x) {
+      return x.code !== code && x.name.toLowerCase().indexOf(base) === 0 && (x.stock.k1 + x.stock.k2) > 0;
+    }).slice(0, 3);
+  }
+
+  function proposeMerge(fromCode, toCode) {
+    var existing = data.mergeProposals.filter(function (m) { return m.from === fromCode && m.to === toCode; })[0];
+    if (existing) {
+      KMV.toast("info", "Đã ghi đề nghị gộp " + fromCode + " → " + toCode + " từ trước.");
+      return;
+    }
+    data.mergeProposals.push({ from: fromCode, to: toCode, at: Date.now() });
+    KMV.toast("success", "Đã ghi đề nghị gộp " + fromCode + " → " + toCode + ".");
+  }
+
+  var negReasonApi = null;
+
+  function render() {
+    var locked = doc.trangThai !== "NHAP_LIEU";
+    var totalQty = doc.lines.reduce(function (s, l) { return s + l.qty; }, 0);
+    var over = hasOverStock();
+
+    root.innerHTML =
+      '<div class="kv-page-header">' +
+      '<div><h1>Phiếu xuất ' + doc.soCt + " " + KMV.statusTag(doc.trangThai) + '</h1>' +
+      '<p>Ngày ' + KMV.fmtDate(doc.ngay) + " · " + KMV.warehouseLabel(doc.kho) +
+      (doc.donGocId ? ' · Đơn gốc: <a href="dat-hang-chi-tiet.html?id=' + doc.donGocId + '">' + (data.orders.filter(function (o) { return o.id === doc.donGocId; })[0] || {}).soCt + "</a>" : "") +
+      "</p></div>" +
+      '<div class="kv-page-header-actions">' +
+      '<a class="kv-btn" href="in-phieu.html?loai=giao-hang&id=' + doc.id + '">' + KMV.icon("print") + ' In phiếu giao hàng</a>' +
+      (doc.trangThai === "HOAN_THANH" ? '<button type="button" class="kv-btn" id="btn-return">Khách trả hàng</button>' : "") +
+      (doc.trangThai === "NHAP_LIEU" ? '<button type="button" class="kv-btn kv-btn-primary" id="btn-post"' + (over && !doc.lyDoXuatAm ? " disabled" : "") + '>Ghi sổ</button>' : "") +
+      (doc.trangThai === "HOAN_THANH" && KMV.can("void") ? '<button type="button" class="kv-btn kv-btn-danger" id="btn-void">Hủy phiếu</button>' : "") +
+      "</div></div>" +
+
+      (doc.trangThai === "NHAP_LIEU" && over && !doc.lyDoXuatAm ? '<p class="kv-text-sm" style="color:var(--color-error)">Ghi sổ đang bị khóa — chọn lý do xuất âm ở dưới trước.</p>' : "") +
+
+      (doc.trangThai === "DA_HUY" ? '<div class="kv-alert kv-alert-error kv-mb-16"><div><div class="kv-alert-title">Phiếu đã hủy</div>' + (doc.lyDoHuy || "") + "</div></div>" : "") +
+
+      '<div class="kv-card kv-mb-16">' +
+      '<dl class="kv-desc kv-desc-3">' +
+      '<div class="kv-desc-item"><dt>Người nhận</dt><dd>' + doc.nguoiNhan + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Kho</dt><dd>' + KMV.warehouseLabel(doc.kho) + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Ngày</dt><dd>' + KMV.fmtDate(doc.ngay) + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Người tạo</dt><dd>' + doc.nguoiTao + "</dd></div>" +
+      "</dl></div>" +
+
+      '<div class="kv-card kv-mb-16">' +
+      "<h3>Dòng hàng</h3>" +
+      '<div class="kv-hide-lg" id="lines-cards"></div>' +
+      '<div class="kv-only-lg kv-table-wrap"><table class="kv-table"><thead><tr>' +
+      "<th>Mã hàng</th><th>Tên hàng</th><th>ĐVT</th><th>Kho</th>" +
+      '<th class="kv-col-num">Số lượng</th><th></th>' +
+      "</tr></thead><tbody id=\"lines-body\"></tbody>" +
+      (doc.lines.length > 0 ? '<tfoot><tr class="kv-row-total"><td colspan="4">Tổng cộng</td><td class="kv-col-num">' + KMV.fmtNumber(totalQty) + "</td><td></td></tr></tfoot>" : "") +
+      "</table></div>" +
+      "</div>" +
+
+      '<div id="negreason-wrap"></div>';
+
+    renderLines();
+    renderNegReason();
+    bindActions();
+  }
+
+  function lineRowHtml(l, i, editable) {
+    var over = exceedsStock(l);
+    var stock = stockAt(l.code, l.warehouse);
+    var qtyCell = editable
+      ? '<input type="number" class="kv-input" style="width:90px" data-qty-idx="' + i + '" value="' + l.qty + '" min="1">'
+      : KMV.fmtNumber(l.qty);
+    var khoCell = editable
+      ? '<select class="kv-select" style="width:110px" data-kho-idx="' + i + '">' +
+        data.warehouses.map(function (w) { return '<option value="' + w.id + '"' + (w.id === l.warehouse ? " selected" : "") + ">" + w.name + "</option>"; }).join("") +
+        "</select>"
+      : KMV.warehouseLabel(l.warehouse);
+    return (
+      '<tr class="' + (over ? "kv-row-warn" : "") + '">' +
+      "<td>" + l.code + "</td><td>" + l.name + "</td><td>" + l.unit + "</td><td>" + khoCell + "</td>" +
+      '<td class="kv-col-num" data-tip="Tồn ' + KMV.warehouseLabel(l.warehouse) + " còn " + stock + '">' + qtyCell + "</td>" +
+      "<td>" + (editable ? '<button type="button" class="kv-btn kv-btn-sm" data-remove-idx="' + i + '">Xóa</button>' : "") + "</td>" +
+      "</tr>"
+    );
+  }
+
+  function lineCardHtml(l, i, editable) {
+    var over = exceedsStock(l);
+    var stock = stockAt(l.code, l.warehouse);
+    return (
+      '<div class="kv-line-card' + (over ? " kv-row-warn" : "") + '" style="' + (over ? "border-color:var(--color-warning)" : "") + '">' +
+      '<div class="kv-line-card-head"><span>' + l.code + "</span><span>" + l.name + "</span></div>" +
+      '<div class="kv-text-sm kv-text-muted">' + KMV.warehouseLabel(l.warehouse) + " · tồn còn " + stock + "</div>" +
+      (editable
+        ? '<div class="kv-qty-stepper"><button type="button" data-step="-1" data-idx="' + i + '">−</button>' +
+          '<input type="number" data-qty-idx="' + i + '" value="' + l.qty + '">' +
+          '<button type="button" data-step="1" data-idx="' + i + '">+</button>' +
+          '<button type="button" class="kv-btn kv-btn-sm" data-remove-idx="' + i + '" style="margin-left:auto">Xóa</button></div>'
+        : '<div class="kv-mt-8">Số lượng: <strong>' + KMV.fmtNumber(l.qty) + "</strong></div>") +
+      "</div>"
+    );
+  }
+
+  function renderLines() {
+    var locked = doc.trangThai !== "NHAP_LIEU";
+    var body = document.getElementById("lines-body");
+    var cards = document.getElementById("lines-cards");
+
+    body.innerHTML = doc.lines.map(function (l, i) { return lineRowHtml(l, i, !locked); }).join("");
+    cards.innerHTML = doc.lines.map(function (l, i) { return lineCardHtml(l, i, !locked); }).join("");
+
+    if (!locked) {
+      var entryRow = document.createElement("tr");
+      entryRow.className = "kv-line-entry";
+      entryRow.innerHTML =
+        '<td colspan="6"><div class="kv-flex kv-flex-wrap">' +
+        '<input type="text" class="kv-input" style="max-width:200px" id="entry-code" placeholder="Mã hàng…" autocomplete="off">' +
+        '<input type="number" class="kv-input" style="max-width:120px" id="entry-qty" placeholder="Số lượng" min="1">' +
+        '<span class="kv-text-sm kv-text-muted">Gõ mã → Enter → số lượng → Enter để thêm dòng.</span>' +
+        "</div></td>";
+      body.appendChild(entryRow);
+
+      var selectedProduct = null;
+      var codeInput = document.getElementById("entry-code");
+      var qtyInput = document.getElementById("entry-qty");
+      KMV.productSearch(codeInput, { onSelect: function (p) { selectedProduct = p; qtyInput.focus(); } });
+      codeInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          setTimeout(function () {
+            var p = data.findProduct(codeInput.value.trim());
+            if (p && p.code.toLowerCase() === codeInput.value.trim().toLowerCase()) { selectedProduct = p; qtyInput.focus(); }
+          }, 0);
+        }
+      });
+      qtyInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          if (!selectedProduct) { KMV.toast("error", "Chưa chọn được mã hàng hợp lệ."); return; }
+          var qty = Number(qtyInput.value);
+          if (!qty || qty <= 0) { KMV.toast("error", "Số lượng phải lớn hơn 0."); return; }
+          doc.lines.push({ productId: selectedProduct.id, code: selectedProduct.code, name: selectedProduct.name, unit: selectedProduct.unit, warehouse: doc.kho, qty: qty });
+          selectedProduct = null;
+          render();
+          setTimeout(function () { var c = document.getElementById("entry-code"); if (c) c.focus(); }, 0);
+        }
+      });
+    }
+
+    // Sửa số lượng / kho tại ô
+    document.querySelectorAll("[data-qty-idx]").forEach(function (input) {
+      input.addEventListener("change", function () {
+        doc.lines[Number(input.getAttribute("data-qty-idx"))].qty = Number(input.value) || 0;
+        renderLines(); renderNegReason();
+      });
+    });
+    document.querySelectorAll("[data-kho-idx]").forEach(function (sel) {
+      sel.addEventListener("change", function () {
+        doc.lines[Number(sel.getAttribute("data-kho-idx"))].warehouse = sel.value;
+        renderLines(); renderNegReason();
+      });
+    });
+    document.querySelectorAll("[data-step]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var idx = Number(btn.getAttribute("data-idx"));
+        var delta = Number(btn.getAttribute("data-step"));
+        doc.lines[idx].qty = Math.max(1, doc.lines[idx].qty + delta);
+        renderLines(); renderNegReason();
+      });
+    });
+    document.querySelectorAll("[data-remove-idx]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var idx = Number(btn.getAttribute("data-remove-idx"));
+        KMV.confirm({
+          message: "Xóa dòng " + doc.lines[idx].code + "?",
+          danger: true,
+          onConfirm: function (m) { doc.lines.splice(idx, 1); KMV.closeModal(m); render(); }
+        });
+      });
+    });
+
+    var postBtn = document.getElementById("btn-post");
+    if (postBtn) postBtn.disabled = hasOverStock() && !doc.lyDoXuatAm;
+  }
+
+  function renderNegReason() {
+    var wrap = document.getElementById("negreason-wrap");
+    if (!wrap) return;
+    if (!hasOverStock()) { wrap.innerHTML = ""; return; }
+
+    var overLines = doc.lines.filter(exceedsStock);
+    var hintHtml = "";
+    overLines.forEach(function (l) {
+      var sims = similarCodes(l.code);
+      if (sims.length > 0 && doc.lyDoXuatAm === "tach_ma") {
+        hintHtml +=
+          '<div class="kv-alert kv-alert-info kv-mt-8"><div>Mã <strong>' + l.code + '</strong> gần giống: ' +
+          sims.map(function (s) { return s.code + " (còn " + (s.stock.k1 + s.stock.k2) + ")"; }).join(", ") +
+          ' <button type="button" class="kv-btn kv-btn-sm kv-mt-8" data-merge-from="' + l.code + '" data-merge-to="' + sims[0].code + '">Đề nghị gộp hai mã</button></div></div>';
+      }
+    });
+
+    wrap.innerHTML =
+      '<div class="kv-card">' +
+      KMV.negativeReasonPanelHtml(doc.lyDoXuatAm, doc.ghiChuXuatAm) +
+      hintHtml +
+      "</div>";
+
+    negReasonApi = KMV.bindNegativeReasonPanel(wrap, function (code, note) {
+      doc.lyDoXuatAm = code;
+      doc.ghiChuXuatAm = note;
+      var postBtn = document.getElementById("btn-post");
+      if (postBtn) postBtn.disabled = hasOverStock() && !doc.lyDoXuatAm;
+      renderNegReason();
+    });
+
+    wrap.querySelectorAll("[data-merge-from]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        proposeMerge(btn.getAttribute("data-merge-from"), btn.getAttribute("data-merge-to"));
+      });
+    });
+  }
+
+  function bindActions() {
+    var postBtn = document.getElementById("btn-post");
+    if (postBtn) {
+      postBtn.addEventListener("click", function () {
+        if (doc.lines.length === 0) { KMV.toast("error", "Phiếu chưa có dòng hàng nào."); return; }
+        if (hasOverStock() && !doc.lyDoXuatAm) { KMV.toast("error", "Chọn lý do xuất âm trước khi ghi sổ."); return; }
+        var overLines = doc.lines.filter(exceedsStock);
+        var body = "<p>Tồn " + KMV.warehouseLabel(doc.kho) + " sẽ GIẢM ở " + doc.lines.length + " mã.</p>";
+        if (overLines.length > 0) {
+          body += '<div class="kv-alert kv-alert-warning"><div>' +
+            overLines.map(function (l) { return l.code + " vượt tồn — lý do: " + (data.negativeReasons.filter(function (r) { return r.code === doc.lyDoXuatAm; })[0] || {}).label; }).join("<br>") +
+            "</div></div>";
+        }
+        if (doc.donGocId) body += "<p>Tiến độ đơn " + (data.orders.filter(function (o) { return o.id === doc.donGocId; })[0] || {}).soCt + " sẽ được cập nhật.</p>";
+
+        KMV.openModal(
+          KMV.postingSummaryHtml({ docNo: doc.soCt, headline: "ghi sổ xuất kho.", body: body, warningTitle: "Không thể sửa sau khi ghi sổ", warningDescription: "Phiếu sẽ chuyển sang Hoàn thành và khóa toàn bộ chỉnh sửa." }),
+          {
+            title: "Xác nhận ghi sổ",
+            buttons: [
+              { label: "Hủy" },
+              { label: "Xác nhận ghi sổ", primary: true, onClick: function (m) {
+                setTimeout(function () {
+                  doc.trangThai = "HOAN_THANH";
+                  if (doc.donGocId) {
+                    var order = data.orders.filter(function (o) { return o.id === doc.donGocId; })[0];
+                    if (order) {
+                      order.lines.forEach(function (ol) {
+                        var matched = doc.lines.filter(function (dl) { return dl.code === ol.code; })[0];
+                        if (matched) ol.shipped = Math.min(ol.qty, ol.shipped + matched.qty);
+                      });
+                    }
+                  }
+                  KMV.closeModal(m);
+                  KMV.toast("success", "Phiếu đã ghi sổ và bị khóa.");
+                  render();
+                }, 400);
+              } }
+            ]
+          }
+        );
+      });
+    }
+
+    var voidBtn = document.getElementById("btn-void");
+    if (voidBtn) {
+      voidBtn.addEventListener("click", function () {
+        KMV.voidDialog({
+          docNo: doc.soCt,
+          onConfirm: function (reason) {
+            doc.trangThai = "DA_HUY";
+            doc.lyDoHuy = "Lý do hủy: " + reason;
+            KMV.toast("success", "Đã hủy phiếu — sinh bút toán đảo, không xóa dòng nào.");
+            render();
+          }
+        });
+      });
+    }
+
+    var returnBtn = document.getElementById("btn-return");
+    if (returnBtn) {
+      returnBtn.addEventListener("click", function () {
+        var seq = data.returns.length + 1;
+        var newReturn = {
+          id: "tk-new-" + Date.now(), soCt: data.docNo("TK", seq), loaiCt: "TRA_KHACH",
+          ngay: new Date().toISOString().slice(0, 10), chungTuGoc: doc.soCt, doiTacTen: doc.nguoiNhan,
+          kho: doc.kho, trangThai: "NHAP_LIEU", nguoiTao: KMV.currentUser().fullName,
+          lines: doc.lines.map(function (l) { return Object.assign({}, l, { qty: 0, maxQty: l.qty }); })
+        };
+        data.returns.push(newReturn);
+        window.location.href = "tra-hang-chi-tiet.html?id=" + newReturn.id;
+      });
+    }
+  }
+
+  render();
+});
+</script>
+</body>
+</html>
