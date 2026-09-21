@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 05-03-PLAN.md
-last_updated: "2026-09-21T10:04:59.802Z"
+stopped_at: Completed 05-04-PLAN.md
+last_updated: "2026-09-21T10:26:53.161Z"
 last_activity: 2026-09-21
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 76
-  completed_plans: 35
+  completed_plans: 36
   percent: 17
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 5 (ton-kho-tong-quan) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 4 of 12
+Plan: 5 of 12
 04-05, 04-09, 04-11, 04-12, 04-13, 04-14, 04-15 CHƯA có SUMMARY.md (đều đang mở
 checkpoint kiểm mắt, xem ghi chú dưới — 04-15 Task 1-3 đã xong và có commit
 thật, chỉ còn Task 4 chờ người dùng)
@@ -428,6 +428,7 @@ checkpoint, không có auth gate._
 | Phase 05 P01 | 12min | 2 tasks | 2 files |
 | Phase 05 P02 | 15min | 3 tasks | 2 files |
 | Phase 05 P03 | 12min | 3 tasks | 2 files |
+| Phase 05 P04 | 25min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -477,6 +478,9 @@ Recent decisions affecting current work:
 - [Phase 05]: de_xuat_dinh_muc cua so du lieu (max-min+1 ngay) tinh tren TOAN BO luu_tru_hoa_don_kiotviet trong mot CTE dung chung moi dong - khong tinh rieng tung ma, tranh thoi toc do ban cua ma it du lieu
 - [Phase 05]: dat_dinh_muc chi nhan uuid[] - gia tri ghi vao ton_toi_thieu doc lai tu chinh de_xuat_dinh_muc(null,false,1,5000) ngay trong cau UPDATE, khong tin tham so client
 - [Phase 05]: nhat_ky_sua_nguon_check drop/add voi danh sach doc truc tiep tu cloud (05-LIVE-DEFS.md) cong dung mot gia tri moi dinh_muc - khong go lai theo tri nho hay theo file 0044 cu trong repo
+- [Phase 05]: _ghi_so_dieu_chinh va theo kho tung dong (coalesce(p_dong.kho_id, p_ct.kho_id)) thay vi luon p_ct.kho_id — Quyet dinh nguoi dung 2026-09-21 sau khi Task 1 cua 05-04 fire dieu kien dung da cai san; an toan vi 0 chung tu DIEU_CHINH ton tai luc va, tuong thich nguoc
+- [Phase 05]: nap_ton_tam: dieu kien bo qua la DA CO kho_movement that, khong phai ton_kho.so_luong khac 0 — Ma ton 0 vi da xuat het that khac ma ton 0 vi chua tung co chung tu nao; day cung la dieu kien lam lan chay thu hai vo hai (idempotent)
+- [Phase 05]: nap_ton_tam chi vai tro quan_ly (hep hon D-04 quan_ly+van_phong) — Viec mot lan, hau qua trai khap moi bao cao ton - nen hep, noi ra sau de hon siet lai
 
 ### Pending Todos
 
@@ -495,7 +499,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-21T10:04:59.789Z
-Stopped at: Completed 05-03-PLAN.md
+Last session: 2026-09-21T10:26:53.139Z
+Stopped at: Completed 05-04-PLAN.md
 Last activity: 2026-09-21
 Resume file: None
