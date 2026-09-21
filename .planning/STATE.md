@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-09-21T07:37:37.911Z"
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-09-21T09:41:11.192Z"
 last_activity: 2026-09-21
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 76
-  completed_plans: 32
+  completed_plans: 34
   percent: 17
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 5 (ton-kho-tong-quan) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 2 of 12
+Plan: 3 of 12
 04-05, 04-09, 04-11, 04-12, 04-13, 04-14, 04-15 CHƯA có SUMMARY.md (đều đang mở
 checkpoint kiểm mắt, xem ghi chú dưới — 04-15 Task 1-3 đã xong và có commit
 thật, chỉ còn Task 4 chờ người dùng)
@@ -361,6 +361,37 @@ không có `.env.local`, Supabase CLI chưa đăng nhập, nên không `db:push`
 (ràng buộc: chỉ một plan được đẩy schema trong Phase 5). Không có deviation,
 không có checkpoint, không có auth gate._
 
+_Ghi lại 2026-09-21 khi thực thi 05-02 (XONG — cả ba task autonomous, không có
+checkpoint): Task 1 dán nguyên văn `pg_get_functiondef` của `the_kho_san_pham`
+đọc từ cloud (phiên điều phối đọc hộ lúc 09:24 UTC, ghi vào 05-LIVE-DEFS.md vì
+máy thực thi này không có kết nối database) vào header migration `0059` —
+KHỚP HOÀN TOÀN với `0031_the_kho_san_pham.sql` trong repo, không phải dừng plan.
+Task 2 `drop`+`create` lại hàm với cột thứ 15 `ton_luy_ke numeric`: window
+function `sum(...) filter (where la_he_thong) over (order by sx_ngay asc,
+sx_phu asc, sx_id asc rows unbounded preceding)` — kỹ thuật running-balance
+đầu tiên trong dự án (05-PATTERNS.md xác nhận không có analog `sum(...) over`
+nào khác ngoài `count(*) over ()`). **Chỉ dòng HE_THONG được cộng vào lũy kế,
+dòng KiotViet trả null** — cố ý đi ngược khuyến nghị WU-2 điểm 2 của
+05-PATTERNS.md, vì `<design_decisions>` của chính 05-02-PLAN.md giải thích: D-05
+(plan 05-04, chưa chạy) sẽ nạp tồn KiotViet bằng MỘT chứng từ `DIEU_CHINH` đã
+bao gồm hiệu ứng ròng của toàn bộ lịch sử đó, cộng thêm từng dòng sẽ đếm hai
+lần. Thứ tự phá hòa `(ngay, created_at/nap_luc, id)` dùng ở CẢ cửa sổ (asc) lẫn
+`order by` ngoài cùng (desc, đủ cả ba khóa) — bản cloud chỉ `order by ngay
+desc`, đúng lỗi migration này sửa vì ~92 phiếu xuất/ngày khiến nhiều dòng cùng
+ngày chứng từ hòa nhau. Lũy kế tính SAU khi áp `p_kho_id`, TRƯỚC `limit`/
+`offset` — không bị phân trang cắt. Task 3 viết pgTAP
+`33_the_kho_luy_ke_test.sql` (9 assertion: phá hòa cùng ngày theo `created_at`,
+tổng lũy kế toàn công ty, bất biến với `ton_kho` khi lọc kho, dòng KiotViet
+null, không bị phân trang cắt, 14 cột cũ chưa đảo, phạm vi kho thủ kho). Cả ba
+gate tự động (`grep` kiểm cấu trúc SQL) đều `GATE-OK` ngay lần chạy đầu;
+`npm run check` (typecheck+lint+build) xanh toàn bộ. **CHƯA chạy SQL trên bất
+kỳ database nào** — đẩy migration 0059 và chạy pgTAP 33 thật là việc của
+**plan 05-05**. Không sửa `0031_the_kho_san_pham.sql` (file lịch sử). **Không
+đánh dấu TON-02 hoàn thành trong REQUIREMENTS.md** dù frontmatter plan liệt kê
+— theo chỉ định của orchestrator, chưa có màn hình nào (WU-8, thẻ kho UI, plan
+khác của Wave 3) hiển thị cột `ton_luy_ke` này. Không có deviation, không có
+checkpoint, không có auth gate._
+
 ## Performance Metrics
 
 **Velocity:**
@@ -395,6 +426,7 @@ không có checkpoint, không có auth gate._
 | Phase 04 P08 | 45min | 3 tasks | 8 files |
 | Phase 04 P10 | 40min | 2 tasks | 9 files |
 | Phase 05 P01 | 12min | 2 tasks | 2 files |
+| Phase 05 P02 | 15min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -439,6 +471,8 @@ Recent decisions affecting current work:
 - [Phase 04]: negative-stock-panel.tsx (04-13) khoi tao state tu prop bang lazy initializer thay vi useEffect+setState - react-hooks/purity/set-state-in-effect chan pattern dong bo state tu prop trong effect; component chi mount sau khi phieu da tai xong (QueryState) nen khong can dong bo lai
 - [Phase 05]: danh_sach_ton_kho (0058) tra ton_theo_kho jsonb (khoa kho_id::text) thay vi cot kho co dinh, pivot dung o giao dien
 - [Phase 05]: p_dang_kinh_doanh phai co nhanh is null or - loc Tat ca (null) tra 0 dong neu viet thang sp.dang_kinh_doanh = p_dang_kinh_doanh
+- [Phase 05]: the_kho_san_pham ton_luy_ke chi cong dong HE_THONG, dong KiotViet tra null - D-05 nap tam qua DIEU_CHINH da bao hieu ung rong, cong them se dem hai lan
+- [Phase 05]: thu tu pha hoa (ngay, created_at/nap_luc, id) bat buoc o CA cua so tinh luy ke (asc) LAN order by ngoai cung (desc) - chi ngay khong du vi bien dong cung ngay chung tu hoa nhau
 
 ### Pending Todos
 
@@ -457,7 +491,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-21T07:37:37.889Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-09-21T09:41:11.173Z
+Stopped at: Completed 05-02-PLAN.md
 Last activity: 2026-09-21
 Resume file: None
