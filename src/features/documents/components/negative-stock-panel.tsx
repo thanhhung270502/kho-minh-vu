@@ -86,6 +86,18 @@ export function NegativeStockPanel({
     });
     if (!parsed.success) {
       setNoteError(parsed.error.issues[0]?.message ?? "Ghi chú không hợp lệ");
+      // Lựa chọn trên màn không lưu được thì lý do CŨ trên phiếu phải bỏ đi.
+      // Nút Ghi sổ đọc lý do ĐÃ LƯU; để lý do cũ sống tiếp thì người dùng thấy
+      // "Khác" đang chọn, bấm Ghi sổ, và sổ ghi lý do trước đó. Xóa đi để nút
+      // tự khóa cho tới khi lựa chọn mới hợp lệ. Đo tận tay ở UAT Phase 4.
+      if (reason?.code) {
+        try {
+          await clear.mutateAsync();
+        } catch (error) {
+          const explained = explainError(error);
+          message.error(`${explained.title}. ${explained.action}`);
+        }
+      }
       return;
     }
     setNoteError(null);
