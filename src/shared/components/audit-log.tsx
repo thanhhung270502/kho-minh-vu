@@ -23,6 +23,8 @@ const SOURCE_LABELS: Record<string, string> = {
   ra_ghi_chu: "Rà ghi chú",
   cai_dat: "Cài đặt",
   script: "Nạp dữ liệu",
+  gia_von_dau_ky: "Giá vốn đầu kỳ",
+  dinh_muc: "Duyệt định mức",
 };
 
 /** Sentinel của database: một dòng nhật ký đánh dấu bản ghi vừa được tạo. */
@@ -78,7 +80,8 @@ export function AuditLog({ table, id, fieldLabels, renderValue }: Props) {
 
             return {
               key: first.id,
-              children: (
+              // antd 6.6: `children` của item đã bỏ, cảnh báo lúc chạy (Bẫy 11).
+              content: (
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <strong>{first.editorName ?? "Hệ thống"}</strong>
