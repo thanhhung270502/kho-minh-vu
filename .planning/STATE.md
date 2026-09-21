@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 05-07-PLAN.md
-last_updated: "2026-09-21T11:37:00.000Z"
+stopped_at: Completed 05-09-PLAN.md
+last_updated: "2026-09-21T11:52:00.000Z"
 last_activity: 2026-09-21
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 76
-  completed_plans: 40
+  completed_plans: 41
   percent: 17
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 5 (ton-kho-tong-quan) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 9 of 12
+Plan: 10 of 12
 04-05, 04-09, 04-11, 04-12, 04-13, 04-14, 04-15 CHƯA có SUMMARY.md (đều đang mở
 checkpoint kiểm mắt, xem ghi chú dưới — 04-15 Task 1-3 đã xong và có commit
 thật, chỉ còn Task 4 chờ người dùng)
@@ -433,6 +433,7 @@ checkpoint, không có auth gate._
 | Phase 05 P06 | 10min | 3 tasks | 6 files |
 | Phase 05 P08 | 6min | 2 tasks | 3 files |
 | Phase 05 P07 | 9min | 3 tasks | 5 files |
+| Phase 05 P09 | 10min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -498,6 +499,10 @@ Recent decisions affecting current work:
 - [Phase 05]: O tim man ton kho tach stock-toolbar.tsx (ngoai files_modified 05-07) — khong dung lai ProductToolbar vi thuoc thu muc noi bo feature products; khong import formatNumber tu product-columns cung ly do
 - [Phase 05]: danh_sach_ton_kho LEFT JOIN nen rong-khong-loc = danh muc khong co ma dang kinh doanh; goi y nap ton tam la dong ghi chu duoi bang khi ca trang ton 0, link /ton-kho/nap-tam chi hien voi quan_ly (canLoadProvisionalStock = user.role === quan_ly, doi sang hasPermission khi 05-10 them load-provisional-stock)
 - [Phase 05]: overflow-x-auto + scroll.x o /ton-kho la muc toi thieu CLAUDE.md cho moi bang, KHONG phai TON-05 (man ton tren dien thoai) — TON-05 van o Phase 6, chua lam
+- [Phase 05]: /ton-kho/dinh-muc: nut duyet chi phu cac trang nguoi duyet DA MO (viewedPages theo so trang) — trang chua mo khong bao gio bi duyet mu; mac dinh chon het tru khong_du_lieu (dong nay chi hien khi ma dang co dinh muc va de xuat 0, duyet la xoa ve 0)
+- [Phase 05]: Canh bao du lieu man duyet lay so_ngay_du_lieu that; ky 03/09-12/09/2026 va 1.223/3.266 ma la ARCHIVE_SNAPSHOT go cung (RPC khong tra), chi in khi so_ngay_du_lieu con bang 10
+- [Phase 05]: Nut duyet dinh muc disabled ca khi bang dang tai lai (isFetching) — sau khi duyet trang 1 cu con hien toi luc refetch ve; loi 42501 noi ve quyen (va tai lai trang neu vai tro vua doi), 23514 hien nguyen van RPC
+- [Phase 05]: reorder-data-warning.tsx tach ngoai files_modified 05-09 (bang 256 dong sau khi da tach cot) — theo gioi han ~200 dong cua CLAUDE.md
 
 ### Pending Todos
 
@@ -516,7 +521,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-21T11:37:00.000Z
-Stopped at: Completed 05-07-PLAN.md
+Last session: 2026-09-21T11:52:00.000Z
+Stopped at: Completed 05-09-PLAN.md
 Last activity: 2026-09-21
 Resume file: None
