@@ -47,6 +47,12 @@ const MA_TRAN: Dong[] = [
   // Cùng quyền xem với /nhap-kho và /dat-hang — nút "Tạo phiếu xuất" ẩn/hiện
   // là trang trí ở client (canCreate), chặn thật ở policy ghi trên chung_tu (0016).
   { route: "/xuat-kho", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
+  // Phase 5: phạm vi kho của thủ kho siết trong RPC, không ở route — ai cũng mở được.
+  { route: "/ton-kho", ky_vong: AI_CUNG_XEM },
+  // Duyệt định mức ghi ton_toi_thieu: cùng nhóm với sửa danh mục (quản lý + văn phòng).
+  { route: "/ton-kho/dinh-muc", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
+  // Nạp tồn tạm đổi tồn của mọi mã — chỉ quản lý (khuôn /cai-dat/nguoi-dung).
+  { route: "/ton-kho/nap-tam", ky_vong: { quanly: "200", vanphong: "quyen", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/danh-muc", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/doi-tac", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/doi-tac/ra-ghi-chu", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
@@ -237,6 +243,39 @@ async function layIdPhieuTra(): Promise<string | null> {
   return null;
 }
 
+/**
+ * `/api/ton-kho/nap-tam` chỉ có POST — ma trận gửi GET nên sẽ nhận 405 cho mọi vai trò,
+ * không nói gì về quyền. Gửi POST với FormData RỖNG: quản lý qua được cửa quyền và
+ * dừng ở "Chưa chọn file" (400) — không bao giờ chạm tới RPC, không ghi gì.
+ */
+const NAP_TAM_POST: Record<VaiTroTest, string> = {
+  quanly: "400",
+  vanphong: "403",
+  thukho1: "403",
+  chixem: "403",
+  khach: "401",
+};
+
+async function kiemNapTamPost(
+  cookie: Record<VaiTroTest, string>,
+): Promise<{ tong: number; lech: string[] }> {
+  const lech: string[] = [];
+  const role = Object.keys(NAP_TAM_POST) as VaiTroTest[];
+  for (const vt of role) {
+    const res = await fetch(`${BASE_URL}/api/ton-kho/nap-tam`, {
+      method: "POST",
+      headers: cookie[vt] ? { cookie: cookie[vt] } : {},
+      body: new FormData(),
+      redirect: "manual",
+    });
+    const thuc = String(res.status);
+    if (thuc !== NAP_TAM_POST[vt]) {
+      lech.push(`${"POST /api/ton-kho/nap-tam".padEnd(34)} ${vt.padEnd(9)} mong ${NAP_TAM_POST[vt]}, thực ${thuc}`);
+    }
+  }
+  return { tong: role.length, lech };
+}
+
 async function main() {
   try {
     await fetch(BASE_URL, { redirect: "manual" });
@@ -313,6 +352,10 @@ async function main() {
       }
     }
   }
+
+  const napTam = await kiemNapTamPost(cookie);
+  tong += napTam.tong;
+  lech.push(...napTam.lech);
 
   if (lech.length > 0) {
     console.error(`✗ quyền route: ${lech.length}/${tong} ô LỆCH\n`);
