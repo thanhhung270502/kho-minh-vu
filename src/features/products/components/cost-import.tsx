@@ -81,12 +81,12 @@ export function CostImport({ open, onClose }: { open: boolean; onClose: () => vo
         body: form,
       });
       const body = (await response.json()) as {
-        ketQua?: CostImportResultPayload;
+        result?: CostImportResultPayload;
         title?: string;
         action?: string;
       };
 
-      if (!response.ok || !body.ketQua) {
+      if (!response.ok || !body.result) {
         dispatch({
           type: "error",
           title: body.title ?? "Không nạp được giá vốn",
@@ -97,10 +97,10 @@ export function CostImport({ open, onClose }: { open: boolean; onClose: () => vo
 
       if (mode === "nap") {
         void queryClient.invalidateQueries({ queryKey: productKeys.all });
-        dispatch({ type: "committed", result: toCostImportResult(body.ketQua) });
+        dispatch({ type: "committed", result: toCostImportResult(body.result) });
         return;
       }
-      dispatch({ type: "preview", result: toCostImportResult(body.ketQua) });
+      dispatch({ type: "preview", result: toCostImportResult(body.result) });
     } catch {
       dispatch({
         type: "error",

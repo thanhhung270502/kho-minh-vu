@@ -32,7 +32,7 @@ const resultSchema = z.object({
 
 const responseSchema = z.object({
   dinhDang: z.enum(["mau_moi", "kiotviet"]),
-  ketQua: resultSchema,
+  result: resultSchema,
 });
 
 // --- Mô hình miền ----------------------------------------------------------
@@ -75,23 +75,23 @@ function toImportResponse(raw: z.infer<typeof responseSchema>): ImportResponse {
   return {
     format: raw.dinhDang,
     result: {
-      total: raw.ketQua.tong,
-      added: raw.ketQua.them,
-      updated: raw.ketQua.sua,
-      unchanged: raw.ketQua.khong_doi,
-      committed: raw.ketQua.da_nap,
-      errors: raw.ketQua.loi.map((error) => ({
+      total: raw.result.tong,
+      added: raw.result.them,
+      updated: raw.result.sua,
+      unchanged: raw.result.khong_doi,
+      committed: raw.result.da_nap,
+      errors: raw.result.loi.map((error) => ({
         row: error.dong,
         column: error.cot,
         message: error.thong_bao,
       })),
-      changes: raw.ketQua.thay_doi.map((change) => ({
+      changes: raw.result.thay_doi.map((change) => ({
         row: change.dong,
         code: change.ma_hang,
         kind: change.loai,
         fields: change.truong ?? null,
       })),
-      changesTruncated: raw.ketQua.thay_doi_bi_cat ?? false,
+      changesTruncated: raw.result.thay_doi_bi_cat ?? false,
     },
   };
 }
