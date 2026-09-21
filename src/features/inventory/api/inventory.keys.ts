@@ -5,6 +5,7 @@ import type { SuggestionBasis } from "../types";
 export const inventoryKeys = {
   all: ["inventory"] as const,
   list: (filter: InventoryFilter) => ["inventory", "list", filter] as const,
+  assignedWarehouses: ["inventory", "assigned-warehouses"] as const,
   reorderSuggestions: (basis: SuggestionBasis | null, page: number) =>
     ["inventory", "reorder-suggestions", basis, page] as const,
 };

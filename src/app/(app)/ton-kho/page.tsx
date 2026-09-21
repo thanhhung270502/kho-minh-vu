@@ -21,7 +21,10 @@ export default async function StockPage() {
 
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}
       <Suspense fallback={null}>
-        <StockTable canLoadProvisionalStock={user.role === "quan_ly"} />
+        <StockTable
+          canLoadProvisionalStock={user.role === "quan_ly"}
+          limitToAssignedWarehouses={user.role === "thu_kho"}
+        />
       </Suspense>
     </>
   );

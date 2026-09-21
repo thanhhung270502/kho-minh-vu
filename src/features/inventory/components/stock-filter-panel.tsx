@@ -17,6 +17,8 @@ import {
 type Props = {
   filter: InventoryFilter;
   onChange: (next: InventoryFilter) => void;
+  /** Đã thu hẹp theo phạm vi kho của thủ kho — không lấy thẳng từ danh mục kho. */
+  warehouses: Array<{ id: string; name: string }>;
 };
 
 // Không option nào mang value null (Bẫy 11): "Tất cả" là trạng thái đã xóa của
@@ -43,7 +45,7 @@ function FilterGroup({
   );
 }
 
-export function StockFilterPanel({ filter, onChange }: Props) {
+export function StockFilterPanel({ filter, onChange, warehouses }: Props) {
   const lookups = useLookups();
 
   /**
@@ -108,7 +110,7 @@ export function StockFilterPanel({ filter, onChange }: Props) {
           className="w-full"
           placeholder="Tất cả"
           value={filter.warehouseId}
-          options={(lookups.data?.warehouses ?? []).map((warehouse) => ({
+          options={warehouses.map((warehouse) => ({
             value: warehouse.id,
             label: warehouse.name,
           }))}

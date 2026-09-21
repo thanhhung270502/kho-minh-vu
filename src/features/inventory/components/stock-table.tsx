@@ -7,11 +7,10 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo } from "react";
 
-import { useLookups } from "@/features/products/hooks/useProducts";
 import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
 
-import { useInventory } from "../hooks/useInventory";
+import { useInventory, useVisibleWarehouses } from "../hooks/useInventory";
 import {
   DEFAULT_INVENTORY_FILTER,
   INVENTORY_PAGE_SIZES,
@@ -30,9 +29,14 @@ import { StockToolbar } from "./stock-toolbar";
 type Props = {
   /** Chỉ quản lý nạp được tồn tạm — RPC `nap_ton_tam` chặn mọi vai trò khác. */
   canLoadProvisionalStock: boolean;
+  /** Thủ kho: chỉ hiện cột và lựa chọn lọc của kho được phân. */
+  limitToAssignedWarehouses: boolean;
 };
 
-export function StockTable({ canLoadProvisionalStock }: Props) {
+export function StockTable({
+  canLoadProvisionalStock,
+  limitToAssignedWarehouses,
+}: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -43,7 +47,7 @@ export function StockTable({ canLoadProvisionalStock }: Props) {
     [searchParams],
   );
   const inventory = useInventory(filter);
-  const lookups = useLookups();
+  const visibleWarehouses = useVisibleWarehouses(limitToAssignedWarehouses);
 
   const changeFilter = useCallback(
     (next: InventoryFilter) => {
@@ -68,10 +72,11 @@ export function StockTable({ canLoadProvisionalStock }: Props) {
 
   // Lọc một kho thì RPC chỉ cộng tồn của kho đó — cột của kho còn lại sẽ toàn số 0
   // giả, nên chỉ giữ cột của kho đang lọc.
-  const allWarehouses = lookups.data?.warehouses ?? [];
   const warehouses = filter.warehouseId
-    ? allWarehouses.filter((warehouse) => warehouse.id === filter.warehouseId)
-    : allWarehouses;
+    ? visibleWarehouses.filter(
+        (warehouse) => warehouse.id === filter.warehouseId,
+      )
+    : visibleWarehouses;
   const columns = buildStockColumns({ filter, warehouses });
   const tableWidth = columns.reduce(
     (sum, column) =>
@@ -112,7 +117,13 @@ export function StockTable({ canLoadProvisionalStock }: Props) {
   return (
     <ListLayout
       activeFilterCount={activeFilterCount}
-      filterPanel={<StockFilterPanel filter={filter} onChange={changeFilter} />}
+      filterPanel={
+        <StockFilterPanel
+          filter={filter}
+          onChange={changeFilter}
+          warehouses={visibleWarehouses}
+        />
+      }
       toolbar={<StockToolbar filter={filter} onChange={changeFilter} />}
     >
       <QueryState

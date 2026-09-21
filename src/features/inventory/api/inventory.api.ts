@@ -39,6 +39,18 @@ export async function fetchInventory(
   };
 }
 
+/**
+ * Kho mà thủ kho được phân — cùng nguồn `kho_hien_tai()` mà `danh_sach_ton_kho` dùng
+ * để siết phạm vi, nên cột kho trên màn luôn khớp đúng những kho RPC có trả số.
+ * Quản lý/văn phòng không được phân kho nào nên hàm này trả rỗng — chỉ gọi cho thủ kho.
+ */
+export async function fetchAssignedWarehouseIds(): Promise<string[]> {
+  const supabase = getSupabaseBrowserClient();
+  const { data, error } = await supabase.rpc("kho_hien_tai");
+  if (error) throw error;
+  return data ?? [];
+}
+
 /** `basis = null` là "mọi nguồn". Chỉ lấy mã có đề xuất khác định mức đang đặt. */
 export async function fetchReorderSuggestions(
   basis: SuggestionBasis | null,
