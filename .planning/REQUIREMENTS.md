@@ -76,8 +76,8 @@
 
 ### Tồn kho (TON)
 
-- [ ] **TON-01**: Xem tồn theo từng kho, lọc theo nhóm hàng và công đoạn
-- [ ] **TON-02**: Xem thẻ kho của một mã — mọi biến động kèm link mở đúng chứng từ sinh ra nó
+- [x] **TON-01**: Xem tồn theo từng kho, lọc theo nhóm hàng và công đoạn
+- [x] **TON-02**: Xem thẻ kho của một mã — mọi biến động kèm link mở đúng chứng từ sinh ra nó
 - [ ] **TON-03**: Xem tuổi tồn và danh sách hàng không luân chuyển
 - [ ] **TON-04**: Chuyển hàng giữa hai kho bằng một chứng từ `CHUYEN_KHO`
 - [ ] **TON-05**: Màn tồn kho dùng được trên điện thoại
@@ -92,7 +92,7 @@
 ### Tổng quan (TQAN)
 
 - [ ] **TQAN-01**: Xem tồn kho theo nhóm hàng và theo công đoạn
-- [ ] **TQAN-02**: Xem danh sách mã dưới định mức tồn tối thiểu
+- [x] **TQAN-02**: Xem danh sách mã dưới định mức tồn tối thiểu
 - [ ] **TQAN-03**: Xem danh sách hàng không luân chuyển quá 30 ngày
 - [ ] **TQAN-04**: Xem biểu đồ nhập–xuất 30 ngày gần nhất
 - [ ] **TQAN-05**: Xem tổng giá trị tồn kho
@@ -212,13 +212,13 @@
 | XUAT-07 | Phase 4 | Complete |
 | XUAT-08 | Phase 6 | Pending |
 | XUAT-09 | Phase 4 | Complete |
-| TON-01 | Phase 5 | Pending |
-| TON-02 | Phase 5 | Pending |
+| TON-01 | Phase 5 | Complete |
+| TON-02 | Phase 5 | Complete |
 | TON-03 | Phase 6 | Pending |
 | TON-04 | Phase 6 | Pending |
 | TON-05 | Phase 6 | Pending |
 | TQAN-01 | Phase 6 | Pending |
-| TQAN-02 | Phase 5 | Pending |
+| TQAN-02 | Phase 5 | Complete |
 | TQAN-03 | Phase 6 | Pending |
 | TQAN-04 | Phase 6 | Pending |
 | TQAN-05 | Phase 6 | Pending |

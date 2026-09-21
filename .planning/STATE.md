@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Awaiting human verification
-stopped_at: 05-11 Task 3 — checkpoint UAT Phase 5 (Task 1-2 xong)
+status: Ready to verify
+stopped_at: Completed 05-11-PLAN.md
 last_updated: "2026-09-21T15:30:00.000Z"
 last_activity: 2026-09-21
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 76
-  completed_plans: 42
+  completed_plans: 43
   percent: 17
 ---
 
@@ -27,9 +27,10 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 5 (ton-kho-tong-quan) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 12 of 12 — 05-11 Task 1-2 xong (menu `ce7fe36`, ma trận quyền 120/120 `6e9cff2`),
-Task 3 là checkpoint UAT chờ người dùng: CHƯA có 05-11-SUMMARY.md, chưa tăng bộ đếm plan
-hoàn thành (tiền lệ 04-05/04-09). Thứ tự UAT bắt buộc: nạp tồn tạm TRƯỚC, soi màn sau.
+Plan: 12 of 12 — Phase 5 thực thi xong, chờ `/spartan:phase verify 5`. UAT 05-11 người dùng
+trả lời "đạt" (cả 10 mục), NHƯNG lúc 15:01 UTC database chưa có nạp tồn tạm (0 DIEU_CHINH,
+ton_kho 0 dòng khác 0), chưa duyệt định mức nào — xem 05-11-SUMMARY.md. Nạp tồn tạm + duyệt
+định mức là việc vận hành bắt buộc trước go-live.
 Ngoài phạm vi đã sửa trong lúc chạy: `c51391d` (client nhập Excel/giá vốn đầu kỳ đọc
 `ketQua` sau khi route đổi sang `result` ở 9ec9b1f — lỗi đã lên production),
 `55d0b29` (Statistic valueStyle), `2222851` (thủ kho thấy cột 0 giả của kho khác).
