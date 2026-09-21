@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 05-02-PLAN.md
-last_updated: "2026-09-21T09:41:11.192Z"
+stopped_at: Completed 05-03-PLAN.md
+last_updated: "2026-09-21T10:04:59.802Z"
 last_activity: 2026-09-21
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 76
-  completed_plans: 34
+  completed_plans: 35
   percent: 17
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 5 (ton-kho-tong-quan) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 3 of 12
+Plan: 4 of 12
 04-05, 04-09, 04-11, 04-12, 04-13, 04-14, 04-15 CHƯA có SUMMARY.md (đều đang mở
 checkpoint kiểm mắt, xem ghi chú dưới — 04-15 Task 1-3 đã xong và có commit
 thật, chỉ còn Task 4 chờ người dùng)
@@ -427,6 +427,7 @@ checkpoint, không có auth gate._
 | Phase 04 P10 | 40min | 2 tasks | 9 files |
 | Phase 05 P01 | 12min | 2 tasks | 2 files |
 | Phase 05 P02 | 15min | 3 tasks | 2 files |
+| Phase 05 P03 | 12min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -473,6 +474,9 @@ Recent decisions affecting current work:
 - [Phase 05]: p_dang_kinh_doanh phai co nhanh is null or - loc Tat ca (null) tra 0 dong neu viet thang sp.dang_kinh_doanh = p_dang_kinh_doanh
 - [Phase 05]: the_kho_san_pham ton_luy_ke chi cong dong HE_THONG, dong KiotViet tra null - D-05 nap tam qua DIEU_CHINH da bao hieu ung rong, cong them se dem hai lan
 - [Phase 05]: thu tu pha hoa (ngay, created_at/nap_luc, id) bat buoc o CA cua so tinh luy ke (asc) LAN order by ngoai cung (desc) - chi ngay khong du vi bien dong cung ngay chung tu hoa nhau
+- [Phase 05]: de_xuat_dinh_muc cua so du lieu (max-min+1 ngay) tinh tren TOAN BO luu_tru_hoa_don_kiotviet trong mot CTE dung chung moi dong - khong tinh rieng tung ma, tranh thoi toc do ban cua ma it du lieu
+- [Phase 05]: dat_dinh_muc chi nhan uuid[] - gia tri ghi vao ton_toi_thieu doc lai tu chinh de_xuat_dinh_muc(null,false,1,5000) ngay trong cau UPDATE, khong tin tham so client
+- [Phase 05]: nhat_ky_sua_nguon_check drop/add voi danh sach doc truc tiep tu cloud (05-LIVE-DEFS.md) cong dung mot gia tri moi dinh_muc - khong go lai theo tri nho hay theo file 0044 cu trong repo
 
 ### Pending Todos
 
@@ -491,7 +495,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-21T09:41:11.173Z
-Stopped at: Completed 05-02-PLAN.md
+Last session: 2026-09-21T10:04:59.789Z
+Stopped at: Completed 05-03-PLAN.md
 Last activity: 2026-09-21
 Resume file: None
