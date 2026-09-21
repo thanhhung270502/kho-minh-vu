@@ -29,9 +29,18 @@ qua kết nối Supabase MCP đang có:
   đúng khuôn CLI đã ghi cho `0050`–`0057`. **Không dùng `apply_migration`** của MCP vì nó
   ghi version theo timestamp — lệch tên file, lần sau ai chạy `supabase db push` bằng CLI
   sẽ thấy `0058` "chưa áp" rồi áp lại.
-- pgTAP: extension `pgtap` đã bật sẵn trên database. Chạy từng file test qua `execute_sql`
-  với `finish(true)` để một assert đỏ hoặc một số assert chạy thiếu so với `plan(N)` đều
-  làm câu lệnh ném lỗi — không phải đếm tay dòng `not ok`.
+- pgTAP: extension `pgtap` đã bật sẵn trên database. Chạy từng file test qua `execute_sql`,
+  thay dòng `select * from finish();` cuối file bằng
+  `select coalesce((select string_agg(f, ' | ') from finish(true) f), 'DAT') as ket_qua;`.
+  **Một file chỉ tính là đạt khi câu lệnh không lỗi VÀ `ket_qua` đúng bằng `DAT`.**
+
+  > **Đính chính (2026-09-21):** bản đầu của mục này ghi rằng `finish(true)` ném lỗi cả khi
+  > assert đỏ lẫn khi chạy thiếu so với `plan(N)`. **Sai.** Đã thử trên chính database này:
+  > assert đỏ → ném lỗi `P0001: 1 test failed of 1`; nhưng chạy thiếu → **không ném lỗi**,
+  > chỉ trả dòng chữ `# Looks like you planned 2 tests but ran 1`. Nếu chỉ dựa vào "có lỗi
+  > hay không" thì một file lặng lẽ bỏ qua nửa số assert vẫn bị tính là xanh — đúng loại
+  > "đếm assert nói dối" Phase 3 đã vấp. Gom kết quả `finish()` thành một chuỗi rồi so với
+  > `DAT` bắt được cả hai trường hợp. File chết giữa chừng thì `execute_sql` ném lỗi luôn.
 
 Lý do: không lấy/chép access token của CLI (bí mật cá nhân của người dùng).
 
