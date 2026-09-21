@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Styleguide · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="styleguide" data-nav="" data-shell="app">
+<main id="page">
+
+<div class="kv-page-header">
+  <div>
+    <h1>Styleguide &amp; mục lục màn hình</h1>
+    <p>Bản demo tĩnh — mở bằng file://, không cần mạng. Đối chiếu màu/bo góc với <code>src/providers/antd-theme.ts</code> + <code>src/app/globals.css</code>.</p>
+  </div>
+  <div class="kv-page-header-actions">
+    <button type="button" class="kv-btn" data-demo="drawer">Mở thử drawer</button>
+    <button type="button" class="kv-btn" data-demo="modal">Mở thử modal</button>
+    <button type="button" class="kv-btn kv-btn-primary" data-demo="toast">Mở thử toast</button>
+  </div>
+</div>
+
+<div class="kv-card kv-mb-16">
+  <h2>A. Mục lục màn hình</h2>
+  <p class="kv-text-muted kv-text-sm">Gõ đường dẫn <code>?state=loading</code>, <code>?state=error</code>, <code>?state=empty</code> vào URL của các trang danh sách để xem trạng thái tương ứng.</p>
+
+  <h3>Khung dùng chung</h3>
+  <div class="kv-grid-2" id="sg-khung"></div>
+
+  <h3 class="kv-mt-16">Chứng từ (thủ kho · văn phòng)</h3>
+  <div class="kv-grid-2" id="sg-chungtu"></div>
+
+  <h3 class="kv-mt-16">Danh mục &amp; tồn (văn phòng · quản lý)</h3>
+  <div class="kv-grid-2" id="sg-danhmuc"></div>
+
+  <h3 class="kv-mt-16">Quản trị (quản lý)</h3>
+  <div class="kv-grid-2" id="sg-quantri"></div>
+</div>
+
+<div class="kv-card kv-mb-16">
+  <h2>B. Bảng màu</h2>
+  <div id="sg-colors" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px"></div>
+</div>
+
+<div class="kv-card kv-mb-16">
+  <h2>Bo góc &amp; đổ bóng</h2>
+  <div class="kv-flex kv-flex-wrap">
+    <div class="kv-card" style="width:120px;height:80px;border-radius:var(--radius-xs)">radius-xs 4</div>
+    <div class="kv-card" style="width:120px;height:80px;border-radius:var(--radius-sm)">radius-sm 7</div>
+    <div class="kv-card" style="width:120px;height:80px;border-radius:var(--radius-md)">radius-md 9</div>
+    <div class="kv-card" style="width:120px;height:80px;border-radius:var(--radius-lg)">radius-lg 12</div>
+    <div class="kv-card" style="width:120px;height:80px;border-radius:var(--radius-modal)">modal 24</div>
+  </div>
+</div>
+
+<div class="kv-card kv-mb-16">
+  <h2>Nút</h2>
+  <div class="kv-flex kv-flex-wrap">
+    <button class="kv-btn kv-btn-primary">Nút chính</button>
+    <button class="kv-btn">Nút phụ</button>
+    <button class="kv-btn kv-btn-danger">Nút nguy hiểm</button>
+    <button class="kv-btn kv-btn-text">Nút chữ</button>
+    <button class="kv-btn kv-btn-link">Nút link</button>
+    <button class="kv-btn kv-btn-primary is-loading">Đang lưu</button>
+    <button class="kv-btn kv-btn-primary" disabled>Đã khóa</button>
+  </div>
+</div>
+
+<div class="kv-card kv-mb-16">
+  <h2>Tag trạng thái</h2>
+  <div class="kv-flex kv-flex-wrap" id="sg-tags"></div>
+</div>
+
+<div class="kv-card kv-mb-16">
+  <h2>Form</h2>
+  <div class="kv-form-row" style="max-width:640px">
+    <div class="kv-form-field">
+      <label class="kv-form-label">Trường bình thường</label>
+      <input class="kv-input" placeholder="Nhập giá trị…">
+    </div>
+    <div class="kv-form-field has-error">
+      <label class="kv-form-label">Trường lỗi<span class="req">*</span></label>
+      <input class="kv-input" value="LGPCX">
+      <div class="kv-form-error">Mã LGPCX đã tồn tại — chọn mã khác.</div>
+    </div>
+    <div class="kv-form-field">
+      <label class="kv-form-label">Trường khóa</label>
+      <input class="kv-input" value="Không sửa được" disabled>
+    </div>
+  </div>
+</div>
+
+<div class="kv-card kv-mb-16">
+  <h2>Bảng mẫu</h2>
+  <div id="sg-table"></div>
+</div>
+
+<div class="kv-card kv-mb-16">
+  <h2>Bốn trạng thái</h2>
+  <div class="kv-grid-2">
+    <div>
+      <h4>1. Đang tải</h4>
+      <div class="kv-card">
+        <div class="kv-skeleton-line" style="width:80%"></div>
+        <div class="kv-skeleton-line" style="width:60%"></div>
+        <div class="kv-skeleton-line" style="width:70%"></div>
+      </div>
+    </div>
+    <div>
+      <h4>2. Lỗi</h4>
+      <div class="kv-error"><div class="kv-error-icon">⚠️</div><p>Không tải được dữ liệu — mất kết nối tới máy chủ.</p><button class="kv-btn kv-btn-primary">Thử lại</button></div>
+    </div>
+    <div>
+      <h4>3. Rỗng</h4>
+      <div class="kv-empty"><div class="kv-empty-icon">🗂️</div><div>Không có phiếu nào khớp bộ lọc — thử nới khoảng ngày.</div></div>
+    </div>
+    <div>
+      <h4>4. Có dữ liệu</h4>
+      <div class="kv-alert kv-alert-success"><div><div class="kv-alert-title">Đã tải xong</div>Hiển thị 20/134 dòng.</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="kv-card">
+  <h2>Alert</h2>
+  <div class="kv-flex" style="flex-direction:column;align-items:stretch">
+    <div class="kv-alert kv-alert-info"><div>Thông tin: dữ liệu này chỉ dùng để dựng giao diện.</div></div>
+    <div class="kv-alert kv-alert-warning"><div>Cảnh báo: mã hàng dưới định mức tối thiểu.</div></div>
+    <div class="kv-alert kv-alert-error"><div>Lỗi: không ghi sổ được vì thiếu lý do xuất âm.</div></div>
+    <div class="kv-alert kv-alert-success"><div>Đã ghi sổ thành công.</div></div>
+  </div>
+</div>
+
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("styleguide", function () {
+  var pages = [
+    { group: "sg-khung", items: [
+      ["dang-nhap.html", "Đăng nhập", "Mọi vai trò"],
+      ["doi-mat-khau.html", "Đổi mật khẩu", "Mọi vai trò"],
+      ["khong-du-quyen.html", "Không đủ quyền", "Mọi vai trò"],
+      ["index.html", "Tổng quan", "Quản lý"]
+    ]},
+    { group: "sg-chungtu", items: [
+      ["nhap-kho.html", "Danh sách phiếu nhập", "Thủ kho · Văn phòng"],
+      ["nhap-kho-chi-tiet.html", "Chi tiết phiếu nhập", "Thủ kho · Văn phòng"],
+      ["dat-hang.html", "Danh sách đơn đặt hàng", "Văn phòng"],
+      ["dat-hang-chi-tiet.html", "Chi tiết đơn đặt hàng", "Văn phòng"],
+      ["xuat-kho.html", "Danh sách phiếu xuất", "Thủ kho · Văn phòng"],
+      ["xuat-kho-chi-tiet.html", "Chi tiết phiếu xuất", "Thủ kho · Văn phòng"],
+      ["tra-hang.html", "Danh sách phiếu trả", "Văn phòng"],
+      ["tra-hang-chi-tiet.html", "Chi tiết phiếu trả", "Văn phòng"],
+      ["in-phieu.html", "Mẫu in phiếu", "Thủ kho · Văn phòng"]
+    ]},
+    { group: "sg-danhmuc", items: [
+      ["danh-muc.html", "Danh mục hàng", "Văn phòng · Quản lý"],
+      ["danh-muc-chi-tiet.html", "Chi tiết mã hàng", "Văn phòng · Quản lý"],
+      ["doi-tac.html", "Đối tác", "Văn phòng · Quản lý"],
+      ["doi-tac-chi-tiet.html", "Chi tiết đối tác", "Văn phòng · Quản lý"],
+      ["ton-kho.html", "Tồn kho (chưa có trong app)", "Mọi vai trò"],
+      ["the-kho.html", "Thẻ kho (chưa có trong app)", "Mọi vai trò"],
+      ["kiem-ke.html", "Kiểm kê (chưa có trong app)", "Thủ kho · Quản lý"],
+      ["chuyen-kho.html", "Chuyển kho (chưa có trong app)", "Thủ kho · Văn phòng"]
+    ]},
+    { group: "sg-quantri", items: [
+      ["bao-cao.html", "Báo cáo (chưa có trong app)", "Quản lý"],
+      ["cai-dat.html", "Cài đặt", "Quản lý · Văn phòng"]
+    ]}
+  ];
+  pages.forEach(function (g) {
+    var el = document.getElementById(g.group);
+    el.innerHTML = g.items.map(function (it) {
+      return '<a class="kv-card" href="' + it[0] + '" style="display:block">' +
+        '<strong>' + it[1] + '</strong><br><span class="kv-text-sm kv-text-muted">' + it[2] + '</span></a>';
+    }).join("");
+  });
+
+  var colors = [
+    ["#0070F4", "primary"], ["#005AC3", "primary-hover"], ["#004392", "primary-active"],
+    ["#00B63E", "success"], ["#FF8800", "warning"], ["#FF0000", "error"],
+    ["#15171A", "text"], ["#525D6A", "text-2"], ["#85909D", "text-3"], ["#A4ACB5", "text-4"],
+    ["#D1D5DA", "border"], ["#E8EAED", "border-2"],
+    ["#F7F8F9", "bg-layout"], ["#FFFFFF", "bg-card"], ["#F0F1F3", "bg-fill"], ["#E6F1FE", "table-head"]
+  ];
+  document.getElementById("sg-colors").innerHTML = colors.map(function (c) {
+    var light = ["#F7F8F9", "#FFFFFF", "#F0F1F3", "#E6F1FE", "#E8EAED", "#D1D5DA"].indexOf(c[0]) !== -1;
+    return '<div class="kv-swatch" style="background:' + c[0] + ';color:' + (light ? "#15171A" : "#fff") + ';text-shadow:none">' + c[1] + '<br>' + c[0] + '</div>';
+  }).join("");
+
+  document.getElementById("sg-tags").innerHTML = [
+    KMV.statusTag("NHAP_LIEU"), KMV.statusTag("HOAN_THANH"), KMV.statusTag("DA_HUY"),
+    KMV.statusTag("TAM"), KMV.statusTag("DA_XAC_NHAN")
+  ].join(" ");
+
+  KMV.renderTable(document.getElementById("sg-table"), {
+    columns: [
+      { key: "code", title: "Mã hàng" },
+      { key: "name", title: "Tên hàng" },
+      { key: "qty", title: "Số lượng", numeric: true }
+    ],
+    rows: [
+      { code: "LGPCX", name: "Lọc gió phổ thông xe côn", qty: 12 },
+      { code: "BT-AB125", name: "Bố thắng đĩa trước Airblade 125", qty: -3 }
+    ],
+    rowClass: function (r) { return r.qty < 0 ? "kv-row-warn" : ""; },
+    totalRow: { code: "Tổng cộng", qty: 9 }
+  });
+
+  document.querySelector('[data-demo="drawer"]').addEventListener("click", function () {
+    KMV.openDrawer("<p>Nội dung ngăn kéo mẫu.</p>", { title: "Ngăn kéo mẫu" });
+  });
+  document.querySelector('[data-demo="modal"]').addEventListener("click", function () {
+    KMV.openModal("<p>Nội dung hộp thoại mẫu.</p>", { title: "Hộp thoại mẫu", buttons: [{ label: "Đóng" }] });
+  });
+  document.querySelector('[data-demo="toast"]').addEventListener("click", function () {
+    KMV.toast("success", "Đây là một thông báo toast.");
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Đăng nhập · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .kv-auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg-layout); padding: 16px; }
+  .kv-auth-card { width: 100%; max-width: 380px; }
+  .kv-auth-title { text-align: center; margin-bottom: 4px; }
+  .kv-auth-sub { text-align: center; color: var(--text-2); margin-bottom: 20px; }
+  .kv-quicklogin { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+</style>
+</head>
+<body data-page="dang-nhap" data-nav="" data-shell="bare">
+<main id="page">
+<div class="kv-auth-wrap">
+  <div class="kv-card kv-auth-card">
+    <h1 class="kv-auth-title">Kho Minh Vũ</h1>
+    <p class="kv-auth-sub">Đăng nhập để tiếp tục</p>
+
+    <div id="auth-alert"></div>
+
+    <form id="login-form" novalidate>
+      <div class="kv-form-field" id="field-email">
+        <label class="kv-form-label">Email<span class="req">*</span></label>
+        <input class="kv-input" type="email" id="email" placeholder="ten@khominhvu.local" autocomplete="username">
+        <div class="kv-form-error" id="err-email" style="display:none">Nhập email hợp lệ.</div>
+      </div>
+      <div class="kv-form-field" id="field-password">
+        <label class="kv-form-label">Mật khẩu<span class="req">*</span></label>
+        <input class="kv-input" type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+        <div class="kv-form-error" id="err-password" style="display:none">Sai email hoặc mật khẩu.</div>
+      </div>
+      <button type="submit" class="kv-btn kv-btn-primary" id="submit-btn" style="width:100%">Đăng nhập</button>
+    </form>
+
+    <div class="kv-quicklogin">
+      <span class="kv-text-sm kv-text-muted" style="width:100%">Đăng nhập nhanh (chỉ có ở demo):</span>
+      <button type="button" class="kv-btn kv-btn-sm" data-quick="quan_ly">Quản lý</button>
+      <button type="button" class="kv-btn kv-btn-sm" data-quick="van_phong">Văn phòng</button>
+      <button type="button" class="kv-btn kv-btn-sm" data-quick="thu_kho">Thủ kho</button>
+      <button type="button" class="kv-btn kv-btn-sm" data-quick="chi_xem">Chỉ xem</button>
+    </div>
+  </div>
+</div>
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("dang-nhap", function () {
+  var loi = KMV.qs("loi");
+  var tiepTuc = KMV.qs("tiep_tuc");
+  if (loi === "vo-hieu-hoa") {
+    document.getElementById("auth-alert").innerHTML =
+      '<div class="kv-alert kv-alert-error kv-mb-16"><div><div class="kv-alert-title">Tài khoản đã bị khóa</div>Liên hệ quản trị để mở lại quyền truy cập.</div></div>';
+  }
+
+  document.querySelectorAll("[data-quick]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      KMV.setRole(btn.getAttribute("data-quick"), tiepTuc || "index.html");
+    });
+  });
+
+  var form = document.getElementById("login-form");
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var email = document.getElementById("email").value.trim();
+    var password = document.getElementById("password").value;
+    var okEmail = /.+@.+\..+/.test(email);
+    document.getElementById("field-email").classList.toggle("has-error", !okEmail);
+    document.getElementById("err-email").style.display = okEmail ? "none" : "block";
+    if (!okEmail) return;
+
+    var user = (window.KMV_DATA.users || []).filter(function (u) { return u.email === email; })[0];
+    var btn = document.getElementById("submit-btn");
+    btn.classList.add("is-loading");
+    btn.disabled = true;
+    setTimeout(function () {
+      btn.classList.remove("is-loading");
+      btn.disabled = false;
+      if (!user || password.length < 3) {
+        document.getElementById("field-password").classList.add("has-error");
+        document.getElementById("err-password").style.display = "block";
+        // Giữ nguyên dữ liệu đã nhập — không xóa ô email/mật khẩu khi lỗi.
+        return;
+      }
+      if (user.locked) {
+        window.location.href = "dang-nhap.html?loi=vo-hieu-hoa";
+        return;
+      }
+      KMV.setRole(user.role, tiepTuc || "index.html");
+    }, 500);
+  });
+});
+</script>
+</body>
+</html>

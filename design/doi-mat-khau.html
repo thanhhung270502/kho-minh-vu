@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Đổi mật khẩu · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .kv-auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg-layout); padding: 16px; }
+  .kv-auth-card { width: 100%; max-width: 380px; }
+</style>
+</head>
+<body data-page="doi-mat-khau" data-nav="" data-shell="bare">
+<main id="page">
+<div class="kv-auth-wrap">
+  <div class="kv-card kv-auth-card">
+    <h1>Đổi mật khẩu</h1>
+    <div class="kv-alert kv-alert-info kv-mb-16"><div>Tài khoản của bạn đang dùng mật khẩu tạm — đặt mật khẩu mới trước khi tiếp tục.</div></div>
+
+    <form id="pw-form" novalidate>
+      <div class="kv-form-field">
+        <label class="kv-form-label">Mật khẩu mới<span class="req">*</span></label>
+        <input class="kv-input" type="password" id="pw1" autocomplete="new-password">
+        <div class="kv-form-hint">Ít nhất 8 ký tự.</div>
+        <div class="kv-form-error" id="err-pw1" style="display:none">Mật khẩu phải có ít nhất 8 ký tự.</div>
+      </div>
+      <div class="kv-form-field">
+        <label class="kv-form-label">Xác nhận mật khẩu mới<span class="req">*</span></label>
+        <input class="kv-input" type="password" id="pw2" autocomplete="new-password">
+        <div class="kv-form-error" id="err-pw2" style="display:none">Hai mật khẩu không khớp.</div>
+      </div>
+      <button type="submit" class="kv-btn kv-btn-primary" id="submit-btn" style="width:100%">Lưu mật khẩu mới</button>
+    </form>
+  </div>
+</div>
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("doi-mat-khau", function () {
+  document.getElementById("pw-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var pw1 = document.getElementById("pw1").value;
+    var pw2 = document.getElementById("pw2").value;
+    var ok1 = pw1.length >= 8;
+    var ok2 = pw1 === pw2 && pw2.length > 0;
+    document.getElementById("err-pw1").style.display = ok1 ? "none" : "block";
+    document.getElementById("err-pw2").style.display = ok2 ? "none" : "block";
+    if (!ok1 || !ok2) return;
+    var btn = document.getElementById("submit-btn");
+    btn.classList.add("is-loading");
+    setTimeout(function () {
+      btn.classList.remove("is-loading");
+      KMV.toast("success", "Đã đổi mật khẩu.");
+      window.location.href = "index.html";
+    }, 500);
+  });
+});
+</script>
+</body>
+</html>
