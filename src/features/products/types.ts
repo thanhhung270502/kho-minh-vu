@@ -64,6 +64,9 @@ export type StockCardRow = {
   note: string | null;
   isReversal: boolean;
   totalRows: number;
+  // null ở dòng lưu trữ KiotViet (KIOTVIET_NHAP/KIOTVIET_BAN): chúng không nằm trong
+  // sổ cái hệ mới nên RPC không cộng vào lũy kế (0059/0062).
+  runningBalance: number | null;
 };
 
 export type StageSuggestion = {
@@ -222,6 +225,9 @@ export function toStockCardRow(row: StockCardRowDb): StockCardRow {
     note: row.ghi_chu,
     isReversal: row.la_but_toan_dao,
     totalRows: Number(row.tong_so_dong),
+    // Kiểu sinh ghi `number` nhưng RPC trả null cho dòng KiotViet — Number(null) ra 0
+    // và sẽ hiện "0" sai ở mọi dòng đó.
+    runningBalance: row.ton_luy_ke === null ? null : Number(row.ton_luy_ke),
   };
 }
 
