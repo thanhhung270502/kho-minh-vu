@@ -25,6 +25,14 @@ import {
   type ProductFilter,
 } from "../src/features/products/schemas/filter.schema";
 import {
+  DEFAULT_INVENTORY_FILTER,
+  countActiveInventoryFilters,
+  readInventoryFilterFromUrl,
+  writeInventoryFilterToUrl,
+  toInventoryRpcArgs,
+  type InventoryFilter,
+} from "../src/features/inventory/schemas/inventory.schema";
+import {
   groupLinesByWarehouse,
   UNASSIGNED_WAREHOUSE_LABEL,
 } from "../src/features/sales-order/lib/group-lines-by-warehouse";
@@ -89,6 +97,59 @@ assert.equal(
 );
 assert.equal(toListRpcArgs(DEFAULT_PRODUCT_FILTER).p_dang_kinh_doanh, true);
 assert.equal(toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, needsReview: false }).p_can_ra, undefined);
+
+// --- Bộ lọc màn tồn kho (Phase 5, 05-06) -----------------------------------
+const warehouseUuid = "33333333-3333-4333-8333-333333333333";
+const sampleInventoryFilter: InventoryFilter = {
+  q: "nhong xich",
+  categoryId: "11111111-1111-4111-8111-111111111111",
+  stageId: "22222222-2222-4222-8222-222222222222",
+  warehouseId: warehouseUuid,
+  stockStatus: "duoi_dinh_muc",
+  tradingStatus: "all",
+  sortBy: "totalStock",
+  sortDir: "desc",
+  page: 4,
+  pageSize: 100,
+};
+
+assert.deepEqual(readInventoryFilterFromUrl(new URLSearchParams("")), DEFAULT_INVENTORY_FILTER, "URL rỗng ra bộ lọc mặc định");
+assert.equal(writeInventoryFilterToUrl(DEFAULT_INVENTORY_FILTER).toString(), "", "bộ lọc tồn kho mặc định không ghi gì vào URL");
+{
+  const parsed = readInventoryFilterFromUrl(new URLSearchParams(`ton=duoi_dinh_muc&kho=${warehouseUuid}`));
+  assert.equal(parsed.stockStatus, "duoi_dinh_muc", "đọc được ?ton=duoi_dinh_muc");
+  assert.equal(parsed.warehouseId, warehouseUuid, "đọc được ?kho=<uuid>");
+}
+assert.equal(readInventoryFilterFromUrl(new URLSearchParams("kho=kho-1")).warehouseId, null, "kho không phải uuid bị bỏ");
+assert.equal(readInventoryFilterFromUrl(new URLSearchParams("ton=bay")).stockStatus, null, "trạng thái tồn lạ bị bỏ");
+assert.equal(readInventoryFilterFromUrl(new URLSearchParams("trang=-5")).page, 1, "page âm về 1");
+assert.equal(readInventoryFilterFromUrl(new URLSearchParams("sap_xep=updated_at")).sortBy, null, "màn tồn không sắp theo updated_at");
+assert.deepEqual(
+  readInventoryFilterFromUrl(writeInventoryFilterToUrl(sampleInventoryFilter)),
+  sampleInventoryFilter,
+  "bộ lọc tồn kho quay vòng qua URL không mất giá trị",
+);
+assert.equal(
+  writeInventoryFilterToUrl(sampleInventoryFilter).get("kinh_doanh"),
+  "tat_ca",
+  "tham số URL giữ tiếng Việt không dấu",
+);
+{
+  const args = toInventoryRpcArgs({ ...DEFAULT_INVENTORY_FILTER, tradingStatus: "all" });
+  assert.ok("p_dang_kinh_doanh" in args, "lọc tất cả phải có khóa p_dang_kinh_doanh");
+  assert.equal(args.p_dang_kinh_doanh, null, "lọc tất cả gửi null tường minh, không phải undefined");
+}
+assert.equal(toInventoryRpcArgs(DEFAULT_INVENTORY_FILTER).p_dang_kinh_doanh, true);
+assert.equal(toInventoryRpcArgs(sampleInventoryFilter).p_kho_id, warehouseUuid);
+assert.equal(toInventoryRpcArgs(sampleInventoryFilter).p_sap_xep, "tong_ton", "sortBy map sang tên cột database");
+assert.equal(toInventoryRpcArgs(DEFAULT_INVENTORY_FILTER).p_tu_khoa, undefined, "ô tìm rỗng không gửi từ khóa");
+assert.equal(countActiveInventoryFilters(DEFAULT_INVENTORY_FILTER), 0);
+assert.equal(countActiveInventoryFilters(sampleInventoryFilter), 5, "nhóm + công đoạn + kho + tồn + kinh doanh");
+assert.equal(
+  countActiveInventoryFilters({ ...DEFAULT_INVENTORY_FILTER, q: "tìm gì đó" }),
+  0,
+  "ô tìm KHÔNG tính vào số điều kiện của panel lọc",
+);
 
 // Ghi chú KiotViet thật: dòng 1 là tên + địa chỉ, dòng 2 là SĐT.
 assert.equal(
