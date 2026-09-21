@@ -138,6 +138,31 @@ authenticated` — **có**.
 
 ---
 
-## Quyết định cho 05-04
+## Quyết định cho 05-04 — người dùng chốt 2026-09-21
 
-*(chờ người dùng — sẽ ghi vào đây trước khi chạy 05-04)*
+**Vá `_ghi_so_dieu_chinh` theo kho từng dòng.** Người dùng chọn phương án này trong ba
+phương án được đưa ra (vá hàm · hai phiếu mỗi kho một phiếu · hoãn 05-04).
+
+Cách làm, trong chính migration `0061_nap_ton_tam.sql`:
+- `create or replace function public._ghi_so_dieu_chinh(...)` chép **nguyên văn** bản đang
+  chạy ở trên, đổi **đúng một chỗ**: đối số `kho_id` của lệnh `insert into public.kho_movement`
+  từ `p_ct.kho_id` thành `coalesce(p_dong.kho_id, p_ct.kho_id)` — y hệt cách `0051` đã vá
+  `_ghi_so_xuat` / `_ghi_so_tra_ncc` / `_ghi_so_tra_khach`. Không đổi dấu `so_luong`, không
+  đổi cách lấy `gia_von`.
+- Kèm lại `revoke all on function public._ghi_so_dieu_chinh(public.chung_tu, public.chung_tu_dong) from public, anon, authenticated;`
+- Comment trong migration nói rõ: `0051` cố ý để `DIEU_CHINH` lại "cho phase của nó";
+  Phase 5 là phase đầu tiên dùng `DIEU_CHINH` (nạp tồn tạm D-05) nên quyết ở đây.
+- `_ghi_so_kiem_ke` và `_ghi_so_chuyen_kho` **giữ nguyên** — kiểm kê và chuyển kho là việc
+  của Phase 6.
+
+Vì sao an toàn (đã đo trước khi hỏi người dùng):
+- Database có **0** chứng từ `DIEU_CHINH` (cũng 0 `KIEM_KE`, 0 `CHUYEN_KHO`) — không dữ liệu
+  cũ nào bị ảnh hưởng.
+- Tương thích ngược: dòng không chọn kho vẫn rơi về kho đầu phiếu, nên mọi phiếu `DIEU_CHINH`
+  sau này không chọn kho theo dòng vẫn ghi đúng như trước.
+
+Nhờ vậy D-05 giữ đúng "**một** chứng từ `DIEU_CHINH`" cho cả hai kho: mỗi dòng mang
+`kho_id` của kho mình.
+
+pgTAP `35` phải assert: một phiếu `DIEU_CHINH` hai dòng hai kho → `kho_movement.kho_id`
+của từng dòng đúng kho của dòng đó, và `ton_kho` của từng kho tăng đúng số.
