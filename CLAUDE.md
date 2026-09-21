@@ -497,7 +497,7 @@ git config user.email "<email đã verify trên GitHub vutru-productionplanning-
 Không sửa được bằng code trong repo. Trước khi đào log build, kiểm tra state:
 `BLOCKED` là chuyện quyền, `ERROR` mới là chuyện code.
 
-### 17. Màn hình trắng khi khung trình duyệt bị ẩn — KHÔNG phải lỗi ứng dụng
+### 19. Màn hình trắng khi khung trình duyệt bị ẩn — KHÔNG phải lỗi ứng dụng
 
 React 19 xếp hàng việc "hé" nội dung của `<Suspense>` qua view transition. Khi tài liệu
 đang ẩn (`document.hidden === true` — khung trình duyệt của Claude không được hiển thị,
@@ -515,6 +515,19 @@ Dấu nhận biết nằm ngay trong DOM:
 
 Thấy `<!--$~-->` kèm `<template id="B:0">` rỗng thì **kiểm `document.hidden` trước tiên**,
 đừng đi sửa code. Bật khung trình duyệt lên là trang hiện bình thường.
+
+Khung cứ bị ẩn đi giữa chừng thì vẫn kiểm được, không cần nhờ mở lại. Tắt view transition
+rồi điều hướng **phía client** (tải lại cả trang sẽ mất phần tắt này):
+
+```js
+document.startViewTransition = undefined;
+window.next.router.push("/xuat-kho/<id>");   // không dùng navigate / location
+```
+
+Cả UAT Phase 4 đã chạy theo cách này. Hai giới hạn còn lại của công cụ trong tab ẩn:
+phím `Backspace` và `cmd+a` không xóa được chữ (gõ thêm thì được) — xóa ô bằng setter gốc
+của `HTMLInputElement.prototype.value` rồi bắn sự kiện `input`; và modal antd đã đóng vẫn
+nằm lại trong DOM, đọc nội dung modal phải lấy cái MỚI NHẤT, không phải cái đầu tiên.
 
 Đây là cái bẫy anh em với bẫy 13: công cụ kiểm thử nói dối, không phải ứng dụng hỏng.
 Lần này suýt ghi nhầm thành "refactor plan 04-05 làm vỡ mọi màn danh sách" — đã kiểm
