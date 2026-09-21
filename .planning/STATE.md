@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 05-08-PLAN.md
-last_updated: "2026-09-21T11:22:00.000Z"
+stopped_at: Completed 05-07-PLAN.md
+last_updated: "2026-09-21T11:37:00.000Z"
 last_activity: 2026-09-21
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 76
-  completed_plans: 39
+  completed_plans: 40
   percent: 17
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 5 (ton-kho-tong-quan) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 8 of 12
+Plan: 9 of 12
 04-05, 04-09, 04-11, 04-12, 04-13, 04-14, 04-15 CHƯA có SUMMARY.md (đều đang mở
 checkpoint kiểm mắt, xem ghi chú dưới — 04-15 Task 1-3 đã xong và có commit
 thật, chỉ còn Task 4 chờ người dùng)
@@ -432,6 +432,7 @@ checkpoint, không có auth gate._
 | Phase 05 P05 | — | 2 tasks | 3 files |
 | Phase 05 P06 | 10min | 3 tasks | 6 files |
 | Phase 05 P08 | 6min | 2 tasks | 3 files |
+| Phase 05 P07 | 9min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -493,6 +494,10 @@ Recent decisions affecting current work:
 - [Phase 05]: StockCardRow.runningBalance la number | null, map ton_luy_ke === null ? null : Number(...) — kieu sinh ghi number nhung dong KiotViet tra null, Number(null) ra 0 se hien "0" sai
 - [Phase 05]: DOC_TYPE_TO_ROUTE (stock-card-columns.tsx) co NHAP/XUAT/TRA_KHACH/TRA_NCC — chi loai co [id]/page.tsx that; TRA_* dung chung /tra-hang; CHUYEN_KHO/KIEM_KE/DIEU_CHINH chua co route nen hien chu thuong, them vao map khi co trang
 - [Phase 05]: Mang cot the kho tach ra buildStockCardColumns({ canViewCost }) vi stock-card.tsx len 210 dong — theo dieu khoan du phong cua 05-08, khuon buildXColumns san co
+- [Phase 05]: /ton-kho dung cot kho dong tu useLookups().warehouses (stockByWarehouse[kho.id] ?? 0); dang loc mot kho thi chi giu cot kho do vi RPC chi cong ton kho duoc loc; scroll.x = tong width cac cot
+- [Phase 05]: O tim man ton kho tach stock-toolbar.tsx (ngoai files_modified 05-07) — khong dung lai ProductToolbar vi thuoc thu muc noi bo feature products; khong import formatNumber tu product-columns cung ly do
+- [Phase 05]: danh_sach_ton_kho LEFT JOIN nen rong-khong-loc = danh muc khong co ma dang kinh doanh; goi y nap ton tam la dong ghi chu duoi bang khi ca trang ton 0, link /ton-kho/nap-tam chi hien voi quan_ly (canLoadProvisionalStock = user.role === quan_ly, doi sang hasPermission khi 05-10 them load-provisional-stock)
+- [Phase 05]: overflow-x-auto + scroll.x o /ton-kho la muc toi thieu CLAUDE.md cho moi bang, KHONG phai TON-05 (man ton tren dien thoai) — TON-05 van o Phase 6, chua lam
 
 ### Pending Todos
 
@@ -511,7 +516,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-21T11:22:00.000Z
-Stopped at: Completed 05-08-PLAN.md
+Last session: 2026-09-21T11:37:00.000Z
+Stopped at: Completed 05-07-PLAN.md
 Last activity: 2026-09-21
 Resume file: None
