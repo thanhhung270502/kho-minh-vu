@@ -117,7 +117,7 @@ export function IssueHeader({ issue, canEdit }: Props) {
           children: editable ? (
             <div className="flex flex-col gap-1">
               <Select
-                className="w-full min-w-40"
+                className="w-full"
                 value={issue.warehouseId}
                 options={(lookups.data?.warehouses ?? []).map((warehouse) => ({
                   value: warehouse.id,
