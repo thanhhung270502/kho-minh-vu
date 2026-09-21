@@ -1,0 +1,76 @@
+-- =============================================================================
+-- 0061 — nap_ton_tam: nạp tồn KiotViet vào hệ mới làm số tạm (D-05, TON-01)
+--
+-- ton_kho hiện có 2 dòng và 0 dòng khác 0 — màn tồn kho, thẻ kho, cảnh báo dưới
+-- định mức đều trắng, không UAT được bằng dữ liệu giống thật. Nguyên tắc kiến
+-- trúc số 1 cấm sửa tồn tay, nên đường hợp lệ duy nhất là một chứng từ.
+--
+-- Đây là chỗ đi ngược một quyết định đã khóa, có chủ đích, người dùng đã xác
+-- nhận sau khi được cảnh báo (05-CONTEXT.md D-05): số nạp ở đây KHÔNG phải tồn
+-- đầu kỳ chính thức — Phase 6 kiểm kê thật sẽ đè lên bằng phiếu điều chỉnh
+-- riêng, không xóa chứng từ này.
+--
+-- -----------------------------------------------------------------------------
+-- TASK 1 — ba điều đọc từ database ĐANG CHẠY, trước khi viết bất cứ dòng SQL
+-- nào bên dưới (bài học Phase 4: repo có thể lệch cloud).
+--
+-- Đọc lúc: 2026-09-21 09:24 UTC, từ database cloud `kho-vu-tru`
+-- (`phonzyruoalimgaovljm`), qua kết nối Supabase MCP của phiên điều phối
+-- (agent thực thi không có kết nối database — xem 05-LIVE-DEFS.md, mục
+-- "Cho plan 05-04"). Migration mới nhất trên database lúc đọc: 0057, khớp repo.
+--
+-- 1. `_ghi_so_dieu_chinh` — ⚠️ VẪN GHI KHO ĐẦU PHIẾU (bản cũ 0011), CHƯA theo
+--    kho của dòng như 0051 đã vá cho XUAT/TRA_NCC/TRA_KHACH. Nguyên văn đối số
+--    `kho_id` của lệnh insert đang chạy:
+--
+--      insert into public.kho_movement (
+--        ngay, kho_id, san_pham_id, so_luong, gia_von_tai_thoi_diem, chung_tu_id, chung_tu_dong_id
+--      ) values (
+--        p_ct.ngay_ct, p_ct.kho_id, p_dong.san_pham_id, p_dong.so_luong, coalesce(v_gia_von, 0),
+--        p_ct.id, p_dong.id
+--      );
+--
+--    `kho_id` = `p_ct.kho_id` (kho đầu phiếu), KHÔNG phải
+--    `coalesce(p_dong.kho_id, p_ct.kho_id)`. Migration 0051 tự ghi trong header
+--    của nó rằng DIEU_CHINH "giữ nguyên, sẽ quyết ở phase của chúng" — đây
+--    đúng là phase đó.
+--
+-- 2. `ghi_so_chung_tu` — nhánh `when 'DIEU_CHINH' then perform
+--    public._ghi_so_dieu_chinh(v_ct, v_dong);` VẪN CÒN, và hàm vẫn
+--    `grant execute ... to authenticated`. Không cần vá gì ở hàm điều phối.
+--
+-- 3. Nhãn enum `loai_ct` trên database: NHAP, XUAT, TRA_NCC, TRA_KHACH,
+--    CHUYEN_KHO, KIEM_KE, DIEU_CHINH — đủ bảy nhãn, `DIEU_CHINH` đúng chính tả.
+--
+-- ĐIỀU KIỆN DỪNG của Task 1 đã cài sẵn trong 05-04-PLAN.md ĐÃ FIRE: mục (1) là
+-- bản cũ, nghĩa là "kho theo từng dòng KHÔNG có hiệu lực và cả thiết kế ở
+-- Task 2 phải đổi: dừng lại, báo người dùng." Đã báo. Xem quyết định dưới đây.
+--
+-- -----------------------------------------------------------------------------
+-- QUYẾT ĐỊNH CỦA NGƯỜI DÙNG — 2026-09-21, ghi lại nguyên văn từ 05-LIVE-DEFS.md
+-- mục "Quyết định cho 05-04 — người dùng chốt 2026-09-21":
+--
+-- Ba phương án được đưa ra: (a) vá hàm `_ghi_so_dieu_chinh` theo kho từng
+-- dòng, (b) tách thành hai phiếu — mỗi kho một phiếu DIEU_CHINH riêng, (c)
+-- hoãn plan 05-04. Người dùng chọn (a).
+--
+-- Vì sao an toàn (đã đo TRƯỚC khi hỏi người dùng, không phải sau):
+--   - Database có 0 chứng từ DIEU_CHINH (cũng 0 KIEM_KE, 0 CHUYEN_KHO) tại
+--     thời điểm đọc — không dữ liệu cũ nào bị ảnh hưởng bởi việc vá hàm.
+--   - Tương thích ngược: dòng KHÔNG chọn kho riêng vẫn rơi về kho đầu phiếu
+--     qua `coalesce(p_dong.kho_id, p_ct.kho_id)` — mọi phiếu DIEU_CHINH sau
+--     này không dùng kho theo dòng vẫn ghi đúng như hành vi cũ.
+--
+-- Nhờ vậy D-05 giữ đúng "MỘT chứng từ DIEU_CHINH" cho cả hai kho: mỗi dòng
+-- mang kho_id của kho mình, không phải tách hai phiếu.
+--
+-- Hàm được vá NGAY TRONG FILE NÀY (không phải migration riêng) theo đúng chỉ
+-- định của người dùng — copy nguyên văn bản đang chạy ở trên, đổi ĐÚNG MỘT
+-- chỗ: đối số `kho_id` của `insert into public.kho_movement` từ `p_ct.kho_id`
+-- thành `coalesce(p_dong.kho_id, p_ct.kho_id)`, y hệt cách 0051 đã vá
+-- `_ghi_so_xuat`/`_ghi_so_tra_ncc`/`_ghi_so_tra_khach`. Không đổi dấu
+-- `so_luong` (DIEU_CHINH giữ nguyên dấu, nhận cả số âm), không đổi cách lấy
+-- `gia_von`. `_ghi_so_kiem_ke` và `_ghi_so_chuyen_kho` GIỮ NGUYÊN — kiểm kê và
+-- chuyển kho là việc của Phase 6, không quyết ở đây. Hàm vá này và RPC
+-- `nap_ton_tam` gọi nó được viết tiếp ở Task 2 của cùng file.
+-- =============================================================================
