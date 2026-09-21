@@ -94,14 +94,14 @@ export function ImportPreview({
         <Statistic
           title="Thêm mới"
           value={result.added}
-          valueStyle={{ color: "#389e0d" }}
+          styles={{ content: { color: "#389e0d" } }}
         />
-        <Statistic title="Sửa" value={result.updated} valueStyle={{ color: "#1677ff" }} />
+        <Statistic title="Sửa" value={result.updated} styles={{ content: { color: "#1677ff" } }} />
         <Statistic title="Không đổi" value={result.unchanged} />
         <Statistic
           title="Lỗi"
           value={result.errors.length}
-          valueStyle={result.errors.length ? { color: "#cf1322" } : undefined}
+          styles={{ content: result.errors.length ? { color: "#cf1322" } : undefined }}
         />
       </div>
 

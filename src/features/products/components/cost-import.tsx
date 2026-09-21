@@ -221,13 +221,13 @@ export function CostImport({ open, onClose }: { open: boolean; onClose: () => vo
             <Statistic
               title="Sẽ đặt"
               value={result.applied}
-              valueStyle={{ color: "#389e0d" }}
+              styles={{ content: { color: "#389e0d" } }}
             />
             <Statistic title="Bỏ qua (đã có giá vốn)" value={result.skipped} />
             <Statistic
               title="Lỗi"
               value={result.errorCount}
-              valueStyle={result.errorCount ? { color: "#cf1322" } : undefined}
+              styles={{ content: result.errorCount ? { color: "#cf1322" } : undefined }}
             />
           </div>
 
