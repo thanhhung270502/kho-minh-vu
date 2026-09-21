@@ -529,10 +529,11 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260919-dm4 | Design system theo giao diện KiotViet: token + top-nav shell + bố cục trang danh sách | 2026-09-19 | 39da902 | [260919-dm4-update-design-system-theo-giao-dien-kiot](./quick/260919-dm4-update-design-system-theo-giao-dien-kiot/) |
+| 260921-v15 | Bản demo UI/UX tĩnh (HTML/CSS/JS) cho toàn bộ hệ thống trong design/ | 2026-09-21 | eba487a | [260921-v15-ban-demo-ui-ux-tinh-html-css-js-trong-th](./quick/260921-v15-ban-demo-ui-ux-tinh-html-css-js-trong-th/) |
 
 ## Session Continuity
 
 Last session: 2026-09-21T12:12:00.000Z
 Stopped at: Completed 05-10-PLAN.md
-Last activity: 2026-09-21
+Last activity: 2026-09-21 - Completed quick task 260921-v15: bản demo UI/UX tĩnh trong design/
 Resume file: None
