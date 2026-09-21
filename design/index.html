@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tổng quan · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="index" data-nav="index" data-shell="app">
+<main id="page">
+
+<div class="kv-page-header">
+  <div>
+    <h1>Tổng quan</h1>
+    <p>Số liệu nhanh về kho hàng — chọn kho để xem riêng.</p>
+  </div>
+  <div class="kv-page-header-actions">
+    <select class="kv-select" id="warehouse-filter" style="width:160px">
+      <option value="">Tất cả kho</option>
+      <option value="k1">Kho 1</option>
+      <option value="k2">Kho 2</option>
+    </select>
+  </div>
+</div>
+
+<div id="dashboard-root"></div>
+
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("index", function () {
+  var data = window.KMV_DATA;
+  var root = document.getElementById("dashboard-root");
+  var whFilter = document.getElementById("warehouse-filter");
+
+  function totalStock(p, wh) {
+    if (wh === "k1") return p.stock.k1;
+    if (wh === "k2") return p.stock.k2;
+    return p.stock.k1 + p.stock.k2;
+  }
+
+  function render() {
+    var wh = whFilter.value;
+    var products = data.products;
+    var canCost = KMV.can("cost");
+
+    var totalValue = products.reduce(function (s, p) { return s + totalStock(p, wh) * p.costPrice; }, 0);
+    var activeCount = products.filter(function (p) { return p.status === "dang_kd"; }).length;
+    var belowMin = products.filter(function (p) { return totalStock(p, wh) < p.minLevel && totalStock(p, wh) >= 0; }).length;
+    var negative = products.filter(function (p) { return totalStock(p, wh) < 0 || p.flags.indexOf("am") !== -1; }).length;
+    var issuesToday = data.issues.filter(function (i) { return i.ngay === "2026-09-19"; }).length;
+    var pendingPost = data.receipts.concat(data.issues).filter(function (d) { return d.trangThai === "NHAP_LIEU"; }).length;
+
+    root.innerHTML =
+      '<div class="kv-stat-grid">' +
+      stat("Tổng giá trị tồn", canCost ? KMV.fmtNumber(totalValue) + " đ" : "—", canCost ? "" : "Chỉ Quản lý xem được") +
+      stat("Số mã đang kinh doanh", KMV.fmtNumber(activeCount)) +
+      stat("Mã dưới định mức", KMV.fmtNumber(belowMin), "", "warn") +
+      stat("Mã tồn âm", KMV.fmtNumber(negative), "", "error") +
+      stat("Phiếu xuất hôm nay", KMV.fmtNumber(issuesToday)) +
+      stat("Phiếu chờ ghi sổ", KMV.fmtNumber(pendingPost)) +
+      "</div>" +
+
+      '<div class="kv-grid-2 kv-mb-16">' +
+      '<div class="kv-card"><h3>Nhập – Xuất 30 ngày</h3><div id="chart-inout"></div></div>' +
+      '<div class="kv-card"><div class="kv-tabs-nav"><button type="button" class="kv-tabs-item is-active" data-tab="nhom">Theo nhóm hàng</button><button type="button" class="kv-tabs-item" data-tab="congdoan">Theo công đoạn</button></div><div id="chart-group"></div></div>' +
+      "</div>" +
+
+      '<div class="kv-grid-2">' +
+      '<div class="kv-card"><h3>Mã dưới định mức</h3><div id="tbl-lowstock"></div><a class="kv-btn kv-btn-sm kv-mt-8" href="ton-kho.html?loc=duoi-dinh-muc">Xem tất cả</a></div>' +
+      '<div class="kv-card"><h3>Hàng không luân chuyển &gt;30 ngày</h3><div id="tbl-stale"></div><a class="kv-btn kv-btn-sm kv-mt-8" href="ton-kho.html?loc=khong-luan-chuyen">Xem tất cả</a></div>' +
+      "</div>" +
+      '<div class="kv-card kv-mt-16"><h3>Xuất âm hôm nay kèm lý do</h3><div id="tbl-negative"></div></div>';
+
+    renderChart();
+    renderGroupChart("nhom");
+    document.querySelectorAll('[data-tab]').forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll('[data-tab]').forEach(function (b) { b.classList.remove("is-active"); });
+        btn.classList.add("is-active");
+        renderGroupChart(btn.getAttribute("data-tab"));
+      });
+    });
+
+    KMV.renderTable(document.getElementById("tbl-lowstock"), {
+      columns: [{ key: "code", title: "Mã" }, { key: "name", title: "Tên hàng" }, { key: "ton", title: "Tồn", numeric: true }],
+      rows: products.filter(function (p) { return totalStock(p, wh) < p.minLevel; }).slice(0, 6).map(function (p) { return { code: p.code, name: p.name, ton: totalStock(p, wh) }; }),
+      emptyText: "Không có mã nào dưới định mức."
+    });
+    KMV.renderTable(document.getElementById("tbl-stale"), {
+      columns: [{ key: "code", title: "Mã" }, { key: "name", title: "Tên hàng" }],
+      rows: products.filter(function (p) { return p.flags.indexOf("khong_luan_chuyen") !== -1; }).map(function (p) { return { code: p.code, name: p.name }; }),
+      emptyText: "Không có mã nào tồn đọng."
+    });
+    KMV.renderTable(document.getElementById("tbl-negative"), {
+      columns: [{ key: "soCt", title: "Số phiếu", render: function (r) { return '<a href="xuat-kho-chi-tiet.html?id=' + r.id + '">' + r.soCt + "</a>"; } }, { key: "nguoiNhan", title: "Người nhận" }, { key: "lyDoXuatAm", title: "Lý do" }],
+      rows: data.issues.filter(function (i) { return i.lyDoXuatAm; }),
+      emptyText: "Hôm nay chưa có phiếu xuất âm nào."
+    });
+  }
+
+  function stat(label, value, hint, tone) {
+    return (
+      '<div class="kv-stat"' + (hint ? ' data-tip="' + hint + '"' : "") + '>' +
+      '<div class="kv-stat-label">' + label + "</div>" +
+      '<div class="kv-stat-value' + (tone ? " " + tone : "") + '">' + value + "</div>" +
+      "</div>"
+    );
+  }
+
+  function renderChart() {
+    var el = document.getElementById("chart-inout");
+    var days = [];
+    for (var i = 0; i < 10; i++) days.push({ label: "N" + (i + 1), nhap: 10 + ((i * 7) % 30), xuat: 15 + ((i * 5) % 35) });
+    var max = Math.max.apply(null, days.map(function (d) { return Math.max(d.nhap, d.xuat); }));
+    var w = 480, h = 160, barW = 14, gap = 34;
+    var svg = '<svg viewBox="0 0 ' + w + ' ' + (h + 20) + '" style="width:100%;max-width:520px;min-width:320px" role="img">';
+    days.forEach(function (d, i) {
+      var x = 10 + i * gap;
+      var hNhap = (d.nhap / max) * h;
+      var hXuat = (d.xuat / max) * h;
+      svg += '<rect x="' + x + '" y="' + (h - hNhap) + '" width="' + barW + '" height="' + hNhap + '" fill="#0070F4"><title>Nhập ' + d.label + ': ' + d.nhap + '</title></rect>';
+      svg += '<rect x="' + (x + barW + 2) + '" y="' + (h - hXuat) + '" width="' + barW + '" height="' + hXuat + '" fill="#FF8800"><title>Xuất ' + d.label + ': ' + d.xuat + '</title></rect>';
+      svg += '<text x="' + (x + barW) + '" y="' + (h + 14) + '" font-size="9" text-anchor="middle" fill="#525D6A">' + d.label + '</text>';
+    });
+    svg += "</svg>";
+    el.innerHTML = '<div style="overflow-x:auto">' + svg + '</div><div class="kv-flex kv-text-sm kv-mt-8"><span style="color:#0070F4">■</span> Nhập <span style="color:#FF8800">■</span> Xuất</div>';
+  }
+
+  function renderGroupChart(mode) {
+    var el = document.getElementById("chart-group");
+    var key = mode === "nhom" ? "group" : "stage";
+    var buckets = {};
+    data.products.forEach(function (p) {
+      var k = p[key];
+      buckets[k] = (buckets[k] || 0) + p.stock.k1 + p.stock.k2;
+    });
+    var entries = Object.keys(buckets).map(function (k) { return [k, buckets[k]]; }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 8);
+    var max = Math.max.apply(null, entries.map(function (e) { return e[1]; }));
+    el.innerHTML = entries.map(function (e) {
+      var pct = max > 0 ? Math.round((e[1] / max) * 100) : 0;
+      return '<div class="kv-flex kv-mb-8"><span class="kv-text-sm" style="width:140px;flex-shrink:0">' + e[0] + '</span><div style="flex:1;background:var(--bg-fill);border-radius:6px;height:14px;overflow:hidden"><div style="width:' + pct + '%;background:var(--brand-400);height:100%"></div></div><span class="kv-text-sm kv-numeric" style="width:50px">' + KMV.fmtNumber(e[1]) + "</span></div>";
+    }).join("");
+  }
+
+  whFilter.addEventListener("change", render);
+  render();
+});
+</script>
+</body>
+</html>

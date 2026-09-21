@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cài đặt · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="cai-dat" data-nav="cai-dat" data-shell="app">
+<main id="page">
+<div id="root"></div>
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("cai-dat", function () {
+  var data = window.KMV_DATA;
+  var role = KMV.currentUser().role;
+  if (role === "thu_kho" || role === "chi_xem") {
+    window.location.href = "khong-du-quyen.html";
+    return;
+  }
+  var root = document.getElementById("root");
+  var TABS = [
+    { key: "nguoi-dung", label: "Người dùng", onlyManager: true },
+    { key: "kho", label: "Kho" },
+    { key: "nhom-hang", label: "Nhóm hàng" },
+    { key: "don-vi-tinh", label: "ĐVT" },
+    { key: "cong-doan", label: "Công đoạn" },
+    { key: "so-chung-tu", label: "Số chứng từ" }
+  ];
+  var visibleTabs = TABS.filter(function (t) { return !t.onlyManager || role === "quan_ly"; });
+  var activeTab = KMV.qs("tab") || visibleTabs[0].key;
+  if (!visibleTabs.some(function (t) { return t.key === activeTab; })) activeTab = visibleTabs[0].key;
+
+  function setTab(key) {
+    activeTab = key;
+    var url = new URL(window.location.href);
+    url.searchParams.set("tab", key);
+    window.history.replaceState(null, "", url);
+    render();
+  }
+
+  function render() {
+    root.innerHTML =
+      '<div class="kv-page-header"><div><h1>Cài đặt</h1><p>Dữ liệu nền dùng chung cho toàn hệ thống.</p></div></div>' +
+      '<div class="kv-tabs-nav">' + visibleTabs.map(function (t) { return '<button type="button" class="kv-tabs-item' + (t.key === activeTab ? " is-active" : "") + '" data-tab="' + t.key + '">' + t.label + "</button>"; }).join("") + "</div>" +
+      '<div class="kv-card" id="tab-content"></div>';
+
+    document.querySelectorAll("[data-tab]").forEach(function (b) { b.addEventListener("click", function () { setTab(b.getAttribute("data-tab")); }); });
+
+    var renderers = { "nguoi-dung": renderUsers, kho: renderWarehouses, "nhom-hang": renderGroups, "don-vi-tinh": renderUnits, "cong-doan": renderStages, "so-chung-tu": renderDocNumbering };
+    renderers[activeTab]();
+  }
+
+  function renderUsers() {
+    var el = document.getElementById("tab-content");
+    el.innerHTML =
+      '<div class="kv-alert kv-alert-info kv-mb-16"><div>Thu hẹp quyền (khóa tài khoản, gỡ kho) có hiệu lực ngay. Mở rộng quyền cần người dùng tải lại trang hoặc chờ tối đa 60 phút.</div></div>' +
+      '<button type="button" class="kv-btn kv-btn-primary kv-mb-12" id="btn-add-user">Thêm người dùng</button>' +
+      '<div id="tbl"></div>';
+    KMV.renderTable(document.getElementById("tbl"), {
+      columns: [
+        { key: "fullName", title: "Họ tên" }, { key: "email", title: "Email" },
+        { key: "role", title: "Vai trò", render: function (u) { return KMV.roleLabel(u.role); } },
+        { key: "warehouses", title: "Kho", render: function (u) { return u.warehouses.map(KMV.warehouseLabel).join(", "); } },
+        { key: "locked", title: "Trạng thái", render: function (u) { return u.locked ? '<span class="kv-tag kv-tag-red">Đã khóa</span>' : '<span class="kv-tag kv-tag-green">Hoạt động</span>'; } },
+        { key: "actions", title: "", render: function (u) { return '<button type="button" class="kv-btn kv-btn-sm" data-toggle-lock="' + u.id + '">' + (u.locked ? "Mở khóa" : "Khóa") + '</button> <button type="button" class="kv-btn kv-btn-sm" data-reset-pw="' + u.id + '">Đặt lại mật khẩu</button>'; } }
+      ],
+      rows: data.users,
+      emptyText: "Chưa có người dùng."
+    });
+    document.querySelectorAll("[data-toggle-lock]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var u = data.users.filter(function (x) { return x.id === btn.getAttribute("data-toggle-lock"); })[0];
+        u.locked = !u.locked;
+        KMV.toast("success", u.locked ? "Đã khóa tài khoản — có hiệu lực ngay." : "Đã mở khóa — người dùng cần tải lại trang hoặc chờ tối đa 60 phút.");
+        renderUsers();
+      });
+    });
+    document.querySelectorAll("[data-reset-pw]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var tempPw = "Tam" + Math.random().toString(36).slice(2, 8);
+        KMV.openModal(
+          '<p>Mật khẩu tạm (chỉ hiện một lần):</p><div class="kv-input" style="font-family:monospace">' + tempPw + '</div>',
+          { title: "Đặt lại mật khẩu", buttons: [{ label: "Sao chép", onClick: function () { KMV.toast("success", "Đã sao chép (giả lập)."); } }, { label: "Đóng", primary: true }] }
+        );
+      });
+    });
+    document.getElementById("btn-add-user").addEventListener("click", function () {
+      KMV.toast("info", "Form thêm người dùng — dùng chung ngăn kéo với Sửa (giản lược trong demo).");
+    });
+  }
+
+  function simpleLookup(title, items, formatRow, addLabel) {
+    var el = document.getElementById("tab-content");
+    el.innerHTML = '<div class="kv-flex kv-mb-12"><h3 style="margin:0">' + title + '</h3><button type="button" class="kv-btn kv-btn-sm kv-btn-primary" id="btn-add" style="margin-left:auto">' + addLabel + "</button></div><div id=\"tbl\"></div>";
+    KMV.renderTable(document.getElementById("tbl"), { columns: [{ key: "name", title: "Tên" }, { key: "actions", title: "", render: formatRow }], rows: items.map(function (x) { return { name: x }; }), emptyText: "Chưa có mục nào." });
+    document.getElementById("btn-add").addEventListener("click", function () { KMV.toast("info", "Đã thêm mục mới (giả lập demo)."); });
+  }
+
+  function renderWarehouses() {
+    simpleLookup("Kho", data.warehouses.map(function (w) { return w.name; }), function () { return '<button type="button" class="kv-btn kv-btn-sm">Sửa</button>'; }, "Thêm kho");
+  }
+  function renderUnits() {
+    simpleLookup("ĐVT", data.units, function () { return '<button type="button" class="kv-btn kv-btn-sm">Sửa</button>'; }, "Thêm ĐVT");
+  }
+  function renderStages() {
+    simpleLookup("Công đoạn", data.stages, function () { return '<button type="button" class="kv-btn kv-btn-sm">Sửa</button>'; }, "Thêm công đoạn");
+  }
+
+  function renderGroups() {
+    var el = document.getElementById("tab-content");
+    el.innerHTML = '<div class="kv-flex kv-mb-12"><h3 style="margin:0">Nhóm hàng</h3><button type="button" class="kv-btn kv-btn-sm kv-btn-primary" id="btn-add" style="margin-left:auto">Thêm nhóm</button></div><div id="tbl"></div>';
+    KMV.renderTable(document.getElementById("tbl"), {
+      columns: [{ key: "name", title: "Tên nhóm" }, { key: "count", title: "Số mã hàng", numeric: true }, { key: "actions", title: "", render: function (r) { return '<button type="button" class="kv-btn kv-btn-sm" data-del-group="' + r.name + '">Xóa</button>'; } }],
+      rows: data.groups.map(function (g) { return { name: g, count: data.products.filter(function (p) { return p.group === g; }).length }; }),
+      emptyText: "Chưa có nhóm hàng."
+    });
+    document.querySelectorAll("[data-del-group]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var name = btn.getAttribute("data-del-group");
+        var count = data.products.filter(function (p) { return p.group === name; }).length;
+        if (count > 0) { KMV.toast("error", "Nhóm đang có " + count + " mã hàng — chuyển mã sang nhóm khác trước."); return; }
+        KMV.toast("success", "Đã xóa nhóm " + name + ".");
+      });
+    });
+    document.getElementById("btn-add").addEventListener("click", function () { KMV.toast("info", "Đã thêm nhóm mới (giả lập demo)."); });
+  }
+
+  function renderDocNumbering() {
+    var el = document.getElementById("tab-content");
+    var rows = Object.keys(data.docNumbering).map(function (k) { return Object.assign({ loai: k }, data.docNumbering[k]); });
+    el.innerHTML = '<div id="tbl"></div>';
+    KMV.renderTable(document.getElementById("tbl"), {
+      columns: [
+        { key: "loai", title: "Loại chứng từ" }, { key: "prefix", title: "Tiền tố" }, { key: "digits", title: "Số chữ số", numeric: true },
+        { key: "preview", title: "Xem trước", render: function (r) { return '<span class="kv-text-mono">' + r.prefix + "26-" + String(1).padStart(r.digits, "0") + "</span>"; } },
+        { key: "actions", title: "", render: function (r) { return '<button type="button" class="kv-btn kv-btn-sm" data-edit-numbering="' + r.loai + '">Sửa</button>'; } }
+      ],
+      rows: rows,
+      emptyText: "Chưa có cấu hình."
+    });
+    document.querySelectorAll("[data-edit-numbering]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var loai = btn.getAttribute("data-edit-numbering");
+        var cfg = data.docNumbering[loai];
+        KMV.openModal(
+          '<div class="kv-form-field"><label class="kv-form-label">Tiền tố</label><input type="text" class="kv-input" id="e-prefix" value="' + cfg.prefix + '"></div>' +
+          '<div class="kv-form-field"><label class="kv-form-label">Số chữ số</label><input type="number" class="kv-input" id="e-digits" value="' + cfg.digits + '"></div>' +
+          '<div class="kv-form-error" id="e-err" style="display:none">Không thể giảm số chữ số dưới độ dài đang chạy trong năm nay.</div>',
+          { title: "Sửa số chứng từ — " + loai, buttons: [{ label: "Hủy" }, { label: "Lưu", primary: true, onClick: function (m) {
+            var digits = Number(document.getElementById("e-digits").value);
+            if (digits < cfg.digits) { document.getElementById("e-err").style.display = "block"; return; }
+            cfg.prefix = document.getElementById("e-prefix").value;
+            cfg.digits = digits;
+            KMV.closeModal(m);
+            KMV.toast("success", "Đã lưu cấu hình số chứng từ.");
+            renderDocNumbering();
+          } }] }
+        );
+      });
+    });
+  }
+
+  render();
+});
+</script>
+</body>
+</html>

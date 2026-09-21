@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiểm kê · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .kv-scan-box { position: relative; background: #111; border-radius: var(--radius-lg); height: 200px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .kv-scan-frame { width: 70%; height: 70%; border: 2px solid #fff; border-radius: 12px; position: relative; }
+  .kv-scan-line { position: absolute; left: 4%; right: 4%; height: 2px; background: #00E676; animation: kv-scan-move 1.6s ease-in-out infinite; }
+  @keyframes kv-scan-move { 0% { top: 4%; } 50% { top: 92%; } 100% { top: 4%; } }
+  .kv-scan-hint { position: absolute; bottom: 8px; color: #fff; font-size: 12px; opacity: .8; }
+</style>
+</head>
+<body data-page="kiem-ke" data-nav="ton-kho" data-shell="app">
+<main id="page">
+
+<div class="kv-page-header">
+  <div>
+    <h1>Kiểm kê</h1>
+    <p>Đề xuất bố cục cho Phase 5–6 — CHƯA có trong app thật. Ưu tiên thiết bị điện thoại.</p>
+  </div>
+</div>
+
+<div class="kv-tabs-nav">
+  <button type="button" class="kv-tabs-item is-active" data-step="danh-sach">Danh sách phiên</button>
+  <button type="button" class="kv-tabs-item" data-step="dem">Đếm</button>
+  <button type="button" class="kv-tabs-item" data-step="lech">Bảng lệch</button>
+</div>
+
+<div id="step-content"></div>
+
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("kiem-ke", function () {
+  var data = window.KMV_DATA;
+  var content = document.getElementById("step-content");
+  var activeSession = data.stocktakes[0];
+  var step = KMV.qs("buoc") || "danh-sach";
+
+  function setStep(s) {
+    step = s;
+    document.querySelectorAll("[data-step]").forEach(function (b) { b.classList.toggle("is-active", b.getAttribute("data-step") === s); });
+    render();
+  }
+  document.querySelectorAll("[data-step]").forEach(function (b) { b.addEventListener("click", function () { setStep(b.getAttribute("data-step")); }); });
+
+  function render() {
+    if (step === "danh-sach") renderList();
+    else if (step === "dem") renderCount();
+    else renderDiscrepancy();
+  }
+
+  function renderList() {
+    content.innerHTML =
+      '<div class="kv-card kv-mb-16">' +
+      (KMV.can("write") ? '<button type="button" class="kv-btn kv-btn-primary" id="btn-open-session">Mở phiên kiểm kê</button>' : "") +
+      '<p class="kv-form-hint kv-mt-8">Hệ thống chốt tồn sổ tại thời điểm mở phiên — số đếm sau đó không bị ảnh hưởng bởi phiếu nhập/xuất mới.</p>' +
+      "</div>" +
+      '<div id="session-table"></div>';
+    KMV.renderTable(document.getElementById("session-table"), {
+      columns: [
+        { key: "soCt", title: "Số phiên" }, { key: "ngay", title: "Ngày", render: function (r) { return KMV.fmtDate(r.ngay); } },
+        { key: "kho", title: "Kho", render: function (r) { return KMV.warehouseLabel(r.kho); } },
+        { key: "trangThai", title: "Trạng thái", render: function (r) { return r.trangThai === "dang_dem" ? KMV.statusTag("dang_dem") : KMV.statusTag("da_duyet"); } },
+        { key: "action", title: "", render: function (r) { return '<button type="button" class="kv-btn kv-btn-sm" data-open-session="' + r.id + '">Mở</button>'; } }
+      ],
+      rows: data.stocktakes,
+      emptyText: "Chưa có phiên kiểm kê nào."
+    });
+    document.querySelectorAll("[data-open-session]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        activeSession = data.stocktakes.filter(function (s) { return s.id === btn.getAttribute("data-open-session"); })[0];
+        setStep("dem");
+      });
+    });
+    var openBtn = document.getElementById("btn-open-session");
+    if (openBtn) openBtn.addEventListener("click", function () {
+      var newSession = { id: "kk-new-" + Date.now(), soCt: data.docNo("KK", data.stocktakes.length + 1), ngay: new Date().toISOString().slice(0, 10), kho: "k1", trangThai: "dang_dem", nguoiTao: KMV.currentUser().fullName, lines: data.products.slice(0, 15).map(function (p) { return { productId: p.id, code: p.code, name: p.name, soSach: p.stock.k1, thucDem: null }; }) };
+      data.stocktakes.push(newSession);
+      activeSession = newSession;
+      KMV.toast("success", "Đã mở phiên " + newSession.soCt + ".");
+      setStep("dem");
+    });
+  }
+
+  function renderCount() {
+    var counted = activeSession.lines.filter(function (l) { return l.thucDem !== null; }).length;
+    var total = activeSession.lines.length;
+    var uncounted = activeSession.lines.filter(function (l) { return l.thucDem === null; });
+
+    content.innerHTML =
+      "<h3>" + activeSession.soCt + " — " + KMV.warehouseLabel(activeSession.kho) + "</h3>" +
+      '<div class="kv-card kv-mb-16">' +
+      '<div class="kv-scan-box"><div class="kv-scan-frame"><div class="kv-scan-line"></div></div><div class="kv-scan-hint">Đưa mã vạch vào khung</div></div>' +
+      '<div class="kv-flex kv-flex-wrap"><button type="button" class="kv-btn kv-btn-primary" id="btn-fake-scan"' + (activeSession.trangThai !== "dang_dem" ? " disabled" : "") + '>Giả lập quét</button>' +
+      '<input type="text" class="kv-input" id="manual-code" placeholder="Hoặc gõ mã tay…" style="max-width:200px">' +
+      "</div>" +
+      '<div style="background:var(--bg-fill);border-radius:6px;height:8px;overflow:hidden;margin-top:12px"><div style="width:' + Math.round((counted / total) * 100) + '%;background:var(--color-success);height:100%"></div></div>' +
+      '<p class="kv-text-sm kv-text-muted kv-mt-8">Đã đếm ' + counted + "/" + total + "</p>" +
+      '<div id="scan-card"></div>' +
+      "</div>" +
+      '<div class="kv-card">' +
+      "<h4>Danh sách đã đếm</h4>" +
+      '<div id="counted-table"></div>' +
+      "</div>";
+
+    function scanNext(code) {
+      var line;
+      if (code) { line = activeSession.lines.filter(function (l) { return l.code === code; })[0]; }
+      else if (uncounted.length > 0) { line = uncounted[Math.floor(Math.random() * uncounted.length)]; }
+      if (!line) { KMV.toast("error", "Không tìm thấy mã trong phiên này."); return; }
+      showScanCard(line);
+    }
+
+    function showScanCard(line) {
+      var box = document.getElementById("scan-card");
+      var qty = line.thucDem !== null ? line.thucDem : 0;
+      box.innerHTML =
+        '<div class="kv-line-card kv-mt-12">' +
+        '<div class="kv-line-card-head"><span>' + line.code + "</span><span>" + line.name + "</span></div>" +
+        '<div class="kv-text-sm kv-text-muted">Đếm mù — không hiện tồn sổ lúc đếm.</div>' +
+        '<div class="kv-qty-stepper"><button type="button" id="qty-minus">−</button><input type="number" id="qty-value" value="' + qty + '"><button type="button" id="qty-plus">+</button></div>' +
+        '<button type="button" class="kv-btn kv-btn-primary kv-mt-8" id="btn-save-count" style="width:100%">Lưu &amp; quét tiếp</button>' +
+        "</div>";
+      document.getElementById("qty-minus").addEventListener("click", function () { var i = document.getElementById("qty-value"); i.value = Math.max(0, Number(i.value) - 1); });
+      document.getElementById("qty-plus").addEventListener("click", function () { var i = document.getElementById("qty-value"); i.value = Number(i.value) + 1; });
+      document.getElementById("btn-save-count").addEventListener("click", function () {
+        line.thucDem = Number(document.getElementById("qty-value").value) || 0;
+        KMV.toast("success", "Đã lưu " + line.code + ".");
+        renderCount();
+      });
+    }
+
+    var scanBtn = document.getElementById("btn-fake-scan");
+    if (scanBtn) scanBtn.addEventListener("click", function () { scanNext(); });
+    var manualInput = document.getElementById("manual-code");
+    manualInput.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { scanNext(manualInput.value.trim().toUpperCase()); manualInput.value = ""; }
+    });
+
+    KMV.renderTable(document.getElementById("counted-table"), {
+      columns: [
+        { key: "code", title: "Mã" }, { key: "name", title: "Tên hàng" },
+        { key: "thucDem", title: "Thực đếm", numeric: true, render: function (l) { return l.thucDem === null ? "—" : KMV.fmtNumber(l.thucDem); } },
+        { key: "sua", title: "", render: function (l) { return l.thucDem !== null ? '<button type="button" class="kv-btn kv-btn-sm" data-recount="' + l.code + '">Sửa</button>' : '<span class="kv-tag kv-tag-gray">Chưa đếm</span>'; } }
+      ],
+      rows: activeSession.lines,
+      emptyText: "Phiên chưa có mã nào."
+    });
+    document.querySelectorAll("[data-recount]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var line = activeSession.lines.filter(function (l) { return l.code === btn.getAttribute("data-recount"); })[0];
+        showScanCard(line);
+      });
+    });
+  }
+
+  function renderDiscrepancy() {
+    var onlyDiff = false;
+    function draw() {
+      var rows = activeSession.lines.filter(function (l) { return l.thucDem !== null; }).map(function (l) { return { code: l.code, name: l.name, soSach: l.soSach, thucDem: l.thucDem, lech: l.thucDem - l.soSach }; });
+      if (onlyDiff) rows = rows.filter(function (r) { return r.lech !== 0; });
+      var uncounted = activeSession.lines.filter(function (l) { return l.thucDem === null; });
+
+      content.innerHTML =
+        "<h3>" + activeSession.soCt + "</h3>" +
+        '<label class="kv-flex kv-mb-12" style="font-weight:normal"><input type="checkbox" id="only-diff"' + (onlyDiff ? " checked" : "") + '> Chỉ dòng lệch</label>' +
+        '<div class="kv-card kv-mb-16"><div id="diff-table"></div></div>' +
+        (uncounted.length > 0 ? '<div class="kv-alert kv-alert-warning kv-mb-16"><div>' + uncounted.length + " mã chưa đếm: " + uncounted.map(function (l) { return l.code; }).join(", ") + "</div></div>" : "") +
+        (activeSession.trangThai === "dang_dem" && KMV.can("void") ? '<button type="button" class="kv-btn kv-btn-primary" id="btn-approve">Duyệt phiên</button>' : "") +
+        (activeSession.trangThai === "da_duyet" ? '<div class="kv-alert kv-alert-success"><div>Đã duyệt — xem <a href="chuyen-kho.html">' + (activeSession.phieuDieuChinh || "phiếu điều chỉnh") + "</a></div></div>" : "");
+
+      KMV.renderTable(document.getElementById("diff-table"), {
+        columns: [
+          { key: "code", title: "Mã" }, { key: "name", title: "Tên hàng" },
+          { key: "soSach", title: "Tồn sổ", numeric: true }, { key: "thucDem", title: "Thực đếm", numeric: true },
+          { key: "lech", title: "Lệch", numeric: true, render: function (r) { return '<span style="color:' + (r.lech < 0 ? "var(--color-error)" : r.lech > 0 ? "var(--color-success)" : "inherit") + '">' + (r.lech > 0 ? "+" : "") + KMV.fmtNumber(r.lech) + "</span>"; } }
+        ],
+        rows: rows,
+        rowClass: function (r) { return r.lech !== 0 ? "kv-row-warn" : ""; },
+        emptyText: "Không có dòng nào."
+      });
+
+      document.getElementById("only-diff").addEventListener("change", function (e) { onlyDiff = e.target.checked; draw(); });
+      var approveBtn = document.getElementById("btn-approve");
+      if (approveBtn) approveBtn.addEventListener("click", function () {
+        var diffCount = activeSession.lines.filter(function (l) { return l.thucDem !== null && l.thucDem !== l.soSach; }).length;
+        KMV.openModal(
+          "<p>Sẽ sinh phiếu điều chỉnh <strong>" + data.docNo("DC", data.stocktakes.length) + "</strong> cho " + diffCount + " mã.</p>",
+          { title: "Duyệt phiên " + activeSession.soCt, buttons: [{ label: "Hủy" }, { label: "Xác nhận duyệt", primary: true, onClick: function (m) {
+            activeSession.trangThai = "da_duyet";
+            activeSession.phieuDieuChinh = data.docNo("DC", data.stocktakes.length);
+            KMV.closeModal(m);
+            KMV.toast("success", "Đã duyệt phiên, sinh phiếu điều chỉnh.");
+            draw();
+          } }] }
+        );
+      });
+    }
+    draw();
+  }
+
+  render();
+});
+</script>
+</body>
+</html>

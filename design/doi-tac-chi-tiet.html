@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chi tiết đối tác · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="doi-tac-chi-tiet" data-nav="doi-tac" data-shell="app">
+<main id="page">
+<div id="root"></div>
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("doi-tac-chi-tiet", function () {
+  var data = window.KMV_DATA;
+  var id = KMV.qs("id");
+  var p = id ? data.partners.filter(function (x) { return x.id === id; })[0] : null;
+  if (!p) p = data.partners[0];
+  var root = document.getElementById("root");
+  var TYPE_LABEL = { ncc: "Nhà cung cấp", khach: "Khách hàng", ca_hai: "Cả hai" };
+
+  var allDocs = [].concat(
+    data.receipts.filter(function (d) { return d.doiTacId === p.id; }).map(function (d) { return { loai: "Nhập", soCt: d.soCt, ngay: d.ngay, href: "nhap-kho-chi-tiet.html?id=" + d.id, trangThai: d.trangThai }; }),
+    data.issues.filter(function (d) { return d.doiTacId === p.id; }).map(function (d) { return { loai: "Xuất", soCt: d.soCt, ngay: d.ngay, href: "xuat-kho-chi-tiet.html?id=" + d.id, trangThai: d.trangThai }; }),
+    data.orders.filter(function (d) { return d.doiTacId === p.id; }).map(function (d) { return { loai: "Đơn đặt", soCt: d.soCt, ngay: d.ngayDon, href: "dat-hang-chi-tiet.html?id=" + d.id, trangThai: d.trangThai }; })
+  );
+
+  root.innerHTML =
+    '<div class="kv-page-header"><div><h1>' + p.code + " — " + p.name + '</h1><p>' + TYPE_LABEL[p.type] + "</p></div></div>" +
+    '<div class="kv-card kv-mb-16"><dl class="kv-desc kv-desc-3">' +
+    '<div class="kv-desc-item"><dt>Điện thoại</dt><dd>' + p.phone + "</dd></div>" +
+    '<div class="kv-desc-item"><dt>Địa chỉ</dt><dd>' + p.address + "</dd></div>" +
+    '<div class="kv-desc-item"><dt>Ghi chú</dt><dd>' + (p.note || "—") + "</dd></div>" +
+    "</dl></div>" +
+    '<div class="kv-card"><h3>Lịch sử giao dịch</h3><div id="hist"></div></div>';
+
+  KMV.renderTable(document.getElementById("hist"), {
+    columns: [
+      { key: "loai", title: "Loại" },
+      { key: "soCt", title: "Số chứng từ", render: function (r) { return '<a href="' + r.href + '">' + r.soCt + "</a>"; } },
+      { key: "ngay", title: "Ngày", render: function (r) { return KMV.fmtDate(r.ngay); } },
+      { key: "trangThai", title: "Trạng thái", render: function (r) { return KMV.statusTag(r.trangThai); } }
+    ],
+    rows: allDocs,
+    emptyText: "Đối tác này chưa có giao dịch nào."
+  });
+});
+</script>
+</body>
+</html>

@@ -120,11 +120,35 @@ tự sửa được trong phạm vi `design/` (vd. quy tắc dành riêng cho Re
 cân nhắc thêm `design/**` vào `globalIgnores` của `eslint.config.mjs` và
 `.prettierignore` — hai file này KHÔNG bị sửa trong lượt thực thi này.
 
-### Kết quả kiểm cuối (điền ở Task 3)
+### Kết quả kiểm cuối (Task 3)
 
-- `node design/check.mjs --stage=3`: _(điền)_
-- `npx eslint design`: _(điền)_
-- `npm run lint`: _(điền)_
+- `node design/check.mjs --stage=3`: **OK** — đủ 24 file `.html`, không URL
+  ngoài, không `type="module"`/`fetch`/`XMLHttpRequest`, không link nội bộ
+  gãy (kể cả chuỗi `"*.html"` sinh trong `app.js`), `app.js`/`data.js` qua
+  được `node --check`, `git status` chỉ có `design/` + `.planning/`.
+- `npx eslint design`: **0 lỗi, 0 cảnh báo.**
+- `npm run lint`: **thoát 0**, không in lỗi/cảnh báo nào cho `design/`.
+- Đã đối chiếu bằng mắt (đọc mã nguồn, không có trình duyệt thật): mọi
+  `<table class="kv-table">` được bọc trong `.kv-table-wrap{overflow-x:auto}`;
+  mọi hàng công cụ dùng `kv-flex-wrap`/`kv-form-row` (flex-wrap); `kiem-ke.html`
+  và `xuat-kho-chi-tiet.html` có nhánh mobile riêng (`kv-hide-lg`/`kv-only-lg`,
+  `kv-qty-stepper` cao 44px). **Chưa mở bằng trình duyệt thật ở 375px/1280px**
+  — cần người dùng tự kiểm một lượt trước khi coi là đạt (xem mục dưới).
+
+## Trạng thái từng màn
+
+| Màn | Có trong app thật | Ghi chú |
+|---|---|---|
+| Đăng nhập, Đổi mật khẩu, Không đủ quyền | Có | Khớp luồng auth hiện tại |
+| Tổng quan | Có (route `/`) | Biểu đồ/stat là bố cục đề xuất, số liệu giả |
+| Nhập kho (danh sách + chi tiết) | Có | Ghi sổ/hủy khớp `NHAP_LIEU → HOAN_THANH → DA_HUY` |
+| Đặt hàng (danh sách + chi tiết) | Có | Stepper `TAM → DA_XAC_NHAN → HOAN_THANH` |
+| Xuất kho (danh sách + chi tiết) | Có | Xuất âm bắt buộc chọn lý do trước khi ghi sổ |
+| Trả hàng (danh sách + chi tiết) | Có | Chỉ tạo được từ chứng từ gốc đã ghi sổ |
+| Mẫu in | Giả định — chưa có route `/…/in` thật | 3 loại: nhập, giao hàng, đi lấy hàng |
+| Danh mục hàng, Đối tác | Có | Import Excel 3 bước là giả lập |
+| **Tồn kho, Thẻ kho, Kiểm kê, Chuyển kho, Báo cáo** | **Chưa có** | Đề xuất Phase 5–6, chưa duyệt |
+| Cài đặt | Có | Tab "Người dùng" chỉ Quản lý thấy |
 
 ## Phạm vi KHÔNG vẽ (đúng ranh giới v1)
 

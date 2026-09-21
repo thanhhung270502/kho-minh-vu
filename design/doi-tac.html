@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Đối tác · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="doi-tac" data-nav="doi-tac" data-shell="app">
+<main id="page">
+
+<div class="kv-page-header">
+  <div>
+    <h1>Đối tác</h1>
+    <p>Nhà cung cấp và khách hàng. Không có số dư công nợ (ngoài phạm vi v1).</p>
+  </div>
+</div>
+
+<div id="list-root"></div>
+
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("doi-tac", function () {
+  var data = window.KMV_DATA;
+  var root = document.getElementById("list-root");
+  var TYPE_LABEL = { ncc: "Nhà cung cấp", khach: "Khách hàng", ca_hai: "Cả hai" };
+
+  function renderList() {
+    root.innerHTML =
+      '<div class="kv-list-layout">' +
+      '<aside class="kv-list-aside" id="filter-panel">' +
+      '<div class="kv-form-field"><label class="kv-form-label">Loại</label><select class="kv-select" data-filter="type"><option value="">Tất cả</option><option value="ncc">Nhà cung cấp</option><option value="khach">Khách hàng</option><option value="ca_hai">Cả hai</option></select></div>' +
+      '<div class="kv-form-field"><label class="kv-form-label">Trạng thái</label><select class="kv-select" data-filter="status"><option value="">Tất cả</option><option value="hoat_dong">Đang hoạt động</option></select></div>' +
+      '<button type="button" class="kv-btn" data-filter-clear style="width:100%">Xóa bộ lọc</button>' +
+      "</aside>" +
+      '<section class="kv-list-section">' +
+      '<div class="kv-list-toolbar">' +
+      '<button type="button" class="kv-btn kv-filter-btn" id="open-filter">' + KMV.icon("filter") + ' Bộ lọc</button>' +
+      '<div class="kv-grow"><input type="text" class="kv-input" id="quick-search" placeholder="Tìm theo mã, tên đối tác…"></div>' +
+      (KMV.can("write") ? '<button type="button" class="kv-btn kv-btn-primary" id="btn-add">Thêm đối tác</button>' : "") +
+      "</div><div id=\"table-root\"></div></section></div>";
+
+    var panelEl = document.getElementById("filter-panel");
+    var quickSearch = document.getElementById("quick-search");
+    function apply() {
+      var term = quickSearch.value.toLowerCase().trim();
+      var type = panelEl.querySelector('[data-filter="type"]').value;
+      var rows = data.partners.filter(function (p) {
+        if (term && p.code.toLowerCase().indexOf(term) === -1 && p.name.toLowerCase().indexOf(term) === -1) return false;
+        if (type && p.type !== type) return false;
+        return true;
+      });
+      KMV.fakeLoad(document.getElementById("table-root"), function () {
+        KMV.renderTable(document.getElementById("table-root"), {
+          columns: [
+            { key: "code", title: "Mã", render: function (r) { return '<a href="doi-tac-chi-tiet.html?id=' + r.id + '">' + r.code + "</a>"; } },
+            { key: "name", title: "Tên đối tác" },
+            { key: "type", title: "Loại", render: function (r) { return TYPE_LABEL[r.type]; } },
+            { key: "phone", title: "Điện thoại" },
+            { key: "address", title: "Địa chỉ" },
+            { key: "status", title: "Trạng thái", render: function () { return '<span class="kv-tag kv-tag-green">Hoạt động</span>'; } }
+          ],
+          rows: rows,
+          onRowClick: function (r) { window.location.href = "doi-tac-chi-tiet.html?id=" + r.id; },
+          emptyText: "Không có đối tác nào khớp bộ lọc."
+        });
+      }, 300);
+    }
+    panelEl.addEventListener("change", apply);
+    quickSearch.addEventListener("input", apply);
+    panelEl.querySelector("[data-filter-clear]").addEventListener("click", function () {
+      panelEl.querySelectorAll("select").forEach(function (s) { s.value = ""; });
+      quickSearch.value = "";
+      apply();
+    });
+    document.getElementById("open-filter").addEventListener("click", function () {
+      KMV.openDrawer(panelEl.innerHTML, { title: "Bộ lọc", placement: "bottom" });
+    });
+    var addBtn = document.getElementById("btn-add");
+    if (addBtn) addBtn.addEventListener("click", function () { openPartnerDrawer(null); });
+
+    apply();
+  }
+
+  function openPartnerDrawer(partner) {
+    var isEdit = !!partner;
+    KMV.openDrawer(
+      '<div class="kv-form-field"><label class="kv-form-label">Tên đối tác<span class="req">*</span></label><input type="text" class="kv-input" id="f-name" value="' + (partner ? partner.name : "") + '"></div>' +
+      '<div class="kv-form-field"><label class="kv-form-label">Loại</label><select class="kv-select" id="f-type"><option value="ncc">Nhà cung cấp</option><option value="khach">Khách hàng</option><option value="ca_hai">Cả hai</option></select></div>' +
+      '<div class="kv-form-field"><label class="kv-form-label">Điện thoại</label><input type="text" class="kv-input" id="f-phone" value="' + (partner ? partner.phone : "") + '"></div>' +
+      '<div class="kv-form-field"><label class="kv-form-label">Địa chỉ</label><input type="text" class="kv-input" id="f-address" value="' + (partner ? partner.address : "") + '"></div>' +
+      '<div class="kv-form-field"><label class="kv-form-label">Ghi chú</label><textarea class="kv-textarea" id="f-note">' + (partner ? partner.note : "") + "</textarea></div>" +
+      '<button type="button" class="kv-btn kv-btn-primary" id="save-partner" style="width:100%">Lưu</button>',
+      { title: isEdit ? "Sửa đối tác" : "Thêm đối tác" }
+    );
+    if (partner) document.getElementById("f-type").value = partner.type;
+    document.getElementById("save-partner").addEventListener("click", function () {
+      var payload = { name: document.getElementById("f-name").value.trim(), type: document.getElementById("f-type").value, phone: document.getElementById("f-phone").value, address: document.getElementById("f-address").value, note: document.getElementById("f-note").value };
+      if (isEdit) { Object.assign(partner, payload); } else {
+        var prefix = payload.type === "ncc" ? "NCC" : "KH";
+        var seq = window.KMV_DATA.partners.length + 1;
+        window.KMV_DATA.partners.push(Object.assign({ id: "dt-new-" + Date.now(), code: prefix + String(seq).padStart(3, "0"), status: "hoat_dong" }, payload));
+      }
+      KMV.closeDrawer(document.querySelector(".kv-drawer.is-open"));
+      KMV.toast("success", "Đã lưu đối tác.");
+      renderList();
+    });
+  }
+
+  renderList();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tồn kho · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="ton-kho" data-nav="ton-kho" data-shell="app">
+<main id="page">
+
+<div class="kv-page-header">
+  <div>
+    <h1>Tồn kho</h1>
+    <p>Đề xuất bố cục cho Phase 5–6 — CHƯA có trong app thật. Ma trận mã × kho, chỉ đọc.</p>
+  </div>
+</div>
+
+<div class="kv-tabs-nav">
+  <button type="button" class="kv-tabs-item is-active" data-tab="ma-tran">Ma trận tồn</button>
+  <button type="button" class="kv-tabs-item" data-tab="de-xuat">Đề xuất định mức</button>
+</div>
+
+<div id="tab-content"></div>
+
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("ton-kho", function () {
+  var data = window.KMV_DATA;
+  var content = document.getElementById("tab-content");
+  var activeTab = "ma-tran";
+  var initialLoc = KMV.qs("loc");
+
+  function statusOf(p) {
+    var total = p.stock.k1 + p.stock.k2;
+    if (total < 0 || p.flags.indexOf("am") !== -1) return "am";
+    if (total === 0) return "het";
+    if (total < p.minLevel) return "sap_het";
+    return "du";
+  }
+  var STATUS_LABEL = { du: '<span class="kv-tag kv-tag-green">Đủ</span>', sap_het: '<span class="kv-tag kv-tag-gold">Sắp hết</span>', het: '<span class="kv-tag kv-tag-gray">Hết</span>', am: '<span class="kv-tag kv-tag-red">Âm</span>' };
+
+  function renderMatrix() {
+    content.innerHTML =
+      '<div class="kv-list-layout">' +
+      '<aside class="kv-list-aside" id="filter-panel">' +
+      '<div class="kv-form-field"><label class="kv-form-label">Nhóm hàng</label><select class="kv-select" data-filter="group"><option value="">Tất cả</option>' + data.groups.map(function (g) { return "<option>" + g + "</option>"; }).join("") + "</select></div>" +
+      '<div class="kv-form-field"><label class="kv-form-label">Kho</label><select class="kv-select" data-filter="kho"><option value="">Tất cả</option><option value="k1">Kho 1</option><option value="k2">Kho 2</option></select></div>' +
+      '<div class="kv-form-field"><label class="kv-form-label">Tình trạng</label><select class="kv-select" data-filter="status"><option value="">Tất cả</option><option value="du">Đủ</option><option value="sap_het">Sắp hết</option><option value="het">Hết</option><option value="am">Âm</option></select></div>' +
+      '<button type="button" class="kv-btn" data-filter-clear style="width:100%">Xóa bộ lọc</button>' +
+      "</aside>" +
+      '<section class="kv-list-section">' +
+      '<div class="kv-list-toolbar"><button type="button" class="kv-btn kv-filter-btn" id="open-filter">' + KMV.icon("filter") + ' Bộ lọc</button><div class="kv-grow"><input type="text" class="kv-input" id="quick-search" placeholder="Tìm theo mã, tên hàng…"></div></div>' +
+      '<div class="kv-hide-lg" id="cards-root"></div>' +
+      '<div class="kv-only-lg" id="table-root"></div>' +
+      "</section></div>";
+
+    var panelEl = document.getElementById("filter-panel");
+    var quickSearch = document.getElementById("quick-search");
+    if (initialLoc === "duoi-dinh-muc") panelEl.querySelector('[data-filter="status"]').value = "sap_het";
+    if (initialLoc === "khong-luan-chuyen") { /* lọc riêng bằng flags — không có select tương ứng, để trong ghi chú README */ }
+
+    function apply() {
+      var term = quickSearch.value.toLowerCase().trim();
+      var group = panelEl.querySelector('[data-filter="group"]').value;
+      var kho = panelEl.querySelector('[data-filter="kho"]').value;
+      var status = panelEl.querySelector('[data-filter="status"]').value;
+      var rows = data.products.filter(function (p) {
+        if (term && p.code.toLowerCase().indexOf(term) === -1 && p.name.toLowerCase().indexOf(term) === -1) return false;
+        if (group && p.group !== group) return false;
+        if (status && statusOf(p) !== status) return false;
+        return true;
+      });
+
+      KMV.renderTable(document.getElementById("table-root"), {
+        columns: [
+          { key: "code", title: "Mã" }, { key: "name", title: "Tên" }, { key: "group", title: "Nhóm" }, { key: "unit", title: "ĐVT" },
+          { key: "k1", title: "Kho 1", numeric: true, render: function (r) { return kho && kho !== "k1" ? "—" : KMV.fmtNumber(r.stock.k1); } },
+          { key: "k2", title: "Kho 2", numeric: true, render: function (r) { return kho && kho !== "k2" ? "—" : KMV.fmtNumber(r.stock.k2); } },
+          { key: "tong", title: "Tổng", numeric: true, render: function (r) { return KMV.fmtNumber(r.stock.k1 + r.stock.k2); } },
+          { key: "minLevel", title: "Định mức", numeric: true },
+          { key: "status", title: "Tình trạng", render: function (r) { return STATUS_LABEL[statusOf(r)]; } },
+          { key: "link", title: "", render: function (r) { return '<a href="the-kho.html?ma=' + r.code + '">Thẻ kho</a>'; } }
+        ],
+        rows: rows,
+        rowClass: function (r) { return statusOf(r) === "am" ? "kv-row-warn" : ""; },
+        totalRow: { code: "Tổng cộng " + rows.length + " mã" },
+        emptyText: "Không có mã nào khớp bộ lọc."
+      });
+
+      document.getElementById("cards-root").innerHTML = rows.map(function (r) {
+        return '<div class="kv-line-card"><div class="kv-line-card-head"><span>' + r.code + "</span>" + STATUS_LABEL[statusOf(r)] + "</div><div>" + r.name + "</div>" +
+          '<div class="kv-flex kv-mt-8"><span>Kho 1: <strong>' + KMV.fmtNumber(r.stock.k1) + "</strong></span><span>Kho 2: <strong>" + KMV.fmtNumber(r.stock.k2) + '</strong></span></div>' +
+          '<a class="kv-btn kv-btn-sm kv-mt-8" href="the-kho.html?ma=' + r.code + '">Thẻ kho</a></div>';
+      }).join("");
+    }
+
+    panelEl.addEventListener("change", apply);
+    quickSearch.addEventListener("input", apply);
+    panelEl.querySelector("[data-filter-clear]").addEventListener("click", function () { panelEl.querySelectorAll("select").forEach(function (s) { s.value = ""; }); quickSearch.value = ""; apply(); });
+    document.getElementById("open-filter").addEventListener("click", function () { KMV.openDrawer(panelEl.innerHTML, { title: "Bộ lọc", placement: "bottom" }); });
+    apply();
+  }
+
+  function renderProposal() {
+    var rows = data.products.slice(0, 15).map(function (p, i) {
+      var suggested = Math.max(5, Math.round(p.minLevel * 1.2));
+      return { code: p.code, name: p.name, current: p.minLevel, suggested: suggested, approved: i % 4 === 0 };
+    });
+    content.innerHTML = '<div class="kv-card"><div id="proposal-table"></div></div>';
+    KMV.renderTable(document.getElementById("proposal-table"), {
+      columns: [
+        { key: "code", title: "Mã" }, { key: "name", title: "Tên hàng" },
+        { key: "current", title: "Định mức hiện tại", numeric: true },
+        { key: "suggested", title: "Đề xuất (30 ngày xuất)", numeric: true },
+        { key: "approved", title: "Trạng thái", render: function (r) { return r.approved ? '<span class="kv-tag kv-tag-green">Đã duyệt</span>' : '<button type="button" class="kv-btn kv-btn-sm" data-approve="' + r.code + '">Duyệt</button>'; } }
+      ],
+      rows: rows,
+      emptyText: "Không có đề xuất nào."
+    });
+    document.querySelectorAll("[data-approve]").forEach(function (btn) {
+      btn.addEventListener("click", function () { KMV.toast("success", "Đã duyệt định mức mới cho " + btn.getAttribute("data-approve") + "."); renderProposal(); });
+    });
+  }
+
+  document.querySelectorAll("[data-tab]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll("[data-tab]").forEach(function (b) { b.classList.remove("is-active"); });
+      btn.classList.add("is-active");
+      activeTab = btn.getAttribute("data-tab");
+      if (activeTab === "ma-tran") renderMatrix(); else renderProposal();
+    });
+  });
+
+  renderMatrix();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Danh mục hàng · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="danh-muc" data-nav="danh-muc" data-shell="app">
+<main id="page">
+
+<div class="kv-page-header">
+  <div>
+    <h1>Danh mục hàng</h1>
+    <p>3.266 mã hàng thuộc 90 nhóm (rút gọn trong bản demo). Tồn và giá vốn KHÔNG sửa được ở đây.</p>
+  </div>
+</div>
+
+<div id="list-root"></div>
+<div id="bulk-bar" class="kv-card kv-mt-16" style="display:none"></div>
+
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("danh-muc", function () {
+  var data = window.KMV_DATA;
+  var root = document.getElementById("list-root");
+  var selected = {};
+
+  function statusTagHtml(p) {
+    if (p.status === "ngung_kd") return '<span class="kv-tag kv-tag-gray">Ngừng KD</span>';
+    if (p.flags.indexOf("am") !== -1) return '<span class="kv-tag kv-tag-red">Tồn âm</span>';
+    if (p.flags.indexOf("duoi_dinh_muc") !== -1) return '<span class="kv-tag kv-tag-gold" data-tip="Dưới định mức ' + p.minLevel + '">Sắp hết</span>';
+    if (p.flags.indexOf("can_ra_soat") !== -1) return '<span class="kv-tag kv-tag-gray">Cần rà soát</span>';
+    return '<span class="kv-tag kv-tag-green">Đang KD</span>';
+  }
+
+  function renderList() {
+    root.innerHTML =
+      '<div class="kv-list-layout">' +
+      '<aside class="kv-list-aside" id="filter-panel">' + filterPanelHtml() + "</aside>" +
+      '<section class="kv-list-section">' +
+      '<div class="kv-list-toolbar">' +
+      '<button type="button" class="kv-btn kv-filter-btn" id="open-filter">' + KMV.icon("filter") + ' Bộ lọc</button>' +
+      '<div class="kv-grow"><input type="text" class="kv-input" id="quick-search" placeholder="Tìm theo mã, tên hàng…"></div>' +
+      (KMV.can("write") ? '<button type="button" class="kv-btn" id="btn-import">Import Excel</button><button type="button" class="kv-btn kv-btn-primary" id="btn-add">Thêm mã hàng</button>' : "") +
+      "</div>" +
+      '<div id="table-root"></div>' +
+      "</section></div>";
+
+    var panelEl = document.getElementById("filter-panel");
+    var quickSearch = document.getElementById("quick-search");
+
+    function collect() {
+      var out = {};
+      panelEl.querySelectorAll("[data-filter]").forEach(function (input) {
+        var key = input.getAttribute("data-filter");
+        if (input.type === "checkbox") { if (input.checked) out[key] = input.value; } else if (input.value) out[key] = input.value;
+      });
+      return out;
+    }
+
+    function apply() {
+      var term = quickSearch.value.toLowerCase().trim();
+      var f = collect();
+      var rows = data.products.filter(function (p) {
+        if (term && p.code.toLowerCase().indexOf(term) === -1 && p.name.toLowerCase().indexOf(term) === -1) return false;
+        if (f.group && p.group !== f.group) return false;
+        if (f.unit && p.unit !== f.unit) return false;
+        if (f.stage && p.stage !== f.stage) return false;
+        if (f.status === "dang_kd" && p.status !== "dang_kd") return false;
+        if (f.status === "ngung_kd" && p.status !== "ngung_kd") return false;
+        if (f.ton === "het" && (p.stock.k1 + p.stock.k2) !== 0) return false;
+        if (f.ton === "am" && p.flags.indexOf("am") === -1) return false;
+        if (f.ton === "con" && (p.stock.k1 + p.stock.k2) <= 0) return false;
+        if (f.rasoat && p.flags.indexOf("can_ra_soat") === -1) return false;
+        return true;
+      });
+      renderTable(rows);
+    }
+
+    function renderTable(rows) {
+      var tableEl = document.getElementById("table-root");
+      var canCost = KMV.can("cost");
+      var canWrite = KMV.can("write");
+      var columns = [];
+      if (canWrite) columns.push({ key: "sel", title: '<input type="checkbox" id="select-all">', render: function (r) { return '<input type="checkbox" data-select="' + r.id + '" ' + (selected[r.id] ? "checked" : "") + '>'; } });
+      columns = columns.concat([
+        { key: "code", title: "Mã hàng", render: function (r) { return '<a href="danh-muc-chi-tiet.html?id=' + r.id + '">' + r.code + "</a>"; } },
+        { key: "name", title: "Tên hàng", render: function (r) { return canWrite ? '<span class="kv-inline-edit" data-edit-name="' + r.id + '" tabindex="0">' + r.name + "</span>" : r.name; } },
+        { key: "group", title: "Nhóm hàng" },
+        { key: "unit", title: "ĐVT" },
+        { key: "stage", title: "Công đoạn" },
+        { key: "ton", title: "Tồn", numeric: true, render: function (r) { return '<a href="the-kho.html?ma=' + r.code + '">' + KMV.fmtNumber(r.stock.k1 + r.stock.k2) + "</a>"; } },
+        { key: "sellPrice", title: "Giá bán", numeric: true, render: function (r) { return KMV.fmtNumber(r.sellPrice); } }
+      ]);
+      if (canCost) columns.push({ key: "costPrice", title: "Giá vốn", numeric: true, render: function (r) { return KMV.fmtNumber(r.costPrice); } });
+      columns.push({ key: "status", title: "Trạng thái", render: statusTagHtml });
+
+      KMV.fakeLoad(tableEl, function () {
+        KMV.renderTable(tableEl, {
+          columns: columns,
+          rows: rows,
+          emptyText: rows.length === 0 ? "Không có mã hàng nào khớp bộ lọc." : "Chưa có dữ liệu."
+        });
+        if (canWrite) {
+          tableEl.querySelectorAll("[data-select]").forEach(function (cb) {
+            cb.addEventListener("change", function () {
+              selected[cb.getAttribute("data-select")] = cb.checked;
+              updateBulkBar();
+            });
+          });
+          var selectAll = tableEl.querySelector("#select-all");
+          if (selectAll) selectAll.addEventListener("change", function () {
+            rows.forEach(function (r) { selected[r.id] = selectAll.checked; });
+            renderTable(rows);
+          });
+          tableEl.querySelectorAll("[data-edit-name]").forEach(function (span) {
+            span.addEventListener("click", function () { editInline(span, span.getAttribute("data-edit-name"), "name"); });
+          });
+        }
+      }, 300);
+    }
+
+    function editInline(span, id, field) {
+      var p = data.products.filter(function (x) { return x.id === id; })[0];
+      var input = document.createElement("input");
+      input.className = "kv-input";
+      input.value = p[field];
+      span.replaceWith(input);
+      input.focus();
+      input.select();
+      function commit() { p[field] = input.value; KMV.toast("success", "Đã lưu."); apply(); }
+      function cancel() { apply(); }
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") commit();
+        if (e.key === "Escape") cancel();
+      });
+      input.addEventListener("blur", commit);
+    }
+
+    // Dùng logic lọc riêng ở trên (không gọi KMV.bindFilters) vì cần tổ hợp
+    // nhiều điều kiện (nhóm/ĐVT/công đoạn/tồn/rà soát) phức tạp hơn khuôn chuẩn.
+    panelEl.addEventListener("change", apply);
+    quickSearch.addEventListener("input", apply);
+    var clearBtn = panelEl.querySelector("[data-filter-clear]");
+    clearBtn.addEventListener("click", function () {
+      panelEl.querySelectorAll("[data-filter]").forEach(function (i) { i.value = ""; if (i.type === "checkbox") i.checked = false; });
+      quickSearch.value = "";
+      apply();
+    });
+
+    document.getElementById("open-filter").addEventListener("click", function () {
+      var drawer = KMV.openDrawer(filterPanelHtml(), { title: "Bộ lọc", placement: "bottom" });
+      drawer.addEventListener("change", function (e) {
+        var key = e.target.getAttribute("data-filter");
+        if (key) {
+          panelEl.querySelectorAll('[data-filter="' + key + '"]').forEach(function (input) {
+            if (input.type === "checkbox") input.checked = e.target.checked; else input.value = e.target.value;
+          });
+          apply();
+        }
+      });
+    });
+
+    var addBtn = document.getElementById("btn-add");
+    if (addBtn) addBtn.addEventListener("click", function () { openProductDrawer(null); });
+    var importBtn = document.getElementById("btn-import");
+    if (importBtn) importBtn.addEventListener("click", openImportModal);
+
+    apply();
+  }
+
+  function filterPanelHtml() {
+    var groups = data.groups;
+    return (
+      '<div class="kv-form-field"><label class="kv-form-label">Nhóm hàng</label><select class="kv-select" data-filter="group"><option value="">Tất cả</option>' +
+      groups.map(function (g) { return '<option value="' + g + '">' + g + "</option>"; }).join("") + "</select></div>" +
+      '<div class="kv-form-field"><label class="kv-form-label">ĐVT</label><select class="kv-select" data-filter="unit"><option value="">Tất cả</option>' +
+      data.units.map(function (u) { return '<option value="' + u + '">' + u + "</option>"; }).join("") + "</select></div>" +
+      '<div class="kv-form-field"><label class="kv-form-label">Công đoạn</label><select class="kv-select" data-filter="stage"><option value="">Tất cả</option>' +
+      data.stages.map(function (s) { return '<option value="' + s + '">' + s + "</option>"; }).join("") + "</select></div>" +
+      '<div class="kv-form-field"><label class="kv-form-label">Tình trạng kinh doanh</label><select class="kv-select" data-filter="status"><option value="">Tất cả</option><option value="dang_kd">Đang kinh doanh</option><option value="ngung_kd">Ngừng kinh doanh</option></select></div>' +
+      '<div class="kv-form-field"><label class="kv-form-label">Tồn</label><select class="kv-select" data-filter="ton"><option value="">Tất cả</option><option value="con">Còn hàng</option><option value="het">Hết hàng</option><option value="am">Tồn âm</option></select></div>' +
+      '<div class="kv-form-field"><label class="kv-flex" style="font-weight:normal"><input type="checkbox" data-filter="rasoat" value="1"> Chỉ mã cần rà soát</label></div>' +
+      '<button type="button" class="kv-btn" data-filter-clear style="width:100%">Xóa bộ lọc</button>'
+    );
+  }
+
+  function updateBulkBar() {
+    var bar = document.getElementById("bulk-bar");
+    var ids = Object.keys(selected).filter(function (id) { return selected[id]; });
+    if (ids.length === 0) { bar.style.display = "none"; return; }
+    bar.style.display = "block";
+    bar.innerHTML =
+      "<strong>" + ids.length + '</strong> mã đã chọn — <select class="kv-select" style="width:180px;display:inline-block" id="bulk-group"><option value="">Gán nhóm hàng…</option>' +
+      data.groups.map(function (g) { return '<option value="' + g + '">' + g + "</option>"; }).join("") + "</select> " +
+      '<button type="button" class="kv-btn kv-btn-sm" id="bulk-apply">Áp dụng</button>';
+    document.getElementById("bulk-apply").addEventListener("click", function () {
+      var g = document.getElementById("bulk-group").value;
+      if (!g) { KMV.toast("error", "Chọn nhóm hàng trước."); return; }
+      ids.forEach(function (id) {
+        var p = data.products.filter(function (x) { return x.id === id; })[0];
+        if (p) p.group = g;
+      });
+      KMV.toast("success", "Đã gán nhóm cho " + ids.length + " mã.");
+      selected = {};
+      renderList();
+    });
+  }
+
+  function openProductDrawer(product) {
+    var isEdit = !!product;
+    var codeVal = product ? product.code : "";
+    KMV.openDrawer(
+      '<div class="kv-form-field" id="f-code"><label class="kv-form-label">Mã hàng<span class="req">*</span></label><input type="text" class="kv-input" id="p-code" value="' + codeVal + '"' + (isEdit ? " disabled" : "") + '>' +
+      '<div class="kv-form-error" id="err-code" style="display:none"></div></div>' +
+      '<div class="kv-form-field"><label class="kv-form-label">Tên hàng<span class="req">*</span></label><input type="text" class="kv-input" id="p-name" value="' + (product ? product.name : "") + '"></div>' +
+      '<div class="kv-form-row">' +
+      '<div class="kv-form-field"><label class="kv-form-label">Nhóm hàng</label><select class="kv-select" id="p-group">' + data.groups.map(function (g) { return '<option' + (product && product.group === g ? " selected" : "") + ">" + g + "</option>"; }).join("") + "</select></div>" +
+      '<div class="kv-form-field"><label class="kv-form-label">ĐVT</label><select class="kv-select" id="p-unit">' + data.units.map(function (u) { return '<option' + (product && product.unit === u ? " selected" : "") + ">" + u + "</option>"; }).join("") + "</select></div>" +
+      "</div>" +
+      '<div class="kv-form-row">' +
+      '<div class="kv-form-field"><label class="kv-form-label">Công đoạn</label><select class="kv-select" id="p-stage">' + data.stages.map(function (s) { return '<option' + (product && product.stage === s ? " selected" : "") + ">" + s + "</option>"; }).join("") + "</select></div>" +
+      '<div class="kv-form-field"><label class="kv-form-label">Kho mặc định</label><select class="kv-select" id="p-wh">' + data.warehouses.map(function (w) { return '<option value="' + w.id + '"' + (product && product.defaultWarehouse === w.id ? " selected" : "") + ">" + w.name + "</option>"; }).join("") + "</select></div>" +
+      "</div>" +
+      '<div class="kv-form-row">' +
+      '<div class="kv-form-field"><label class="kv-form-label">Giá bán</label><input type="number" class="kv-input" id="p-sell" value="' + (product ? product.sellPrice : "") + '"></div>' +
+      '<div class="kv-form-field"><label class="kv-form-label">Định mức tối thiểu</label><input type="number" class="kv-input" id="p-min" value="' + (product ? product.minLevel : 10) + '"></div>' +
+      "</div>" +
+      '<div class="kv-form-hint kv-mb-16">Không có ô tồn kho / giá vốn ở đây — tồn đến từ chứng từ, giá vốn do hệ thống tự tính bình quân gia quyền.</div>' +
+      '<label class="kv-flex kv-mb-16" style="font-weight:normal"><input type="checkbox" id="p-active"' + (!product || product.status === "dang_kd" ? " checked" : "") + '> Đang kinh doanh</label>' +
+      '<button type="button" class="kv-btn kv-btn-primary" id="save-product" style="width:100%">Lưu</button>',
+      { title: isEdit ? "Sửa mã hàng" : "Thêm mã hàng" }
+    );
+    document.getElementById("save-product").addEventListener("click", function () {
+      var code = document.getElementById("p-code").value.trim();
+      var dup = data.products.filter(function (p) { return p.code === code && (!product || p.id !== product.id); })[0];
+      if (!isEdit && dup) {
+        document.getElementById("f-code").classList.add("has-error");
+        var err = document.getElementById("err-code");
+        err.textContent = "Mã " + code + " đã tồn tại — chọn mã khác.";
+        err.style.display = "block";
+        return;
+      }
+      var btn = document.getElementById("save-product");
+      btn.classList.add("is-loading");
+      setTimeout(function () {
+        var payload = {
+          code: code, name: document.getElementById("p-name").value.trim(),
+          group: document.getElementById("p-group").value, unit: document.getElementById("p-unit").value,
+          stage: document.getElementById("p-stage").value, defaultWarehouse: document.getElementById("p-wh").value,
+          sellPrice: Number(document.getElementById("p-sell").value) || 0,
+          minLevel: Number(document.getElementById("p-min").value) || 0,
+          status: document.getElementById("p-active").checked ? "dang_kd" : "ngung_kd"
+        };
+        if (isEdit) {
+          Object.assign(product, payload);
+          KMV.toast("success", "Đã lưu mã " + code + ".");
+        } else {
+          data.products.push(Object.assign({ id: "sp-new-" + Date.now(), costPrice: 0, flags: [], stock: { k1: 0, k2: 0 } }, payload));
+          KMV.toast("success", "Đã thêm mã " + code + ".");
+        }
+        KMV.closeDrawer(document.querySelector(".kv-drawer.is-open"));
+        renderList();
+      }, 400);
+    });
+  }
+
+  function openImportModal() {
+    step1();
+    function step1() {
+      KMV.openModal(
+        '<p>Chọn file Excel xuất từ KiotViet (giả lập — bấm "Xem trước" để tiếp tục).</p>' +
+        '<div class="kv-form-field"><input type="file" class="kv-input" id="import-file" accept=".xlsx,.csv"></div>',
+        { title: "Import Excel — Bước 1/3: Chọn file", buttons: [{ label: "Hủy" }, { label: "Xem trước", primary: true, onClick: function (m) { KMV.closeModal(m); step2(); } }] }
+      );
+    }
+    function step2() {
+      var preview = data.products.slice(0, 6).map(function (p, i) {
+        var invalid = i === 2;
+        return { code: p.code, name: p.name, error: invalid ? "Thiếu ĐVT" : "" };
+      });
+      var validCount = preview.filter(function (r) { return !r.error; }).length;
+      var errorCount = preview.length - validCount;
+      KMV.openModal(
+        "<p>Đếm được <strong>" + validCount + " hợp lệ · " + errorCount + " lỗi</strong>.</p>" +
+        '<div class="kv-table-wrap"><table class="kv-table"><thead><tr><th>Mã</th><th>Tên</th><th>Lỗi</th></tr></thead><tbody>' +
+        preview.map(function (r) { return '<tr class="' + (r.error ? "kv-row-warn" : "") + '"><td>' + r.code + "</td><td>" + r.name + "</td><td>" + (r.error || "—") + "</td></tr>"; }).join("") +
+        "</tbody></table></div>" +
+        (errorCount > 0 ? '<button type="button" class="kv-btn kv-btn-sm kv-mt-8" id="dl-error-csv">Tải file lỗi CSV</button>' : ""),
+        { title: "Import Excel — Bước 2/3: Xem trước", buttons: [{ label: "Quay lại", onClick: function (m) { KMV.closeModal(m); step1(); } }, { label: "Nhập " + validCount + " dòng hợp lệ", primary: true, onClick: function (m) { KMV.closeModal(m); step3(validCount, errorCount); } }] }
+      );
+      setTimeout(function () {
+        var dl = document.getElementById("dl-error-csv");
+        if (dl) dl.addEventListener("click", function () { KMV.toast("info", "Đã tải file lỗi CSV (giả lập)."); });
+      }, 0);
+    }
+    function step3(validCount, errorCount) {
+      KMV.openModal(
+        '<div class="kv-alert kv-alert-success"><div>Đã nhập ' + validCount + " dòng." + (errorCount > 0 ? " " + errorCount + " dòng lỗi đã bỏ qua." : "") + "</div></div>",
+        { title: "Import Excel — Bước 3/3: Kết quả", buttons: [{ label: "Đóng", primary: true, onClick: function (m) { KMV.closeModal(m); renderList(); } }] }
+      );
+    }
+  }
+
+  renderList();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chi tiết mã hàng · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="danh-muc-chi-tiet" data-nav="danh-muc" data-shell="app">
+<main id="page">
+<div id="root"></div>
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("danh-muc-chi-tiet", function () {
+  var data = window.KMV_DATA;
+  var root = document.getElementById("root");
+  var id = KMV.qs("id");
+  var p = id ? data.products.filter(function (x) { return x.id === id; })[0] : null;
+  if (!p) p = data.products[0];
+
+  var activeTab = "the-kho";
+
+  function render() {
+    root.innerHTML =
+      '<div class="kv-page-header">' +
+      '<div><h1>' + p.code + " — " + p.name + '</h1><p>' + p.group + " · " + p.unit + "</p></div>" +
+      '<div class="kv-page-header-actions">' + (KMV.can("write") ? '<button type="button" class="kv-btn kv-btn-primary" id="btn-edit">Sửa</button>' : "") + "</div>" +
+      "</div>" +
+
+      '<div class="kv-card kv-mb-16">' +
+      '<dl class="kv-desc kv-desc-3">' +
+      '<div class="kv-desc-item"><dt>Tồn Kho 1</dt><dd>' + KMV.fmtNumber(p.stock.k1) + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Tồn Kho 2</dt><dd>' + KMV.fmtNumber(p.stock.k2) + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Định mức tối thiểu</dt><dd>' + KMV.fmtNumber(p.minLevel) + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Giá bán</dt><dd>' + KMV.fmtNumber(p.sellPrice) + "</dd></div>" +
+      (KMV.can("cost") ? '<div class="kv-desc-item"><dt>Giá vốn</dt><dd>' + KMV.fmtNumber(p.costPrice) + "</dd></div>" : "") +
+      '<div class="kv-desc-item"><dt>Trạng thái</dt><dd>' + (p.status === "dang_kd" ? "Đang kinh doanh" : "Ngừng kinh doanh") + "</dd></div>" +
+      "</dl>" +
+      '<p class="kv-text-sm kv-text-muted kv-mt-8">Tồn chỉ đọc — muốn chỉnh dùng <a href="kiem-ke.html">Kiểm kê</a> để sinh phiếu điều chỉnh.</p>' +
+      "</div>" +
+
+      '<div class="kv-tabs-nav">' +
+      '<button type="button" class="kv-tabs-item' + (activeTab === "the-kho" ? " is-active" : "") + '" data-tab="the-kho">Thẻ kho</button>' +
+      '<button type="button" class="kv-tabs-item' + (activeTab === "nhat-ky" ? " is-active" : "") + '" data-tab="nhat-ky">Nhật ký sửa</button>' +
+      "</div>" +
+      '<div id="tab-content"></div>';
+
+    document.querySelectorAll("[data-tab]").forEach(function (btn) {
+      btn.addEventListener("click", function () { activeTab = btn.getAttribute("data-tab"); render(); });
+    });
+
+    var content = document.getElementById("tab-content");
+    if (activeTab === "the-kho") {
+      var moves = data.movements.filter(function (m) { return m.productId === p.id; });
+      content.innerHTML =
+        '<div class="kv-alert kv-alert-info kv-mb-16"><div>Dữ liệu KiotViet cũ không gắn kho nên chỉ hiện khi xem Tất cả kho.</div></div>' +
+        '<div id="the-kho-table"></div>';
+      KMV.renderTable(document.getElementById("the-kho-table"), {
+        columns: [
+          { key: "thoiGian", title: "Ngày giờ", render: function (r) { return KMV.fmtDate(r.thoiGian); } },
+          { key: "nguon", title: "Nguồn" },
+          { key: "soCt", title: "Số phiếu", render: function (r) { return r.isReversal ? "<em>" + r.soCt + "</em>" : '<a href="nhap-kho-chi-tiet.html">' + r.soCt + "</a>"; } },
+          { key: "kho", title: "Kho", render: function (r) { return KMV.warehouseLabel(r.kho); } },
+          { key: "doiTac", title: "Đối tác / Ghi chú" },
+          { key: "nhap", title: "Nhập", numeric: true },
+          { key: "xuat", title: "Xuất", numeric: true },
+          { key: "tonLuyKe", title: "Tồn lũy kế", numeric: true },
+          { key: "giaVon", title: "Giá vốn lúc đó", numeric: true, render: function (r) { return KMV.can("cost") ? KMV.fmtNumber(r.giaVon) : "—"; } }
+        ],
+        rows: moves,
+        emptyText: "Mã này chưa có biến động nào trong dữ liệu mẫu."
+      });
+    } else {
+      content.innerHTML = '<div id="audit-table"></div>';
+      KMV.renderTable(document.getElementById("audit-table"), {
+        columns: [{ key: "thoiGian", title: "Thời gian", render: function (r) { return KMV.fmtDate(r.thoiGian); } }, { key: "nguoiSua", title: "Người sửa" }, { key: "truong", title: "Trường" }, { key: "cu", title: "Cũ" }, { key: "moi", title: "Mới" }],
+        rows: data.auditLog.filter(function (a) { return a.doiTuong.indexOf(p.code) !== -1; }),
+        emptyText: "Chưa có lịch sử sửa cho mã này."
+      });
+    }
+
+    var editBtn = document.getElementById("btn-edit");
+    if (editBtn) editBtn.addEventListener("click", function () { window.location.href = "danh-muc.html"; });
+  }
+
+  render();
+});
+</script>
+</body>
+</html>

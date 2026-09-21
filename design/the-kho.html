@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thẻ kho · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="the-kho" data-nav="ton-kho" data-shell="app">
+<main id="page">
+
+<div class="kv-page-header">
+  <div>
+    <h1>Thẻ kho</h1>
+    <p>Đề xuất bố cục cho Phase 5–6 — CHƯA có trong app thật. Sổ chỉ thêm, không sửa, không xóa.</p>
+  </div>
+</div>
+
+<div class="kv-card kv-mb-16">
+  <div class="kv-form-row" style="align-items:flex-end">
+    <div class="kv-form-field" style="position:relative">
+      <label class="kv-form-label">Mã hàng</label>
+      <input type="text" class="kv-input" id="f-ma" placeholder="Gõ mã hàng…">
+    </div>
+    <div class="kv-form-field">
+      <label class="kv-form-label">Kho</label>
+      <select class="kv-select" id="f-kho"><option value="">Tất cả kho</option><option value="k1">Kho 1</option><option value="k2">Kho 2</option></select>
+    </div>
+    <div class="kv-form-field"><label class="kv-form-label">Từ ngày</label><input type="date" class="kv-input" id="f-tu"></div>
+    <div class="kv-form-field"><label class="kv-form-label">Đến ngày</label><input type="date" class="kv-input" id="f-den"></div>
+    <button type="button" class="kv-btn" id="btn-export">Xuất Excel</button>
+  </div>
+</div>
+
+<div id="result-root"></div>
+
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("the-kho", function () {
+  var data = window.KMV_DATA;
+  var maInput = document.getElementById("f-ma");
+  var khoSelect = document.getElementById("f-kho");
+  var result = document.getElementById("result-root");
+  var selectedCode = KMV.qs("ma") || "";
+  if (selectedCode) maInput.value = selectedCode;
+
+  KMV.productSearch(maInput, { onSelect: function (p) { selectedCode = p.code; render(); } });
+
+  function render() {
+    if (!selectedCode) {
+      result.innerHTML = '<div class="kv-empty"><div class="kv-empty-icon">🔍</div><div>Chọn một mã hàng để xem thẻ kho.</div></div>';
+      return;
+    }
+    var p = data.findProduct(selectedCode);
+    var kho = khoSelect.value;
+    var moves = data.movements.filter(function (m) { return m.code === selectedCode && (!kho || m.kho === kho); });
+
+    result.innerHTML =
+      '<div class="kv-alert kv-alert-info kv-mb-16"><div>Sổ kho chỉ thêm, không sửa, không xóa — phiếu hủy hiện thành dòng đảo (in nghiêng).</div></div>' +
+      '<div class="kv-card">' +
+      "<h3>" + p.code + " — " + p.name + "</h3>" +
+      '<dl class="kv-desc kv-desc-3 kv-mb-16">' +
+      '<div class="kv-desc-item"><dt>Tồn đầu kỳ</dt><dd>' + KMV.fmtNumber(moves.length > 0 ? moves[0].tonLuyKe - moves[0].nhap + moves[0].xuat : (kho ? p.stock[kho] : p.stock.k1 + p.stock.k2)) + "</dd></div>" +
+      '<div class="kv-desc-item"><dt>Tồn cuối kỳ</dt><dd>' + KMV.fmtNumber(moves.length > 0 ? moves[moves.length - 1].tonLuyKe : (kho ? p.stock[kho] : p.stock.k1 + p.stock.k2)) + "</dd></div>" +
+      "</dl>" +
+      '<div id="the-kho-table"></div>' +
+      "</div>";
+
+    KMV.renderTable(document.getElementById("the-kho-table"), {
+      columns: [
+        { key: "thoiGian", title: "Ngày giờ", render: function (r) { return KMV.fmtDate(r.thoiGian); } },
+        { key: "nguon", title: "Nguồn" },
+        { key: "soCt", title: "Số phiếu", render: function (r) { return r.isReversal ? "<em>" + r.soCt + "</em>" : r.soCt; } },
+        { key: "kho", title: "Kho", render: function (r) { return KMV.warehouseLabel(r.kho); } },
+        { key: "doiTac", title: "Đối tác / Ghi chú" },
+        { key: "nhap", title: "Nhập", numeric: true },
+        { key: "xuat", title: "Xuất", numeric: true },
+        { key: "tonLuyKe", title: "Tồn lũy kế", numeric: true },
+        { key: "giaVon", title: "Giá vốn lúc đó", numeric: true, render: function (r) { return KMV.can("cost") ? KMV.fmtNumber(r.giaVon) : "—"; } }
+      ],
+      rows: moves,
+      rowClass: function (r) { return r.isReversal ? "kv-row-void" : ""; },
+      emptyText: "Chưa có biến động nào trong khoảng đã chọn."
+    });
+  }
+
+  khoSelect.addEventListener("change", render);
+  document.getElementById("f-tu").addEventListener("change", render);
+  document.getElementById("f-den").addEventListener("change", render);
+  document.getElementById("btn-export").addEventListener("click", function () { KMV.toast("info", "Đã xuất Excel (giả lập demo)."); });
+
+  render();
+});
+</script>
+</body>
+</html>

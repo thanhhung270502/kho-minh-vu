@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chuyển kho · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="chuyen-kho" data-nav="ton-kho" data-shell="app">
+<main id="page">
+<div id="root"></div>
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("chuyen-kho", function () {
+  var data = window.KMV_DATA;
+  var id = KMV.qs("id");
+  var root = document.getElementById("root");
+
+  function stockAt(code, khoId) { return data.findProduct(code).stock[khoId] || 0; }
+
+  if (!id) {
+    renderList();
+  } else {
+    renderDetail(data.transfers.filter(function (d) { return d.id === id; })[0] || data.transfers[0]);
+  }
+
+  function renderList() {
+    root.innerHTML =
+      '<div class="kv-page-header"><div><h1>Chuyển kho</h1><p>Đề xuất bố cục cho Phase 5–6 — CHƯA có trong app thật.</p></div>' +
+      '<div class="kv-page-header-actions">' + (KMV.can("write") ? '<button type="button" class="kv-btn kv-btn-primary" id="btn-create">Tạo phiếu chuyển kho</button>' : "") + "</div></div>" +
+      '<div class="kv-card"><div id="tbl"></div></div>';
+    KMV.renderTable(document.getElementById("tbl"), {
+      columns: [
+        { key: "soCt", title: "Số phiếu", render: function (r) { return '<a href="chuyen-kho.html?id=' + r.id + '">' + r.soCt + "</a>"; } },
+        { key: "ngay", title: "Ngày", render: function (r) { return KMV.fmtDate(r.ngay); } },
+        { key: "khoDi", title: "Kho đi", render: function (r) { return KMV.warehouseLabel(r.khoDi); } },
+        { key: "khoDen", title: "Kho đến", render: function (r) { return KMV.warehouseLabel(r.khoDen); } },
+        { key: "trangThai", title: "Trạng thái", render: function (r) { return KMV.statusTag(r.trangThai); } },
+        { key: "nguoiTao", title: "Người tạo" }
+      ],
+      rows: data.transfers,
+      onRowClick: function (r) { window.location.href = "chuyen-kho.html?id=" + r.id; },
+      emptyText: "Chưa có phiếu chuyển kho nào."
+    });
+    var createBtn = document.getElementById("btn-create");
+    if (createBtn) createBtn.addEventListener("click", function () {
+      var newDoc = { id: "ck-new-" + Date.now(), soCt: data.docNo("CK", data.transfers.length + 1), ngay: new Date().toISOString().slice(0, 10), khoDi: "k1", khoDen: "k2", trangThai: "NHAP_LIEU", nguoiTao: KMV.currentUser().fullName, lines: [] };
+      data.transfers.push(newDoc);
+      window.location.href = "chuyen-kho.html?id=" + newDoc.id;
+    });
+  }
+
+  function renderDetail(doc) {
+    var locked = doc.trangThai !== "NHAP_LIEU";
+
+    function render() {
+      root.innerHTML =
+        '<div class="kv-page-header"><div><h1>Phiếu chuyển kho ' + doc.soCt + " " + KMV.statusTag(doc.trangThai) + '</h1><p>Ngày ' + KMV.fmtDate(doc.ngay) + "</p></div>" +
+        '<div class="kv-page-header-actions">' + (!locked ? '<button type="button" class="kv-btn kv-btn-primary" id="btn-post">Ghi sổ</button>' : "") + '<a class="kv-btn" href="chuyen-kho.html">Về danh sách</a></div></div>' +
+
+        '<div class="kv-card kv-mb-16"><div class="kv-form-row">' +
+        '<div class="kv-form-field"><label class="kv-form-label">Kho đi</label><select class="kv-select" id="f-khodi"' + (locked ? " disabled" : "") + ">" + data.warehouses.map(function (w) { return '<option value="' + w.id + '"' + (w.id === doc.khoDi ? " selected" : "") + ">" + w.name + "</option>"; }).join("") + "</select></div>" +
+        '<div class="kv-form-field"><label class="kv-form-label">Kho đến</label><select class="kv-select" id="f-khoden"' + (locked ? " disabled" : "") + ">" + data.warehouses.map(function (w) { return '<option value="' + w.id + '"' + (w.id === doc.khoDen ? " selected" : "") + ">" + w.name + "</option>"; }).join("") + "</select></div>" +
+        '</div><div class="kv-form-error" id="err-kho" style="display:none">Kho đi và kho đến không được trùng nhau.</div></div>' +
+
+        '<div class="kv-card">' +
+        "<h3>Dòng hàng</h3>" +
+        '<div class="kv-table-wrap"><table class="kv-table"><thead><tr><th>Mã hàng</th><th>Tên hàng</th><th class="kv-col-num">Tồn kho đi</th><th class="kv-col-num">Số lượng</th><th></th></tr></thead><tbody id="lines-body"></tbody></table></div>' +
+        "</div>";
+
+      var body = document.getElementById("lines-body");
+      body.innerHTML = doc.lines.map(function (l, i) {
+        var stock = stockAt(l.code, doc.khoDi);
+        var over = l.qty > stock;
+        return "<tr class=\"" + (over ? "kv-row-warn" : "") + "\"><td>" + l.code + "</td><td>" + l.name + '</td><td class="kv-col-num">' + KMV.fmtNumber(stock) + '</td><td class="kv-col-num">' + (locked ? KMV.fmtNumber(l.qty) : '<input type="number" class="kv-input" style="width:90px" data-qty-idx="' + i + '" value="' + l.qty + '">') + "</td><td>" + (!locked ? '<button type="button" class="kv-btn kv-btn-sm" data-remove-idx="' + i + '">Xóa</button>' : "") + "</td></tr>";
+      }).join("");
+
+      if (!locked) {
+        var entryRow = document.createElement("tr");
+        entryRow.className = "kv-line-entry";
+        entryRow.innerHTML = '<td colspan="5"><div class="kv-flex kv-flex-wrap"><input type="text" class="kv-input" style="max-width:200px" id="entry-code" placeholder="Mã hàng…"><input type="number" class="kv-input" style="max-width:120px" id="entry-qty" placeholder="Số lượng"><span class="kv-text-sm kv-text-muted">Gõ mã → Enter → số lượng → Enter.</span></div></td>';
+        body.appendChild(entryRow);
+        var selectedProduct = null;
+        var codeInput = document.getElementById("entry-code");
+        var qtyInput = document.getElementById("entry-qty");
+        KMV.productSearch(codeInput, { onSelect: function (p) { selectedProduct = p; qtyInput.focus(); } });
+        qtyInput.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (!selectedProduct) { KMV.toast("error", "Chưa chọn được mã hàng hợp lệ."); return; }
+            var qty = Number(qtyInput.value);
+            if (!qty || qty <= 0) { KMV.toast("error", "Số lượng phải lớn hơn 0."); return; }
+            doc.lines.push({ code: selectedProduct.code, name: selectedProduct.name, qty: qty });
+            render();
+          }
+        });
+        document.querySelectorAll("[data-qty-idx]").forEach(function (input) { input.addEventListener("change", function () { doc.lines[Number(input.getAttribute("data-qty-idx"))].qty = Number(input.value) || 0; render(); }); });
+        document.querySelectorAll("[data-remove-idx]").forEach(function (btn) { btn.addEventListener("click", function () { doc.lines.splice(Number(btn.getAttribute("data-remove-idx")), 1); render(); }); });
+
+        document.getElementById("f-khodi").addEventListener("change", function (e) { doc.khoDi = e.target.value; checkSameWarehouse(); render(); });
+        document.getElementById("f-khoden").addEventListener("change", function (e) { doc.khoDen = e.target.value; checkSameWarehouse(); render(); });
+      }
+
+      var postBtn = document.getElementById("btn-post");
+      if (postBtn) postBtn.addEventListener("click", function () {
+        if (doc.khoDi === doc.khoDen) { checkSameWarehouse(); return; }
+        if (doc.lines.length === 0) { KMV.toast("error", "Phiếu chưa có dòng hàng nào."); return; }
+        var totalQty = doc.lines.reduce(function (s, l) { return s + l.qty; }, 0);
+        KMV.openModal(
+          KMV.postingSummaryHtml({ docNo: doc.soCt, headline: "ghi sổ chuyển kho.", body: "<p>" + KMV.warehouseLabel(doc.khoDi) + " −" + KMV.fmtNumber(totalQty) + ", " + KMV.warehouseLabel(doc.khoDen) + " +" + KMV.fmtNumber(totalQty) + " trong MỘT chứng từ.</p>", warningTitle: "Không thể sửa sau khi ghi sổ", warningDescription: "Phiếu sẽ chuyển sang Hoàn thành." }),
+          { title: "Xác nhận ghi sổ", buttons: [{ label: "Hủy" }, { label: "Xác nhận ghi sổ", primary: true, onClick: function (m) { doc.trangThai = "HOAN_THANH"; KMV.closeModal(m); KMV.toast("success", "Đã ghi sổ chuyển kho."); render(); } }] }
+        );
+      });
+    }
+
+    function checkSameWarehouse() {
+      var err = document.getElementById("err-kho");
+      if (err) err.style.display = doc.khoDi === doc.khoDen ? "block" : "none";
+    }
+
+    render();
+  }
+});
+</script>
+</body>
+</html>

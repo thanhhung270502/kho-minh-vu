@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Báo cáo · Kho Minh Vũ</title>
+<link rel="stylesheet" href="assets/tokens.css">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-page="bao-cao" data-nav="bao-cao" data-shell="app">
+<main id="page">
+
+<div class="kv-page-header">
+  <div>
+    <h1>Báo cáo</h1>
+    <p>Đây là đề xuất bố cục — v1 chỉ cam kết các mục đã ghi trong REQUIREMENTS.md (TQAN).</p>
+  </div>
+</div>
+
+<div class="kv-tabs-nav">
+  <button type="button" class="kv-tabs-item is-active" data-tab="nxt">Nhập – xuất – tồn</button>
+  <button type="button" class="kv-tabs-item" data-tab="am">Xuất âm kèm lý do</button>
+  <button type="button" class="kv-tabs-item" data-tab="ton-dong">Hàng không luân chuyển</button>
+  <button type="button" class="kv-tabs-item" data-tab="gia-tri">Giá trị tồn theo nhóm</button>
+</div>
+
+<div class="kv-card"><div id="tab-content"></div></div>
+
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+<script>
+KMV.page("bao-cao", function () {
+  var data = window.KMV_DATA;
+  var content = document.getElementById("tab-content");
+
+  function exportBar() {
+    return '<div class="kv-flex kv-mb-12"><button type="button" class="kv-btn" id="btn-export">Xuất Excel</button></div>';
+  }
+  function bindExport() { document.getElementById("btn-export").addEventListener("click", function () { KMV.toast("info", "Đã xuất Excel (giả lập demo)."); }); }
+
+  function renderNXT() {
+    content.innerHTML = exportBar() + '<div id="tbl"></div>';
+    var rows = data.products.slice(0, 20).map(function (p) {
+      var dauKy = p.stock.k1 + p.stock.k2 - 10;
+      var nhap = 15; var xuat = 5;
+      return { code: p.code, name: p.name, dauKy: dauKy, nhap: nhap, xuat: xuat, cuoiKy: dauKy + nhap - xuat };
+    });
+    KMV.renderTable(document.getElementById("tbl"), {
+      columns: [{ key: "code", title: "Mã" }, { key: "name", title: "Tên hàng" }, { key: "dauKy", title: "Đầu kỳ", numeric: true }, { key: "nhap", title: "Nhập", numeric: true }, { key: "xuat", title: "Xuất", numeric: true }, { key: "cuoiKy", title: "Cuối kỳ", numeric: true }],
+      rows: rows,
+      totalRow: { code: "Tổng cộng", dauKy: rows.reduce(function (s, r) { return s + r.dauKy; }, 0), nhap: rows.reduce(function (s, r) { return s + r.nhap; }, 0), xuat: rows.reduce(function (s, r) { return s + r.xuat; }, 0), cuoiKy: rows.reduce(function (s, r) { return s + r.cuoiKy; }, 0) },
+      emptyText: "Không có dữ liệu."
+    });
+    bindExport();
+  }
+
+  function renderNegative() {
+    content.innerHTML = exportBar() + '<div id="tbl"></div>';
+    KMV.renderTable(document.getElementById("tbl"), {
+      columns: [{ key: "soCt", title: "Số phiếu", render: function (r) { return '<a href="xuat-kho-chi-tiet.html?id=' + r.id + '">' + r.soCt + "</a>"; } }, { key: "ngay", title: "Ngày", render: function (r) { return KMV.fmtDate(r.ngay); } }, { key: "nguoiNhan", title: "Người nhận" }, { key: "lyDoXuatAm", title: "Lý do" }],
+      rows: data.issues.filter(function (i) { return i.lyDoXuatAm; }),
+      emptyText: "Không có phiếu xuất âm nào."
+    });
+    bindExport();
+  }
+
+  function renderStale() {
+    content.innerHTML = exportBar() + '<div id="tbl"></div>';
+    KMV.renderTable(document.getElementById("tbl"), {
+      columns: [{ key: "code", title: "Mã" }, { key: "name", title: "Tên hàng" }, { key: "group", title: "Nhóm" }],
+      rows: data.products.filter(function (p) { return p.flags.indexOf("khong_luan_chuyen") !== -1; }),
+      emptyText: "Không có mã nào tồn đọng."
+    });
+    bindExport();
+  }
+
+  function renderValueByGroup() {
+    if (!KMV.can("cost")) { content.innerHTML = '<div class="kv-empty"><div class="kv-empty-icon">🔒</div><div>Chỉ Quản lý xem được báo cáo giá trị tồn.</div></div>'; return; }
+    var buckets = {};
+    data.products.forEach(function (p) { buckets[p.group] = (buckets[p.group] || 0) + (p.stock.k1 + p.stock.k2) * p.costPrice; });
+    var rows = Object.keys(buckets).map(function (k) { return { group: k, value: buckets[k] }; }).sort(function (a, b) { return b.value - a.value; });
+    content.innerHTML = exportBar() + '<div id="tbl"></div>';
+    KMV.renderTable(document.getElementById("tbl"), {
+      columns: [{ key: "group", title: "Nhóm hàng" }, { key: "value", title: "Giá trị tồn", numeric: true, render: function (r) { return KMV.fmtNumber(r.value) + " đ"; } }],
+      rows: rows,
+      totalRow: { group: "Tổng cộng", value: rows.reduce(function (s, r) { return s + r.value; }, 0) },
+      emptyText: "Không có dữ liệu."
+    });
+    bindExport();
+  }
+
+  var renderers = { nxt: renderNXT, am: renderNegative, "ton-dong": renderStale, "gia-tri": renderValueByGroup };
+  document.querySelectorAll("[data-tab]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll("[data-tab]").forEach(function (b) { b.classList.remove("is-active"); });
+      btn.classList.add("is-active");
+      renderers[btn.getAttribute("data-tab")]();
+    });
+  });
+
+  renderNXT();
+});
+</script>
+</body>
+</html>
