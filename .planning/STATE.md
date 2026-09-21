@@ -3,14 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 04-10-PLAN.md
-last_updated: "2026-09-20T05:50:18.241Z"
-last_activity: 2026-09-20
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-09-21T07:37:37.911Z"
+last_activity: 2026-09-21
 progress:
   total_phases: 6
   completed_phases: 1
-  total_plans: 64
-  completed_plans: 31
+  total_plans: 76
+  completed_plans: 32
+  percent: 17
 ---
 
 # Project State
@@ -20,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-12)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Phase 04 — don-dat-hang-phieu-xuat
+**Current focus:** Phase 5 — ton-kho-tong-quan
 
 ## Current Position
 
-Phase: 04 (don-dat-hang-phieu-xuat) — EXECUTING (plan cuối 04-15 đã chạy hết phần
+Phase: 5 (ton-kho-tong-quan) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 8 of 15 có SUMMARY.md (04-01, 04-02, 04-03, 04-04, 04-06, 04-07, 04-08, 04-10 done);
+Plan: 2 of 12
 04-05, 04-09, 04-11, 04-12, 04-13, 04-14, 04-15 CHƯA có SUMMARY.md (đều đang mở
 checkpoint kiểm mắt, xem ghi chú dưới — 04-15 Task 1-3 đã xong và có commit
 thật, chỉ còn Task 4 chờ người dùng)
@@ -191,8 +192,10 @@ vẫn **90/90 ô đúng** sau khi tạo dữ liệu thử (không có route mớ
 
 **Hai deviation ngoài `files_modified` của plan, cả hai đều Rule 1/3 (cần
 thiết để hoàn thành task, không đổi hợp đồng đã có):**
+
 1. `hooks/useIssues.ts` thêm `useClearNegativeReason` (nút "Bỏ chọn lý do"
    của Task 1 cần, plan không liệt kê hook mới nhưng mô tả hành vi đòi hỏi nó).
+
 2. `api/issue.api.ts` đổi `proposeMerge` từ trả `Promise<void>` sang
    `Promise<{ id, createdAt }>` — cần `createdAt` để giao diện phân biệt "vừa
    ghi" (hiện thông báo thành công) với "đã ghi từ trước" (hiện thông báo
@@ -341,6 +344,23 @@ của `04-05`/`04-09`/`04-11`/`04-12`/`04-13`/`04-14` cũng vẫn đang mở, ch
 trả lời. Chỉ đóng khi người dùng trả lời "đạt" cho từng plan hoặc mọi bước
 lệch đã sửa xong._
 
+_Ghi lại 2026-09-21 khi thực thi 05-01 (XONG — cả hai task autonomous, không có
+checkpoint, plan ĐẦU của Phase 5): migration `0058_rpc_ton_kho.sql` (RPC
+`public.danh_sach_ton_kho` — 10 tham số, 15 cột trả về, pivot tồn theo kho vào
+`ton_theo_kho jsonb` thay vì cột cố định, chép khuôn preamble/CTE/phân trang
+của `danh_sach_san_pham` 0030, thủ kho tự giới hạn phạm vi kho ngay trong CTE
+`ton`, không có cột giá vốn/giá trị tồn theo D-02) + pgTAP
+`32_danh_sach_ton_kho_test.sql` (10 assertion: pivot jsonb, lọc `p_kho_id`,
+lọc `p_trang_thai_ton = 'duoi_dinh_muc'` cho TQAN-02, tìm không dấu,
+`tong_so_dong` nhất quán, phạm vi kho thủ kho, lỗi `42501` khi chưa đăng nhập).
+Cả hai gate tự động của plan (`grep` kiểm cấu trúc SQL) đều `GATE-OK` ngay lần
+chạy đầu; `npm run typecheck`/`npm run lint` vẫn xanh (plan này không đụng
+file TypeScript nào). **CHƯA chạy SQL trên bất kỳ database nào** — máy này
+không có `.env.local`, Supabase CLI chưa đăng nhập, nên không `db:push` được.
+Đẩy migration 0058 lên cloud và chạy pgTAP 32 thật là việc của **plan 05-05**
+(ràng buộc: chỉ một plan được đẩy schema trong Phase 5). Không có deviation,
+không có checkpoint, không có auth gate._
+
 ## Performance Metrics
 
 **Velocity:**
@@ -374,6 +394,7 @@ lệch đã sửa xong._
 | Phase 04 P07 | 35min | 2 tasks | 8 files |
 | Phase 04 P08 | 45min | 3 tasks | 8 files |
 | Phase 04 P10 | 40min | 2 tasks | 9 files |
+| Phase 05 P01 | 12min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -416,6 +437,8 @@ Recent decisions affecting current work:
 - [Phase 04]: PostingSummary (04-13) nang tu features/stock-in len shared/components voi khung chung (docNo/headline/children/canh bao), moi chieu chung tu tu soan noi dung con - dung lan thu hai du dieu kien theo CLAUDE.md
 - [Phase 04]: proposeMerge (04-13) tra ve { id, createdAt } thay vi void - giao dien so sanh createdAt voi nguong 5 giay de phan biet "vua ghi" voi "da ghi truoc do" khi bam lai dung mot cap ma, vi RPC ghi_de_nghi_gop_ma co y tra cung mot dong cho ca hai lan goi (unique index co dieu kien 0055)
 - [Phase 04]: negative-stock-panel.tsx (04-13) khoi tao state tu prop bang lazy initializer thay vi useEffect+setState - react-hooks/purity/set-state-in-effect chan pattern dong bo state tu prop trong effect; component chi mount sau khi phieu da tai xong (QueryState) nen khong can dong bo lai
+- [Phase 05]: danh_sach_ton_kho (0058) tra ton_theo_kho jsonb (khoa kho_id::text) thay vi cot kho co dinh, pivot dung o giao dien
+- [Phase 05]: p_dang_kinh_doanh phai co nhanh is null or - loc Tat ca (null) tra 0 dong neu viet thang sp.dang_kinh_doanh = p_dang_kinh_doanh
 
 ### Pending Todos
 
@@ -434,7 +457,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-20T05:50:18.238Z
-Stopped at: Completed 04-10-PLAN.md
-Last activity: 2026-09-20
+Last session: 2026-09-21T07:37:37.889Z
+Stopped at: Completed 05-01-PLAN.md
+Last activity: 2026-09-21
 Resume file: None
