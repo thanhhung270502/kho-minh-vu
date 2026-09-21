@@ -192,7 +192,7 @@ Plans:
 - [x] 05-05-PLAN.md — [BLOCKING] db:push, db:types, chạy toàn bộ pgTAP (wave 3)
 - [x] 05-06-PLAN.md — Lớp dữ liệu feature inventory: kiểu, bộ lọc URL, api, hook (wave 4)
 - [ ] 05-07-PLAN.md — Màn tồn kho `/ton-kho` (wave 5)
-- [ ] 05-08-PLAN.md — Mở rộng thẻ kho đã có: cột lũy kế + link chứng từ (wave 4)
+- [x] 05-08-PLAN.md — Mở rộng thẻ kho đã có: cột lũy kế + link chứng từ (wave 4)
 - [ ] 05-09-PLAN.md — Màn duyệt đề xuất định mức `/ton-kho/dinh-muc` (wave 5)
 - [ ] 05-10-PLAN.md — Nạp tồn tạm từ file KiotViet `/ton-kho/nap-tam` (wave 5)
 - [ ] 05-11-PLAN.md — Menu, ma trận quyền route, bộ kiểm toàn dự án, UAT (wave 6)
@@ -237,5 +237,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Khung ứng dụng, Danh mục, Đối tác, Cài đặt | 2/21 | In Progress | - |
 | 3. Phiếu nhập | 0/TBD | Not started | - |
 | 4. Đơn đặt hàng & Phiếu xuất | 0/TBD | Not started | - |
-| 5. Tồn kho & Tổng quan | 7/12 | In Progress|  |
+| 5. Tồn kho & Tổng quan | 8/12 | In Progress|  |
 | 6. Kiểm kê & Go-live | 0/TBD | Not started | - |

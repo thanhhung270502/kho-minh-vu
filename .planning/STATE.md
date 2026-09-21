@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 05-06-PLAN.md
-last_updated: "2026-09-21T11:15:00.000Z"
+stopped_at: Completed 05-08-PLAN.md
+last_updated: "2026-09-21T11:22:00.000Z"
 last_activity: 2026-09-21
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 76
-  completed_plans: 38
+  completed_plans: 39
   percent: 17
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 5 (ton-kho-tong-quan) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 7 of 12
+Plan: 8 of 12
 04-05, 04-09, 04-11, 04-12, 04-13, 04-14, 04-15 CHƯA có SUMMARY.md (đều đang mở
 checkpoint kiểm mắt, xem ghi chú dưới — 04-15 Task 1-3 đã xong và có commit
 thật, chỉ còn Task 4 chờ người dùng)
@@ -431,6 +431,7 @@ checkpoint, không có auth gate._
 | Phase 05 P04 | 25min | 3 tasks | 2 files |
 | Phase 05 P05 | — | 2 tasks | 3 files |
 | Phase 05 P06 | 10min | 3 tasks | 6 files |
+| Phase 05 P08 | 6min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -489,6 +490,9 @@ Recent decisions affecting current work:
 - [Phase 05]: InventoryRow.stockByWarehouse la Record<kho_id, number> thu hep tu unknown (ton_theo_kho la Json); kho khong co khoa thi giao dien doc ?? 0; nhom/cong doan/DVT go string | null vi RPC lay qua LEFT JOIN
 - [Phase 05]: nguon_de_xuat la roi ve khong_du_lieu bang type guard — tha noi khong biet con hon gan nhan theo lich su ban cho so khong ro nguon
 - [Phase 05]: useApplyReorderLevels invalidate inventoryKeys.all + [products] + [audit-log, san_pham]; REORDER_SUGGESTION_PAGE_SIZE = 200 (duoi gioi han 1000 id/lan cua dat_dinh_muc)
+- [Phase 05]: StockCardRow.runningBalance la number | null, map ton_luy_ke === null ? null : Number(...) — kieu sinh ghi number nhung dong KiotViet tra null, Number(null) ra 0 se hien "0" sai
+- [Phase 05]: DOC_TYPE_TO_ROUTE (stock-card-columns.tsx) co NHAP/XUAT/TRA_KHACH/TRA_NCC — chi loai co [id]/page.tsx that; TRA_* dung chung /tra-hang; CHUYEN_KHO/KIEM_KE/DIEU_CHINH chua co route nen hien chu thuong, them vao map khi co trang
+- [Phase 05]: Mang cot the kho tach ra buildStockCardColumns({ canViewCost }) vi stock-card.tsx len 210 dong — theo dieu khoan du phong cua 05-08, khuon buildXColumns san co
 
 ### Pending Todos
 
@@ -507,7 +511,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-21T11:15:00.000Z
-Stopped at: Completed 05-06-PLAN.md
+Last session: 2026-09-21T11:22:00.000Z
+Stopped at: Completed 05-08-PLAN.md
 Last activity: 2026-09-21
 Resume file: None
