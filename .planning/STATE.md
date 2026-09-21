@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 05-09-PLAN.md
-last_updated: "2026-09-21T11:52:00.000Z"
+stopped_at: Completed 05-10-PLAN.md
+last_updated: "2026-09-21T12:12:00.000Z"
 last_activity: 2026-09-21
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 76
-  completed_plans: 41
+  completed_plans: 42
   percent: 17
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 5 (ton-kho-tong-quan) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 10 of 12
+Plan: 11 of 12
 04-05, 04-09, 04-11, 04-12, 04-13, 04-14, 04-15 CHƯA có SUMMARY.md (đều đang mở
 checkpoint kiểm mắt, xem ghi chú dưới — 04-15 Task 1-3 đã xong và có commit
 thật, chỉ còn Task 4 chờ người dùng)
@@ -434,6 +434,7 @@ checkpoint, không có auth gate._
 | Phase 05 P08 | 6min | 2 tasks | 3 files |
 | Phase 05 P07 | 9min | 3 tasks | 5 files |
 | Phase 05 P09 | 10min | 2 tasks | 4 files |
+| Phase 05 P10 | 17min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -503,6 +504,10 @@ Recent decisions affecting current work:
 - [Phase 05]: Canh bao du lieu man duyet lay so_ngay_du_lieu that; ky 03/09-12/09/2026 va 1.223/3.266 ma la ARCHIVE_SNAPSHOT go cung (RPC khong tra), chi in khi so_ngay_du_lieu con bang 10
 - [Phase 05]: Nut duyet dinh muc disabled ca khi bang dang tai lai (isFetching) — sau khi duyet trang 1 cu con hien toi luc refetch ve; loi 42501 noi ve quyen (va tai lai trang neu vai tro vua doi), 23514 hien nguyen van RPC
 - [Phase 05]: reorder-data-warning.tsx tach ngoai files_modified 05-09 (bang 256 dong sau khi da tach cot) — theo gioi han ~200 dong cua CLAUDE.md
+- [Phase 05]: /api/ton-kho/nap-tam chan ca file khi co ma hang lap (422) — RPC nap_ton_tam khong gop dong trung, nap ca hai dong se cong doi ton
+- [Phase 05]: Man nap ton tam goi route qua api/provisional-stock.api.ts (zod parse { result } + mapper, khuon excel-import.api.ts) thay vi fetch trong component nhu cost-import.tsx; luong ba buoc o hooks/useProvisionalStockFlow.ts de component con ~200 dong
+- [Phase 05]: Permission load-provisional-stock = [quan_ly]; /ton-kho doi canLoadProvisionalStock sang hasPermission cung quyen nay
+- [Phase 05]: Hoi quy tu 9ec9b1f (nhap-excel / gia-von-dau-ky tra { result }, client con doc ketQua) ghi vao deferred-items.md — ngoai pham vi 05-10, chua sua
 
 ### Pending Todos
 
@@ -521,7 +526,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-21T11:52:00.000Z
-Stopped at: Completed 05-09-PLAN.md
+Last session: 2026-09-21T12:12:00.000Z
+Stopped at: Completed 05-10-PLAN.md
 Last activity: 2026-09-21
 Resume file: None
