@@ -2,7 +2,7 @@
 
 ## Từ plan 05-10 (2026-09-21)
 
-### 1. Hồi quy: nhập danh mục Excel và nạp giá vốn đầu kỳ đọc sai khóa JSON — CHƯA sửa
+### 1. Hồi quy: nhập danh mục Excel và nạp giá vốn đầu kỳ đọc sai khóa JSON — ĐÃ SỬA (`c51391d`)
 
 Commit `9ec9b1f` ("refactor(settings,app,scripts): dot cuoi cua lop code sang tieng Anh")
 đổi khóa trả về của hai route handler từ `ketQua` sang `result`, nhưng phía client vẫn đọc `ketQua`:
@@ -16,7 +16,11 @@ Chỉ đọc code, chưa chạy trên trình duyệt để xác nhận. Sửa: �
 (một feature products, ngoài phạm vi 05-10). Màn nạp tồn tạm mới KHÔNG mắc lỗi này — client
 parse `{ result }` bằng zod.
 
-### 2. Cảnh báo antd v6 lúc chạy: `Statistic valueStyle` đã bỏ — CHƯA sửa
+**Đã sửa 2026-09-21 (`c51391d`):** client đổi sang đọc `result`, khớp route. Lỗi đã nằm trên
+`origin/main` (production) từ `9ec9b1f`. Chưa thử trên trình duyệt (cần đăng nhập) — thêm vào
+UAT 05-11: nhập thử một file danh mục ở `/cai-dat/…` màn nhập Excel và xem trước giá vốn đầu kỳ.
+
+### 2. Cảnh báo antd v6 lúc chạy: `Statistic valueStyle` đã bỏ — ĐÃ SỬA (`55d0b29`)
 
 `src/features/products/components/cost-import.tsx` và `import-preview.tsx` dùng
 `valueStyle`; antd 6.6 cảnh báo deprecated, thay bằng `styles={{ content: … }}` (Bẫy 11).
