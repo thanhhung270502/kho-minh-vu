@@ -29,9 +29,13 @@ const SORT_FIELD_TO_COLUMN: Record<InventorySortField, string> = {
   totalStock: "tong_ton",
 };
 
-const COLUMN_TO_SORT_FIELD: Record<string, InventorySortField> = Object.fromEntries(
-  Object.entries(SORT_FIELD_TO_COLUMN).map(([field, column]) => [column, field]),
-) as Record<string, InventorySortField>;
+const COLUMN_TO_SORT_FIELD: Record<string, InventorySortField> =
+  Object.fromEntries(
+    Object.entries(SORT_FIELD_TO_COLUMN).map(([field, column]) => [
+      column,
+      field,
+    ]),
+  ) as Record<string, InventorySortField>;
 
 export type TradingStatus = "active" | "inactive" | "all";
 
@@ -134,7 +138,9 @@ export function readInventoryFilterFromUrl(
 }
 
 /** Chỉ ghi khóa khác mặc định để URL gọn và dễ đọc. */
-export function writeInventoryFilterToUrl(filter: InventoryFilter): URLSearchParams {
+export function writeInventoryFilterToUrl(
+  filter: InventoryFilter,
+): URLSearchParams {
   const params = new URLSearchParams();
   if (filter.q) params.set("q", filter.q);
   if (filter.categoryId) params.set("nhom", filter.categoryId);
@@ -157,7 +163,8 @@ export function writeInventoryFilterToUrl(filter: InventoryFilter): URLSearchPar
   return params;
 }
 
-type InventoryRpcArgs = Database["public"]["Functions"]["danh_sach_ton_kho"]["Args"];
+type InventoryRpcArgs =
+  Database["public"]["Functions"]["danh_sach_ton_kho"]["Args"];
 
 export function toInventoryRpcArgs(filter: InventoryFilter): InventoryRpcArgs {
   const args: InventoryRpcArgs = {

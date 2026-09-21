@@ -116,7 +116,9 @@ export function toInventoryRow(row: InventoryRowDb): InventoryRow {
   };
 }
 
-export function toReorderSuggestion(row: ReorderSuggestionDb): ReorderSuggestion {
+export function toReorderSuggestion(
+  row: ReorderSuggestionDb,
+): ReorderSuggestion {
   return {
     id: row.id,
     code: row.ma_hang,
@@ -126,7 +128,9 @@ export function toReorderSuggestion(row: ReorderSuggestionDb): ReorderSuggestion
     suggestedLevel: Number(row.dinh_muc_de_xuat),
     // Giá trị lạ từ database rơi về "không có dữ liệu": thà nói không biết còn hơn
     // gắn nhãn "theo lịch sử bán" cho một con số không rõ nguồn.
-    basis: isSuggestionBasis(row.nguon_de_xuat) ? row.nguon_de_xuat : "khong_du_lieu",
+    basis: isSuggestionBasis(row.nguon_de_xuat)
+      ? row.nguon_de_xuat
+      : "khong_du_lieu",
     dataDays: row.so_ngay_du_lieu,
     saleCount: row.so_lan_ban,
     totalSold: Number(row.tong_da_ban),
