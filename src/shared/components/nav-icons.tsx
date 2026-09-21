@@ -2,6 +2,7 @@
 
 import {
   AppstoreOutlined,
+  ContainerOutlined,
   DashboardOutlined,
   ExportOutlined,
   ImportOutlined,
@@ -19,6 +20,7 @@ export const NAV_ICONS: Record<NavIconId, ReactNode> = {
   "stock-in": <ImportOutlined />,
   "sales-order": <ShoppingCartOutlined />,
   "stock-out": <ExportOutlined />,
+  inventory: <ContainerOutlined />,
   catalog: <AppstoreOutlined />,
   partners: <TeamOutlined />,
   settings: <SettingOutlined />,

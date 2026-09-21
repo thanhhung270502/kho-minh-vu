@@ -1,13 +1,18 @@
 // File thuần — không đánh dấu client, không import thư viện UI nào cả.
 // Icon để dạng mã chuỗi (NavIconId), ánh xạ sang element ở nav-icons.tsx
 // (file client) — cách chắc chắn để Server Component vẫn import được từ đây.
-import { hasPermission, type Permission, type Role } from "@/shared/lib/permissions";
+import {
+  hasPermission,
+  type Permission,
+  type Role,
+} from "@/shared/lib/permissions";
 
 export type NavIconId =
   | "dashboard"
   | "stock-in"
   | "sales-order"
   | "stock-out"
+  | "inventory"
   | "catalog"
   | "partners"
   | "settings";
@@ -30,6 +35,11 @@ export type NavItem = {
 // "Xuất kho" đứng trước "Nhập kho". "Danh mục hàng" và "Đối tác" là màn tra
 // cứu thỉnh thoảng, chuyển vào "Khác" (mobilePriority: null) để nhường chỗ
 // cho "Đặt hàng" — băn khoăn hằng ngày của văn phòng khi lên đơn cho khách.
+//
+// Phase 5 (plan 05-11): "Tồn kho" lấy ô thứ 4 của "Đặt hàng". Thủ kho cầm điện
+// thoại tra tồn nhiều lần mỗi ngày; văn phòng lên đơn chủ yếu trên máy tính
+// (CLAUDE.md: văn phòng = máy tính, bảng dày), nên "Đặt hàng" rơi vào "Khác".
+// Xuất (2) và Nhập (3) giữ nguyên vị trí người dùng đã quen từ UAT Phase 4.
 export const NAV_ITEMS: NavItem[] = [
   {
     href: "/",
@@ -54,7 +64,7 @@ export const NAV_ITEMS: NavItem[] = [
     shortLabel: "Đặt hàng",
     icon: "sales-order",
     permission: "view-catalog",
-    mobilePriority: 4,
+    mobilePriority: 5,
   },
   {
     href: "/xuat-kho",
@@ -63,6 +73,17 @@ export const NAV_ITEMS: NavItem[] = [
     icon: "stock-out",
     permission: "view-catalog",
     mobilePriority: 2,
+  },
+  {
+    // Sau luồng Nhập → Đặt → Xuất, trước dữ liệu nền. /ton-kho/dinh-muc và
+    // /ton-kho/nap-tam không có mục riêng (việc định kỳ / một lần) — vào bằng
+    // link trong trang; findActiveHref khớp tiền tố nên mục này vẫn sáng.
+    href: "/ton-kho",
+    label: "Tồn kho",
+    shortLabel: "Tồn",
+    icon: "inventory",
+    permission: "view-catalog",
+    mobilePriority: 4,
   },
   {
     href: "/danh-muc",
@@ -115,7 +136,9 @@ export function splitMobileItems(items: NavItem[]): {
 } {
   const prioritized = items
     .filter((item) => item.mobilePriority !== null)
-    .sort((a, b) => (a.mobilePriority as number) - (b.mobilePriority as number));
+    .sort(
+      (a, b) => (a.mobilePriority as number) - (b.mobilePriority as number),
+    );
 
   const primary = prioritized.slice(0, 4);
   const primaryHrefs = new Set(primary.map((item) => item.href));
@@ -128,6 +151,9 @@ export function splitMobileItems(items: NavItem[]): {
  * Tailwind không sinh được class động `grid-cols-${n}` — thanh tab đáy dùng
  * số này để đặt `style={{ gridTemplateColumns: repeat(n, minmax(0,1fr)) }}`.
  */
-export function bottomTabColumns(primary: NavItem[], overflow: NavItem[]): number {
+export function bottomTabColumns(
+  primary: NavItem[],
+  overflow: NavItem[],
+): number {
   return primary.length + (overflow.length > 0 ? 1 : 0);
 }
