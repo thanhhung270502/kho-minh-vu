@@ -180,6 +180,9 @@ select is(
 );
 
 -- 8. Nhật ký: đúng một dòng ghi ton_toi_thieu với nguon = dinh_muc cho A.
+-- Về postgres trước khi đọc: nhat_ky_sua không cấp SELECT cho authenticated
+-- (0027 — client chỉ đọc qua RPC lich_su_sua), như 25_duyet_don và 91_gia_von_dau_ky.
+select pg_temp.dang_xuat();
 select is(
   (select count(*) from public.nhat_ky_sua
      where bang = 'san_pham' and ban_ghi_id = (select a from t_dm)
@@ -188,7 +191,6 @@ select is(
   'đúng một dòng nhat_ky_sua ghi ton_toi_thieu với nguon = dinh_muc cho A'
 );
 
-select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 
 -- 9. Thủ kho không duyệt được định mức.
