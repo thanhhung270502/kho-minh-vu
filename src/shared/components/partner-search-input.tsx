@@ -6,7 +6,11 @@ import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { useCustomerSearch } from "@/features/partners/hooks/useNoteReview";
-import { useSavePartner, useSuggestedPartnerCode } from "@/features/partners/hooks/usePartners";
+import {
+  usePartnerDetail,
+  useSavePartner,
+  useSuggestedPartnerCode,
+} from "@/features/partners/hooks/usePartners";
 import {
   partnerSchema,
   type PartnerFormValues,
@@ -51,6 +55,28 @@ export function PartnerSearchInput({ value, onChange, disabled, autoFocus }: Pro
   const customers = useCustomerSearch(query);
   const [createOpen, setCreateOpen] = useState(false);
 
+  const options = (customers.data ?? []).map((customer) => ({
+    value: customer.id,
+    label: `${customer.code} — ${customer.name}`,
+  }));
+
+  // Kết quả tìm chỉ có 20 khách khớp từ khóa hiện tại. Mở một đơn cũ, ô tìm còn
+  // trống → người nhận đã chọn thường KHÔNG nằm trong đó (hoặc là NCC, không
+  // bao giờ nằm trong đó), và antd hiện nguyên UUID thô. Tự nạp tên của đúng
+  // đối tác đang chọn rồi chèn vào danh sách. Đo tận tay ở UAT Phase 4.
+  const selectedMissing = Boolean(value) && !options.some((o) => o.value === value);
+  const selected = usePartnerDetail(selectedMissing ? (value ?? null) : null);
+  if (selectedMissing && value) {
+    options.unshift({
+      value,
+      label: selected.data
+        ? `${selected.data.code} — ${selected.data.name}`
+        : selected.isPending
+          ? "Đang tải…"
+          : "(đối tác không còn trong danh sách)",
+    });
+  }
+
   return (
     <>
       <Select
@@ -65,10 +91,7 @@ export function PartnerSearchInput({ value, onChange, disabled, autoFocus }: Pro
         loading={customers.isFetching}
         onSearch={setQuery}
         onChange={(selected) => onChange(selected ?? undefined)}
-        options={(customers.data ?? []).map((customer) => ({
-          value: customer.id,
-          label: `${customer.code} — ${customer.name}`,
-        }))}
+        options={options}
         // notFoundContent (thay vì dropdownRender): danh sách hiện chưa có mấy
         // ai, nút "Thêm đối tác mới" phải luôn thấy ngay khi không ra kết quả,
         // không chờ người dùng mở rộng dropdown.
