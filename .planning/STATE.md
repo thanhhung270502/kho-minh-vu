@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 05-05-PLAN.md
-last_updated: "2026-09-21T14:30:00.000Z"
+stopped_at: Completed 05-06-PLAN.md
+last_updated: "2026-09-21T11:15:00.000Z"
 last_activity: 2026-09-21
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 76
-  completed_plans: 37
+  completed_plans: 38
   percent: 17
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 5 (ton-kho-tong-quan) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 6 of 12
+Plan: 7 of 12
 04-05, 04-09, 04-11, 04-12, 04-13, 04-14, 04-15 CHƯA có SUMMARY.md (đều đang mở
 checkpoint kiểm mắt, xem ghi chú dưới — 04-15 Task 1-3 đã xong và có commit
 thật, chỉ còn Task 4 chờ người dùng)
@@ -430,6 +430,7 @@ checkpoint, không có auth gate._
 | Phase 05 P03 | 12min | 3 tasks | 2 files |
 | Phase 05 P04 | 25min | 3 tasks | 2 files |
 | Phase 05 P05 | — | 2 tasks | 3 files |
+| Phase 05 P06 | 10min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -484,6 +485,10 @@ Recent decisions affecting current work:
 - [Phase 05]: Deploy khong CLI: migration qua MCP execute_sql + insert schema_migrations, kiem md5; pgTAP qua MCP voi finish(true) boc string_agg -> 'DAT'. pgTAP toan du an 380/380 (324 truoc Phase 5)
 - [Phase 05]: nap_ton_tam: dieu kien bo qua la DA CO kho_movement that, khong phai ton_kho.so_luong khac 0 — Ma ton 0 vi da xuat het that khac ma ton 0 vi chua tung co chung tu nao; day cung la dieu kien lam lan chay thu hai vo hai (idempotent)
 - [Phase 05]: nap_ton_tam chi vai tro quan_ly (hep hon D-04 quan_ly+van_phong) — Viec mot lan, hau qua trai khap moi bao cao ton - nen hep, noi ra sau de hon siet lai
+- [Phase 05]: features/inventory khai lai STOCK_STATUSES/TradingStatus thay vi import tu features/products (cam import noi bo feature khac) — comment tro sang products de hai ben di cung nhau
+- [Phase 05]: InventoryRow.stockByWarehouse la Record<kho_id, number> thu hep tu unknown (ton_theo_kho la Json); kho khong co khoa thi giao dien doc ?? 0; nhom/cong doan/DVT go string | null vi RPC lay qua LEFT JOIN
+- [Phase 05]: nguon_de_xuat la roi ve khong_du_lieu bang type guard — tha noi khong biet con hon gan nhan theo lich su ban cho so khong ro nguon
+- [Phase 05]: useApplyReorderLevels invalidate inventoryKeys.all + [products] + [audit-log, san_pham]; REORDER_SUGGESTION_PAGE_SIZE = 200 (duoi gioi han 1000 id/lan cua dat_dinh_muc)
 
 ### Pending Todos
 
@@ -502,7 +507,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-21T10:26:53.139Z
-Stopped at: Completed 05-04-PLAN.md
+Last session: 2026-09-21T11:15:00.000Z
+Stopped at: Completed 05-06-PLAN.md
 Last activity: 2026-09-21
 Resume file: None

@@ -190,7 +190,7 @@ Plans:
 - [x] 05-03-PLAN.md — RPC đề xuất và duyệt định mức tồn tối thiểu (wave 2)
 - [x] 05-04-PLAN.md — RPC `nap_ton_tam` qua một chứng từ DIEU_CHINH (wave 2)
 - [x] 05-05-PLAN.md — [BLOCKING] db:push, db:types, chạy toàn bộ pgTAP (wave 3)
-- [ ] 05-06-PLAN.md — Lớp dữ liệu feature inventory: kiểu, bộ lọc URL, api, hook (wave 4)
+- [x] 05-06-PLAN.md — Lớp dữ liệu feature inventory: kiểu, bộ lọc URL, api, hook (wave 4)
 - [ ] 05-07-PLAN.md — Màn tồn kho `/ton-kho` (wave 5)
 - [ ] 05-08-PLAN.md — Mở rộng thẻ kho đã có: cột lũy kế + link chứng từ (wave 4)
 - [ ] 05-09-PLAN.md — Màn duyệt đề xuất định mức `/ton-kho/dinh-muc` (wave 5)
@@ -237,5 +237,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 2. Khung ứng dụng, Danh mục, Đối tác, Cài đặt | 2/21 | In Progress | - |
 | 3. Phiếu nhập | 0/TBD | Not started | - |
 | 4. Đơn đặt hàng & Phiếu xuất | 0/TBD | Not started | - |
-| 5. Tồn kho & Tổng quan | 6/12 | In Progress|  |
+| 5. Tồn kho & Tổng quan | 7/12 | In Progress|  |
 | 6. Kiểm kê & Go-live | 0/TBD | Not started | - |
