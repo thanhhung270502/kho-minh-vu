@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to verify
-stopped_at: Hoan thanh 06-13-PLAN.md
-last_updated: "2026-09-24T16:10:00.000Z"
+stopped_at: Hoan thanh 06-08-PLAN.md
+last_updated: "2026-09-24T15:49:36.213Z"
 last_activity: 2026-09-24
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 92
   completed_plans: 53
-  percent: 58
+  percent: 25
 ---
 
 # Project State
@@ -27,7 +27,8 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 6 (Kiểm kê & Go-live) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 13 of 16 (06-13 vừa xong — xem ghi chú cuối phần Current Position)
+Plan: 14 of 16 (06-08 vừa xong — cả hai task autonomous, không checkpoint; xem
+ghi chú "_Ghi lại 2026-09-24 khi thực thi 06-08_" ở cuối phần Current Position)
 trả lời "đạt" (cả 10 mục), NHƯNG lúc 15:01 UTC database chưa có nạp tồn tạm (0 DIEU_CHINH,
 ton_kho 0 dòng khác 0), chưa duyệt định mức nào — xem 05-11-SUMMARY.md. Nạp tồn tạm + duyệt
 định mức là việc vận hành bắt buộc trước go-live.
@@ -424,6 +425,32 @@ deviation, không có checkpoint, không có auth gate. Xem
 `06-13-SUMMARY.md#Cần-mở-trình-duyệt-kiểm-tra` cho danh sách việc UAT (06-16)
 cần làm bằng mắt._
 
+_Ghi lại 2026-09-24 khi thực thi 06-08 (XONG — cả hai task autonomous, không có
+checkpoint, wave 5, phụ thuộc 06-06/06-07): `history-filter-panel.tsx` (Select
+loại, DatePicker.RangePicker, Input mã hàng/số phiếu, nút Xóa lọc) +
+`history-screen.tsx` (ô tìm riêng debounce ngoài panel, ListLayout +
+HistoryTable + VoucherDrawer, Alert banner nói rõ đây là tra cứu không phải sổ
+kho) + route `/lich-su-kiotviet` (Server Component thuần, `requireKiotVietHistoryAccess()`,
+Suspense quanh HistoryScreen) — Task 1. `product-history-tab.tsx` (Segmented lọc
+loại, dùng lại HistoryTable/VoucherDrawer với `hideProductColumns`) + thêm prop
+`kiotVietHistoryTab` vào `product-detail.tsx` (KHÔNG import feature
+`kiotviet-history` trực tiếp — route `danh-muc/[id]/page.tsx` ghép, truyền theo
+`user.canViewKiotVietHistory`, không qua `hasPermission()`) — Task 2.
+
+**Một deviation Rule 1 (bug) phát hiện qua TDD RED trước khi viết code:**
+`readDate` trong `history-filter.schema.ts` (viết ở 06-07) chỉ kiểm khuôn số
+bằng regex, không kiểm ngày có thật — `"2026-13-45"` (tháng 13) lọt qua bộ lọc.
+Sửa bằng cách dựng lại `Date` rồi so ngược ba phần năm/tháng/ngày. `npm run
+check` (typecheck+lint+build) xanh toàn bộ, route `/lich-su-kiotviet` đã lên
+danh sách route của `next build`; `npx tsx scripts/test-pure-functions.ts`
+xanh với 10 case mới cho bộ lọc lịch sử KiotViet. **CHƯA kiểm bằng mắt trên
+trình duyệt** — agent không khởi động `npm run dev` theo ràng buộc của phiên
+thực thi này; danh sách việc cần UAT (06-16) xem
+`06-08-SUMMARY.md#User-Setup-Required`. **Chưa thêm `/lich-su-kiotviet` vào
+`scripts/test-route-permissions.ts` và `src/shared/lib/navigation.ts`** — đúng
+phạm vi plan, để dành cho `06-16` (plan cuối làm cùng mọi route mới của phase,
+theo tiền lệ `05-11`). Không có auth gate._
+
 ## Performance Metrics
 
 **Velocity:**
@@ -474,6 +501,7 @@ cần làm bằng mắt._
 | Phase 06 P06 | 35min | - tasks | - files |
 | Phase 06 P06 | 35min | 2 tasks | 7 files |
 | Phase 06 P13 | 55min | 2 tasks | 5 files |
+| Phase 06 P08 | 45min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -562,6 +590,7 @@ Recent decisions affecting current work:
 - [Phase 06]: 0066 bang_dem_kiem_ke tra ten_nhom tren moi dong khi loc theo p_nhom_hang_id - route mau-excel lay ten nhom tu dong dau ket qua, khong truy van them bang nhom_hang
 - [Phase 06]: nhap-excel route: loi 23514 cua nhap_so_dem_kiem_ke tra 409 kem NGUYEN VAN error.message (khong qua cau chung cua explainError) - nguoi dung can doc dung ly do nghiep vu (vi du "Phien da duyet, khong nhap so dem duoc")
 - [Phase 06]: scripts/test-excel-reader.ts can data/kiotviet/DanhSachSanPham*.xlsx that (khong commit) - moi truong thuc thi 06-13 thieu file nay, 4 case moi da xac minh PASS qua script doc lap tam thoi, can chay lai script day du tren may co du lieu that
+- [Phase 06]: 06-08: sua bug readDate (06-07) chi kiem khuon so khong kiem ngay co that; doi ten tab key 'kiotviet-history' -> 'lich-su-kiotviet' de tranh trung chuoi voi comment import feature
 
 ### Pending Todos
 
@@ -582,7 +611,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-24T16:10:00.000Z
-Stopped at: Hoan thanh 06-13-PLAN.md
+Last session: 2026-09-24T15:49:36.185Z
+Stopped at: Hoan thanh 06-08-PLAN.md
 Last activity: 2026-09-24
 Resume file: None
