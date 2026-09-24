@@ -76,7 +76,11 @@ select
   pg_temp.kho_id('K1')        as k1,
   pg_temp.kho_id('K2')        as k2,
   (select id from public.nhom_hang where ma = 'ZQX-N1') as n1,
-  (select id from public.nhom_hang where ma = 'ZQX-N2') as n2;
+  (select id from public.nhom_hang where ma = 'ZQX-N2') as n2,
+  -- Đọc id NGAY BÂY GIỜ dưới postgres — 'authenticated' KHÔNG có SELECT trên
+  -- auth.users (Supabase khóa bảng này), nên không đọc lại trong lúc assertion
+  -- chạy dưới vai trò vanphong.
+  (select id from auth.users where email = 'vanphong@khominhvu.local') as u_vanphong;
 grant select on t_id to authenticated;
 
 update public.san_pham sp set nhom_hang_id = t_id.n1, kho_mac_dinh_id = t_id.k1 from t_id where sp.id = t_id.a;
@@ -170,7 +174,7 @@ select is((select so_luong_he_thong from t_dong_a), 7::numeric(18,4), 'C4: so_lu
 select ok((select dem_luc from t_dong_a) is not null, 'C4: dem_luc not null');
 select is(
   (select nguoi_dem_id from t_dong_a),
-  (select id from auth.users where email = 'vanphong@khominhvu.local'),
+  (select u_vanphong from t_id),
   'C4: nguoi_dem_id = người đang đếm'
 );
 select is((select kho_id from t_dong_a), (select k1 from t_id), 'C4: kho_id = K1');
