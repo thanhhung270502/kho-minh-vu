@@ -66,12 +66,12 @@
 
 - [x] **XUAT-01**: Tạo và ghi sổ một phiếu xuất từ đơn đặt hàng có sẵn trong dưới 20 giây — kho chỉ xác nhận số thực xuất, không gõ lại mã
 - [x] **XUAT-02**: Tạo phiếu xuất mới không cần đơn đặt hàng
-- [ ] **XUAT-03**: Thêm dòng bằng cách quét barcode qua camera điện thoại *(dời sang Phase 6 — chốt 20/09)*
+- [ ] **XUAT-03**: Thêm dòng nhanh trên điện thoại bằng ô tìm mã *(bỏ quét barcode — người dùng không dùng barcode, không dán tem; chốt 24/09. Dời sang Phase 8)*
 - [x] **XUAT-04**: Khi số xuất làm tồn xuống dưới 0, hệ thống cảnh báo và bắt buộc chọn lý do trước khi cho ghi sổ
 - [x] **XUAT-05**: Ghi sổ phiếu xuất làm tồn giảm và cập nhật tiến độ đơn đặt hàng liên quan
 - [x] **XUAT-06**: In phiếu giao hàng
 - [x] **XUAT-07**: Nhập liệu hoàn toàn bằng bàn phím — Enter xuống dòng mới, Tab sang ô số lượng, không cần chạm chuột
-- [ ] **XUAT-08**: Màn xuất hàng dùng được trên điện thoại: nút đủ to, bảng cuộn ngang trong khung riêng *(dời sang Phase 6 — chốt 20/09)*
+- [ ] **XUAT-08**: Màn xuất hàng dùng được trên điện thoại: nút đủ to, bảng cuộn ngang trong khung riêng *(dời sang Phase 8 — chốt 24/09)*
 - [x] **XUAT-09**: Trả hàng khách (`TRA_KHACH`, tồn tăng) và trả hàng NCC (`TRA_NCC`, tồn giảm) là hai loại chứng từ riêng, đều bắt buộc tham chiếu chứng từ gốc
 
 ### Tồn kho (TON)
@@ -85,7 +85,7 @@
 ### Kiểm kê (KKE)
 
 - [ ] **KKE-01**: Mở phiên kiểm kê theo kho và nhóm hàng; hệ thống chốt tồn sổ tại thời điểm đếm
-- [ ] **KKE-02**: Đếm bằng quét mã trên điện thoại
+- [ ] **KKE-02**: Đếm trên điện thoại bằng ô tìm mã, kèm nhập từ máy tính và import Excel *(bỏ quét mã — chốt 24/09)*
 - [ ] **KKE-03**: Xem bảng lệch giữa số đếm thực tế và tồn sổ
 - [ ] **KKE-04**: Duyệt phiên kiểm kê sinh phiếu điều chỉnh, tồn về đúng số đã đếm
 
@@ -111,7 +111,7 @@
 - [x] **DLIEU-02**: Khi nạp, tách trường ĐVT cũ thành `dvt` và `cong_doan`
 - [x] **DLIEU-03**: Gán công đoạn cho 1.826 mã không suy được từ ĐVT cũ
 - [ ] **DLIEU-04**: Trích và chuẩn hóa danh sách khách hàng thật từ ô Ghi chú của 4.732 dòng bán
-- [ ] **DLIEU-05**: Nạp giá vốn khởi đầu một lần từ file Excel
+- [x] **DLIEU-05**: Nạp giá vốn khởi đầu một lần từ file Excel *(đóng 24/09 — người dùng không dùng giá, mọi giá = 0; màn nạp giá vốn 0044 đã có, giữ để dùng sau)*
 - [ ] **DLIEU-06**: Set tồn đầu kỳ từ kết quả kiểm kê thực tế, không bê số 389.671 từ KiotViet
 - [ ] **DLIEU-07**: Lưu 594 dòng nhập và 4.732 dòng hóa đơn cũ vào bảng lưu trữ riêng để tra cứu, không nạp vào `chung_tu`
 
@@ -205,29 +205,29 @@
 | DDH-04 | Phase 4 | Complete |
 | XUAT-01 | Phase 4 | Complete |
 | XUAT-02 | Phase 4 | Complete |
-| XUAT-03 | Phase 6 | Pending |
+| XUAT-03 | Phase 8 | Pending |
 | XUAT-04 | Phase 4 | Complete |
 | XUAT-05 | Phase 4 | Complete |
 | XUAT-06 | Phase 4 | Complete |
 | XUAT-07 | Phase 4 | Complete |
-| XUAT-08 | Phase 6 | Pending |
+| XUAT-08 | Phase 8 | Pending |
 | XUAT-09 | Phase 4 | Complete |
 | TON-01 | Phase 5 | Complete |
 | TON-02 | Phase 5 | Complete |
-| TON-03 | Phase 6 | Pending |
-| TON-04 | Phase 6 | Pending |
-| TON-05 | Phase 6 | Pending |
-| TQAN-01 | Phase 6 | Pending |
+| TON-03 | Phase 7 | Pending |
+| TON-04 | Phase 8 | Pending |
+| TON-05 | Phase 8 | Pending |
+| TQAN-01 | Phase 7 | Pending |
 | TQAN-02 | Phase 5 | Complete |
-| TQAN-03 | Phase 6 | Pending |
-| TQAN-04 | Phase 6 | Pending |
-| TQAN-05 | Phase 6 | Pending |
-| TQAN-06 | Phase 6 | Pending |
+| TQAN-03 | Phase 7 | Pending |
+| TQAN-04 | Phase 7 | Pending |
+| TQAN-05 | Phase 7 | Pending |
+| TQAN-06 | Phase 7 | Pending |
 | KKE-01 | Phase 6 | Pending |
 | KKE-02 | Phase 6 | Pending |
 | KKE-03 | Phase 6 | Pending |
 | KKE-04 | Phase 6 | Pending |
-| DLIEU-05 | Phase 6 | Pending |
+| DLIEU-05 | Phase 6 | Closed (không cần) |
 | DLIEU-06 | Phase 6 | Pending |
 | DLIEU-07 | Phase 6 | Pending |
 
@@ -238,4 +238,4 @@
 
 ---
 *Requirements defined: 2026-09-12*
-*Last updated: 2026-09-12 after roadmap creation (6 phases, 100% coverage)*
+*Last updated: 2026-09-24 — tách Phase 6 thành 6/7/8 (Office Hours 24/09), 8 phases, 100% coverage*

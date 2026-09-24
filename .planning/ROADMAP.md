@@ -33,7 +33,9 @@ sau cần dùng ngay.
 - [ ] **Phase 3: Phiếu nhập** - Luồng chứng từ hoàn chỉnh đầu tiên: tạo, thêm dòng, ghi sổ, hủy đảo, in — giá vốn bình quân chạy thật
 - [ ] **Phase 4: Đơn đặt hàng & Phiếu xuất** - Nhân bản cơ chế chứng từ cho chiều xuất, đơn đặt → duyệt → in đi lấy hàng → phiếu xuất, chạy trọn luồng trên máy tính văn phòng
 - [ ] **Phase 5: Tồn kho & Thẻ kho** - Tồn theo mã × kho, thẻ kho có tồn lũy kế, đề xuất định mức và cảnh báo sắp hết
-- [ ] **Phase 6: Kiểm kê & Go-live** - Kiểm kê mobile, chốt số liệu chuyển đổi cuối cùng, hệ thống sẵn sàng thay KiotViet
+- [ ] **Phase 6: Kiểm kê & Go-live** - Kiểm kê (đếm điện thoại/máy tính/Excel), đặt tồn đầu kỳ, tra cứu lịch sử KiotViet — hệ thống sẵn sàng thay KiotViet
+- [ ] **Phase 7: Trang tổng quan** - Tồn theo nhóm/công đoạn, hàng không luân chuyển, biểu đồ nhập–xuất, giá trị tồn, báo cáo xuất âm
+- [ ] **Phase 8: Mobile & Chuyển kho** - Màn xuất và màn tồn dùng trên điện thoại, thêm dòng bằng ô tìm, chuyển kho
 
 ## Phase Details
 
@@ -206,22 +208,52 @@ KiotViet), dữ liệu lịch sử tra cứu được, và hệ thống ở tr�
 bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở
 KiotViet để đối chiếu.
 **Depends on**: Phase 5
-**Requirements**: KKE-01, KKE-02, KKE-03, KKE-04, DLIEU-05, DLIEU-06, DLIEU-07, XUAT-03, XUAT-08, TON-03, TON-04, TON-05, TQAN-01, TQAN-03, TQAN-04, TQAN-05, TQAN-06
+**Requirements**: KKE-01, KKE-02, KKE-03, KKE-04, DLIEU-05, DLIEU-06, DLIEU-07
 
-> ⚠️ **Chặng này đang gánh 17 yêu cầu** sau hai lần dời (XUAT-03/08 từ Phase 4 ngày
-> 20/09; tám yêu cầu tồn kho & tổng quan từ Phase 5 cùng ngày). Vai trò gốc của nó là
-> chốt số liệu để go-live. **Nên tách trước khi lập kế hoạch** — ba nhóm tách được rõ:
-> kiểm kê + chốt số liệu (gốc) · trang tổng quan (TQAN-01, 03, 04, 05, 06 + TON-03) ·
-> màn mobile & quét mã (XUAT-03, XUAT-08, TON-05, KKE-02).
+> Tách ngày 24/09 (Office Hours): nỗi đau chính là **mất lịch sử khi bỏ KiotViet**; bản
+> hẹp nhất là kiểm kê + chốt số. Trang tổng quan → Phase 7; mobile & chuyển kho → Phase 8.
+> Không dùng barcode, không dùng giá (DLIEU-05 đóng). Quyết định chi tiết:
+> `.planning/phases/06-kiem-ke-go-live/06-CONTEXT.md`.
+
 **Success Criteria** (what must be TRUE):
 
-  1. Mở phiên kiểm kê theo kho và nhóm hàng, hệ thống chốt tồn sổ tại đúng thời điểm đếm; đếm bằng quét mã trên điện thoại
-  1b. Màn xuất hàng dùng được trên điện thoại và thêm dòng bằng quét barcode qua camera (XUAT-03, XUAT-08 — dời từ Phase 4 sang vì dùng chung thư viện quét và khuôn màn mobile với kiểm kê; chốt 20/09). Chặn trước: 0/3.270 mã đang có barcode — phải quyết in tem hay quét mã nhà sản xuất
+  1. Mở phiên kiểm kê theo kho và nhóm hàng, nhiều người đếm song song chia theo nhóm; tồn sổ chốt theo từng dòng tại lúc lưu số đếm, nên phiếu xuất/nhập ghi sổ trong lúc phiên mở không làm sai lệch
+  2. Nhập số đếm được bằng điện thoại (ô tìm mã không dấu), máy tính và import Excel từ file mẫu hệ xuất theo nhóm (file mẫu không lộ số tồn)
+  3. Xem bảng lệch giữa số đếm và tồn sổ, danh sách mã chưa đếm, dòng lệch lớn được tô nổi và trả về đếm lại từng dòng; người được bật quyền "Duyệt kiểm kê" duyệt phiên sinh chứng từ `KIEM_KE` đưa tồn về đúng số đã đếm
+  4. Tồn đầu kỳ của toàn hệ thống được set từ đợt đếm thực tế sát ngày chuyển, đè lên tồn tạm KiotViet — không bê nguyên số 389.671
+  5. 594 dòng nhập và 4.732 dòng hóa đơn cũ tra cứu được (màn riêng + tab trong chi tiết mã hàng) theo khách/NCC, mã hàng, số phiếu, ngày — chỉ người được quản lý bật quyền mới đọc được, chặn bằng RLS
 
-  2. Xem bảng lệch giữa số đếm thực tế và tồn sổ; duyệt phiên kiểm kê sinh phiếu điều chỉnh đưa tồn về đúng số đã đếm
-  3. Giá vốn khởi đầu của toàn bộ danh mục được nạp một lần từ Excel trước go-live
-  4. Tồn đầu kỳ của toàn hệ thống được set từ kết quả kiểm kê thực tế, không bê nguyên số 389.671 từ KiotViet
-  5. 594 dòng nhập và 4.732 dòng hóa đơn cũ từ KiotViet tra cứu được trong bảng lưu trữ riêng, không lẫn vào `chung_tu`
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 7: Trang tổng quan
+
+**Goal**: Quản lý nhìn được bức tranh kho mà không phải hỏi người.
+**Depends on**: Phase 6
+**Requirements**: TQAN-01, TQAN-03, TQAN-04, TQAN-05, TQAN-06, TON-03
+
+**Success Criteria** (what must be TRUE):
+
+  1. Xem tồn kho theo nhóm hàng và theo công đoạn
+  2. Xem tuổi tồn và danh sách hàng không luân chuyển quá 30 ngày
+  3. Xem biểu đồ nhập–xuất 30 ngày gần nhất
+  4. Xem tổng giá trị tồn kho (lưu ý: người dùng chưa dùng giá — cần hỏi lại trước khi làm)
+  5. Xem báo cáo các lần xuất âm trong ngày kèm lý do đã chọn
+
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 8: Mobile & Chuyển kho
+
+**Goal**: Thủ kho làm việc xuất hàng và xem tồn trên điện thoại; chuyển hàng giữa hai kho bằng chứng từ.
+**Depends on**: Phase 6
+**Requirements**: XUAT-03, XUAT-08, TON-04, TON-05
+
+**Success Criteria** (what must be TRUE):
+
+  1. Màn xuất hàng dùng được trên điện thoại: nút đủ to, bảng cuộn ngang trong khung riêng; thêm dòng bằng ô tìm mã (không quét barcode)
+  2. Màn tồn kho dùng được trên điện thoại
+  3. Chuyển hàng giữa hai kho bằng một chứng từ `CHUYEN_KHO`
 
 **Plans**: TBD
 **UI hint**: yes
@@ -229,7 +261,7 @@ KiotViet để đối chiếu.
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -239,3 +271,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6
 | 4. Đơn đặt hàng & Phiếu xuất | 0/TBD | Not started | - |
 | 5. Tồn kho & Tổng quan | 12/12 | Executed — chờ verify |  |
 | 6. Kiểm kê & Go-live | 0/TBD | Not started | - |
+| 7. Trang tổng quan | 0/TBD | Not started | - |
+| 8. Mobile & Chuyển kho | 0/TBD | Not started | - |
