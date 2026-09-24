@@ -237,7 +237,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 06-05-PLAN.md — [BLOCKING] đẩy 0063-0066 lên cloud, sinh lại kiểu, chạy toàn bộ pgTAP
+- [x] 06-05-PLAN.md — [BLOCKING] đẩy 0063-0066 lên cloud, sinh lại kiểu, chạy toàn bộ pgTAP
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -307,6 +307,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. Phiếu nhập | 0/TBD | Not started | - |
 | 4. Đơn đặt hàng & Phiếu xuất | 0/TBD | Not started | - |
 | 5. Tồn kho & Tổng quan | 12/12 | Executed — chờ verify |  |
-| 6. Kiểm kê & Go-live | 4/16 | In Progress|  |
+| 6. Kiểm kê & Go-live | 5/16 | In Progress|  |
 | 7. Trang tổng quan | 0/TBD | Not started | - |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |
