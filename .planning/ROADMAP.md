@@ -227,7 +227,7 @@ KiotViet để đối chiếu.
 Plans:
 **Wave 1**
 
-- [ ] 06-01-PLAN.md — công tắc quyền theo người (xem lịch sử KiotViet, duyệt kiểm kê) + luu_ho_so_nguoi_dung 8 tham số
+- [x] 06-01-PLAN.md — công tắc quyền theo người (xem lịch sử KiotViet, duyệt kiểm kê) + luu_ho_so_nguoi_dung 8 tham số
 - [ ] 06-03-PLAN.md — DB mở phiên + đếm: chốt tồn sổ theo dòng, chặn ghi thẳng KIEM_KE, nhập số đếm hàng loạt
 
 **Wave 2** *(blocked on Wave 1 completion)*
@@ -307,6 +307,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. Phiếu nhập | 0/TBD | Not started | - |
 | 4. Đơn đặt hàng & Phiếu xuất | 0/TBD | Not started | - |
 | 5. Tồn kho & Tổng quan | 12/12 | Executed — chờ verify |  |
-| 6. Kiểm kê & Go-live | 0/TBD | Not started | - |
+| 6. Kiểm kê & Go-live | 1/16 | In Progress|  |
 | 7. Trang tổng quan | 0/TBD | Not started | - |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |
