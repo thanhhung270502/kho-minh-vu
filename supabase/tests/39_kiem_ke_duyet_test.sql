@@ -94,11 +94,14 @@ select pg_temp.dang_xuat();
 -- Phiên P: kho K1, phạm vi nhóm N1, mở dưới vanphong.
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 
+-- Dùng `select * from fn(...)` (KHÔNG `(fn(...)).*`) — hàm VOLATILE trả về
+-- composite qua `(fn()).*` bị Postgres gọi LẶP LẠI một lần cho MỖI cột (đã xác
+-- nhận bằng thực nghiệm), phá tính không lặp lại của các RPC ghi sổ.
 create temp table t_p as
-select (public.mo_phien_kiem_ke(
+select * from public.mo_phien_kiem_ke(
   p_kho_id := (select k1 from t_id),
   p_nhom_hang_ids := array[(select n1 from t_id)]
-)).*;
+);
 grant select on t_p to authenticated;
 
 -- =============================================================================
@@ -204,7 +207,7 @@ select is(
 -- thuộc K1 (đã xác nhận ở pgTAP 38) nên mở phiên P2 tại K2 để kiểm.
 -- =============================================================================
 create temp table t_p2 as
-select (public.mo_phien_kiem_ke(p_kho_id := (select k2 from t_id))).*;
+select * from public.mo_phien_kiem_ke(p_kho_id := (select k2 from t_id));
 grant select on t_p2 to authenticated;
 select pg_temp.dang_xuat();
 
@@ -316,10 +319,10 @@ select is(
 );
 
 create temp table t_duyet as
-select (public.duyet_phien_kiem_ke(
+select * from public.duyet_phien_kiem_ke(
   (select id from t_p),
   array[(select b from t_id), (select c from t_id)]
-)).*;
+);
 grant select on t_duyet to authenticated;
 
 select is((select trang_thai::text from t_duyet), 'HOAN_THANH', 'E8: chung_tu trả về HOAN_THANH');
@@ -331,7 +334,8 @@ select is(
 select is(
   (select coalesce(sum(so_luong), 0) from public.kho_movement
     where chung_tu_id = (select id from t_p) and san_pham_id = (select a from t_id)),
-  -2::numeric, 'E8: movement A = -2 (lệch đã chốt 8 - 10, KHÔNG phải 8 - 9)'
+  -1::numeric,
+  'E8: movement A = -1 (lệch đã chốt LẦN CUỐI lúc đếm lại ở E5: 8 - 9, sau khi XUAT ở E2 đã làm tồn còn 9 — chốt lúc lưu, không tính lại theo tồn lúc duyệt)'
 );
 select is(
   (select coalesce(sum(so_luong), 0) from public.kho_movement
@@ -345,7 +349,7 @@ select is(
 );
 select is(
   (select so_luong from public.ton_kho where kho_id = (select k1 from t_id) and san_pham_id = (select a from t_id)),
-  7::numeric, 'E8: ton_kho A = 7 (9 - 2)'
+  8::numeric, 'E8: ton_kho A = 8 (9 - 1)'
 );
 select is(
   (select coalesce(so_luong, 0) from public.ton_kho where kho_id = (select k1 from t_id) and san_pham_id = (select b from t_id)),
@@ -389,7 +393,7 @@ select throws_ok(
 );
 
 create temp table t_p3 as
-select (public.mo_phien_kiem_ke(p_kho_id := (select k1 from t_id))).*;
+select * from public.mo_phien_kiem_ke(p_kho_id := (select k1 from t_id));
 grant select on t_p3 to authenticated;
 
 select lives_ok(
@@ -409,10 +413,10 @@ select is(
 -- E11 — chấp nhận 0 một san_pham_id KHÔNG thuộc danh sách chưa đếm -> 23514.
 -- =============================================================================
 create temp table t_p4 as
-select (public.mo_phien_kiem_ke(
+select * from public.mo_phien_kiem_ke(
   p_kho_id := (select k1 from t_id),
   p_nhom_hang_ids := array[(select n1 from t_id)]
-)).*;
+);
 grant select on t_p4 to authenticated;
 
 select public.luu_dong_kiem_ke((select id from t_p4), (select a from t_id), 7);
