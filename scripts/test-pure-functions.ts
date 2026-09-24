@@ -45,6 +45,14 @@ import {
   sessionStatus,
   SESSION_STATUS_LABELS,
 } from "../src/features/stocktake/lib/session-status";
+import {
+  DEFAULT_HISTORY_FILTER,
+  countActiveHistoryFilters,
+  readHistoryFilterFromUrl,
+  writeHistoryFilterToUrl,
+  toHistoryRpcArgs,
+  type KiotVietHistoryFilter,
+} from "../src/features/kiotviet-history/schemas/history-filter.schema";
 
 assert.equal(removeDiacritics("Đặng Thị Ngọc"), "Dang Thi Ngoc");
 assert.equal(normalizeUsername("  Kim.Chi "), "kim.chi");
@@ -297,6 +305,83 @@ assert.deepEqual(SESSION_STATUS_LABELS, {
   approved: "Đã duyệt",
   voided: "Đã hủy",
 });
+
+// --- Bộ lọc lịch sử KiotViet (06-08, D-11/D-12) -----------------------------
+{
+  const parsed = readHistoryFilterFromUrl(
+    new URLSearchParams("loai=XUAT&tim=quynh&trang=2"),
+  );
+  assert.equal(parsed.type, "XUAT", "đọc được ?loai=XUAT");
+  assert.equal(parsed.keyword, "quynh", "đọc được ?tim=quynh");
+  assert.equal(parsed.page, 2, "đọc được ?trang=2");
+}
+assert.equal(
+  readHistoryFilterFromUrl(new URLSearchParams("loai=abc")).type,
+  "",
+  "loại lạ về rỗng (tất cả)",
+);
+assert.equal(
+  readHistoryFilterFromUrl(new URLSearchParams("tu_ngay=2026-13-45")).from,
+  "",
+  "ngày không có thật (tháng 13, ngày 45) bị bỏ dù đúng khuôn số",
+);
+assert.equal(
+  readHistoryFilterFromUrl(new URLSearchParams("trang=-3")).page,
+  1,
+  "page âm về 1",
+);
+assert.equal(
+  writeHistoryFilterToUrl(DEFAULT_HISTORY_FILTER).toString(),
+  "",
+  "bộ lọc lịch sử mặc định không ghi gì vào URL",
+);
+{
+  const params = writeHistoryFilterToUrl({
+    ...DEFAULT_HISTORY_FILTER,
+    type: "NHAP",
+    from: "2026-01-01",
+  });
+  assert.ok(params.toString().includes("loai=NHAP"), "ghi được loai=NHAP");
+  assert.ok(
+    params.toString().includes("tu_ngay=2026-01-01"),
+    "ghi được tu_ngay=2026-01-01",
+  );
+  assert.ok(!params.toString().includes("trang="), "page mặc định không ghi vào URL");
+}
+{
+  const sampleHistoryFilter: KiotVietHistoryFilter = {
+    type: "XUAT",
+    from: "2026-01-01",
+    to: "2026-01-31",
+    keyword: "quynh",
+    voucherNo: "D-10",
+    productCode: "ABC123",
+    page: 3,
+    pageSize: 50,
+  };
+  assert.deepEqual(
+    readHistoryFilterFromUrl(
+      new URLSearchParams(writeHistoryFilterToUrl(sampleHistoryFilter)),
+    ),
+    sampleHistoryFilter,
+    "bộ lọc lịch sử quay vòng qua URL không mất giá trị",
+  );
+}
+assert.equal(
+  toHistoryRpcArgs({ ...DEFAULT_HISTORY_FILTER, keyword: "  " }).p_tu_khoa,
+  undefined,
+  "từ khóa chỉ toàn khoảng trắng không gửi p_tu_khoa",
+);
+assert.equal(
+  toHistoryRpcArgs(DEFAULT_HISTORY_FILTER, { productId: "sp-1" }).p_san_pham_id,
+  "sp-1",
+  "truyền productId ra p_san_pham_id",
+);
+assert.equal(
+  countActiveHistoryFilters(DEFAULT_HISTORY_FILTER),
+  0,
+  "bộ lọc mặc định không có điều kiện nào đang bật",
+);
 
 // tsx biên dịch ra CJS nên KHÔNG có top-level await — bọc phần bất đồng bộ lại.
 async function kiemCsvLoi() {
