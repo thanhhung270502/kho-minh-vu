@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to verify
-stopped_at: Da xong 06-01-PLAN.md (nen quyen theo nguoi D-13/D-14/D-15). Migration 0063 CHUA day len cloud - viec cua 06-05.
-last_updated: "2026-09-24T09:29:29.991Z"
+stopped_at: Da xong 06-03-PLAN.md (mo phien va dem kiem ke, migration 0065 chua day len cloud). Viec 06-05.
+last_updated: "2026-09-24T14:14:31.337Z"
 last_activity: 2026-09-24
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 92
-  completed_plans: 44
+  completed_plans: 45
   percent: 25
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 6 (Kiểm kê & Go-live) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 2 of 16
+Plan: 3 of 16
 trả lời "đạt" (cả 10 mục), NHƯNG lúc 15:01 UTC database chưa có nạp tồn tạm (0 DIEU_CHINH,
 ton_kho 0 dòng khác 0), chưa duyệt định mức nào — xem 05-11-SUMMARY.md. Nạp tồn tạm + duyệt
 định mức là việc vận hành bắt buộc trước go-live.
@@ -442,6 +442,7 @@ checkpoint, không có auth gate._
 | Phase 05 P09 | 10min | 2 tasks | 4 files |
 | Phase 05 P10 | 17min | 3 tasks | 9 files |
 | Phase 06 P01 | 45min | 2 tasks | 2 files |
+| Phase 06 P03 | 70min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -518,6 +519,9 @@ Recent decisions affecting current work:
 - [Phase ?]: [Phase 06]: Cong tac quyen theo nguoi doc THANG bang nguoi_dung theo auth.uid() (khong qua JWT claim) - ca bat lan tat co hieu luc NGAY, khac vai_tro_hien_tai()/kho_hien_tai()
 - [Phase ?]: [Phase 06]: luu_ho_so_nguoi_dung them 2 tham so cuoi default null + coalesce(., cot cu) - loi goi 6 tham so cu cua app dang chay khong reset cong tac ve false
 - [Phase ?]: [Phase 06]: Backfill xem_lich_su_kiotviet=true cho van_phong hien co, KHONG backfill duyet_kiem_ke (quyen moi, dong mac dinh)
+- [Phase 06]: 0065: _pham_vi_kiem_ke xet nhom hang + co ton, con luu_dong_kiem_ke/nhap_so_dem_kiem_ke chi xet nhom hang khi validate mot ma - dem duoc ma lac kho
+- [Phase 06]: 0065: upsert luu_dong_kiem_ke dung ON CONFLICT tren unique index partial (khong SELECT-roi-quyet) - for update tren header da tuan tu hoa du
+- [Phase 06]: 0065: nhap_so_dem_kiem_ke goi luu_dong_kiem_ke cho MOI dong sach (dat lan cap_nhat) - dam bao 3 duong nhap so dem di chung mot duong ghi
 
 ### Pending Todos
 
@@ -538,7 +542,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-24T09:29:21.084Z
-Stopped at: Da xong 06-01-PLAN.md (nen quyen theo nguoi D-13/D-14/D-15). Migration 0063 CHUA day len cloud - viec cua 06-05.
+Last session: 2026-09-24T14:14:31.317Z
+Stopped at: Da xong 06-03-PLAN.md (mo phien va dem kiem ke, migration 0065 chua day len cloud). Viec 06-05.
 Last activity: 2026-09-24
 Resume file: None
