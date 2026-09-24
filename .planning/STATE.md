@@ -4,7 +4,7 @@ milestone: v1.0
 milestone_name: milestone
 status: Ready to verify
 stopped_at: Phase 6 context gathered
-last_updated: "2026-09-24T09:03:08.310Z"
+last_updated: "2026-09-24T09:15:40.295Z"
 last_activity: 2026-09-24
 progress:
   total_phases: 8
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-09-12)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Phase 5 — ton-kho-tong-quan
+**Current focus:** Phase 6 — Kiểm kê & Go-live
 
 ## Current Position
 
-Phase: 5 (ton-kho-tong-quan) — EXECUTING
+Phase: 6 (Kiểm kê & Go-live) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 12 of 12 — Phase 5 thực thi xong, chờ `/spartan:phase verify 5`. UAT 05-11 người dùng
+Plan: 1 of 16
 trả lời "đạt" (cả 10 mục), NHƯNG lúc 15:01 UTC database chưa có nạp tồn tạm (0 DIEU_CHINH,
 ton_kho 0 dòng khác 0), chưa duyệt định mức nào — xem 05-11-SUMMARY.md. Nạp tồn tạm + duyệt
 định mức là việc vận hành bắt buộc trước go-live.
