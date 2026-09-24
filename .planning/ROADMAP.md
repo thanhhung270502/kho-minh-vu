@@ -256,7 +256,7 @@ Plans:
 
 **Wave 6** *(blocked on Wave 5 completion)*
 
-- [ ] 06-15-PLAN.md — trang chi tiết phiên /kiem-ke/[id] + link phiếu kiểm kê trên thẻ kho
+- [x] 06-15-PLAN.md — trang chi tiết phiên /kiem-ke/[id] + link phiếu kiểm kê trên thẻ kho
 
 **Wave 7** *(blocked on Wave 6 completion)*
 
@@ -307,6 +307,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. Phiếu nhập | 0/TBD | Not started | - |
 | 4. Đơn đặt hàng & Phiếu xuất | 0/TBD | Not started | - |
 | 5. Tồn kho & Tổng quan | 12/12 | Executed — chờ verify |  |
-| 6. Kiểm kê & Go-live | 14/16 | In Progress|  |
+| 6. Kiểm kê & Go-live | 15/16 | In Progress|  |
 | 7. Trang tổng quan | 0/TBD | Not started | - |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |
