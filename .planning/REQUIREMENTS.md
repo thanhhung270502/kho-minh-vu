@@ -113,7 +113,7 @@
 - [ ] **DLIEU-04**: Trích và chuẩn hóa danh sách khách hàng thật từ ô Ghi chú của 4.732 dòng bán
 - [x] **DLIEU-05**: Nạp giá vốn khởi đầu một lần từ file Excel *(đóng 24/09 — người dùng không dùng giá, mọi giá = 0; màn nạp giá vốn 0044 đã có, giữ để dùng sau)*
 - [ ] **DLIEU-06**: Set tồn đầu kỳ từ kết quả kiểm kê thực tế, không bê số 389.671 từ KiotViet
-- [ ] **DLIEU-07**: Lưu 594 dòng nhập và 4.732 dòng hóa đơn cũ vào bảng lưu trữ riêng để tra cứu, không nạp vào `chung_tu`
+- [x] **DLIEU-07**: Lưu 594 dòng nhập và 4.732 dòng hóa đơn cũ vào bảng lưu trữ riêng để tra cứu, không nạp vào `chung_tu`
 
 ## v2 Requirements
 
@@ -229,7 +229,7 @@
 | KKE-04 | Phase 6 | Pending |
 | DLIEU-05 | Phase 6 | Closed (không cần) |
 | DLIEU-06 | Phase 6 | Pending |
-| DLIEU-07 | Phase 6 | Pending |
+| DLIEU-07 | Phase 6 | Complete |
 
 **Coverage:**
 - v1 requirements: 74 total

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to verify
-stopped_at: Da xong 06-03-PLAN.md (mo phien va dem kiem ke, migration 0065 chua day len cloud). Viec 06-05.
-last_updated: "2026-09-24T14:14:31.337Z"
+stopped_at: Da xong 06-02-PLAN.md (RPC tra cuu lich su KiotViet + ba cua quyen, migration 0064 chua day len cloud). Viec 06-04/06-05.
+last_updated: "2026-09-24T14:25:58.461Z"
 last_activity: 2026-09-24
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 92
-  completed_plans: 45
+  completed_plans: 46
   percent: 25
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 6 (Kiểm kê & Go-live) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 3 of 16
+Plan: 4 of 16
 trả lời "đạt" (cả 10 mục), NHƯNG lúc 15:01 UTC database chưa có nạp tồn tạm (0 DIEU_CHINH,
 ton_kho 0 dòng khác 0), chưa duyệt định mức nào — xem 05-11-SUMMARY.md. Nạp tồn tạm + duyệt
 định mức là việc vận hành bắt buộc trước go-live.
@@ -443,6 +443,7 @@ checkpoint, không có auth gate._
 | Phase 05 P10 | 17min | 3 tasks | 9 files |
 | Phase 06 P01 | 45min | 2 tasks | 2 files |
 | Phase 06 P03 | 70min | 2 tasks | 2 files |
+| Phase 06 P02 | 55min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -522,6 +523,8 @@ Recent decisions affecting current work:
 - [Phase 06]: 0065: _pham_vi_kiem_ke xet nhom hang + co ton, con luu_dong_kiem_ke/nhap_so_dem_kiem_ke chi xet nhom hang khi validate mot ma - dem duoc ma lac kho
 - [Phase 06]: 0065: upsert luu_dong_kiem_ke dung ON CONFLICT tren unique index partial (khong SELECT-roi-quyet) - for update tren header da tuan tu hoa du
 - [Phase 06]: 0065: nhap_so_dem_kiem_ke goi luu_dong_kiem_ke cho MOI dong sach (dat lan cap_nhat) - dam bao 3 duong nhap so dem di chung mot duong ghi
+- [Phase 06]: the_kho_san_pham bo han hai nhanh union doc luu_tru_* (D-11) thay vi chi them dieu kien cong tac - dong KiotViet khong co kho_movement that nen khong tinh duoc ton luy ke dung; lich su KiotViet tu nay chi xem qua tra_cuu_lich_su_kiotviet
+- [Phase 06]: Cua thu ba phat hien ngoai nghien cuu: the_kho_san_pham (0062) cung doc luu_tru_* theo vai tro cung, khong co trong 06-RESEARCH.md - grep toan bo migrations theo ten bang moi tin la du
 
 ### Pending Todos
 
@@ -542,7 +545,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-24T14:14:31.317Z
-Stopped at: Da xong 06-03-PLAN.md (mo phien va dem kiem ke, migration 0065 chua day len cloud). Viec 06-05.
+Last session: 2026-09-24T14:25:58.446Z
+Stopped at: Da xong 06-02-PLAN.md (RPC tra cuu lich su KiotViet + ba cua quyen, migration 0064 chua day len cloud). Viec 06-04/06-05.
 Last activity: 2026-09-24
 Resume file: None
