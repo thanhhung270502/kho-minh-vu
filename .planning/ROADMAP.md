@@ -223,7 +223,44 @@ KiotViet để đối chiếu.
   4. Tồn đầu kỳ của toàn hệ thống được set từ đợt đếm thực tế sát ngày chuyển, đè lên tồn tạm KiotViet — không bê nguyên số 389.671
   5. 594 dòng nhập và 4.732 dòng hóa đơn cũ tra cứu được (màn riêng + tab trong chi tiết mã hàng) theo khách/NCC, mã hàng, số phiếu, ngày — chỉ người được quản lý bật quyền mới đọc được, chặn bằng RLS
 
-**Plans**: TBD
+**Plans**: 16 plans
+Plans:
+**Wave 1**
+
+- [ ] 06-01-PLAN.md — công tắc quyền theo người (xem lịch sử KiotViet, duyệt kiểm kê) + luu_ho_so_nguoi_dung 8 tham số
+- [ ] 06-03-PLAN.md — DB mở phiên + đếm: chốt tồn sổ theo dòng, chặn ghi thẳng KIEM_KE, nhập số đếm hàng loạt
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 06-02-PLAN.md — DB tra cứu lịch sử KiotViet, ba cửa quyền (RLS, 0033, thẻ kho), bỏ dòng KiotViet khỏi thẻ kho
+- [ ] 06-04-PLAN.md — DB bảng đếm/lệch, đếm lại, duyệt phiên, siết ghi_so_chung_tu và huy_chung_tu cho KIEM_KE
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 06-05-PLAN.md — [BLOCKING] đẩy 0063-0066 lên cloud, sinh lại kiểu, chạy toàn bộ pgTAP
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 06-06-PLAN.md — công tắc quyền trong Cài đặt → Người dùng + CurrentUser
+- [ ] 06-07-PLAN.md — lớp dữ liệu + bảng lịch sử KiotViet + drawer mở lại nguyên phiếu
+- [ ] 06-09-PLAN.md — lớp dữ liệu kiểm kê + hàm thuần ngưỡng lệch và trạng thái phiên
+- [ ] 06-13-PLAN.md — file mẫu đếm theo nhóm (không lộ tồn) + route xuất/nhập Excel
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 06-08-PLAN.md — màn /lich-su-kiotviet + tab trong chi tiết mã hàng
+- [ ] 06-10-PLAN.md — danh sách phiên + mở phiên (/kiem-ke)
+- [ ] 06-11-PLAN.md — màn đếm điện thoại + bảng đếm văn phòng
+- [ ] 06-12-PLAN.md — bảng lệch, đếm lại, danh sách chưa đếm, nút duyệt
+- [ ] 06-14-PLAN.md — giao diện nhập số đếm từ Excel
+
+**Wave 6** *(blocked on Wave 5 completion)*
+
+- [ ] 06-15-PLAN.md — trang chi tiết phiên /kiem-ke/[id] + link phiếu kiểm kê trên thẻ kho
+
+**Wave 7** *(blocked on Wave 6 completion)*
+
+- [ ] 06-16-PLAN.md — menu, ma trận quyền route, toàn bộ bộ kiểm, UAT (có checkpoint)
 **UI hint**: yes
 
 ### Phase 7: Trang tổng quan
