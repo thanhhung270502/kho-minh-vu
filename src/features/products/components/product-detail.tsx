@@ -2,7 +2,7 @@
 
 import { Button, Descriptions, Statistic, Tabs, Tag } from "antd";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import { AuditLog } from "@/shared/components/audit-log";
 import { PageHeader } from "@/shared/components/page-header";
@@ -63,9 +63,15 @@ function buildRenderValue(lookups: Lookups | undefined) {
 export function ProductDetailView({
   id,
   permissions,
+  kiotVietHistoryTab,
 }: {
   id: string;
   permissions: ProductDetailPermissions;
+  /**
+   * Tab "Lịch sử KiotViet" (D-11) — route ghép sẵn từ feature tra cứu KiotViet,
+   * KHÔNG import feature đó trực tiếp ở đây (luật `src/features/README.md`).
+   */
+  kiotVietHistoryTab?: ReactNode;
 }) {
   const detail = useProductDetail(id);
   const stockByWarehouse = useStockByWarehouse(id);
@@ -212,6 +218,15 @@ export function ProductDetailView({
                     />
                   ),
                 },
+                ...(kiotVietHistoryTab
+                  ? [
+                      {
+                        key: "lich-su-kiotviet",
+                        label: "Lịch sử KiotViet",
+                        children: kiotVietHistoryTab,
+                      },
+                    ]
+                  : []),
                 ...(permissions.canViewHistory
                   ? [
                       {
