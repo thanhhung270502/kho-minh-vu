@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Select, Table } from "antd";
+import { Select, Table } from "antd";
 import { useState } from "react";
 
 import { QueryState } from "@/shared/components/query-state";
@@ -45,15 +45,6 @@ export function StockCard({
         />
       </div>
 
-      {warehouseId ? (
-        <Alert
-          className="mb-3"
-          type="info"
-          showIcon
-          title="Dữ liệu KiotViet cũ không gắn kho nên chỉ hiện khi xem “Tất cả kho”."
-        />
-      ) : null}
-
       <QueryState
         query={stockCard}
         isEmpty={(result) => result.rows.length === 0}
@@ -85,12 +76,6 @@ export function StockCard({
                 }}
               />
             </div>
-            {result.rows.some((row) => row.runningBalance === null) ? (
-              <p className="mt-2 text-xs text-gray-500">
-                Dấu “—” ở cột Tồn lũy kế: dòng lưu trữ KiotViet, không nằm trong
-                sổ cái hệ mới nên không cộng vào lũy kế.
-              </p>
-            ) : null}
           </>
         )}
       </QueryState>

@@ -11,8 +11,7 @@ import { formatNumber } from "./product-columns";
 /**
  * Khóa là giá trị `chung_tu.loai_ct`. Chỉ chứa loại ĐÃ có trang chi tiết thật dưới
  * `src/app/(app)/` — link tới route chưa có là trang 404 giữa luồng.
- * Chưa có route: CHUYEN_KHO, KIEM_KE, DIEU_CHINH — route đến cùng giao diện
- * Phase 4/6 của chúng; lúc đó thêm vào đây.
+ * Chưa có route: CHUYEN_KHO, DIEU_CHINH — route đến cùng giao diện của chúng khi có.
  */
 const DOC_TYPE_TO_ROUTE: Record<string, string> = {
   NHAP: "/nhap-kho",
@@ -20,13 +19,12 @@ const DOC_TYPE_TO_ROUTE: Record<string, string> = {
   // Cả hai chiều trả hàng dùng chung một trang chi tiết (features/returns).
   TRA_KHACH: "/tra-hang",
   TRA_NCC: "/tra-hang",
+  KIEM_KE: "/kiem-ke",
 };
 
 /** Khóa là giá trị cột `kho_movement.nguon` trong database. */
 const SOURCE_LABELS: Record<string, { label: string; color?: string }> = {
   HE_THONG: { label: "Hệ thống", color: "green" },
-  KIOTVIET_NHAP: { label: "KiotViet · nhập" },
-  KIOTVIET_BAN: { label: "KiotViet · bán" },
 };
 
 export function buildStockCardColumns({
@@ -54,7 +52,7 @@ export function buildStockCardColumns({
       title: "Số phiếu",
       dataIndex: "docNo",
       width: 140,
-      // Dòng KiotViet không có documentId nên tự rơi về chữ thường, không link.
+      // Thiếu documentId hoặc chưa có route cho loại phiếu đó thì rơi về chữ thường, không link.
       render: (value: string, row: StockCardRow) => {
         const base = DOC_TYPE_TO_ROUTE[row.docType];
         return row.documentId && base ? (

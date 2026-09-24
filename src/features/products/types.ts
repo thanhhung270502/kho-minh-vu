@@ -64,8 +64,8 @@ export type StockCardRow = {
   note: string | null;
   isReversal: boolean;
   totalRows: number;
-  // null ở dòng lưu trữ KiotViet (KIOTVIET_NHAP/KIOTVIET_BAN): chúng không nằm trong
-  // sổ cái hệ mới nên RPC không cộng vào lũy kế (0059/0062).
+  // Luôn có giá trị với dòng hệ thống hiện tại (0064 đã bỏ nhánh KiotViet cũ khỏi
+  // the_kho_san_pham) — kiểu vẫn để `| null` vì RPC dùng CASE, không cam kết cứng.
   runningBalance: number | null;
 };
 
