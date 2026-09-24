@@ -251,7 +251,7 @@ Plans:
 - [x] 06-08-PLAN.md — màn /lich-su-kiotviet + tab trong chi tiết mã hàng
 - [x] 06-10-PLAN.md — danh sách phiên + mở phiên (/kiem-ke)
 - [x] 06-11-PLAN.md — màn đếm điện thoại + bảng đếm văn phòng
-- [ ] 06-12-PLAN.md — bảng lệch, đếm lại, danh sách chưa đếm, nút duyệt
+- [x] 06-12-PLAN.md — bảng lệch, đếm lại, danh sách chưa đếm, nút duyệt
 - [ ] 06-14-PLAN.md — giao diện nhập số đếm từ Excel
 
 **Wave 6** *(blocked on Wave 5 completion)*
@@ -307,6 +307,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. Phiếu nhập | 0/TBD | Not started | - |
 | 4. Đơn đặt hàng & Phiếu xuất | 0/TBD | Not started | - |
 | 5. Tồn kho & Tổng quan | 12/12 | Executed — chờ verify |  |
-| 6. Kiểm kê & Go-live | 12/16 | In Progress|  |
+| 6. Kiểm kê & Go-live | 13/16 | In Progress|  |
 | 7. Trang tổng quan | 0/TBD | Not started | - |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |

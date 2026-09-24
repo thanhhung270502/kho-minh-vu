@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: Ready to verify
 stopped_at: Hoan thanh 06-11-PLAN.md
-last_updated: "2026-09-24T16:15:58.264Z"
+last_updated: "2026-09-24T16:22:50.474Z"
 last_activity: 2026-09-24
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 92
-  completed_plans: 55
+  completed_plans: 56
   percent: 25
 ---
 
@@ -450,6 +450,27 @@ thực thi này; danh sách việc cần UAT (06-16) xem
 `scripts/test-route-permissions.ts` và `src/shared/lib/navigation.ts`** — đúng
 phạm vi plan, để dành cho `06-16` (plan cuối làm cùng mọi route mới của phase,
 theo tiền lệ `05-11`). Không có auth gate._
+
+_Ghi lại 2026-09-24 khi thực thi 06-12 (XONG — cả hai task autonomous, không có
+checkpoint, wave 5, phụ thuộc 06-09): `discrepancy-table.tsx` + `discrepancy-columns.tsx`
+(bảng lệch, chỉ dòng đã đếm, tô nền đỏ nhạt dòng lệch lớn qua `isLargeDiscrepancy`
+đã có từ 06-09, bộ lọc 4 trạng thái, cột "Tồn KiotViet tạm" chỉ hiện khi có dữ
+liệu, nút "Trả về đếm lại"/"Bỏ yêu cầu" không chặn gì theo mức lệch — D-16) —
+Task 1. `uncounted-panel.tsx` + `approve-session-button.tsx` (danh sách mã chưa
+đếm hiện TRƯỚC nút duyệt, mặc định chọn hết = chấp nhận 0, bỏ chọn = trả về đếm
+bù — D-07; nút duyệt disable theo `canApprove`/blockers, `Modal.confirm` tóm tắt
+hậu quả, phân biệt lỗi 42501/23514 đúng khuôn `post-document-button.tsx`) — Task 2.
+
+**Một deviation Rule 3 (blocking, tự vi phạm gate của chính plan) lặp lại đúng
+kiểu lỗi đã gặp ở 06-11:** comment giải thích "không cột tiền/giá vốn (D-17)"
+tự chứa chuỗi bị chính gate cấm (`giá vốn`) — sửa lại câu chữ, không đổi hành vi.
+
+`npm run check` (typecheck+lint+build) xanh toàn bộ, `npx eslint` sạch cả bốn
+file mới, cả bốn file dưới 200 dòng. Không `select("*")`/`.select()` trống,
+không tên cột tiếng Việt rò ra ngoài `types.ts`/`api/`. **CHƯA kiểm bằng mắt
+trên trình duyệt** — ba component này chưa được ghép vào trang chi tiết
+`/kiem-ke/[id]` (việc của 06-15), UAT thật sự chỉ làm được sau đó (xem
+`06-12-SUMMARY.md#User-Setup-Required`). Không có auth gate._
 
 ## Performance Metrics
 
