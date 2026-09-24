@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to verify
-stopped_at: Hoan thanh 06-10-PLAN.md
-last_updated: "2026-09-24T15:59:50.581Z"
+stopped_at: Hoan thanh 06-11-PLAN.md
+last_updated: "2026-09-24T16:15:58.264Z"
 last_activity: 2026-09-24
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 92
-  completed_plans: 54
+  completed_plans: 55
   percent: 25
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 6 (Kiểm kê & Go-live) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 15 of 16 (06-10 vừa xong — cả hai task autonomous, không checkpoint: form mở
+Plan: 16 of 16 (06-10 vừa xong — cả hai task autonomous, không checkpoint: form mở
 phiên + danh sách phiên kiểm kê, route /kiem-ke; xem 06-10-SUMMARY.md)
 trả lời "đạt" (cả 10 mục), NHƯNG lúc 15:01 UTC database chưa có nạp tồn tạm (0 DIEU_CHINH,
 ton_kho 0 dòng khác 0), chưa duyệt định mức nào — xem 05-11-SUMMARY.md. Nạp tồn tạm + duyệt
@@ -503,6 +503,7 @@ theo tiền lệ `05-11`). Không có auth gate._
 | Phase 06 P13 | 55min | 2 tasks | 5 files |
 | Phase 06 P08 | 45min | 2 tasks | 8 files |
 | Phase 06 P10 | 35min | 2 tasks | 3 files |
+| Phase 06 P11 | 30min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -593,6 +594,7 @@ Recent decisions affecting current work:
 - [Phase 06]: scripts/test-excel-reader.ts can data/kiotviet/DanhSachSanPham*.xlsx that (khong commit) - moi truong thuc thi 06-13 thieu file nay, 4 case moi da xac minh PASS qua script doc lap tam thoi, can chay lai script day du tren may co du lieu that
 - [Phase 06]: 06-08: sua bug readDate (06-07) chi kiem khuon so khong kiem ngay co that; doi ten tab key 'kiotviet-history' -> 'lich-su-kiotviet' de tranh trung chuoi voi comment import feature
 - [Phase 06]: 06-10: Bo loc danh sach phien kiem ke la state cuc bo (khong URL) — khac ReceiptTable, phien kiem ke khong can bookmark/chia se link loc
+- [Phase 06]: count-desk-columns.tsx xuat countInputDomId() dung chung — focus dong ke qua id DOM thay vi useRef (React Compiler cam truyen ref vao ham goi luc render)
 
 ### Pending Todos
 
@@ -613,7 +615,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-24T15:57:02.506Z
-Stopped at: Hoan thanh 06-08-PLAN.md
+Last session: 2026-09-24T16:15:58.223Z
+Stopped at: Hoan thanh 06-11-PLAN.md
 Last activity: 2026-09-24
 Resume file: None
