@@ -63,6 +63,16 @@ const MA_TRAN: Dong[] = [
   // Mở /dang-nhap khi đã đăng nhập phải quay về page gốc, và `tiep_tuc` trỏ ra
   // ngoài miền thì bị vứt (safeRedirectPath) chứ không được chuyển hướng theo.
   { route: "/dang-nhap?tiep_tuc=//evil.com", ky_vong: { quanly: "goc", vanphong: "goc", thukho1: "goc", chixem: "goc", khach: "200" } },
+  // Phase 6: phạm vi kho của thủ kho siết trong RPC (0066), không ở route.
+  { route: "/kiem-ke", ky_vong: AI_CUNG_XEM },
+  // UUID hợp lệ nhưng không tồn tại — trang render trạng thái rỗng phía
+  // client (SessionDetail), page.tsx chỉ notFound() khi CHUỖI không đúng
+  // khuôn UUID. Phạm vi kho siết ở RPC, không phải ở route.
+  { route: "/kiem-ke/00000000-0000-4000-8000-000000000000", ky_vong: AI_CUNG_XEM },
+  // Quyền THEO NGƯỜI (D-13), không theo PERMISSION_MATRIX — kỳ vọng của
+  // vanphong phụ thuộc công tắc xem_lich_su_kiotviet trong database (backfill
+  // 0063). Nếu quản lý tắt công tắc của tài khoản mẫu, dòng này đổi "quyen".
+  { route: "/lich-su-kiotviet", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
 ];
 
 const TAI_KHOAN: Record<Exclude<VaiTroTest, "khach">, string> = {
@@ -243,6 +253,33 @@ async function layIdPhieuTra(): Promise<string | null> {
   return null;
 }
 
+/** Lấy một id phiên kiểm kê có thật để kiểm route chi tiết `/kiem-ke/[id]`. */
+async function layIdPhienKiemKe(): Promise<string | null> {
+  const kho = new Map<string, string>();
+  const sb = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
+    {
+      cookies: {
+        getAll: () => [...kho].map(([name, value]) => ({ name, value })),
+        setAll: (ds) => ds.forEach((c) => kho.set(c.name, c.value)),
+      },
+    },
+  );
+
+  const { error } = await sb.auth.signInWithPassword({
+    email: TAI_KHOAN.quanly,
+    password: samplePassword(),
+  });
+  if (error) return null;
+
+  const { data } = await sb.rpc("danh_sach_phien_kiem_ke", {
+    p_trang: 1,
+    p_kich_thuoc: 1,
+  });
+  return data?.[0]?.id ?? null;
+}
+
 /**
  * `/api/ton-kho/nap-tam` chỉ có POST — ma trận gửi GET nên sẽ nhận 405 cho mọi vai trò,
  * không nói gì về quyền. Gửi POST với FormData RỖNG: quản lý qua được cửa quyền và
@@ -274,6 +311,64 @@ async function kiemNapTamPost(
     }
   }
   return { tong: role.length, lech };
+}
+
+/**
+ * Hai endpoint Excel của kiểm kê chỉ có GET (mẫu) / POST (nạp) — ma trận
+ * thường (`doMot`, dùng GET) không nói được gì về quyền của route POST, và
+ * GET không tham số của route mẫu không khớp kiểu `KyVong` hiện có ("200"
+ * hay "quyen"/"dangnhap" đều sai — route trả JSON lỗi, không redirect).
+ * Theo khuôn `kiemNapTamPost`: gọi trực tiếp bằng `fetch`, so mã trạng thái.
+ */
+async function kiemKiemKeExcel(
+  cookie: Record<VaiTroTest, string>,
+): Promise<{ tong: number; lech: string[] }> {
+  const lech: string[] = [];
+  let tong = 0;
+  const role = Object.keys(cookie) as VaiTroTest[];
+
+  // GET /api/kiem-ke/mau-excel không tham số → thiếu `phien` hợp lệ, 400 cho
+  // mọi vai trò đã đăng nhập; khách chưa đăng nhập dừng ở 401 trước khi kịp
+  // đọc tham số.
+  for (const vt of role) {
+    tong++;
+    const res = await fetch(`${BASE_URL}/api/kiem-ke/mau-excel`, {
+      headers: cookie[vt] ? { cookie: cookie[vt] } : {},
+      redirect: "manual",
+    });
+    const mong = vt === "khach" ? "401" : "400";
+    const thuc = String(res.status);
+    if (thuc !== mong) {
+      lech.push(`${"GET /api/kiem-ke/mau-excel".padEnd(34)} ${vt.padEnd(9)} mong ${mong}, thực ${thuc}`);
+    }
+  }
+
+  // POST /api/kiem-ke/nhap-excel với FormData rỗng → khách 401 (chưa đăng
+  // nhập), chi_xem 403 (vai trò không nhập số đếm được — chặn TRƯỚC khi đọc
+  // form), ba vai trò còn lại qua được cửa quyền rồi dừng ở 400 (thiếu
+  // `phien`/file hợp lệ) — không bao giờ chạm RPC, không ghi gì.
+  const mongPost: Record<VaiTroTest, string> = {
+    quanly: "400",
+    vanphong: "400",
+    thukho1: "400",
+    chixem: "403",
+    khach: "401",
+  };
+  for (const vt of role) {
+    tong++;
+    const res = await fetch(`${BASE_URL}/api/kiem-ke/nhap-excel`, {
+      method: "POST",
+      headers: cookie[vt] ? { cookie: cookie[vt] } : {},
+      body: new FormData(),
+      redirect: "manual",
+    });
+    const thuc = String(res.status);
+    if (thuc !== mongPost[vt]) {
+      lech.push(`${"POST /api/kiem-ke/nhap-excel".padEnd(34)} ${vt.padEnd(9)} mong ${mongPost[vt]}, thực ${thuc}`);
+    }
+  }
+
+  return { tong, lech };
 }
 
 async function main() {
@@ -338,6 +433,13 @@ async function main() {
     console.warn("⚠ chưa có phiếu trả nào — bỏ qua route /tra-hang/[id]");
   }
 
+  const idPhienKiemKe = await layIdPhienKiemKe();
+  if (idPhienKiemKe) {
+    MA_TRAN.push({ route: `/kiem-ke/${idPhienKiemKe}`, ky_vong: AI_CUNG_XEM });
+  } else {
+    console.warn("⚠ chưa có phiên kiểm kê nào — chỉ kiểm route /kiem-ke/[id] bằng uuid không tồn tại");
+  }
+
   const role = Object.keys(cookie) as VaiTroTest[];
   const lech: string[] = [];
   let tong = 0;
@@ -356,6 +458,10 @@ async function main() {
   const napTam = await kiemNapTamPost(cookie);
   tong += napTam.tong;
   lech.push(...napTam.lech);
+
+  const kiemKe = await kiemKiemKeExcel(cookie);
+  tong += kiemKe.tong;
+  lech.push(...kiemKe.lech);
 
   if (lech.length > 0) {
     console.error(`✗ quyền route: ${lech.length}/${tong} ô LỆCH\n`);
