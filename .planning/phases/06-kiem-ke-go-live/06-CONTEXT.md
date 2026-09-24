@@ -15,7 +15,7 @@ cũ, NCC đối chiếu, không ai tra được. DLIEU-07 là trọng tâm, khô
 
 **Phạm vi hẹp đã chốt (Office Hours 24/09) — 7 yêu cầu:**
 KKE-01, KKE-02 (đếm bằng ô tìm mã, **không quét**), KKE-03, KKE-04, DLIEU-05 (đóng —
-xem D-15), DLIEU-06, DLIEU-07.
+xem D-17), DLIEU-06, DLIEU-07.
 
 **Tách khỏi Phase 6** (ROADMAP phải được sửa theo — xem `<deferred>`):
 - Trang tổng quan: TQAN-01, TQAN-03, TQAN-04, TQAN-05, TQAN-06, TON-03
@@ -113,6 +113,13 @@ xem D-15), DLIEU-06, DLIEU-07.
   JWT claim hay không.
 - Bố cục màn đếm mobile, màn bảng lệch, màn lịch sử; cách parse cột `ngay` text.
 - Cách phân nhóm hàng cho người đếm (gán người ↔ nhóm trong phiên hay tự nhận).
+
+
+### Xác nhận sau khi lập kế hoạch (24/09)
+
+- Bỏ dòng KiotViet khỏi thẻ kho (`the_kho_san_pham`, 0062) — chỉ xem ở tab riêng (D-11). Người dùng đồng ý đổi hành vi đã duyệt ở UAT Phase 5.
+- Backfill `xem_lich_su_kiotviet = true` cho tài khoản `van_phong` hiện có — không ai mất quyền ngày go-live.
+- Ngưỡng lệch lớn (D-16): ≥ 5 đơn vị hoặc ≥ 10%, một hằng số, chỉnh lại sau đợt đếm thật.
 
 </decisions>
 
