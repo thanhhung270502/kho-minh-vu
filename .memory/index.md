@@ -32,7 +32,7 @@ lại PROJECT.md, CLAUDE.md hay code.
 
 - [supabase-rls-bao-mat](patterns/supabase-rls-bao-mat.md) — GRANT ≠ RLS, quyền cột theo SQL role, view `security_invoker`, qualify toán tử khi khóa `search_path`
 - [nextjs-antd-supabase-ui](patterns/nextjs-antd-supabase-ui.md) — 4 bẫy giao diện lọt qua `npm run check`: lỗi PostgREST không phải instance, hàm client gọi từ server, query tham số rỗng, prop antd v6 đã bỏ
-- [pgtap-va-test](patterns/pgtap-va-test.md) — false pass do trùng mã lỗi, test đếm không giả định bảng rỗng, test đồng thời bằng 2 psql, `finish(true)` không bắt thiếu assert, 42702 trong `RETURNS TABLE`, đẩy migration qua MCP + md5
+- [pgtap-va-test](patterns/pgtap-va-test.md) — false pass do trùng mã lỗi, test đếm không giả định bảng rỗng, test đồng thời bằng 2 psql, `finish(true)` không bắt thiếu assert, 42702 trong `RETURNS TABLE`, đẩy migration qua MCP + md5, `(fn()).*` gọi lại hàm VOLATILE một lần mỗi cột
 
 ## Knowledge
 

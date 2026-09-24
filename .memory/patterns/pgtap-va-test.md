@@ -161,6 +161,33 @@ Cả khối chạy trong một transaction ngầm. Sau đó so `md5(statements[1
 file đã chuẩn hóa LF: khớp thì history trên cloud đúng từng ký tự với git. Đừng dùng
 `apply_migration`, vì nó ghi version bằng timestamp (mục 7).
 
+## 13. `(fn()).*` với hàm VOLATILE trả composite bị gọi lại MỘT LẦN MỖI CỘT
+
+**Đã gặp (Phase 6, 06-04):** pgTAP dùng `select (public.duyet_phien_kiem_ke(...)).*`
+(chép khuôn từ test khác) — hàm bị Postgres GỌI LẠI một lần cho MỖI cột của
+`public.chung_tu` được chiếu ra (~20 lần). Lần đầu duyệt thành công
+(`NHAP_LIEU` → `HOAN_THANH`), các lần gọi lại sau đó thấy phiên đã `HOAN_THANH`
+và tự raise lỗi — làm cả câu lệnh thất bại với thông báo vô lý ("phiên đã duyệt"
+ngay sau khi vừa xác nhận còn `NHAP_LIEU`). Xác nhận bằng thực nghiệm tối giản:
+hàm đếm 2 cột trả `n=1, m=4` (không nhất quán — n từ lần gọi đầu, m từ lần gọi
+thứ hai) và biến đếm nội bộ tăng lên 2 sau một câu lệnh `select (fn()).*`.
+
+**Áp dụng:** KHÔNG BAO GIỜ dùng `(fn(...)).* ` cho hàm VOLATILE (mọi RPC ghi sổ
+`security definer` không đánh dấu `stable`/`immutable`) trả về kiểu composite.
+Luôn gọi như hàm trong mệnh đề FROM:
+```sql
+-- SAI — gọi lại N lần (N = số cột của composite)
+select (public.duyet_phien_kiem_ke(p_id)).*;
+
+-- ĐÚNG — Postgres đảm bảo gọi đúng một lần
+select * from public.duyet_phien_kiem_ke(p_id);
+```
+Hàm `STABLE`/mà không có side effect (ví dụ chỉ đọc) thì antipattern này vô hại
+về mặt dữ liệu (dù vẫn tốn hiệu năng gọi lại) — nhưng để nhất quán, luôn dùng
+`select * from fn(...)` cho MỌI hàm trả composite, bất kể volatility.
+
+---
+
 ## Bộ lệnh kiểm chứng đầy đủ
 
 ```bash
