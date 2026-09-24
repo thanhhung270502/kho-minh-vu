@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to verify
-stopped_at: "Da xong 06-04-PLAN.md (bang lech + duyet phien kiem ke, migration 0066 chua day len cloud). Viec tiep: 06-05."
-last_updated: "2026-09-24T14:55:20.684Z"
+stopped_at: Hoan thanh 06-06-PLAN.md
+last_updated: "2026-09-24T15:08:40.732Z"
 last_activity: 2026-09-24
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 92
-  completed_plans: 48
+  completed_plans: 49
   percent: 25
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 6 (Kiểm kê & Go-live) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 6 of 16
+Plan: 7 of 16
 trả lời "đạt" (cả 10 mục), NHƯNG lúc 15:01 UTC database chưa có nạp tồn tạm (0 DIEU_CHINH,
 ton_kho 0 dòng khác 0), chưa duyệt định mức nào — xem 05-11-SUMMARY.md. Nạp tồn tạm + duyệt
 định mức là việc vận hành bắt buộc trước go-live.
@@ -445,6 +445,8 @@ checkpoint, không có auth gate._
 | Phase 06 P03 | 70min | 2 tasks | 2 files |
 | Phase 06 P02 | 55min | 2 tasks | 4 files |
 | Phase 06 P04 | 65min | 2 tasks | 2 files |
+| Phase 06 P06 | 35min | - tasks | - files |
+| Phase 06 P06 | 35min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -528,6 +530,8 @@ Recent decisions affecting current work:
 - [Phase 06]: Cua thu ba phat hien ngoai nghien cuu: the_kho_san_pham (0062) cung doc luu_tru_* theo vai tro cung, khong co trong 06-RESEARCH.md - grep toan bo migrations theo ten bang moi tin la du
 - [Phase ?]: [Phase 06]: co transaction-local kho_minh_vu.duyet_kiem_ke chan ghi_so_chung_tu goi thang cho KIEM_KE - chi duyet_phien_kiem_ke dat co duoc, PostgREST khong goi duoc set_config
 - [Phase ?]: [Phase 06]: (fn()).* voi ham VOLATILE tra composite bi Postgres goi lai MOT LAN MOI COT - xac nhan bang thuc nghiem, luon dung select * from fn(...) cho RPC ghi so
+- [Phase ?]: resetPassword truyen lai gia tri CU cua hai cong tac quyen (doc tu previous) thay vi dua vao coalesce(null, cot_cu) ngam dinh cua RPC
+- [Phase ?]: Tach nhom 2 Checkbox quyen theo nguoi ra UserSpecialPermissions rieng vi UserDrawer da 274 dong truoc khi them
 
 ### Pending Todos
 
@@ -548,7 +552,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-24T14:50:27.927Z
-Stopped at: Da xong 06-04-PLAN.md (bang lech + duyet phien kiem ke, migration 0066 chua day len cloud). Viec tiep: 06-05.
+Last session: 2026-09-24T15:08:40.700Z
+Stopped at: Hoan thanh 06-06-PLAN.md
 Last activity: 2026-09-24
 Resume file: None
