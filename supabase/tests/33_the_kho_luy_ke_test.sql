@@ -113,10 +113,11 @@ select is(
   'bất biến: lũy kế dòng đầu tiên khi lọc theo K1 khớp đúng ton_kho hiện tại của K1'
 );
 
--- Assertion 4: dòng nguồn KIOTVIET_BAN có ton_luy_ke is null — không cộng vào lũy kế.
-select ok(
-  (select ton_luy_ke is null from public.the_kho_san_pham((select sp from t_lk)) where nguon = 'KIOTVIET_BAN'),
-  'dòng nguồn KiotViet cũ có ton_luy_ke is null — D-05 đã bao hiệu ứng ròng qua DIEU_CHINH, không cộng lần hai'
+-- Assertion 4: D-11 (06-02) — the_kho_san_pham không còn dòng nguồn KIOTVIET nào.
+select is(
+  (select count(*) from public.the_kho_san_pham((select sp from t_lk)) where nguon like 'KIOTVIET%'),
+  0::bigint,
+  'D-11: thẻ kho không trộn lịch sử KiotViet — không còn dòng nguồn KIOTVIET nào'
 );
 
 -- Assertion 5 — LŨY KẾ KHÔNG BỊ PHÂN TRANG CẮT: gọi với p_kich_thuoc := 1,

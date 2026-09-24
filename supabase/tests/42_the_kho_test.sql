@@ -69,20 +69,20 @@ select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 
 select is(
   (select count(*) from public.the_kho_san_pham((select sp from t_tk))),
-  4::bigint,
-  'thẻ kho gộp 2 biến động hệ mới với 2 dòng KiotViet cũ'
+  2::bigint,
+  'D-11: thẻ kho chỉ còn 2 biến động hệ thống — không còn dòng KiotViet cũ'
 );
 
 select is(
   (select string_agg(distinct nguon, ',' order by nguon) from public.the_kho_san_pham((select sp from t_tk))),
-  'HE_THONG,KIOTVIET_BAN,KIOTVIET_NHAP',
-  'mỗi dòng gắn nhãn nguồn'
+  'HE_THONG',
+  'D-11: mỗi dòng còn lại chỉ mang nhãn nguồn HE_THONG'
 );
 
-select ok(
-  (select so_luong_xuat = 4 and so_luong_nhap is null
-     from public.the_kho_san_pham((select sp from t_tk)) where nguon = 'KIOTVIET_BAN'),
-  'hóa đơn KiotViet cũ vào cột xuất, không vào cột nhập'
+select is(
+  (select count(*) from public.the_kho_san_pham((select sp from t_tk)) where nguon like 'KIOTVIET%'),
+  0::bigint,
+  'D-11: không còn dòng nguồn KIOTVIET nào — lịch sử KiotViet xem ở tra_cuu_lich_su_kiotviet'
 );
 
 select is(
