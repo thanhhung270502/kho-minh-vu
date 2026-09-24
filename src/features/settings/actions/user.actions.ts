@@ -75,7 +75,9 @@ async function hasOtherManager(
 async function readProfile(session: AdminSession, id: string) {
   const { data, error } = await session.supabase
     .from("nguoi_dung")
-    .select("id, ho_ten, ten_dang_nhap, vai_tro, dang_hoat_dong, phai_doi_mat_khau")
+    .select(
+      "id, ho_ten, ten_dang_nhap, vai_tro, dang_hoat_dong, phai_doi_mat_khau, xem_lich_su_kiotviet, duyet_kiem_ke",
+    )
     .eq("id", id)
     .maybeSingle();
 
@@ -144,6 +146,8 @@ export async function createUser(input: CreateUserInput): Promise<ActionResult> 
     p_vai_tro: values.role,
     p_kho_ids: values.warehouseIds,
     p_phai_doi_mat_khau: true,
+    p_xem_lich_su_kiotviet: values.viewKiotVietHistory,
+    p_duyet_kiem_ke: values.approveStocktake,
   });
 
   if (profileError) {
@@ -185,6 +189,8 @@ export async function updateUser(
     p_vai_tro: values.role,
     p_kho_ids: values.warehouseIds,
     p_phai_doi_mat_khau: previous.phai_doi_mat_khau,
+    p_xem_lich_su_kiotviet: values.viewKiotVietHistory,
+    p_duyet_kiem_ke: values.approveStocktake,
   });
 
   if (error) return { ok: false, message: explainError(error).action };
@@ -252,6 +258,8 @@ export async function resetPassword(
   if (passwordError) return { ok: false, field: "tempPassword", message: explainError(passwordError).action };
 
   // Mật khẩu tạm chỉ dùng một lần: bật lại cờ để người dùng phải tự đặt mật khẩu riêng.
+  // Truyền lại giá trị CŨ của hai công tắc (không để null — RPC coi null là "giữ
+  // nguyên", nhưng ghi rõ ý định ở đây rõ ràng hơn là dựa vào hành vi ngầm).
   const { error } = await session.supabase.rpc("luu_ho_so_nguoi_dung", {
     p_id: values.id,
     p_ho_ten: previous.ho_ten,
@@ -259,6 +267,8 @@ export async function resetPassword(
     p_vai_tro: previous.vai_tro,
     p_kho_ids: previous.warehouseIds,
     p_phai_doi_mat_khau: true,
+    p_xem_lich_su_kiotviet: previous.xem_lich_su_kiotviet,
+    p_duyet_kiem_ke: previous.duyet_kiem_ke,
   });
   if (error) return { ok: false, message: explainError(error).action };
 

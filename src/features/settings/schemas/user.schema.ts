@@ -27,6 +27,9 @@ export const userProfileSchema = z
     fullName: z.string().trim().min(2, "Nhập họ tên"),
     role: z.enum(ROLES),
     warehouseIds: z.array(z.string().uuid()).default([]),
+    /** Công tắc quyền theo người (D-13/D-14) — không thuộc PERMISSION_MATRIX. */
+    viewKiotVietHistory: z.boolean().default(false),
+    approveStocktake: z.boolean().default(false),
   })
   .refine((v) => v.role !== "thu_kho" || v.warehouseIds.length > 0, {
     path: ["warehouseIds"],
