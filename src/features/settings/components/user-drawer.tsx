@@ -24,6 +24,7 @@ import {
   ROLES,
 } from "../schemas/user.schema";
 import { TempPasswordField, generateTempPassword } from "./temp-password-field";
+import { UserSpecialPermissions } from "./user-special-permissions";
 
 const MO_TA_VAI_TRO: Record<Role, string> = {
   quan_ly: "Toàn quyền, kể cả Cài đặt và giá bán",
@@ -38,6 +39,8 @@ type UserFormValues = {
   role: Role;
   warehouseIds: string[];
   tempPassword: string;
+  viewKiotVietHistory: boolean;
+  approveStocktake: boolean;
 };
 
 type Props = { open: boolean; user: UserRow | null; onClose: () => void };
@@ -68,6 +71,8 @@ export function UserDrawer({ open, user, onClose }: Props) {
       role: "thu_kho",
       warehouseIds: [],
       tempPassword: "",
+      viewKiotVietHistory: false,
+      approveStocktake: false,
     },
   });
 
@@ -82,6 +87,8 @@ export function UserDrawer({ open, user, onClose }: Props) {
             role: user.vai_tro,
             warehouseIds: userWarehouses(user).map((k) => k.id),
             tempPassword: "",
+            viewKiotVietHistory: user.xem_lich_su_kiotviet,
+            approveStocktake: user.duyet_kiem_ke,
           }
         : {
             fullName: "",
@@ -89,6 +96,8 @@ export function UserDrawer({ open, user, onClose }: Props) {
             role: "thu_kho",
             warehouseIds: [],
             tempPassword: generateTempPassword(),
+            viewKiotVietHistory: false,
+            approveStocktake: false,
           },
     );
   }, [open, user, reset]);
@@ -104,6 +113,8 @@ export function UserDrawer({ open, user, onClose }: Props) {
             fullName: v.fullName,
             role: v.role,
             warehouseIds: v.role === "thu_kho" ? v.warehouseIds : [],
+            viewKiotVietHistory: v.viewKiotVietHistory,
+            approveStocktake: v.approveStocktake,
           })
         : await createUser({
             fullName: v.fullName,
@@ -111,6 +122,8 @@ export function UserDrawer({ open, user, onClose }: Props) {
             role: v.role,
             warehouseIds: v.role === "thu_kho" ? v.warehouseIds : [],
             tempPassword: v.tempPassword,
+            viewKiotVietHistory: v.viewKiotVietHistory,
+            approveStocktake: v.approveStocktake,
           });
 
       if (!kq.ok) {
@@ -249,6 +262,8 @@ export function UserDrawer({ open, user, onClose }: Props) {
             />
           </Form.Item>
         ) : null}
+
+        <UserSpecialPermissions control={control} role={role} />
 
         {isNew ? (
           <Form.Item

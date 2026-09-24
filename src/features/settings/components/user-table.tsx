@@ -85,6 +85,23 @@ export function UserTable({ currentUserId }: { currentUserId: string }) {
       render: (v: UserRow["vai_tro"]) => ROLE_LABELS[v],
     },
     {
+      title: "Quyền riêng",
+      key: "quyen_rieng",
+      width: 160,
+      render: (_, d) => {
+        const laQuanLy = d.vai_tro === "quan_ly";
+        const xemKiotViet = laQuanLy || d.xem_lich_su_kiotviet;
+        const duyetKiemKe = laQuanLy || d.duyet_kiem_ke;
+        if (!xemKiotViet && !duyetKiemKe) return <span className="text-gray-400">—</span>;
+        return (
+          <Space size={4} wrap>
+            {xemKiotViet ? <Tag className="m-0">LS KiotViet</Tag> : null}
+            {duyetKiemKe ? <Tag className="m-0">Duyệt KK</Tag> : null}
+          </Space>
+        );
+      },
+    },
+    {
       title: "Kho",
       key: "kho",
       width: 200,

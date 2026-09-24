@@ -7,7 +7,7 @@ function userQuery() {
   return getSupabaseBrowserClient()
     .from("nguoi_dung")
     .select(
-      "id, ho_ten, ten_dang_nhap, vai_tro, dang_hoat_dong, phai_doi_mat_khau, updated_at, nguoi_dung_kho(kho_id, kho:kho_id(ma, ten))",
+      "id, ho_ten, ten_dang_nhap, vai_tro, dang_hoat_dong, phai_doi_mat_khau, updated_at, xem_lich_su_kiotviet, duyet_kiem_ke, nguoi_dung_kho(kho_id, kho:kho_id(ma, ten))",
     )
     .order("ho_ten");
 }
