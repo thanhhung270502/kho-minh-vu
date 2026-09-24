@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to verify
-stopped_at: Hoan thanh 06-06-PLAN.md
-last_updated: "2026-09-24T15:22:07.477Z"
+stopped_at: Hoan thanh 06-13-PLAN.md
+last_updated: "2026-09-24T16:10:00.000Z"
 last_activity: 2026-09-24
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 92
-  completed_plans: 51
-  percent: 25
+  completed_plans: 53
+  percent: 58
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 6 (Kiểm kê & Go-live) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 9 of 16
+Plan: 13 of 16 (06-13 vừa xong — xem ghi chú cuối phần Current Position)
 trả lời "đạt" (cả 10 mục), NHƯNG lúc 15:01 UTC database chưa có nạp tồn tạm (0 DIEU_CHINH,
 ton_kho 0 dòng khác 0), chưa duyệt định mức nào — xem 05-11-SUMMARY.md. Nạp tồn tạm + duyệt
 định mức là việc vận hành bắt buộc trước go-live.
@@ -398,6 +398,32 @@ kỳ database nào** — đẩy migration 0059 và chạy pgTAP 33 thật là vi
 khác của Wave 3) hiển thị cột `ton_luy_ke` này. Không có deviation, không có
 checkpoint, không có auth gate._
 
+_Ghi lại 2026-09-24 khi thực thi 06-13 (XONG — cả hai task autonomous, không có
+checkpoint, wave 4, phụ thuộc 06-05): `count-template.server.ts`
+(`STOCKTAKE_TEMPLATE_COLUMNS` 4 cột — Mã hàng/Tên hàng/ĐVT/Số đếm, KHÔNG cột số
+liệu hệ thống nào, D-08) + `buildCountTemplate` (sheet dữ liệu tên theo nhóm
+hàng/"Toàn kho" + sheet "Hướng dẫn") và `read-count-file.server.ts`
+(`readCountFile` — ô trống = chưa đếm D-07, giữ chuỗi khi `so_dem` không đọc
+được thành số để RPC `nhap_so_dem_kiem_ke` tự báo đúng lỗi thay vì lặng lẽ
+biến gõ nhầm thành "chưa đếm"). Route `GET /api/kiem-ke/mau-excel` (lấy đầu
+phiên qua `danh_sach_phien_kiem_ke`, dữ liệu qua `bang_dem_kiem_ke`, tên file
+`dem-<so_ct>-<nhóm|toàn-kho>.xlsx`) và `POST /api/kiem-ke/nhap-excel` (chặn
+`chi_xem` ở route trước khi gọi RPC, `che_do=nap` mới ghi, mặc định xem
+trước, 23514 trả 409 kèm NGUYÊN VĂN câu lỗi database thay vì câu chung của
+`explainError`, giữ khóa `result` như `nap-tam` — bài học hồi quy `c51391d`).
+Thêm 4 case quay vòng vào `scripts/test-excel-reader.ts` (đọc lại mẫu rỗng,
+điền số nguyên/định dạng VN/để trống, quay vòng 1.200 dòng, thiếu cột báo
+lỗi). `npm run check` (typecheck+lint+build) xanh toàn bộ, hai route đã lên
+danh sách route của `next build`. **`npx tsx scripts/test-excel-reader.ts`
+đầy đủ KHÔNG chạy hết được trong môi trường thực thi này** — thiếu
+`data/kiotviet/DanhSachSanPham*.xlsx` (dữ liệu thật, có chủ đích không
+commit); 4 case mới đã xác minh PASS qua script độc lập tạm thời (xóa ngay
+sau khi xác nhận), nhưng người vận hành cần chạy lại toàn bộ script trên máy
+có sẵn file dữ liệu thật trước khi coi Task 1 là "đã kiểm hết". Không có
+deviation, không có checkpoint, không có auth gate. Xem
+`06-13-SUMMARY.md#Cần-mở-trình-duyệt-kiểm-tra` cho danh sách việc UAT (06-16)
+cần làm bằng mắt._
+
 ## Performance Metrics
 
 **Velocity:**
@@ -447,6 +473,7 @@ checkpoint, không có auth gate._
 | Phase 06 P04 | 65min | 2 tasks | 2 files |
 | Phase 06 P06 | 35min | - tasks | - files |
 | Phase 06 P06 | 35min | 2 tasks | 7 files |
+| Phase 06 P13 | 55min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -532,6 +559,9 @@ Recent decisions affecting current work:
 - [Phase ?]: [Phase 06]: (fn()).* voi ham VOLATILE tra composite bi Postgres goi lai MOT LAN MOI COT - xac nhan bang thuc nghiem, luon dung select * from fn(...) cho RPC ghi so
 - [Phase ?]: resetPassword truyen lai gia tri CU cua hai cong tac quyen (doc tu previous) thay vi dua vao coalesce(null, cot_cu) ngam dinh cua RPC
 - [Phase ?]: Tach nhom 2 Checkbox quyen theo nguoi ra UserSpecialPermissions rieng vi UserDrawer da 274 dong truoc khi them
+- [Phase 06]: 0066 bang_dem_kiem_ke tra ten_nhom tren moi dong khi loc theo p_nhom_hang_id - route mau-excel lay ten nhom tu dong dau ket qua, khong truy van them bang nhom_hang
+- [Phase 06]: nhap-excel route: loi 23514 cua nhap_so_dem_kiem_ke tra 409 kem NGUYEN VAN error.message (khong qua cau chung cua explainError) - nguoi dung can doc dung ly do nghiep vu (vi du "Phien da duyet, khong nhap so dem duoc")
+- [Phase 06]: scripts/test-excel-reader.ts can data/kiotviet/DanhSachSanPham*.xlsx that (khong commit) - moi truong thuc thi 06-13 thieu file nay, 4 case moi da xac minh PASS qua script doc lap tam thoi, can chay lai script day du tren may co du lieu that
 
 ### Pending Todos
 
@@ -552,7 +582,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-24T15:22:07.451Z
-Stopped at: Hoan thanh 06-06-PLAN.md
+Last session: 2026-09-24T16:10:00.000Z
+Stopped at: Hoan thanh 06-13-PLAN.md
 Last activity: 2026-09-24
 Resume file: None
