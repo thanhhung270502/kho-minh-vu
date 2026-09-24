@@ -2,9 +2,11 @@
 
 import {
   AppstoreOutlined,
+  AuditOutlined,
   ContainerOutlined,
   DashboardOutlined,
   ExportOutlined,
+  HistoryOutlined,
   ImportOutlined,
   SettingOutlined,
   ShoppingCartOutlined,
@@ -24,4 +26,6 @@ export const NAV_ICONS: Record<NavIconId, ReactNode> = {
   catalog: <AppstoreOutlined />,
   partners: <TeamOutlined />,
   settings: <SettingOutlined />,
+  stocktake: <AuditOutlined />,
+  "kiotviet-history": <HistoryOutlined />,
 };

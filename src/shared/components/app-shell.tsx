@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import {
-  filterByPermission,
+  filterNavItems,
   findActiveHref,
   splitMobileItems,
   NAV_ITEMS,
@@ -18,14 +18,15 @@ import { TopNav } from "./top-nav";
 const { Content } = Layout;
 
 type AppShellProps = {
-  user: { fullName: string; role: Role };
+  user: { fullName: string; role: Role; canViewKiotVietHistory: boolean };
   children: ReactNode;
 };
 
 export function AppShell({ user, children }: AppShellProps) {
   const pathname = usePathname();
   // D-07: menu chỉ hiện mục vai trò có quyền — ẩn hẳn, không chỉ disable.
-  const items = filterByPermission(user.role, NAV_ITEMS);
+  // D-13: "Lịch sử KiotViet" thêm ẩn theo công tắc theo người.
+  const items = filterNavItems(user, NAV_ITEMS);
   const activeHref = findActiveHref(pathname, items);
   const { primary, overflow } = splitMobileItems(items);
 

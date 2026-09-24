@@ -53,6 +53,11 @@ import {
   toHistoryRpcArgs,
   type KiotVietHistoryFilter,
 } from "../src/features/kiotviet-history/schemas/history-filter.schema";
+import {
+  filterNavItems,
+  splitMobileItems,
+  NAV_ITEMS,
+} from "../src/shared/lib/navigation";
 
 assert.equal(removeDiacritics("Đặng Thị Ngọc"), "Dang Thi Ngoc");
 assert.equal(normalizeUsername("  Kim.Chi "), "kim.chi");
@@ -84,6 +89,61 @@ assert.equal(hasPermission("van_phong", "edit-sale-price"), false);
 assert.equal(hasPermission("van_phong", "manage-lookups"), true);
 assert.equal(hasPermission("van_phong", "manage-users"), false);
 assert.equal(hasPermission("chi_xem", "view-cost"), false);
+
+// filterNavItems (06-16): menu "Kiểm kê" cho mọi vai trò, "Lịch sử KiotViet"
+// ẩn hẳn khi chưa bật công tắc theo người (D-13).
+{
+  const thuKhoItems = filterNavItems(
+    { role: "thu_kho", canViewKiotVietHistory: false },
+    NAV_ITEMS,
+  );
+  assert.ok(
+    thuKhoItems.some((i) => i.href === "/kiem-ke"),
+    "thủ kho thấy /kiem-ke",
+  );
+  assert.ok(
+    !thuKhoItems.some((i) => i.href === "/lich-su-kiotviet"),
+    "thủ kho chưa bật công tắc thì KHÔNG thấy /lich-su-kiotviet",
+  );
+
+  const vanPhongItems = filterNavItems(
+    { role: "van_phong", canViewKiotVietHistory: true },
+    NAV_ITEMS,
+  );
+  assert.ok(
+    vanPhongItems.some((i) => i.href === "/kiem-ke") &&
+      vanPhongItems.some((i) => i.href === "/lich-su-kiotviet"),
+    "văn phòng đã bật công tắc thấy cả hai mục mới",
+  );
+
+  const quanLyItems = filterNavItems(
+    { role: "quan_ly", canViewKiotVietHistory: true },
+    NAV_ITEMS,
+  );
+  assert.ok(
+    quanLyItems.some((i) => i.href === "/kiem-ke") &&
+      quanLyItems.some((i) => i.href === "/lich-su-kiotviet") &&
+      quanLyItems.some((i) => i.href === "/cai-dat"),
+    "quản lý thấy cả hai mục mới cộng /cai-dat",
+  );
+
+  const chiXemItems = filterNavItems(
+    { role: "chi_xem", canViewKiotVietHistory: false },
+    NAV_ITEMS,
+  );
+  assert.ok(
+    chiXemItems.some((i) => i.href === "/kiem-ke") &&
+      !chiXemItems.some((i) => i.href === "/cai-dat"),
+    "chỉ xem thấy /kiem-ke nhưng không thấy /cai-dat",
+  );
+
+  const { primary } = splitMobileItems(thuKhoItems);
+  assert.deepEqual(
+    primary.map((i) => i.href),
+    ["/", "/xuat-kho", "/nhap-kho", "/ton-kho"],
+    "thanh tab đáy vẫn giữ 4 ô của Phase 5, 'Kiểm kê' không chiếm chỗ",
+  );
+}
 
 const sampleFilter: ProductFilter = {
   q: "op po",

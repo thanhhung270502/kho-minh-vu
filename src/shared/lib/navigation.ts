@@ -15,7 +15,9 @@ export type NavIconId =
   | "inventory"
   | "catalog"
   | "partners"
-  | "settings";
+  | "settings"
+  | "stocktake"
+  | "kiotviet-history";
 
 export type NavItem = {
   /** Đường dẫn giữ tiếng Việt: URL là bề mặt người dùng nhìn thấy. */
@@ -27,6 +29,12 @@ export type NavItem = {
   permission: Permission;
   /** null = không vào thanh tab đáy, nằm trong mục "Khác". */
   mobilePriority: number | null;
+  /**
+   * Quyền THEO NGƯỜI (D-13/D-14), không theo `PERMISSION_MATRIX` — chỉ
+   * "kiotviet-history" hiện dùng. Ẩn hẳn khỏi menu khi người dùng chưa được
+   * bật công tắc, dù `permission` ở trên vẫn cho qua.
+   */
+  requires?: "kiotviet-history";
 };
 
 // mobilePriority (Phase 4, plan 04-15): thanh tab đáy chỉ có 4 ô chính, và
@@ -86,6 +94,29 @@ export const NAV_ITEMS: NavItem[] = [
     mobilePriority: 4,
   },
   {
+    // Phase 6: kiểm kê định kỳ, không phải việc hằng giờ như xuất/nhập nên
+    // không chiếm ô nào của thanh tab đáy — vào bằng "Khác" (D-04, màn đếm
+    // vẫn dùng tốt trên điện thoại một khi đã mở từ đó).
+    href: "/kiem-ke",
+    label: "Kiểm kê",
+    shortLabel: "Kiểm kê",
+    icon: "stocktake",
+    permission: "view-catalog",
+    mobilePriority: null,
+  },
+  {
+    // Quyền THEO NGƯỜI (D-13) qua `requires`, không qua `permission` —
+    // `filterNavItems` ẩn hẳn mục này khi người dùng chưa được bật công tắc
+    // "Xem lịch sử KiotViet", dù `permission` ở đây (view-catalog) cho qua.
+    href: "/lich-su-kiotviet",
+    label: "Lịch sử KiotViet",
+    shortLabel: "LS KiotViet",
+    icon: "kiotviet-history",
+    permission: "view-catalog",
+    requires: "kiotviet-history",
+    mobilePriority: null,
+  },
+  {
     href: "/danh-muc",
     label: "Danh mục hàng",
     shortLabel: "Hàng",
@@ -121,9 +152,21 @@ export function findActiveHref(pathname: string, items: NavItem[]): string {
   return matched.at(-1)?.href ?? "/";
 }
 
-/** D-07: menu chỉ hiện mục vai trò có quyền — ẩn hẳn, không chỉ disable. */
-export function filterByPermission(role: Role, items: NavItem[]): NavItem[] {
-  return items.filter((item) => hasPermission(role, item.permission));
+/**
+ * D-07: menu chỉ hiện mục vai trò có quyền — ẩn hẳn, không chỉ disable.
+ * Cộng thêm quyền THEO NGƯỜI (D-13/D-14) qua `requires`: mục "kiotviet-history"
+ * còn bị ẩn thêm với người chưa bật công tắc, dù vai trò đã qua `permission`.
+ */
+export function filterNavItems(
+  user: { role: Role; canViewKiotVietHistory: boolean },
+  items: NavItem[],
+): NavItem[] {
+  return items
+    .filter((item) => hasPermission(user.role, item.permission))
+    .filter(
+      (item) =>
+        item.requires !== "kiotviet-history" || user.canViewKiotVietHistory,
+    );
 }
 
 /**
