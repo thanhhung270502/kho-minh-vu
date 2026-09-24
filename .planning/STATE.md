@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: Ready to verify
 stopped_at: Hoan thanh 06-11-PLAN.md
-last_updated: "2026-09-24T16:22:50.474Z"
+last_updated: "2026-09-24T16:33:37.757Z"
 last_activity: 2026-09-24
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 92
-  completed_plans: 56
+  completed_plans: 57
   percent: 25
 ---
 
@@ -472,6 +472,26 @@ trên trình duyệt** — ba component này chưa được ghép vào trang chi
 `/kiem-ke/[id]` (việc của 06-15), UAT thật sự chỉ làm được sau đó (xem
 `06-12-SUMMARY.md#User-Setup-Required`). Không có auth gate._
 
+_Ghi lại 2026-09-24 khi thực thi 06-14 (XONG — cả hai task autonomous, không có
+checkpoint, wave 5, phụ thuộc 06-09/06-13): `count-import.api.ts` +
+`useCountImport.ts` (`useReducer` ba bước idle/checked/loaded khuôn
+`useProvisionalStockFlow`, gọi route `/api/kiem-ke/nhap-excel` của 06-13, zod
+schema coi mọi trường chi tiết của `nhap_so_dem_kiem_ke` là optional vì ba
+nhánh trả về của RPC — kiểm tra/nạp còn lỗi/nạp thành công — không nhánh nào có
+đủ cùng một bộ khóa, xác nhận bằng đọc trực tiếp `0065_kiem_ke_dem.sql`) — Task
+
+1. `count-excel-import.tsx` (chọn nhóm từ `useCountSheet` đang có → tải file
+
+mẫu → kéo file đã điền → bốn `Statistic` + khóa nút "Nạp số đếm" khi còn lỗi,
+`!editable` chỉ hiện khối tải mẫu) + `count-import-result.tsx` (tách khối kết
+quả khuôn `provisional-stock-issues.tsx`, cả hai file dưới 200 dòng) — Task 2.
+Không có deviation — plan đã tự dự liệu trước việc tách file kết quả.
+`npm run check` xanh toàn bộ, `npx eslint` sạch, gate `grep -c "Upload.Dragger"`
+và `errorCount > 0` đều đạt. **CHƯA kiểm bằng mắt trên trình duyệt** —
+`CountExcelImport` chưa được ghép vào trang chi tiết `/kiem-ke/[id]` (việc của
+06-15), UAT thật sự chỉ làm được sau đó (xem
+`06-14-SUMMARY.md#Cần-mở-trình-duyệt-kiểm-tra`). Không có auth gate._
+
 ## Performance Metrics
 
 **Velocity:**
@@ -525,6 +545,7 @@ trên trình duyệt** — ba component này chưa được ghép vào trang chi
 | Phase 06 P08 | 45min | 2 tasks | 8 files |
 | Phase 06 P10 | 35min | 2 tasks | 3 files |
 | Phase 06 P11 | 30min | 2 tasks | 3 files |
+| Phase 06 P14 | 40 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -616,6 +637,8 @@ Recent decisions affecting current work:
 - [Phase 06]: 06-08: sua bug readDate (06-07) chi kiem khuon so khong kiem ngay co that; doi ten tab key 'kiotviet-history' -> 'lich-su-kiotviet' de tranh trung chuoi voi comment import feature
 - [Phase 06]: 06-10: Bo loc danh sach phien kiem ke la state cuc bo (khong URL) — khac ReceiptTable, phien kiem ke khong can bookmark/chia se link loc
 - [Phase 06]: count-desk-columns.tsx xuat countInputDomId() dung chung — focus dong ke qua id DOM thay vi useRef (React Compiler cam truyen ref vao ham goi luc render)
+- [Phase ?]: Zod schema cua nhap_so_dem_kiem_ke coi moi truong chi tiet la optional - ba nhanh tra ve khong nhanh nao co du cung mot bo khoa
+- [Phase ?]: count-import-result.tsx tach khoi count-excel-import.tsx tu dau, khuon provisional-stock-issues.tsx, giu ca hai file duoi 200 dong
 
 ### Pending Todos
 
@@ -636,7 +659,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-24T16:15:58.223Z
+Last session: 2026-09-24T16:33:08.289Z
 Stopped at: Hoan thanh 06-11-PLAN.md
 Last activity: 2026-09-24
 Resume file: None
