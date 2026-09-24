@@ -10,11 +10,18 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
+import ExcelJS from "exceljs";
+
 import {
   readCatalogFile,
   toExportRow,
   buildTemplateWorkbook,
 } from "../src/features/products/lib/read-catalog-file.server";
+import {
+  buildCountTemplate,
+  STOCKTAKE_TEMPLATE_COLUMNS,
+} from "../src/features/stocktake/lib/count-template.server";
+import { readCountFile } from "../src/features/stocktake/lib/read-count-file.server";
 
 async function main() {
   const THU_MUC = "data/kiotviet";
@@ -75,6 +82,99 @@ async function main() {
   );
 
   console.log("✓ đọc Excel: file KiotViet thật + mẫu hệ mới quay vòng");
+
+  // --- Mẫu đếm kiểm kê (D-08: không cột số liệu hệ thống) + đọc lại --------
+  assert.equal(STOCKTAKE_TEMPLATE_COLUMNS.length, 4, "mẫu đếm có đúng 4 cột");
+  assert.ok(
+    !STOCKTAKE_TEMPLATE_COLUMNS.some(
+      (c) => /ton/i.test(c.key) || /tồn/i.test(c.title),
+    ),
+    "mẫu đếm không có cột tồn nào (D-08)",
+  );
+
+  const baDong = [
+    { code: "MA001", name: "Hàng 1", unit: "CÁI" },
+    { code: "MA002", name: "Hàng 2", unit: "BỘ" },
+    { code: "MA003", name: "Hàng 3", unit: "CÁI" },
+  ];
+  const bufMauTrong = await buildCountTemplate(baDong, {
+    sessionNo: "PK26-000001",
+    warehouseName: "Kho 1",
+    categoryName: null,
+  });
+  const mauTrong = await readCountFile(bufMauTrong);
+  assert.equal(mauTrong.length, 3, "đọc lại đủ 3 dòng vừa xuất");
+  assert.ok(
+    mauTrong.every((d) => d.so_dem === null),
+    "ô Số đếm để trống = chưa đếm, không phải 0",
+  );
+  assert.deepEqual(
+    mauTrong.map((d) => d.ma_hang),
+    baDong.map((d) => d.code),
+    "mã hàng quay vòng không đổi",
+  );
+
+  // Điền số đếm rồi đọc lại — hiểu cả số nguyên lẫn định dạng thập phân VN,
+  // ô để trống vẫn là chưa đếm.
+  const bufDeDien = await buildCountTemplate(baDong, {
+    sessionNo: "PK26-000001",
+    warehouseName: "Kho 1",
+    categoryName: "Nhóm A",
+  });
+  const wbDaDien = new ExcelJS.Workbook();
+  await wbDaDien.xlsx.load(
+    bufDeDien as unknown as Parameters<typeof wbDaDien.xlsx.load>[0],
+  );
+  const wsDaDien = wbDaDien.worksheets[0];
+  const soDemCol =
+    STOCKTAKE_TEMPLATE_COLUMNS.findIndex((c) => c.key === "so_dem") + 1;
+  wsDaDien.getRow(2).getCell(soDemCol).value = 5;
+  wsDaDien.getRow(3).getCell(soDemCol).value = "1.234,5";
+  wsDaDien.getRow(4).getCell(soDemCol).value = null;
+  const bufDaDien = Buffer.from(await wbDaDien.xlsx.writeBuffer());
+  const daDien = await readCountFile(bufDaDien);
+  assert.deepEqual(
+    daDien.map((d) => d.so_dem),
+    [5, 1234.5, null],
+    "đọc số đếm hiểu số nguyên, định dạng thập phân VN, và ô trống = chưa đếm",
+  );
+
+  // Quay vòng 1.200 dòng — cỡ hỏng của reader dạng stream đã biết (bẫy 7).
+  const nhieuDong = Array.from({ length: 1200 }, (_, i) => ({
+    code: `MA${String(i + 1).padStart(5, "0")}`,
+    name: `Hàng ${i + 1}`,
+    unit: "CÁI",
+  }));
+  const bufNhieu = await buildCountTemplate(nhieuDong, {
+    sessionNo: "PK26-000002",
+    warehouseName: "Kho 1",
+    categoryName: null,
+  });
+  const nhieu = await readCountFile(bufNhieu);
+  assert.equal(
+    nhieu.length,
+    1200,
+    "quay vòng 1.200 dòng vẫn đọc đủ, không mất dòng vì lệch thứ tự zip",
+  );
+
+  // File thiếu cột "Số đếm" → báo lỗi đọc hiểu được, nói rõ cần hai cột nào.
+  const wbThieuCot = new ExcelJS.Workbook();
+  const wsThieuCot = wbThieuCot.addWorksheet("Đếm");
+  wsThieuCot.columns = [
+    { header: "Mã hàng", key: "ma_hang" },
+    { header: "Tên hàng", key: "ten_hang" },
+  ];
+  wsThieuCot.addRow({ ma_hang: "MA001", ten_hang: "Hàng 1" });
+  const bufThieuCot = Buffer.from(await wbThieuCot.xlsx.writeBuffer());
+  await assert.rejects(
+    () => readCountFile(bufThieuCot),
+    /Mã hàng.*Số đếm|Số đếm.*Mã hàng/,
+    "thiếu cột Số đếm báo lỗi tiếng Việt nói rõ cần hai cột Mã hàng và Số đếm",
+  );
+
+  console.log(
+    "✓ mẫu đếm kiểm kê: xuất/đọc quay vòng, không lộ số liệu hệ thống, ô trống = chưa đếm",
+  );
 }
 
 main().catch((e) => {
