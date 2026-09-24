@@ -243,7 +243,7 @@ Plans:
 
 - [x] 06-06-PLAN.md — công tắc quyền trong Cài đặt → Người dùng + CurrentUser
 - [x] 06-07-PLAN.md — lớp dữ liệu + bảng lịch sử KiotViet + drawer mở lại nguyên phiếu
-- [ ] 06-09-PLAN.md — lớp dữ liệu kiểm kê + hàm thuần ngưỡng lệch và trạng thái phiên
+- [x] 06-09-PLAN.md — lớp dữ liệu kiểm kê + hàm thuần ngưỡng lệch và trạng thái phiên
 - [ ] 06-13-PLAN.md — file mẫu đếm theo nhóm (không lộ tồn) + route xuất/nhập Excel
 
 **Wave 5** *(blocked on Wave 4 completion)*
@@ -307,6 +307,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. Phiếu nhập | 0/TBD | Not started | - |
 | 4. Đơn đặt hàng & Phiếu xuất | 0/TBD | Not started | - |
 | 5. Tồn kho & Tổng quan | 12/12 | Executed — chờ verify |  |
-| 6. Kiểm kê & Go-live | 7/16 | In Progress|  |
+| 6. Kiểm kê & Go-live | 8/16 | In Progress|  |
 | 7. Trang tổng quan | 0/TBD | Not started | - |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |
