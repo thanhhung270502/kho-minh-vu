@@ -37,6 +37,14 @@ import {
   UNASSIGNED_WAREHOUSE_LABEL,
 } from "../src/features/sales-order/lib/group-lines-by-warehouse";
 import type { OrderLine } from "../src/features/sales-order/types";
+import {
+  discrepancyOf,
+  isLargeDiscrepancy,
+} from "../src/features/stocktake/lib/discrepancy";
+import {
+  sessionStatus,
+  SESSION_STATUS_LABELS,
+} from "../src/features/stocktake/lib/session-status";
 
 assert.equal(removeDiacritics("Đặng Thị Ngọc"), "Dang Thi Ngoc");
 assert.equal(normalizeUsername("  Kim.Chi "), "kim.chi");
@@ -232,6 +240,63 @@ assert.deepEqual(
   [1, 2, 3, 4],
   "STT liên tục trong cả tờ, không đánh lại từ 1 ở mỗi kho",
 );
+
+// --- Kiểm kê: ngưỡng lệch và nhãn trạng thái phiên (06-09) ------------------
+assert.equal(discrepancyOf(8, 10), -2);
+assert.equal(discrepancyOf(10, 10), 0);
+
+assert.equal(isLargeDiscrepancy(10, 10), false, "lệch 0 thì không lớn");
+assert.equal(isLargeDiscrepancy(15, 10), true, "|5| >= ngưỡng tuyệt đối");
+assert.equal(isLargeDiscrepancy(11, 10), true, "lệch 10% tồn sổ");
+assert.equal(
+  isLargeDiscrepancy(104, 100),
+  false,
+  "lệch 4 và 4% đều dưới ngưỡng",
+);
+assert.equal(
+  isLargeDiscrepancy(2, 0),
+  false,
+  "tồn sổ 0 không tính theo tỉ lệ, lệch tuyệt đối dưới ngưỡng",
+);
+assert.equal(isLargeDiscrepancy(5, 0), true, "lệch tuyệt đối 5 đạt ngưỡng");
+assert.equal(isLargeDiscrepancy(0, 3), true, "lệch -3 là 100% tồn sổ");
+assert.equal(
+  isLargeDiscrepancy(0, -4),
+  true,
+  "tồn sổ âm vẫn tính theo trị tuyệt đối (4/4 = 100%)",
+);
+
+assert.equal(
+  sessionStatus({ state: "HOAN_THANH", counted: 3, scope: 5, recount: 0 }),
+  "approved",
+);
+assert.equal(
+  sessionStatus({ state: "DA_HUY", counted: 0, scope: 5, recount: 0 }),
+  "voided",
+);
+assert.equal(
+  sessionStatus({ state: "NHAP_LIEU", counted: 0, scope: 5, recount: 0 }),
+  "new",
+);
+assert.equal(
+  sessionStatus({ state: "NHAP_LIEU", counted: 2, scope: 5, recount: 0 }),
+  "counting",
+);
+assert.equal(
+  sessionStatus({ state: "NHAP_LIEU", counted: 5, scope: 5, recount: 0 }),
+  "ready",
+);
+assert.equal(
+  sessionStatus({ state: "NHAP_LIEU", counted: 5, scope: 5, recount: 1 }),
+  "counting",
+);
+assert.deepEqual(SESSION_STATUS_LABELS, {
+  new: "Mới mở",
+  counting: "Đang đếm",
+  ready: "Chờ duyệt",
+  approved: "Đã duyệt",
+  voided: "Đã hủy",
+});
 
 // tsx biên dịch ra CJS nên KHÔNG có top-level await — bọc phần bất đồng bộ lại.
 async function kiemCsvLoi() {
