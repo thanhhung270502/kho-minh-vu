@@ -141,13 +141,16 @@ export function ReturnLineTable({ documentId, lines, editable }: Props) {
           formatNumber(value)
         );
 
-        if (!over) return input;
-
+        // Luôn bọc Tooltip, chỉ đổi title — cùng lý do với issue-line-columns.tsx.
         return (
           <Tooltip
-            title={`Tồn kho ${line.warehouseName ?? ""} còn ${formatNumber(
-              line.currentStock,
-            )}, trả ${formatNumber(value)}`}
+            title={
+              over
+                ? `Tồn kho ${line.warehouseName ?? ""} còn ${formatNumber(
+                    line.currentStock,
+                  )}, trả ${formatNumber(value)}`
+                : undefined
+            }
           >
             {input}
           </Tooltip>

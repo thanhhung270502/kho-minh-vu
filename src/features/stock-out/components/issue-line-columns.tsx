@@ -108,13 +108,18 @@ export function buildIssueLineColumns({
           formatNumber(value)
         );
 
-        if (!over) return input;
-
+        // Luôn bọc Tooltip, chỉ đổi title: bọc/bỏ bọc theo `over` làm React dựng lại
+        // InputNumber (không kiểm soát) ngay lúc số gõ đi qua ngưỡng tồn — mất focus
+        // và mất số đang gõ (UAT 04 bài 6).
         return (
           <Tooltip
-            title={`Tồn kho ${line.warehouseName ?? ""} còn ${formatNumber(
-              line.currentStock,
-            )}, xuất ${formatNumber(currentQuantity(line))}`}
+            title={
+              over
+                ? `Tồn kho ${line.warehouseName ?? ""} còn ${formatNumber(
+                    line.currentStock,
+                  )}, xuất ${formatNumber(currentQuantity(line))}`
+                : undefined
+            }
           >
             {input}
           </Tooltip>
