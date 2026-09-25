@@ -42,6 +42,21 @@ Gặp đủ 5 cái: `Dropdown.Button`, `Modal.maskClosable`, `Select` option `va
 `Descriptions` `span` cố định trong lưới responsive, và `Alert.message` (đổi thành
 `title`, 17 chỗ). Build không báo. **Mở console trình duyệt một lần cho mỗi màn mới.**
 
+## 5. React Compiler lint cấm đưa ref vào hàm gọi lúc render
+
+`react-hooks/refs` (eslint-plugin-react-hooks bản có React Compiler) báo lỗi khi truyền
+`useRef` vào hàm gọi trong render — ví dụ `columns(inputRefs)` cho bảng nhập liệu nhiều dòng.
+Khuôn `issue-line-table.tsx` của Phase 3/4 không còn lint sạch.
+
+**Áp dụng (06-11):** đặt `id` DOM cố định theo khóa dòng (`countInputDomId(productId)`) rồi
+`document.getElementById(id)?.focus()` trong `setTimeout(…, 0)` (bẫy 14). Không cần `useRef`.
+
+## 6. `notification.*({ message })` cũng là prop antd v6 đã bỏ
+
+Giống `Alert message` → dùng `title`. Chỉ hiện khi CHẠY đúng nhánh (ở Cài đặt: chỉ khi đổi
+vai trò/kho) nên lọt qua `npm run check` và cả UAT Phase 2. Grep `message:` trong lời gọi
+`notification.` khi rà antd.
+
 ## Chốt chặn hồi quy
 
 `scripts/test-route-permissions.ts` phải có **mọi route thật**, kể cả route chỉ redirect

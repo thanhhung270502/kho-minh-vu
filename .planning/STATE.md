@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to verify
-stopped_at: Hoan thanh 06-11-PLAN.md
-last_updated: "2026-09-25T03:23:24.638Z"
+stopped_at: Phase 6 UAT một phần (4 đạt, 1 lỗi đã sửa, 9 chưa kiểm) — chưa đánh dấu hoàn thành
+last_updated: "2026-09-25T03:48:19.995Z"
 last_activity: 2026-09-25
 progress:
   total_phases: 8
@@ -660,7 +660,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-24T16:45:10.110Z
-Stopped at: Hoan thanh 06-11-PLAN.md
+Last session: 2026-09-25T03:48:19.961Z
+Stopped at: Phase 6 UAT một phần (4 đạt, 1 lỗi đã sửa, 9 chưa kiểm) — chưa đánh dấu hoàn thành
 Last activity: 2026-09-25
-Resume file: None
+Resume file: .planning/phases/06-kiem-ke-go-live/06-UAT.md
