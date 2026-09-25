@@ -535,6 +535,19 @@ nằm lại trong DOM, đọc nội dung modal phải lấy cái MỚI NHẤT, k
 Lần này suýt ghi nhầm thành "refactor plan 04-05 làm vỡ mọi màn danh sách" — đã kiểm
 chứng bằng cách quay về commit TRƯỚC refactor và thấy trắng y hệt.
 
+### 20. Bọc điều kiện quanh input không kiểm soát làm mất focus
+
+`if (!over) return input; return <Tooltip>{input}</Tooltip>` — đổi cây khi giá trị
+đi qua ngưỡng làm React dựng lại `InputNumber` (dùng `defaultValue`): mất focus
+giữa lúc gõ và mất số đang gõ. Luôn bọc wrapper, chỉ đổi prop (`title={over ? … : undefined}`).
+Lần vấp: sửa số lượng phiếu xuất 999→9 là mất ô (UAT Phase 4).
+
+### 21. `<Select showSearch>` phải lọc không dấu
+
+`optionFilterProp="label"` của antd so khớp nguyên văn — gõ "lien" ra "Trống" dù có
+"LIÊN HOA". Dùng `filterOption={filterByLabel}` từ `@/shared/lib/text`. Ô tìm phía
+server (`ProductSearchInput`, `PartnerSearchInput`) đã tự lo, không cần.
+
 ---
 
 # Không tự ý làm

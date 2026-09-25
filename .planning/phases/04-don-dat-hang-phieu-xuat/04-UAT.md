@@ -3,7 +3,7 @@ status: complete
 phase: 04-don-dat-hang-phieu-xuat
 source: [04-05-PLAN.md, 04-09-PLAN.md, 04-11-PLAN.md, 04-12-PLAN.md, 04-13-PLAN.md, 04-14-PLAN.md, 04-15-PLAN.md, 04-01..04-10-SUMMARY.md]
 started: 2026-09-25T06:00:00Z
-updated: 2026-09-25T07:30:00Z
+updated: 2026-09-25T08:30:00Z
 ---
 
 ## Current Test
@@ -19,7 +19,9 @@ ghi_chu: "/dat-hang, /xuat-kho, /nhap-kho, /dat-hang/x/in → 307 /dang-nhap?tie
 
 ### 2. Danh sách và dòng phiếu nhập (04-05)
 expected: /nhap-kho có panel lọc, lọc đổi URL và giữ khi F5; dưới 992px panel vào Drawer, bảng cuộn trong khung riêng; ở chi tiết phiếu gõ mã → Enter → ô số lượng → Enter về ô mã; trang in không có cột giá.
-result: issue
+result: pass
+retest: "25/09 sau 4f77209, 8291223 (nhánh fix/uat-04-gaps) — ghi sổ không giá, ô chọn tìm không dấu"
+first_result: issue
 reported: "Claude kiểm: danh sách, lọc theo URL (?trang_thai=DA_HUY ra đúng 3 phiếu, Drawer hiện 'Đã hủy'), 794px lọc vào Drawer không tràn ngang, luồng bàn phím mã→Enter→SL→Enter→giá→Enter về ô mã, trang in không cột giá — ĐẠT. NHƯNG ghi sổ phiếu nhập bị chặn khi đơn giá = 0 ('dòng chưa có đơn giá'), trái quyết định 24/09 người dùng không dùng giá (DLIEU-05)."
 severity: major
 ghi_chu: "Chặn chỉ ở giao diện: post-receipt-button.tsx:27 và receipt-line-table.tsx:239 lọc unitPrice <= 0 (D-04 Phase 3). DB (_ghi_so_nhap, ràng buộc) không chặn. Mã thử PX/PN-UAT-* bị ngừng kinh doanh từ lượt dọn trước — bật lại tạm cho UAT, tắt sau khi xong."
@@ -41,7 +43,9 @@ ghi_chu: "Đơn đã xác nhận → Tạo phiếu xuất: hộp xác nhận nó
 
 ### 6. Phiếu xuất không cần đơn (04-11)
 expected: /xuat-kho → tạo phiếu → gõ mã/Enter/số/Enter liên tục; số lớn hơn tồn tô màu ngay; đổi kho dòng cập nhật màu; không cột giá; dưới 992px không tràn ngang.
-result: issue
+result: pass
+retest: "25/09 sau 0163f4f — focus giữ khi đi qua ngưỡng tồn cả hai chiều"
+first_result: issue
 reported: "Claude kiểm PX26-000005 (không đơn): bàn phím mã→Enter→SL→Enter về ô mã đạt; mã chưa có kho mặc định (PN-UAT-A) bị chặn với thông báo chỉ đường Danh mục → Kho mặc định; gõ 999 dòng đỏ ngay, Tooltip 'Tồn kho Kho 1 còn 35, xuất 999'; đổi kho sang Kho 2 dòng đỏ + khối xuất âm cập nhật; không cột giá; 794px không tràn. LỖI: sửa số lượng mà giá trị đi qua ngưỡng tồn (999→9 khi xóa lùi) thì ô số mất focus giữa chừng, số gõ tiếp bị nuốt, ô quay về số cũ."
 severity: major
 
@@ -78,8 +82,8 @@ ghi_chu: "read_console_messages sau mốc P4: không cảnh báo antd, không l�
 ## Summary
 
 total: 12
-passed: 10
-issues: 2
+passed: 12
+issues: 0
 pending: 0
 skipped: 0
 
@@ -87,42 +91,48 @@ skipped: 0
 
 ```yaml
 - truth: "Văn phòng ghi sổ được phiếu nhập không có đơn giá (người dùng không dùng giá, chốt 24/09)"
-  status: failed
+  status: resolved
+  fix: "4f77209 — PN26-000004 dòng bỏ trống giá, không cảnh báo, ghi sổ được, hộp tóm tắt không nêu tổng tiền"
   reason: "Giao diện chặn ghi sổ khi đơn giá <= 0 (D-04 Phase 3, có trước quyết định bỏ giá)"
   severity: major
   test: 2
   artifacts: [src/features/stock-in/components/post-receipt-button.tsx, src/features/stock-in/components/receipt-line-table.tsx]
   missing: ["bỏ điều kiện đơn giá > 0 khi ghi sổ, hoặc hỏi người dùng có còn cần giá nhập không"]
 - truth: "Ô chọn (nhà cung cấp, nhóm hàng, kho…) tìm được khi gõ không dấu"
-  status: failed
+  status: resolved
+  fix: "8291223 — 'lien' ra LIÊN HOA, 'kho 1' chọn được kho (sau khi tải lại trang; HMR giữ bản cũ)"
   reason: "Claude kiểm: hộp Tạo phiếu nhập gõ 'lien'/'cong' ra 'Trống', 'LIÊN' mới ra CÔNG TY TNHH LIÊN HOA — antd lọc mặc định theo label có dấu"
   severity: major
   test: 2
   artifacts: [src/features/stock-in/components/create-receipt-button.tsx, src/features/stock-in/components/receipt-header.tsx, src/features/stock-in/components/receipt-filter-panel.tsx, src/features/inventory/components/stock-filter-panel.tsx, src/features/products/components/bulk-assign-bar.tsx, src/features/products/components/inline-edit-cell.tsx, src/features/products/components/product-drawer.tsx, src/features/products/components/product-filter-panel.tsx, src/features/settings/components/lookup-drawer.tsx]
   missing: ["filterOption dùng removeDiacritics như labelMatches của open-session-drawer.tsx — nâng hàm lên shared (đã có 2 nơi dùng)"]
 - truth: "Sửa số lượng dòng phiếu xuất bằng bàn phím không mất focus"
-  status: failed
+  status: resolved
+  fix: "0163f4f — PX26-000006: 999→9 (bỏ đỏ) → gõ 0 thành 90 (đỏ lại), focus giữ nguyên suốt"
   reason: "Claude kiểm: xóa lùi 999→9 (đi từ vượt tồn về dưới tồn) → ô mất focus, phím tiếp bị nuốt, ô về số cũ"
   severity: major
   test: 6
   artifacts: [src/features/stock-out/components/issue-line-columns.tsx]
   missing: ["luôn bọc Tooltip (title rỗng khi không vượt) thay vì `if (!over) return input` — đổi cây làm React dựng lại InputNumber không kiểm soát (defaultValue)"]
 - truth: "Phiếu đã ghi sổ không còn hiện cảnh báo trước-ghi-sổ và gợi ý gộp mã"
-  status: failed
+  status: resolved
+  fix: "f032177 — PX26-000006 sau ghi sổ: không khối xuất âm, không gợi ý gộp, chỉ còn 'Phiếu này đã ghi sổ khi xuất âm — lý do …'"
   reason: "Khối '1 dòng sẽ làm tồn âm nếu ghi sổ … tồn -10' so với tồn SAU ghi sổ, và gợi ý gộp mã vẫn hiện trên PX26-000004 đã ghi sổ"
   severity: minor
   test: 7
   artifacts: [src/features/stock-out/components]
   missing: ["chỉ hiện khối xuất âm/gợi ý khi phiếu NHAP_LIEU; phiếu đã ghi sổ chỉ giữ dòng 'đã ghi sổ khi xuất âm — lý do …'"]
 - truth: "Phiếu khách trả hàng (tồn tăng) không tô đỏ vượt tồn"
-  status: failed
+  status: resolved
+  fix: "f032177 — TK26-000003 (A tồn -1, trả 1) không dòng đỏ"
   reason: "TK26-000002: dòng PX-UAT-A (tồn -10, trả 2) có bg-red-50"
   severity: minor
   test: 10
   artifacts: [src/features/returns/components]
   missing: ["bỏ tô vượt tồn cho TRA_KHACH (chỉ TRA_NCC/XUAT làm giảm tồn)"]
 - truth: "Chữ trên màn khớp trạng thái thật"
-  status: failed
+  status: resolved
+  fix: "f032177 — DH26-000005 hiện 'Đơn đã hoàn thành — không mở lại được'; hộp hủy 'Điều xảy ra khi hủy phiếu đã ghi sổ'"
   reason: "Đơn Hoàn thành vẫn ghi 'nhờ quản lý mở lại đơn về đơn tạm'; hộp hủy phiếu ghi 'Ba điều xảy ra' nhưng liệt kê hai"
   severity: cosmetic
   test: 4
@@ -137,3 +147,5 @@ skipped: 0
 - Dữ liệu sinh ra 25/09: PN26-000003, PX26-000004, PX26-000005, TK26-000002, TN26-000024 — tất cả ĐÃ HỦY lý do 'Dọn dữ liệu thử UAT Phase 4 (25/09)'; DH26-000005 Hoàn thành (đóng sớm), không còn số đã xuất. Tồn mọi mã về 0, bốn mã thử tắt kinh doanh lại. CÒN LẠI: một dòng đề nghị gộp PX-UAT-A↔B trong de_nghi_gop_ma (Claude không xóa cứng — người dùng quyết).
 - Nháp PNM26-000004 (HWNX19-16A-X × 100) của ai đó vẫn giữ nguyên — dòng thử PX-UAT-A thêm vào đã xóa.
 - Lưu ý đo: bài 6 lần đầu tưởng số không lưu do công cụ, thực ra là lỗi mất focus (xem gap); chọn-hết-rồi-gõ-đè thì lưu đúng.
+- Kiểm lại sau sửa (nhánh fix/uat-04-gaps): sinh thêm PN26-000004, PX26-000006, TK26-000003 — đều ĐÃ HỦY lý do 'Dọn dữ liệu thử sửa gap UAT 04'. Tồn mọi mã 0, mã thử tắt lại.
+- Quan sát, không phải lỗi mới: số lượng ở dòng ĐÃ CÓ của phiếu xuất chỉ lưu khi rời ô (blur), Enter không lưu — như trước; hàng thêm dòng mới thì Enter lưu. Một lần chọn lý do xuất âm bằng click JS khi ô số còn focus thì nút hiện chọn nhưng DB chưa lưu; click chuột thật không tái hiện — ghi lại để để ý.
