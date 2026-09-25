@@ -33,7 +33,7 @@ sau cần dùng ngay.
 - [ ] **Phase 3: Phiếu nhập** - Luồng chứng từ hoàn chỉnh đầu tiên: tạo, thêm dòng, ghi sổ, hủy đảo, in — giá vốn bình quân chạy thật
 - [ ] **Phase 4: Đơn đặt hàng & Phiếu xuất** - Nhân bản cơ chế chứng từ cho chiều xuất, đơn đặt → duyệt → in đi lấy hàng → phiếu xuất, chạy trọn luồng trên máy tính văn phòng
 - [ ] **Phase 5: Tồn kho & Thẻ kho** - Tồn theo mã × kho, thẻ kho có tồn lũy kế, đề xuất định mức và cảnh báo sắp hết
-- [ ] **Phase 6: Kiểm kê & Go-live** - Kiểm kê (đếm điện thoại/máy tính/Excel), đặt tồn đầu kỳ, tra cứu lịch sử KiotViet — hệ thống sẵn sàng thay KiotViet
+- [x] **Phase 6: Kiểm kê & Go-live** - Kiểm kê (đếm điện thoại/máy tính/Excel), đặt tồn đầu kỳ, tra cứu lịch sử KiotViet — hệ thống sẵn sàng thay KiotViet (completed 2026-09-25)
 - [ ] **Phase 7: Trang tổng quan** - Tồn theo nhóm/công đoạn, hàng không luân chuyển, biểu đồ nhập–xuất, giá trị tồn, báo cáo xuất âm
 - [ ] **Phase 8: Mobile & Chuyển kho** - Màn xuất và màn tồn dùng trên điện thoại, thêm dòng bằng ô tìm, chuyển kho
 
@@ -260,7 +260,7 @@ Plans:
 
 **Wave 7** *(blocked on Wave 6 completion)*
 
-- [ ] 06-16-PLAN.md — menu, ma trận quyền route, toàn bộ bộ kiểm, UAT (có checkpoint)
+- [x] 06-16-PLAN.md — menu, ma trận quyền route, toàn bộ bộ kiểm, UAT (có checkpoint)
 **UI hint**: yes
 
 ### Phase 7: Trang tổng quan
@@ -307,6 +307,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. Phiếu nhập | 0/TBD | Not started | - |
 | 4. Đơn đặt hàng & Phiếu xuất | 0/TBD | Not started | - |
 | 5. Tồn kho & Tổng quan | 12/12 | Executed — chờ verify |  |
-| 6. Kiểm kê & Go-live | 15/16 | In Progress|  |
+| 6. Kiểm kê & Go-live | 16/16 | Complete   | 2026-09-25 |
 | 7. Trang tổng quan | 0/TBD | Not started | - |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |
