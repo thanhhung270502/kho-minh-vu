@@ -3,20 +3,19 @@ status: testing
 phase: 06-kiem-ke-go-live
 source: [06-05-SUMMARY.md, 06-06-SUMMARY.md, 06-07-SUMMARY.md, 06-08-SUMMARY.md, 06-10-SUMMARY.md, 06-11-SUMMARY.md, 06-12-SUMMARY.md, 06-13-SUMMARY.md, 06-14-SUMMARY.md, 06-15-SUMMARY.md, 06-16-SUMMARY.md]
 started: 2026-09-25T03:30:00Z
-updated: 2026-09-25T04:45:00Z
+updated: 2026-09-25T05:30:00Z
 ---
 
 ## Current Test
 
-number: 6
-name: Mở phiên kiểm kê thử
+number: 7
+name: Đếm trên điện thoại
 expected: |
-  ⚠️ Từ bài này là database thật — KHÔNG bấm Duyệt (bài 12 sẽ hủy phiên thử).
-  Mở http://localhost:3000 (đúng server này), đăng nhập vanphong → menu "Kiểm kê" → /kiem-ke
-  → "Mở phiên": chọn MỘT kho, MỘT nhóm hàng nhỏ → tạo được, URL chuyển sang /kiem-ke/<mã dài>,
-  có số phiếu. Màn nói rõ kho không cần đóng và tồn chốt lúc lưu từng dòng. Quay lại /kiem-ke:
-  phiên hiện trong danh sách, cột người mở là TÊN (không phải mã).
-awaiting: user response (thử lại sau bản sửa)
+  Trong phiên KK26-000002, tab "Đếm", thu cửa sổ về ~375px (DevTools → chế độ điện thoại).
+  Gõ vài ký tự của một mã (không dấu) → Enter chọn đúng mã (mã gõ đủ thì khớp tuyệt đối trước)
+  → gõ số → Enter lưu; con trỏ quay về ô tìm. Đếm ba mã liên tiếp chỉ bằng bàn phím.
+  Không thấy số tồn ở đâu. Trang không tràn ngang, nút đủ to để bấm bằng ngón tay.
+awaiting: user response
 
 ## Tests
 
@@ -46,7 +45,9 @@ result: pass
 
 ### 6. Mở phiên kiểm kê thử
 expected: vanphong → menu Kiểm kê → /kiem-ke → "Mở phiên": chọn MỘT kho, MỘT nhóm hàng nhỏ → tạo được, chuyển sang /kiem-ke/<id>. Màn nói rõ kho không cần đóng, tồn chốt lúc lưu từng dòng. Phiên hiện trong danh sách với người mở là tên (không phải mã).
-result: issue
+result: pass
+retest: "25/09 sau 8339626 — trang chi tiết KK26-000002 mở được, ba tab không lỗi"
+first_result: issue
 reported: "Máy chủ từ chối yêu cầu — invalid input syntax for type uuid: \"\". Thử lại, nếu vẫn lỗi hãy báo quản trị kèm mã 22P02."
 severity: blocker
 ghi_chu: "Phiên VẪN được tạo (KK26-000001 lúc 03:42, KK26-000002 lúc 03:54 UTC trên kho-vu-tru); lỗi ở trang chi tiết: discrepancy-table, uncounted-panel, count-excel-import gọi useCountSheet(id, \"\") nên p_nhom_hang_id = \"\". Sửa 8339626 ở hook + api. Cần thử lại bài 6."
@@ -81,14 +82,17 @@ result: [pending]
 
 ### 14. Console sạch
 expected: Mở DevTools console ở /kiem-ke, /kiem-ke/<id> (cả bốn tab), /lich-su-kiotviet, tab lịch sử ở chi tiết mã, Cài đặt → Người dùng: không có cảnh báo antd ("deprecated", "is not supported") hay lỗi đỏ.
-result: [pending]
+result: issue
+reported: "Bắt được trong log trình duyệt (preview_logs) khi mở /kiem-ke/<id>: Warning: [antd: Descriptions] Sum of column `span` in a line not match `column` of Descriptions."
+severity: minor
+ghi_chu: "session-header.tsx dòng ~128 đặt span: 2 cố định trong Descriptions responsive — bẫy 11 CLAUDE.md. Các màn khác của bài 14 chưa kiểm."
 
 ## Summary
 
 total: 14
-passed: 4
+passed: 5
 issues: 2
-pending: 8
+pending: 7
 skipped: 0
 
 ## Gaps
@@ -110,9 +114,19 @@ skipped: 0
   test: 6
   artifacts: [src/features/stocktake/hooks/useStocktake.ts, src/features/stocktake/api/stocktake.api.ts]
   missing: ["không gửi chuỗi rỗng vào tham số uuid của bang_dem_kiem_ke"]
+- truth: "Trang chi tiết phiên kiểm kê không sinh cảnh báo antd"
+  status: failed
+  reason: "Log trình duyệt: [antd: Descriptions] Sum of column `span` in a line not match `column`"
+  severity: minor
+  test: 14
+  artifacts: [src/features/stocktake/components/session-header.tsx]
+  missing: ["bỏ span cố định trong Descriptions responsive (bẫy 11)"]
 ```
 
 ## Ghi chú vận hành (không phải bài test)
+
+- Bài 7 (25/09): người dùng trả lời "oke"/"pass" hai lần nhưng database không có dòng đếm nào trong KK26-000001/000002; log server chỉ có lượt mở trang. RPC `luu_dong_kiem_ke` gọi thử dưới vanphong (rollback) chạy đúng. Bài 7 vẫn chờ, cần bằng chứng mã + số đã lưu.
+- Hai phiên thử KK26-000001, KK26-000002 (NHAP_LIEU, 0 dòng) đang nằm trên kho-vu-tru — hủy ở bài 12.
 
 - Bài 6 ban đầu được trả lời "pass" nhưng database kho-vu-tru không có phiếu KIEM_KE nào; người dùng xác nhận chưa thử thật → chuyển thành skipped. Bài 2–5 là kết quả người dùng báo, không có dấu vết database để đối chiếu (chỉ đọc).
 - Luồng kiểm kê (mở phiên, đếm 3 đường, D-03, bảng lệch, duyệt/hủy) CHƯA có bằng chứng chạy trên giao diện thật; logic DB được pgTAP 38/39 phủ (89 assert).
