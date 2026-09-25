@@ -16,7 +16,7 @@ expected: |
   → "Mở phiên": chọn MỘT kho, MỘT nhóm hàng nhỏ → tạo được, URL chuyển sang /kiem-ke/<mã dài>,
   có số phiếu. Màn nói rõ kho không cần đóng và tồn chốt lúc lưu từng dòng. Quay lại /kiem-ke:
   phiên hiện trong danh sách, cột người mở là TÊN (không phải mã).
-awaiting: user response
+awaiting: user response (thử lại sau bản sửa)
 
 ## Tests
 
@@ -46,7 +46,10 @@ result: pass
 
 ### 6. Mở phiên kiểm kê thử
 expected: vanphong → menu Kiểm kê → /kiem-ke → "Mở phiên": chọn MỘT kho, MỘT nhóm hàng nhỏ → tạo được, chuyển sang /kiem-ke/<id>. Màn nói rõ kho không cần đóng, tồn chốt lúc lưu từng dòng. Phiên hiện trong danh sách với người mở là tên (không phải mã).
-result: [pending]
+result: issue
+reported: "Máy chủ từ chối yêu cầu — invalid input syntax for type uuid: \"\". Thử lại, nếu vẫn lỗi hãy báo quản trị kèm mã 22P02."
+severity: blocker
+ghi_chu: "Phiên VẪN được tạo (KK26-000001 lúc 03:42, KK26-000002 lúc 03:54 UTC trên kho-vu-tru); lỗi ở trang chi tiết: discrepancy-table, uncounted-panel, count-excel-import gọi useCountSheet(id, \"\") nên p_nhom_hang_id = \"\". Sửa 8339626 ở hook + api. Cần thử lại bài 6."
 
 ### 7. Đếm trên điện thoại
 expected: Thu cửa sổ về ~375px, tab "Đếm": gõ vài ký tự mã không dấu → Enter chọn đúng mã (khớp tuyệt đối trước) → gõ số → Enter lưu; con trỏ quay về ô tìm. Ba mã liên tiếp chỉ bằng bàn phím. Không hiện số tồn. Trang không tràn ngang, nút đủ to.
@@ -84,8 +87,8 @@ result: [pending]
 
 total: 14
 passed: 4
-issues: 1
-pending: 9
+issues: 2
+pending: 8
 skipped: 0
 
 ## Gaps
@@ -99,6 +102,14 @@ skipped: 0
   test: 2
   artifacts: [src/features/settings/components/user-drawer.tsx]
   missing: ["notification.info dùng `title` thay `message` (antd v6)"]
+- truth: "Mở phiên xong vào trang chi tiết không lỗi"
+  status: resolved
+  fix: "8339626 — useCountSheet/fetchCountSheet đổi chuỗi rỗng thành không lọc"
+  reason: "User reported: invalid input syntax for type uuid (22P02)"
+  severity: blocker
+  test: 6
+  artifacts: [src/features/stocktake/hooks/useStocktake.ts, src/features/stocktake/api/stocktake.api.ts]
+  missing: ["không gửi chuỗi rỗng vào tham số uuid của bang_dem_kiem_ke"]
 ```
 
 ## Ghi chú vận hành (không phải bài test)
