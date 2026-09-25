@@ -147,9 +147,9 @@ export function UserDrawer({ open, user, onClose }: Props) {
 
         if (roleChanged || warehousesChanged) {
           notification.info({
-            message: "Đã lưu",
+            title: "Đã lưu",
             description:
-              "Quyền bị thu hẹp có hiệu lực ngay. Quyền được mở rộng có hiệu lực khi nhân viên tải lại page hoặc trong tối đa 60 phút.",
+              "Quyền bị thu hẹp có hiệu lực ngay. Quyền được mở rộng có hiệu lực khi nhân viên tải lại trang hoặc trong tối đa 60 phút.",
           });
         } else {
           message.success("Đã lưu tài khoản");
