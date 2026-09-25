@@ -46,9 +46,11 @@ export function useStocktakeSession(sessionId: string) {
 }
 
 export function useCountSheet(sessionId: string, categoryId?: string) {
+  // "" từ Select "tất cả nhóm" và undefined là cùng một bảng — chung một khóa cache.
+  const scope = categoryId || undefined;
   return useQuery({
-    queryKey: stocktakeKeys.sheet(sessionId, categoryId),
-    queryFn: () => fetchCountSheet(sessionId, categoryId),
+    queryKey: stocktakeKeys.sheet(sessionId, scope),
+    queryFn: () => fetchCountSheet(sessionId, scope),
     enabled: sessionId !== "",
   });
 }

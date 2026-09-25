@@ -55,7 +55,8 @@ export async function fetchCountSheet(
 ): Promise<CountSheetRow[]> {
   const { data, error } = await getSupabaseBrowserClient().rpc(
     "bang_dem_kiem_ke",
-    { p_chung_tu_id: sessionId, p_nhom_hang_id: categoryId },
+    // p_nhom_hang_id là uuid: chuỗi rỗng làm Postgres ném 22P02, không lọc thì bỏ hẳn tham số.
+    { p_chung_tu_id: sessionId, p_nhom_hang_id: categoryId || undefined },
   );
   if (error) throw error;
 
