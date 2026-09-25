@@ -119,7 +119,7 @@ export function HistoryTable({
         <>
           <div className="overflow-x-auto">
             <Table<KiotVietHistoryRow>
-              rowKey={(row, index) => `${row.voucherNo}-${row.productCode}-${index}`}
+              rowKey="key"
               size="small"
               columns={columns}
               dataSource={result.rows}

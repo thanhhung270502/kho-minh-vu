@@ -125,7 +125,6 @@ export function SessionHeader({ session, canVoid }: Props) {
           {
             key: "progress",
             label: "Tiến độ đếm",
-            span: 2,
             children: (
               <div className="flex flex-wrap items-center gap-3">
                 <Progress

@@ -12,6 +12,8 @@ export type KiotVietHistorySource = "NHAP" | "XUAT";
 // --- Mô hình miền (khóa camelCase tiếng Anh) --------------------------------
 
 export type KiotVietHistoryRow = {
+  /** Khóa dòng cho bảng — RPC không trả id, một phiếu có thể lặp cùng mã hàng. */
+  key: string;
   source: KiotVietHistorySource;
   voucherNo: string;
   date: string | null;
@@ -38,8 +40,11 @@ function toSource(value: string): KiotVietHistorySource {
 
 // --- Mapper: database -> miền ------------------------------------------------
 
-export function toKiotVietHistoryRow(row: KiotVietHistoryRowDb): KiotVietHistoryRow {
+// Gọi qua `.map(toKiotVietHistoryRow)` — `index` là vị trí trong trang kết quả,
+// đủ duy nhất vì bảng chỉ hiện một trang một lúc.
+export function toKiotVietHistoryRow(row: KiotVietHistoryRowDb, index: number): KiotVietHistoryRow {
   return {
+    key: `${row.nguon}-${row.ma_phieu}-${row.ma_hang}-${index}`,
     source: toSource(row.nguon),
     voucherNo: row.ma_phieu,
     date: row.ngay ?? null,
