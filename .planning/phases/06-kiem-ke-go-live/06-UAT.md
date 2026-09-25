@@ -3,7 +3,7 @@ status: complete
 phase: 06-kiem-ke-go-live
 source: [06-05-SUMMARY.md, 06-06-SUMMARY.md, 06-07-SUMMARY.md, 06-08-SUMMARY.md, 06-10-SUMMARY.md, 06-11-SUMMARY.md, 06-12-SUMMARY.md, 06-13-SUMMARY.md, 06-14-SUMMARY.md, 06-15-SUMMARY.md, 06-16-SUMMARY.md]
 started: 2026-09-25T03:30:00Z
-updated: 2026-09-25T05:10:00Z
+updated: 2026-09-25T05:45:00Z
 ---
 
 ## Current Test
@@ -47,7 +47,9 @@ ghi_chu: "Phiên VẪN được tạo (KK26-000001 lúc 03:42, KK26-000002 lúc 
 
 ### 7. Đếm trên điện thoại
 expected: Thu cửa sổ về ~375px, tab "Đếm": gõ vài ký tự mã không dấu → Enter chọn đúng mã (khớp tuyệt đối trước) → gõ số → Enter lưu; con trỏ quay về ô tìm. Ba mã liên tiếp chỉ bằng bàn phím. Không hiện số tồn. Trang không tràn ngang, nút đủ to.
-result: issue
+result: pass
+retest: "25/09 sau 4dd4636 + 12cb816 (nhánh fix/uat-06-gaps) — KK26-000003, 375px: xwa→Enter→con trỏ ở ô số→5→Enter, w10lr 3, cui dia dream→CN72 12 chỉ bằng bàn phím; DB đủ 3 dòng; header 3/62 khớp tab 3/62"
+first_result: issue
 reported: "Claude tự chạy (quanly, 375px, KK26-000001): Enter chọn mã xong con trỏ ở LẠI ô tìm, không sang ô số — gõ '5' rơi vào ô tìm. Phải tự bấm vào ô số. Ngoài ra header 'Tiến độ đếm' không cập nhật sau khi lưu (tab ghi 3/62, header 2/62)."
 severity: major
 ghi_chu: "Phần còn lại ĐẠT: 'xwa'/'w10lr' chọn đúng mã, 'cui dia dream' (không dấu) ra CN72 đầu tiên; không hiện tồn; scrollWidth 375 không tràn; nút Lưu cao 48px; Enter ở ô số lưu và trả con trỏ về ô tìm. DB: XWA 5, W10LR 3, CN72 12 trong KK26-000001 (04:44 UTC). Gợi ý còn đưa mã ngoài phạm vi (42615KFV950) — đúng thiết kế (hợp phạm vi ∪ dòng đã đếm), ghi lại để biết. KK26-000002 (Kho 2, BAGA-CHỤP LỌC MÁY) có 0 mã trong phạm vi nên đếm trên KK26-000001."
@@ -85,7 +87,9 @@ ghi_chu: "Kiểm ở tầng DB (rollback) + code, KHÔNG xem giao diện dưới
 
 ### 14. Console sạch
 expected: Mở DevTools console ở /kiem-ke, /kiem-ke/<id> (cả bốn tab), /lich-su-kiotviet, tab lịch sử ở chi tiết mã, Cài đặt → Người dùng: không có cảnh báo antd ("deprecated", "is not supported") hay lỗi đỏ.
-result: issue
+result: pass
+retest: "25/09 sau daaa804 — console sạch sau mốc kiểm: /kiem-ke/<id> (điện thoại, bảng lệch, phiên 0 mã, phiên đã hủy), /lich-su-kiotviet + ngăn kéo phiếu. Lỗi 400 không rõ URL vẫn chưa tái hiện."
+first_result: issue
 reported: "Bắt được trong log trình duyệt (preview_logs) khi mở /kiem-ke/<id>: Warning: [antd: Descriptions] Sum of column `span` in a line not match `column` of Descriptions."
 severity: minor
 ghi_chu: "session-header.tsx dòng ~128 đặt span: 2 cố định trong Descriptions responsive — bẫy 11 CLAUDE.md. Claude kiểm tiếp 25/09 (console trình duyệt): thêm [antd: Statistic] valueStyle deprecated (discrepancy-table.tsx:97-98, tab Bảng lệch) và [antd: Table] index của rowKey deprecated (kiotviet-history history-table.tsx:122, voucher-drawer.tsx:97). Một lỗi 400 không rõ URL xuất hiện đầu phiên trình duyệt (trước lần reload), không tái hiện được khi đi lại /kiem-ke, hai phiên, bốn tab, /lich-su-kiotviet, /cai-dat/nguoi-dung. Cài đặt → Người dùng: không cảnh báo."
@@ -93,8 +97,8 @@ ghi_chu: "session-header.tsx dòng ~128 đặt span: 2 cố định trong Descri
 ## Summary
 
 total: 14
-passed: 11
-issues: 3
+passed: 13
+issues: 1
 pending: 0
 skipped: 0
 
@@ -118,35 +122,41 @@ skipped: 0
   artifacts: [src/features/stocktake/hooks/useStocktake.ts, src/features/stocktake/api/stocktake.api.ts]
   missing: ["không gửi chuỗi rỗng vào tham số uuid của bang_dem_kiem_ke"]
 - truth: "Trang chi tiết phiên kiểm kê không sinh cảnh báo antd"
-  status: failed
+  status: resolved
+  fix: "daaa804"
   reason: "Log trình duyệt: [antd: Descriptions] Sum of column `span` in a line not match `column`"
   severity: minor
   test: 14
   artifacts: [src/features/stocktake/components/session-header.tsx]
   missing: ["bỏ span cố định trong Descriptions responsive (bẫy 11)"]
+  fix: "daaa804"
 - truth: "Tab Bảng lệch và màn Lịch sử KiotViet không sinh cảnh báo antd"
-  status: failed
+  status: resolved
+  fix: "daaa804"
   reason: "Console: [antd: Statistic] valueStyle deprecated; [antd: Table] index parameter of rowKey deprecated"
   severity: minor
   test: 14
   artifacts: [src/features/stocktake/components/discrepancy-table.tsx, src/features/kiotviet-history/components/history-table.tsx, src/features/kiotviet-history/components/voucher-drawer.tsx]
   missing: ["Statistic dùng styles.content thay valueStyle", "rowKey không dùng index — cần khóa ổn định từ dữ liệu (id dòng) hoặc gán key lúc map"]
 - truth: "Enter chọn mã ở màn đếm điện thoại đưa con trỏ sang ô số"
-  status: failed
+  status: resolved
+  fix: "4dd4636"
   reason: "Claude kiểm: selectProduct() focus lại codeRef (ô tìm), InputNumber không có ref"
   severity: major
   test: 7
   artifacts: [src/features/stocktake/components/count-mobile.tsx]
   missing: ["ref cho InputNumber; selectProduct focus ô số bằng setTimeout 0 (bẫy 14b)"]
 - truth: "Header phiên (tiến độ, trạng thái) cập nhật ngay sau khi lưu/xóa/đánh dấu đếm lại"
-  status: failed
+  status: resolved
+  fix: "12cb816 (cả nạp Excel)"
   reason: "Claude kiểm: useSaveCount/useDeleteCount/useSetRecount không invalidate stocktakeKeys.session(id); header 2/62 khi tab đã 3/62"
   severity: minor
   test: 7
   artifacts: [src/features/stocktake/hooks/useStocktake.ts]
   missing: ["invalidate ['stocktake','session',sessionId] trong ba mutation"]
 - truth: "Mở phiên có phạm vi 0 mã thì được cảnh báo trước"
-  status: failed
+  status: resolved
+  fix: "1796f5d — đầu phiên giải thích phạm vi rỗng; cảnh báo NGAY trong ngăn kéo Mở phiên cần RPC xem trước phạm vi, chưa làm"
   reason: "Claude kiểm: KK26-000002 (Kho 2 × BAGA - CHỤP LỌC MÁY) tạo được, trang đếm hiện 'Đã đếm 0/0' không giải thích"
   severity: minor
   test: 6
@@ -157,6 +167,7 @@ skipped: 0
 ## Ghi chú vận hành (không phải bài test)
 
 - 25/09 (lượt Claude tự kiểm): bài 7–14 do Claude chạy trong trình duyệt nhúng dưới tài khoản quanly người dùng đã đăng nhập sẵn, dev server trỏ kho-vu-tru (đã xác nhận bundle gọi phonzyruoalimgaovljm). Phần cần vanphong/thukho1/chixem kiểm ở tầng DB trong transaction rollback. Hai phiên thử đã hủy; KK26-000001 còn 7 dòng đếm (phiên hủy, không đụng tồn).
+- Sửa gap (nhánh fix/uat-06-gaps): mở thêm KK26-000003 (K1 BAGA) và KK26-000004 (K2, 0 mã) để kiểm lại, đã hủy cả hai lý do 'UAT sửa gap'.
 - vanphong đang BẬT duyet_kiem_ke và xem_lich_su_kiotviet — tắt lại trong Cài đặt nếu không chủ ý.
 
 - Bài 7 (25/09): người dùng trả lời "oke"/"pass" hai lần nhưng database không có dòng đếm nào trong KK26-000001/000002; log server chỉ có lượt mở trang. RPC `luu_dong_kiem_ke` gọi thử dưới vanphong (rollback) chạy đúng. Bài 7 vẫn chờ, cần bằng chứng mã + số đã lưu.
