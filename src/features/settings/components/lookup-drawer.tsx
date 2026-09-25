@@ -8,6 +8,7 @@ import { z } from "zod";
 
 import { FormDrawer } from "@/shared/components/form-drawer";
 import { explainError, isPostgrestError, errorCode } from "@/shared/lib/errors";
+import { filterByLabel } from "@/shared/lib/text";
 
 import {
   LOOKUP_TABLE_CONFIG,
@@ -163,7 +164,7 @@ export function LookupDrawer({ table, row, open, allRows, onClose }: Props) {
                   {...field}
                   allowClear
                   showSearch
-                  optionFilterProp="label"
+                  filterOption={filterByLabel}
                   placeholder="Không có nhóm cha"
                   options={parentOptions}
                   onChange={(value) => field.onChange(value ?? null)}

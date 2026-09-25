@@ -4,7 +4,7 @@
  */
 import assert from "node:assert/strict";
 
-import { removeDiacritics, normalizeUsername, usernameToEmail } from "../src/shared/lib/text";
+import { removeDiacritics, normalizeUsername, usernameToEmail, labelMatches } from "../src/shared/lib/text";
 import { hasPermission } from "../src/shared/lib/permissions";
 import { safeRedirectPath } from "../src/shared/lib/redirect-path";
 import { suggestCustomerName, extractPhoneNumber } from "../src/features/partners/lib/notes";
@@ -481,6 +481,16 @@ async function kiemCsvLoi() {
   const rows = [dong, dong].map(toKiotVietHistoryRow);
   assert.equal(typeof rows[0]?.key, "string", "mỗi dòng lịch sử KiotViet có khóa");
   assert.notEqual(rows[0]?.key, rows[1]?.key, "hai dòng trùng mã trong một phiếu có khóa khác nhau");
+}
+
+// --- Ô chọn tìm không dấu ---------------------------------------------------
+// Bộ lọc mặc định của antd so khớp nguyên văn: gõ "lien" không ra "LIÊN HOA".
+{
+  assert.ok(labelMatches("lien", "NCC000023 — CÔNG TY TNHH LIÊN HOA"), "gõ không dấu, chữ thường vẫn khớp nhãn có dấu");
+  assert.ok(labelMatches("cong ty", "CÔNG TY TNHH TÂM PHONG"), "khớp nhiều từ");
+  assert.ok(labelMatches("dung", "CÔNG TY TNHH TMDV DŨNG PHONG"), "đ/Đ và dấu ngã đều bỏ");
+  assert.ok(labelMatches("  kho 1 ", "Kho 1"), "bỏ khoảng trắng hai đầu");
+  assert.ok(!labelMatches("xyz", "Kho 1"), "không khớp thì trả false");
 }
 
 void kiemCsvLoi().then(() => {

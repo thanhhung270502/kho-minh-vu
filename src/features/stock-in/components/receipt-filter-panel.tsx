@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { usePartners } from "@/features/partners/hooks/usePartners";
 import { DEFAULT_PARTNER_FILTER } from "@/features/partners/types";
 import { useLookups } from "@/features/products/hooks/useProducts";
+import { filterByLabel } from "@/shared/lib/text";
 
 import {
   DEFAULT_RECEIPT_FILTER,
@@ -60,7 +61,7 @@ export function ReceiptFilterPanel({
         <Select
           allowClear
           showSearch
-          optionFilterProp="label"
+          filterOption={filterByLabel}
           className="w-full"
           placeholder="Tất cả"
           value={filter.partnerId}

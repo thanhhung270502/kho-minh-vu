@@ -17,6 +17,7 @@ import { Controller, useForm } from "react-hook-form";
 
 import { FormDrawer } from "@/shared/components/form-drawer";
 import { explainError, isPostgrestError } from "@/shared/lib/errors";
+import { filterByLabel } from "@/shared/lib/text";
 
 import { useLookups, useProductDetail, useSaveProduct } from "../hooks/useProducts";
 import { productSchema, type ProductFormValues } from "../schemas/product.schema";
@@ -230,7 +231,7 @@ export function ProductDrawer({ id, open, permissions, onClose }: Props) {
                     {...field}
                     allowClear
                     showSearch
-                    optionFilterProp="label"
+                    filterOption={filterByLabel}
                     placeholder="Chưa phân nhóm"
                     options={(data?.categories ?? []).map((category) => ({
                       value: category.id,
@@ -268,7 +269,7 @@ export function ProductDrawer({ id, open, permissions, onClose }: Props) {
                   <Select
                     {...field}
                     showSearch
-                    optionFilterProp="label"
+                    filterOption={filterByLabel}
                     options={(data?.units ?? []).map((unit) => ({
                       value: unit.id,
                       label: unit.name,
@@ -293,7 +294,7 @@ export function ProductDrawer({ id, open, permissions, onClose }: Props) {
                   <Select
                     {...field}
                     showSearch
-                    optionFilterProp="label"
+                    filterOption={filterByLabel}
                     options={(data?.stages ?? []).map((stage) => ({
                       value: stage.id,
                       label: stage.name,

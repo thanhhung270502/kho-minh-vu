@@ -4,6 +4,7 @@ import { App, Button, Dropdown, Select, Space } from "antd";
 import { useState } from "react";
 
 import { explainError } from "@/shared/lib/errors";
+import { filterByLabel } from "@/shared/lib/text";
 
 import { useBulkAssign, useConfirmReviewed } from "../hooks/useProducts";
 import type { EditableProductField, Lookups } from "../types";
@@ -33,7 +34,7 @@ function AssignSelect({
   return (
     <Select
       showSearch
-      optionFilterProp="label"
+      filterOption={filterByLabel}
       className={className}
       placeholder={placeholder}
       value={value}

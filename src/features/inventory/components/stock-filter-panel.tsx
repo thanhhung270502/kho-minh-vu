@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 // Tiền lệ đã có ở stock-in / stock-out: danh mục tra cứu (nhóm, công đoạn, kho)
 // chỉ có một nguồn là hook của feature products.
 import { useLookups } from "@/features/products/hooks/useProducts";
+import { filterByLabel } from "@/shared/lib/text";
 
 import {
   DEFAULT_INVENTORY_FILTER,
@@ -62,7 +63,7 @@ export function StockFilterPanel({ filter, onChange, warehouses }: Props) {
         <Select
           allowClear
           showSearch
-          optionFilterProp="label"
+          filterOption={filterByLabel}
           className="w-full"
           placeholder="Tất cả"
           value={filter.categoryId}
@@ -78,7 +79,7 @@ export function StockFilterPanel({ filter, onChange, warehouses }: Props) {
         <Select
           allowClear
           showSearch
-          optionFilterProp="label"
+          filterOption={filterByLabel}
           className="w-full"
           placeholder="Tất cả"
           value={filter.stageId}

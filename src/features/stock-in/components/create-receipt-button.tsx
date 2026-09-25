@@ -8,6 +8,7 @@ import { usePartners } from "@/features/partners/hooks/usePartners";
 import { DEFAULT_PARTNER_FILTER } from "@/features/partners/types";
 import { useLookups } from "@/features/products/hooks/useProducts";
 import { errorCode, explainError } from "@/shared/lib/errors";
+import { filterByLabel } from "@/shared/lib/text";
 
 import { useCreateReceipt } from "../hooks/useReceipts";
 import { RECEIPT_SOURCE_LABELS, type ReceiptSource } from "../types";
@@ -92,7 +93,7 @@ export function CreateReceiptButton({
           <Select
             showSearch
             autoFocus
-            optionFilterProp="label"
+            filterOption={filterByLabel}
             placeholder="Chọn nhà cung cấp"
             loading={suppliers.isPending}
             value={partnerId}

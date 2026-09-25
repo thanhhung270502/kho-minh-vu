@@ -8,19 +8,12 @@ import { Controller, useForm } from "react-hook-form";
 
 import { FormDrawer } from "@/shared/components/form-drawer";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
-import { removeDiacritics } from "@/shared/lib/text";
+import { filterByLabel } from "@/shared/lib/text";
 
 import { useOpenSession, useStocktakeLookups } from "../hooks/useStocktake";
 import { openSessionSchema, type OpenSessionInput } from "../schemas/stocktake.schema";
 
 type Props = { open: boolean; onClose: () => void; isStorekeeper: boolean };
-
-/** Tìm không dấu: so khớp nhãn đã bỏ dấu, không phân biệt hoa thường. */
-function labelMatches(input: string, label: string): boolean {
-  return removeDiacritics(label)
-    .toLowerCase()
-    .includes(removeDiacritics(input).toLowerCase());
-}
 
 export function OpenSessionDrawer({ open, onClose, isStorekeeper }: Props) {
   const router = useRouter();
@@ -127,9 +120,7 @@ export function OpenSessionDrawer({ open, onClose, isStorekeeper }: Props) {
                 loading={lookups.isPending}
                 value={field.value || undefined}
                 onChange={(value) => field.onChange(value ?? "")}
-                filterOption={(input, option) =>
-                  labelMatches(input, String(option?.label ?? ""))
-                }
+                filterOption={filterByLabel}
                 options={warehouses.map((w) => ({ value: w.id, label: w.name }))}
               />
             )}
@@ -151,9 +142,7 @@ export function OpenSessionDrawer({ open, onClose, isStorekeeper }: Props) {
                 loading={lookups.isPending}
                 value={field.value}
                 onChange={field.onChange}
-                filterOption={(input, option) =>
-                  labelMatches(input, String(option?.label ?? ""))
-                }
+                filterOption={filterByLabel}
                 options={(lookups.data?.categories ?? []).map((c) => ({
                   value: c.id,
                   label: c.name,

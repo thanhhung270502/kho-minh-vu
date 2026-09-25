@@ -5,6 +5,7 @@ import { App, Select } from "antd";
 import { useState, type ReactNode } from "react";
 
 import { explainError } from "@/shared/lib/errors";
+import { filterByLabel } from "@/shared/lib/text";
 
 import { bulkAssign } from "../api/product.api";
 import { productKeys } from "../api/product.keys";
@@ -79,7 +80,7 @@ export function InlineEditCell({
       showSearch
       size="small"
       className="w-44"
-      optionFilterProp="label"
+      filterOption={filterByLabel}
       options={options}
       onChange={(value) => void save(value)}
       onBlur={() => setOpen(false)}

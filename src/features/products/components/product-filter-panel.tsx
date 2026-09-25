@@ -3,6 +3,8 @@
 import { Button, Select } from "antd";
 import type { ReactNode } from "react";
 
+import { filterByLabel } from "@/shared/lib/text";
+
 import {
   DEFAULT_PRODUCT_FILTER,
   countActiveFilters,
@@ -52,7 +54,7 @@ export function ProductFilterPanel({ filter, lookups, onChange }: Props) {
         <Select
           allowClear
           showSearch
-          optionFilterProp="label"
+          filterOption={filterByLabel}
           className="w-full"
           placeholder="Nhóm hàng"
           value={filter.categoryId}
@@ -68,7 +70,7 @@ export function ProductFilterPanel({ filter, lookups, onChange }: Props) {
         <Select
           allowClear
           showSearch
-          optionFilterProp="label"
+          filterOption={filterByLabel}
           className="w-full"
           placeholder="Công đoạn"
           value={filter.stageId}
@@ -98,7 +100,7 @@ export function ProductFilterPanel({ filter, lookups, onChange }: Props) {
         <Select
           allowClear
           showSearch
-          optionFilterProp="label"
+          filterOption={filterByLabel}
           className="w-full"
           placeholder="Đơn vị tính"
           value={filter.unitId}

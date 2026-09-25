@@ -8,6 +8,7 @@ import { usePartners } from "@/features/partners/hooks/usePartners";
 import { DEFAULT_PARTNER_FILTER } from "@/features/partners/types";
 import { useLookups } from "@/features/products/hooks/useProducts";
 import { explainError } from "@/shared/lib/errors";
+import { filterByLabel } from "@/shared/lib/text";
 
 import { useUpdateReceiptHeader } from "../hooks/useReceipts";
 import type { DocumentHeaderInput } from "../schemas/receipt.schema";
@@ -112,7 +113,7 @@ export function ReceiptHeader({ receipt, canEdit }: Props) {
           children: editable ? (
             <Select
               showSearch
-              optionFilterProp="label"
+              filterOption={filterByLabel}
               className="w-full min-w-48"
               value={receipt.partnerId}
               loading={suppliers.isPending}

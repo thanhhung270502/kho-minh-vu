@@ -7,6 +7,24 @@ export function removeDiacritics(value: string): string {
     .replace(/Đ/g, "D");
 }
 
+/** Tìm không dấu, không phân biệt hoa thường: "lien" khớp "LIÊN HOA". */
+export function labelMatches(input: string, label: string): boolean {
+  return removeDiacritics(label)
+    .toLowerCase()
+    .includes(removeDiacritics(input.trim()).toLowerCase());
+}
+
+/**
+ * `filterOption` cho `<Select showSearch>` của antd. Bộ lọc mặc định
+ * (`optionFilterProp="label"`) so khớp nguyên văn nên gõ không dấu ra "Trống".
+ */
+export function filterByLabel(
+  input: string,
+  option?: { label?: unknown },
+): boolean {
+  return labelMatches(input, String(option?.label ?? ""));
+}
+
 export const INTERNAL_EMAIL_DOMAIN = "khominhvu.local";
 
 export function normalizeUsername(value: string): string {
