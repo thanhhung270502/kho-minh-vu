@@ -1,14 +1,22 @@
 ---
-status: partial
+status: testing
 phase: 06-kiem-ke-go-live
 source: [06-05-SUMMARY.md, 06-06-SUMMARY.md, 06-07-SUMMARY.md, 06-08-SUMMARY.md, 06-10-SUMMARY.md, 06-11-SUMMARY.md, 06-12-SUMMARY.md, 06-13-SUMMARY.md, 06-14-SUMMARY.md, 06-15-SUMMARY.md, 06-16-SUMMARY.md]
 started: 2026-09-25T03:30:00Z
-updated: 2026-09-25T04:30:00Z
+updated: 2026-09-25T04:45:00Z
 ---
 
 ## Current Test
 
-[testing stopped — partial]
+number: 6
+name: Mở phiên kiểm kê thử
+expected: |
+  ⚠️ Từ bài này là database thật — KHÔNG bấm Duyệt (bài 12 sẽ hủy phiên thử).
+  Mở http://localhost:3000 (đúng server này), đăng nhập vanphong → menu "Kiểm kê" → /kiem-ke
+  → "Mở phiên": chọn MỘT kho, MỘT nhóm hàng nhỏ → tạo được, URL chuyển sang /kiem-ke/<mã dài>,
+  có số phiếu. Màn nói rõ kho không cần đóng và tồn chốt lúc lưu từng dòng. Quay lại /kiem-ke:
+  phiên hiện trong danh sách, cột người mở là TÊN (không phải mã).
+awaiting: user response
 
 ## Tests
 
@@ -38,56 +46,47 @@ result: pass
 
 ### 6. Mở phiên kiểm kê thử
 expected: vanphong → menu Kiểm kê → /kiem-ke → "Mở phiên": chọn MỘT kho, MỘT nhóm hàng nhỏ → tạo được, chuyển sang /kiem-ke/<id>. Màn nói rõ kho không cần đóng, tồn chốt lúc lưu từng dòng. Phiên hiện trong danh sách với người mở là tên (không phải mã).
-result: skipped
-reason: "Chưa thử thật (25/09) — người dùng dừng UAT; để kiểm cùng đợt đếm đầu kỳ trên kho-vu-tru."
+result: [pending]
 
 ### 7. Đếm trên điện thoại
 expected: Thu cửa sổ về ~375px, tab "Đếm": gõ vài ký tự mã không dấu → Enter chọn đúng mã (khớp tuyệt đối trước) → gõ số → Enter lưu; con trỏ quay về ô tìm. Ba mã liên tiếp chỉ bằng bàn phím. Không hiện số tồn. Trang không tràn ngang, nút đủ to.
-result: skipped
-reason: "Chưa thử thật (25/09) — người dùng dừng UAT; để kiểm cùng đợt đếm đầu kỳ trên kho-vu-tru."
+result: [pending]
 
 ### 8. Bảng đếm máy tính
 expected: Cửa sổ rộng, tab Bảng: gõ số cho hai dòng, Enter/Tab sang dòng kế; số vừa lưu hiện lại khi tải lại trang.
-result: skipped
-reason: "Chưa thử thật (25/09) — người dùng dừng UAT; để kiểm cùng đợt đếm đầu kỳ trên kho-vu-tru."
+result: [pending]
 
 ### 9. File mẫu và nhập số đếm từ Excel
 expected: Tab "Nhập Excel": tải file mẫu của nhóm đã chọn → mở ra có đúng 4 cột, KHÔNG có cột tồn. Điền vài số, bỏ trống một ô, gõ sai một mã → tải lên: thấy phân loại mới/ghi đè/bỏ qua/lỗi, nút Nạp bị khóa khi còn lỗi. Sửa mã sai, tải lại → Nạp được, số vào phiên.
-result: skipped
-reason: "Chưa thử thật (25/09) — người dùng dừng UAT; để kiểm cùng đợt đếm đầu kỳ trên kho-vu-tru."
+result: [pending]
 
 ### 10. Tồn sổ chốt theo từng dòng (D-03)
 expected: Ghi sổ một phiếu xuất cho một mã ĐÃ đếm trong phiên thử. Mở tab bảng lệch: tồn sổ của mã đó KHÔNG đổi. Đếm lại mã đó → tồn sổ cập nhật theo lúc lưu mới.
-result: skipped
-reason: "Chưa thử thật (25/09) — người dùng dừng UAT; để kiểm cùng đợt đếm đầu kỳ trên kho-vu-tru."
+result: [pending]
 
 ### 11. Bảng lệch, chưa đếm, đếm lại, nút duyệt
 expected: Dòng lệch từ 5 cái hoặc 10% tô nổi. Danh sách "chưa đếm" hiện trước nút Duyệt. quanly trả một dòng về "đếm lại" → nút Duyệt khóa kèm lý do. Đăng nhập vanphong (chưa bật Duyệt): nút Duyệt khóa kèm hướng dẫn. Không có cột tiền.
-result: skipped
-reason: "Chưa thử thật (25/09) — người dùng dừng UAT; để kiểm cùng đợt đếm đầu kỳ trên kho-vu-tru."
+result: [pending]
 
 ### 12. Hủy phiên thử
 expected: quanly hủy phiên thử với lý do "UAT" → phiên chuyển trạng thái đã hủy, không đếm/sửa được nữa, không sinh biến động tồn nào (tồn của các mã đã đếm không đổi).
-result: skipped
-reason: "Chưa thử thật (25/09) — người dùng dừng UAT; để kiểm cùng đợt đếm đầu kỳ trên kho-vu-tru."
+result: [pending]
 
 ### 13. Phân quyền thủ kho và chỉ xem
 expected: thukho1: /kiem-ke chỉ thấy phiên kho của mình, không mở được phiên kho khác; không thấy menu Lịch sử KiotViet. chixem: xem được danh sách/chi tiết phiên, không mở phiên, không đếm.
-result: skipped
-reason: "Chưa thử thật (25/09) — người dùng dừng UAT; để kiểm cùng đợt đếm đầu kỳ trên kho-vu-tru."
+result: [pending]
 
 ### 14. Console sạch
 expected: Mở DevTools console ở /kiem-ke, /kiem-ke/<id> (cả bốn tab), /lich-su-kiotviet, tab lịch sử ở chi tiết mã, Cài đặt → Người dùng: không có cảnh báo antd ("deprecated", "is not supported") hay lỗi đỏ.
-result: skipped
-reason: "Chưa thử thật (25/09) — người dùng dừng UAT; để kiểm cùng đợt đếm đầu kỳ trên kho-vu-tru."
+result: [pending]
 
 ## Summary
 
 total: 14
 passed: 4
 issues: 1
-pending: 0
-skipped: 9
+pending: 9
+skipped: 0
 
 ## Gaps
 
