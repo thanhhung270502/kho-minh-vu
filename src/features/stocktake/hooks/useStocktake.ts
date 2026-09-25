@@ -2,6 +2,7 @@
 
 import {
   keepPreviousData,
+  type QueryClient,
   useMutation,
   useQuery,
   useQueryClient,
@@ -74,20 +75,25 @@ export function useOpenSession() {
   });
 }
 
+/**
+ * Mọi thao tác đổi dòng đếm (lưu, xóa, đếm lại, nạp Excel) làm lệch ba chỗ:
+ * bảng đếm, đầu phiên (tiến độ + nhãn trạng thái đọc countedCount/recountCount)
+ * và danh sách phiên. Thiếu đầu phiên thì header đứng số cũ (UAT 06 bài 7).
+ */
+export function invalidateCountProgress(queryClient: QueryClient, sessionId: string) {
+  // Tiền tố (không kèm categoryId) — làm mới bảng đếm của mọi nhóm hàng đang mở.
+  void queryClient.invalidateQueries({ queryKey: ["stocktake", "sheet", sessionId] });
+  void queryClient.invalidateQueries({ queryKey: stocktakeKeys.session(sessionId) });
+  void queryClient.invalidateQueries({ queryKey: stocktakeKeys.sessions() });
+}
+
 export function useSaveCount(sessionId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (input: { productId: string; quantity: number }) =>
       saveCount({ sessionId, ...input }),
-    onSuccess: () => {
-      // Tiền tố (không kèm categoryId) — làm mới bảng đếm của mọi nhóm hàng đang mở.
-      void queryClient.invalidateQueries({
-        queryKey: ["stocktake", "sheet", sessionId],
-      });
-      // Tiến độ đã đếm đổi — danh sách phiên hiện số "đã đếm/tổng" mới.
-      void queryClient.invalidateQueries({ queryKey: stocktakeKeys.sessions() });
-    },
+    onSuccess: () => invalidateCountProgress(queryClient, sessionId),
   });
 }
 
@@ -96,12 +102,7 @@ export function useDeleteCount(sessionId: string) {
 
   return useMutation({
     mutationFn: (lineId: string) => deleteCount(lineId),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: ["stocktake", "sheet", sessionId],
-      });
-      void queryClient.invalidateQueries({ queryKey: stocktakeKeys.sessions() });
-    },
+    onSuccess: () => invalidateCountProgress(queryClient, sessionId),
   });
 }
 
@@ -111,13 +112,7 @@ export function useSetRecount(sessionId: string) {
   return useMutation({
     mutationFn: (input: { lineId: string; value: boolean }) =>
       setRecount(input.lineId, input.value),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: ["stocktake", "sheet", sessionId],
-      });
-      // Cột "đếm lại" ảnh hưởng nhãn trạng thái (sessionStatus đọc recountCount).
-      void queryClient.invalidateQueries({ queryKey: stocktakeKeys.sessions() });
-    },
+    onSuccess: () => invalidateCountProgress(queryClient, sessionId),
   });
 }
 

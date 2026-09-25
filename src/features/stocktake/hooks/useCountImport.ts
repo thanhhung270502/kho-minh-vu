@@ -10,7 +10,7 @@ import {
   postCountFile,
   type CountImportResult,
 } from "../api/count-import.api";
-import { stocktakeKeys } from "../api/stocktake.keys";
+import { invalidateCountProgress } from "./useStocktake";
 
 export type CountImportState = {
   step: "idle" | "checked" | "loaded";
@@ -75,10 +75,7 @@ export function useCountImport(sessionId: string) {
         dispatch({ type: "checked", result });
       } else {
         if (result.loaded) {
-          void queryClient.invalidateQueries({
-            queryKey: ["stocktake", "sheet", sessionId],
-          });
-          void queryClient.invalidateQueries({ queryKey: stocktakeKeys.sessions() });
+          invalidateCountProgress(queryClient, sessionId);
         }
         dispatch({ type: "loaded", result });
       }
