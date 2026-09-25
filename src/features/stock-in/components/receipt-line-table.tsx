@@ -1,7 +1,7 @@
 "use client";
 
 import type { InputNumberRef } from "@rc-component/input-number";
-import { Alert, App, Button, InputNumber, Select, Table, Typography } from "antd";
+import { App, Button, InputNumber, Select, Table, Typography } from "antd";
 import type { TableColumnsType } from "antd";
 import type { RefSelectProps } from "antd/es/select";
 import { useRef, useState } from "react";
@@ -236,23 +236,9 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
     (sum, line) => sum + Number(line.quantity) * Number(line.unitPrice),
     0,
   );
-  const linesMissingPrice = lines.filter((line) => Number(line.unitPrice) <= 0);
 
   return (
     <>
-      {linesMissingPrice.length > 0 && editable ? (
-        <Alert
-          className="mb-3"
-          type="warning"
-          showIcon
-          title={`${linesMissingPrice.length} dòng chưa có đơn giá`}
-          description={`Ghi sổ sẽ bị chặn cho tới khi điền đơn giá: ${linesMissingPrice
-            .slice(0, 3)
-            .map((line) => line.productCode)
-            .join(", ")}${linesMissingPrice.length > 3 ? "…" : ""}`}
-        />
-      ) : null}
-
       <div className="overflow-x-auto">
         <Table<DocumentLine>
           rowKey="id"

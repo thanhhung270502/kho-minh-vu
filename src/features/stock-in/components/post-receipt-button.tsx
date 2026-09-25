@@ -24,19 +24,9 @@ export function PostReceiptButton({ receipt, lines, canEdit }: Props) {
 
   if (receipt.status !== "NHAP_LIEU" || !canEdit) return null;
 
-  const linesMissingPrice = lines.filter((line) => Number(line.unitPrice) <= 0);
-
-  // D-04: ghi sổ bắt buộc mọi dòng có đơn giá > 0 — chặn sớm ở đây để người
-  // dùng không phải đợi round-trip mới biết.
-  const blockedReason =
-    lines.length === 0
-      ? "Phiếu chưa có dòng nào."
-      : linesMissingPrice.length > 0
-        ? `Còn ${linesMissingPrice.length} dòng chưa có đơn giá: ${linesMissingPrice
-            .slice(0, 3)
-            .map((line) => line.productCode)
-            .join(", ")}${linesMissingPrice.length > 3 ? "…" : ""}`
-        : null;
+  // Không bắt buộc đơn giá (chốt 24/09: người dùng không dùng giá, mọi giá = 0).
+  // D-04 cũ chặn ghi sổ khi đơn giá <= 0 — database chưa từng chặn, chỉ giao diện.
+  const blockedReason = lines.length === 0 ? "Phiếu chưa có dòng nào." : null;
 
   function confirmThenPost() {
     const totalQuantity = lines.reduce((sum, line) => sum + Number(line.quantity), 0);
@@ -56,8 +46,13 @@ export function PostReceiptButton({ receipt, lines, canEdit }: Props) {
           docNo={receipt.docNo}
           headline={
             <>
-              {lines.length} dòng, tổng số lượng <strong>{formatNumber(totalQuantity)}</strong>,
-              tổng tiền <strong>{formatNumber(totalAmount)}</strong>.
+              {lines.length} dòng, tổng số lượng <strong>{formatNumber(totalQuantity)}</strong>
+              {totalAmount > 0 ? (
+                <>
+                  , tổng tiền <strong>{formatNumber(totalAmount)}</strong>
+                </>
+              ) : null}
+              .
             </>
           }
           warningTitle="Ghi sổ xong không sửa được"
