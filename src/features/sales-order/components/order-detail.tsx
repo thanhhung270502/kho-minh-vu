@@ -72,13 +72,22 @@ export function OrderDetailView({
               }
             />
 
-            {order.status !== "TAM" && permissions.canEdit ? (
+            {order.status === "DA_XAC_NHAN" && permissions.canEdit ? (
               <Alert
                 className="mb-4"
                 type="info"
                 showIcon
                 title="Đơn đã xác nhận nên khóa sửa"
                 description="Muốn sửa đầu đơn hoặc dòng đơn, nhờ quản lý mở lại đơn về đơn tạm trước."
+              />
+            ) : null}
+            {order.status === "HOAN_THANH" || order.status === "DA_HUY" ? (
+              <Alert
+                className="mb-4"
+                type="info"
+                showIcon
+                title={order.status === "HOAN_THANH" ? "Đơn đã hoàn thành" : "Đơn đã hủy"}
+                description="Đơn này không mở lại được. Khách lấy thêm thì lập đơn mới."
               />
             ) : null}
 

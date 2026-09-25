@@ -15,7 +15,13 @@ function formatNumber(value: number | string | null): string {
   return value === null ? "" : Number(value).toLocaleString("vi-VN");
 }
 
-type Props = { documentId: string; lines: DocumentLine[]; editable: boolean };
+type Props = {
+  documentId: string;
+  lines: DocumentLine[];
+  editable: boolean;
+  /** Chỉ trả NCC làm GIẢM tồn nên mới có "vượt tồn"; khách trả làm tồn tăng. */
+  decreasesStock: boolean;
+};
 
 /**
  * Bảng dòng phiếu trả — khuôn theo `issue-line-table.tsx` (stock-out) nhưng
@@ -29,7 +35,8 @@ type Props = { documentId: string; lines: DocumentLine[]; editable: boolean };
  *
  * Số lượng cho phép bằng 0 nhưng không âm — validate tại chỗ, lỗi hiện dưới ô.
  */
-export function ReturnLineTable({ documentId, lines, editable }: Props) {
+export function ReturnLineTable({ documentId, lines, editable, decreasesStock }: Props) {
+  const isOver = (line: DocumentLine) => decreasesStock && exceedsStock(line);
   const { message } = App.useApp();
   const lookups = useLookups();
   const updateLine = useUpdateReturnLine(documentId);
@@ -119,7 +126,7 @@ export function ReturnLineTable({ documentId, lines, editable }: Props) {
       width: 150,
       align: "right",
       render: (value: number, line: DocumentLine) => {
-        const over = exceedsStock(line);
+        const over = isOver(line);
 
         const input = editable ? (
           <div className="flex flex-col items-end gap-0.5">
@@ -170,7 +177,7 @@ export function ReturnLineTable({ documentId, lines, editable }: Props) {
         dataSource={lines}
         pagination={false}
         scroll={{ x: 640 }}
-        rowClassName={(line) => (exceedsStock(line) ? "bg-red-50" : "")}
+        rowClassName={(line) => (isOver(line) ? "bg-red-50" : "")}
         locale={{ emptyText: "Phiếu trả chưa có dòng nào." }}
         summary={() =>
           lines.length > 0 ? (

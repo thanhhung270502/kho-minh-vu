@@ -86,7 +86,7 @@ export function VoidDocumentDialog({ document, canVoid, extraInvalidateKeys }: P
           className="mb-3"
           type="warning"
           showIcon
-          title="Ba điều xảy ra khi hủy phiếu đã ghi sổ"
+          title="Điều xảy ra khi hủy phiếu đã ghi sổ"
           description={
             <ul className="mb-0 ps-4">
               <li>Tồn quay lại bằng bút toán đảo — bản ghi gốc giữ nguyên, không xóa gì.</li>

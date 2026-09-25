@@ -8,6 +8,7 @@ import { NegativeStockPanel } from "@/features/documents/components/negative-sto
 import { PostDocumentButton } from "@/features/documents/components/post-document-button";
 import { VoidDocumentDialog } from "@/features/documents/components/void-document-dialog";
 import { DOC_STATUS_COLORS, DOC_STATUS_LABELS } from "@/features/documents/types";
+import { negativeReasonLabel } from "@/features/documents/lib/negative-reasons";
 import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
 
@@ -118,7 +119,17 @@ export function ReturnDetailView({
               ]}
             />
 
-            {isTraNcc ? (
+            {isTraNcc && doc.status === "HOAN_THANH" && doc.negativeReason ? (
+              <Alert
+                className="mt-4"
+                type="warning"
+                showIcon
+                title={`Phiếu này đã ghi sổ khi xuất âm — lý do: ${negativeReasonLabel(doc.negativeReason)}`}
+                description={doc.negativeReasonNote ?? undefined}
+              />
+            ) : null}
+
+            {isTraNcc && doc.status === "NHAP_LIEU" ? (
               <div className="mt-4">
                 <NegativeStockPanel
                   documentId={doc.id}
@@ -140,6 +151,7 @@ export function ReturnDetailView({
                     documentId={doc.id}
                     lines={loadedLines}
                     editable={permissions.canEdit && doc.status === "NHAP_LIEU"}
+                    decreasesStock={isTraNcc}
                   />
                 )}
               </QueryState>

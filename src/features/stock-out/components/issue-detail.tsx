@@ -105,17 +105,21 @@ export function IssueDetailView({
 
             <IssueHeader issue={issue} canEdit={permissions.canEdit} />
 
-            <NegativeStockPanel
-              documentId={issue.id}
-              lines={issueLines}
-              reason={
-                issue.negativeReason
-                  ? { code: issue.negativeReason, note: issue.negativeReasonNote }
-                  : null
-              }
-              editable={editable}
-              renderLineExtra={(line) => <SimilarCodeHint issueId={issue.id} line={line} />}
-            />
+            {/* Cảnh báo "sẽ làm tồn âm nếu ghi sổ" và gợi ý gộp mã chỉ có nghĩa TRƯỚC khi
+                ghi sổ — phiếu đã ghi sổ so với tồn SAU ghi sổ nên báo sai (UAT 04 bài 7). */}
+            {issue.status === "NHAP_LIEU" ? (
+              <NegativeStockPanel
+                documentId={issue.id}
+                lines={issueLines}
+                reason={
+                  issue.negativeReason
+                    ? { code: issue.negativeReason, note: issue.negativeReasonNote }
+                    : null
+                }
+                editable={editable}
+                renderLineExtra={(line) => <SimilarCodeHint issueId={issue.id} line={line} />}
+              />
+            ) : null}
 
             <div className="mt-4">
               <QueryState query={lines} isEmpty={() => false} emptyDescription="">
