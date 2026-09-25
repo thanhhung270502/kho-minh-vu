@@ -94,8 +94,8 @@ export function DiscrepancyTable({ sessionId, editable, canApprove }: Props) {
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Statistic title="Đã đếm" value={countedRows.length} />
               <Statistic title="Có lệch" value={diffCount} />
-              <Statistic title="Lệch lớn" value={largeCount} valueStyle={{ color: largeCount > 0 ? "#cf1322" : undefined }} />
-              <Statistic title="Chờ đếm lại" value={recountCount} valueStyle={{ color: recountCount > 0 ? "#d46b08" : undefined }} />
+              <Statistic title="Lệch lớn" value={largeCount} styles={{ content: { color: largeCount > 0 ? "#cf1322" : undefined } }} />
+              <Statistic title="Chờ đếm lại" value={recountCount} styles={{ content: { color: recountCount > 0 ? "#d46b08" : undefined } }} />
             </div>
 
             <Typography.Text type="secondary" className="text-xs">

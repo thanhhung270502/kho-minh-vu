@@ -109,11 +109,14 @@ export function SessionDetail({ sessionId, canCount, canApprove }: Props) {
                   label: "Bảng lệch & duyệt",
                   children: (
                     <div className="flex flex-col gap-6">
-                      <UncountedPanel
-                        sessionId={sessionId}
-                        editable={editable}
-                        canApprove={canApprove}
-                      />
+                      {/* Panel nói về việc SẮP duyệt — phiên đã duyệt/đã hủy thì chỉ còn bảng lệch. */}
+                      {data.state === "NHAP_LIEU" ? (
+                        <UncountedPanel
+                          sessionId={sessionId}
+                          editable={editable}
+                          canApprove={canApprove}
+                        />
+                      ) : null}
                       <DiscrepancyTable
                         sessionId={sessionId}
                         editable={editable}

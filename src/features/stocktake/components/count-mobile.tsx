@@ -2,7 +2,7 @@
 
 import type { RefSelectProps } from "antd/es/select";
 import { App, Button, Card, InputNumber, Tag, Typography } from "antd";
-import { useRef, useState } from "react";
+import { useRef, useState, type ComponentRef } from "react";
 
 import {
   ProductSearchInput,
@@ -31,6 +31,7 @@ export function CountMobile({ sessionId, editable }: Props) {
   const [quantityError, setQuantityError] = useState<string | null>(null);
 
   const codeRef = useRef<RefSelectProps>(null);
+  const quantityRef = useRef<ComponentRef<typeof InputNumber>>(null);
 
   const rows = sheet.data ?? [];
   const total = rows.length;
@@ -44,7 +45,9 @@ export function CountMobile({ sessionId, editable }: Props) {
     setSelected(product);
     setQuantity(null);
     setQuantityError(null);
-    setTimeout(() => codeRef.current?.focus(), 0);
+    // Ô số chỉ được render sau lượt này, và rc-select còn tự focus lại ô tìm
+    // ngay sau Enter (bẫy 14) — hẹn sang lượt sau mới focus được.
+    setTimeout(() => quantityRef.current?.focus(), 0);
   }
 
   async function save() {
@@ -126,6 +129,7 @@ export function CountMobile({ sessionId, editable }: Props) {
           </div>
 
           <InputNumber
+            ref={quantityRef}
             size="large"
             className="mt-3 w-full"
             min={0}

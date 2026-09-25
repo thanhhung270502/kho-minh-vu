@@ -102,6 +102,15 @@ export function SessionHeader({ session, canVoid }: Props) {
         <Alert type="warning" showIcon title="Phiên đã hủy — không đếm/duyệt được nữa." />
       ) : null}
 
+      {session.state === "NHAP_LIEU" && session.scopeCount === 0 ? (
+        <Alert
+          type="info"
+          showIcon
+          title="Phiên này không có mã nào để đếm"
+          description={`Phạm vi chỉ gồm mã có kho mặc định là ${session.warehouseName} hoặc đang có tồn khác 0 tại kho này. Hủy phiên rồi mở lại với kho hoặc nhóm hàng khác.`}
+        />
+      ) : null}
+
       <Descriptions
         bordered
         size="small"
@@ -125,7 +134,6 @@ export function SessionHeader({ session, canVoid }: Props) {
           {
             key: "progress",
             label: "Tiến độ đếm",
-            span: 2,
             children: (
               <div className="flex flex-wrap items-center gap-3">
                 <Progress

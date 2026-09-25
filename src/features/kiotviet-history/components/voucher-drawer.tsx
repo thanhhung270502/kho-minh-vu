@@ -94,7 +94,7 @@ export function VoucherDrawer({ voucher, onClose }: Props) {
               </div>
 
               <Table<KiotVietHistoryRow>
-                rowKey={(row, index) => `${row.productCode}-${index}`}
+                rowKey="key"
                 size="small"
                 columns={LINE_COLUMNS}
                 dataSource={rows}

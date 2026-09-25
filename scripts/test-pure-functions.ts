@@ -37,6 +37,7 @@ import {
   UNASSIGNED_WAREHOUSE_LABEL,
 } from "../src/features/sales-order/lib/group-lines-by-warehouse";
 import type { OrderLine } from "../src/features/sales-order/types";
+import { toKiotVietHistoryRow } from "../src/features/kiotviet-history/types";
 import {
   discrepancyOf,
   isLargeDiscrepancy,
@@ -466,6 +467,20 @@ async function kiemCsvLoi() {
   );
   assert.ok(csv.includes("Đơn vị tính"), "tên cột hiển thị bằng tiêu đề tiếng Việt");
   assert.equal(errorFileName("danh-muc-20260918-1030.xlsx"), "danh-muc-20260918-1030-loi.csv");
+}
+
+// --- Lịch sử KiotViet: khóa dòng bảng -----------------------------------------
+// antd v6 bỏ tham số index của rowKey (bẫy 11) nên khóa phải có sẵn trong dữ
+// liệu. Một phiếu KiotViet có thể lặp cùng mã hàng hai dòng.
+{
+  const dong = {
+    nguon: "XUAT", ma_phieu: "HD000123", ngay: "2025-01-02", doi_tac: "Khách lẻ",
+    ma_hang: "XWA", ten_hang: "BAGA XUỒNG WAVE", so_luong: 2, ghi_chu: "",
+    tong_nhap: 0, tong_so_dong: 2, tong_xuat: 4,
+  };
+  const rows = [dong, dong].map(toKiotVietHistoryRow);
+  assert.equal(typeof rows[0]?.key, "string", "mỗi dòng lịch sử KiotViet có khóa");
+  assert.notEqual(rows[0]?.key, rows[1]?.key, "hai dòng trùng mã trong một phiếu có khóa khác nhau");
 }
 
 void kiemCsvLoi().then(() => {
