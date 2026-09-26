@@ -1,24 +1,23 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { NotImplemented } from "@/shared/components/not-implemented";
-import { PageHeader } from "@/shared/components/page-header";
+import { getCurrentUser } from "@/features/auth/api/current-user.server";
+import { DashboardView } from "@/features/dashboard/components/dashboard-view";
+import { homePathForRole } from "@/features/dashboard/lib/home-path";
 
 export const metadata: Metadata = { title: "Tổng quan" };
 
-export default function DashboardPage() {
-  return (
-    <>
-      <PageHeader title="Tổng quan" description="Tình hình kho trong ngày" />
+/**
+ * D-11: chỉ quản lý xem trang tổng quan thật. Vai trò khác được chuyển thẳng
+ * sang màn làm việc chính (`homePathForRole`), không phải `/khong-du-quyen`
+ * — nên tự viết guard trực tiếp ở đây thay vì dùng helper chặn quyền chung
+ * (helper đó luôn đưa về `/khong-du-quyen`, không role-conditional).
+ * Chặn thật ở RPC (0069-0071, lỗi 42501) — đây chỉ là điều hướng (D-12).
+ */
+export default async function DashboardPage() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/dang-nhap");
+  if (user.role !== "quan_ly") redirect(homePathForRole(user.role));
 
-      <NotImplemented
-        planned={[
-          "Tồn kho theo nhóm hàng và công đoạn",
-          "Mã dưới định mức tồn tối thiểu",
-          "Hàng không luân chuyển quá 30 ngày",
-          "Biểu đồ nhập–xuất 30 ngày",
-        ]}
-        dependsOn="phiếu nhập và phiếu xuất (Phase 3–4)"
-      />
-    </>
-  );
+  return <DashboardView />;
 }
