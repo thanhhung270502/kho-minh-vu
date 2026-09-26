@@ -55,6 +55,13 @@ import {
   type KiotVietHistoryFilter,
 } from "../src/features/kiotviet-history/schemas/history-filter.schema";
 import {
+  scaleToFit,
+  checkPickedFile,
+  safeFileStem,
+  isWebp,
+} from "../src/features/images/lib/image-rules";
+import { imageUrl } from "../src/features/images/lib/image-url";
+import {
   filterNavItems,
   splitMobileItems,
   NAV_ITEMS,
@@ -491,6 +498,43 @@ async function kiemCsvLoi() {
   assert.ok(labelMatches("dung", "CÔNG TY TNHH TMDV DŨNG PHONG"), "đ/Đ và dấu ngã đều bỏ");
   assert.ok(labelMatches("  kho 1 ", "Kho 1"), "bỏ khoảng trắng hai đầu");
   assert.ok(!labelMatches("xyz", "Kho 1"), "không khớp thì trả false");
+}
+
+// --- Ảnh mã hàng: quy tắc nén và URL (09-03) ---------------------------------
+{
+  assert.deepEqual(scaleToFit(4000, 3000, 1200), { width: 1200, height: 900 }, "thu vừa cạnh dài, giữ tỉ lệ");
+  assert.deepEqual(scaleToFit(800, 600, 1200), { width: 800, height: 600 }, "ảnh nhỏ hơn giới hạn thì không phóng to");
+  assert.deepEqual(scaleToFit(3000, 4000, 300), { width: 225, height: 300 }, "ảnh dọc thu theo cạnh dài nhất");
+  const canhCuc = scaleToFit(1, 5000, 300);
+  assert.ok(canhCuc.width >= 1, "chiều rộng không bao giờ ra 0");
+
+  assert.ok(
+    checkPickedFile({ name: "a.heic", type: "image/heic", size: 1000 })?.title.includes("HEIC"),
+    "nhận HEIC theo type",
+  );
+  assert.ok(
+    checkPickedFile({ name: "IMG_1.HEIC", type: "", size: 1000 })?.title.includes("HEIC"),
+    "nhận HEIC theo đuôi khi type rỗng",
+  );
+  assert.notEqual(checkPickedFile({ name: "a.gif", type: "image/gif", size: 1000 }), null, "định dạng không hỗ trợ bị chặn");
+  assert.notEqual(checkPickedFile({ name: "a.jpg", type: "image/jpeg", size: 0 }), null, "file rỗng bị chặn");
+  assert.notEqual(
+    checkPickedFile({ name: "a.jpg", type: "image/jpeg", size: 31 * 1024 * 1024 }),
+    null,
+    "file quá 30 MB bị chặn",
+  );
+  assert.equal(checkPickedFile({ name: "a.jpg", type: "image/jpeg", size: 2_000_000 }), null, "file hợp lệ qua được");
+
+  assert.equal(safeFileStem("PT/XE 01"), "PT_XE_01", "ký tự không hợp lệ thay bằng gạch dưới");
+  assert.equal(safeFileStem("///"), "ma-hang", "toàn ký tự không hợp lệ thì trả về mặc định");
+  assert.equal(safeFileStem("Á-1"), "A-1", "bỏ dấu tiếng Việt");
+  assert.ok(safeFileStem("A".repeat(200)).length <= 80, "cắt tối đa 80 ký tự");
+
+  assert.equal(isWebp(new Uint8Array([82, 73, 70, 70, 0, 0, 0, 0, 87, 69, 66, 80])), true, "nhận đúng magic byte RIFF/WEBP");
+  assert.equal(isWebp(new Uint8Array([0xff, 0xd8, 0xff, 0xe0])), false, "không phải WebP thì trả false");
+
+  assert.equal(imageUrl("abc"), "/anh/abc", "URL ảnh gốc");
+  assert.equal(imageUrl("abc", "thumb"), "/anh/abc?co=nho", "URL ảnh thumb dùng tham số tiếng Việt không dấu");
 }
 
 void kiemCsvLoi().then(() => {
