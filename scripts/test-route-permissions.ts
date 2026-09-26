@@ -371,6 +371,137 @@ async function kiemKiemKeExcel(
   return { tong, lech };
 }
 
+/**
+ * Ba route ảnh (09-09): GET /anh/[id] (đọc, mọi vai trò xem được), POST
+ * /api/anh/tai-len và POST /api/anh/xoa (ghi, chỉ quản lý/văn phòng — D-02).
+ * Gửi FormData/JSON rỗng cho hai route ghi: qua được cửa quyền thì dừng ở 400
+ * (thiếu dữ liệu), không bao giờ chạm storage/DB thật.
+ */
+async function kiemAnh(
+  cookie: Record<VaiTroTest, string>,
+): Promise<{ tong: number; lech: string[] }> {
+  const lech: string[] = [];
+  let tong = 0;
+  const role = Object.keys(cookie) as VaiTroTest[];
+
+  // GET /anh/<uuid không tồn tại>: 4 vai trò đã đăng nhập -> 404, khách -> 401.
+  const mongGetGia: Record<VaiTroTest, string> = {
+    quanly: "404",
+    vanphong: "404",
+    thukho1: "404",
+    chixem: "404",
+    khach: "401",
+  };
+  for (const vt of role) {
+    tong++;
+    const res = await fetch(`${BASE_URL}/anh/00000000-0000-4000-8000-000000000000`, {
+      headers: cookie[vt] ? { cookie: cookie[vt] } : {},
+      redirect: "manual",
+    });
+    const thuc = String(res.status);
+    if (thuc !== mongGetGia[vt]) {
+      lech.push(
+        `${"GET /anh/<uuid gia>".padEnd(34)} ${vt.padEnd(9)} mong ${mongGetGia[vt]}, thực ${thuc}`,
+      );
+    }
+  }
+
+  // Có ảnh thật thì kiểm luôn GET /anh/<id> và ?co=nho: 4 vai trò -> 200,
+  // khách -> 401. Không có ảnh nào thì báo rõ, không giả vờ đã kiểm. Dùng
+  // phiên quản lý (RLS chỉ cho đọc khi đã đăng nhập) để tìm một id có thật.
+  const kho = new Map<string, string>();
+  const sb = createServerClient(
+    (process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL) as string,
+    (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) as string,
+    {
+      cookies: {
+        getAll: () => [...kho].map(([name, value]) => ({ name, value })),
+        setAll: (ds) => ds.forEach((c) => kho.set(c.name, c.value)),
+      },
+    },
+  );
+  const { error: loiDangNhap } = await sb.auth.signInWithPassword({
+    email: TAI_KHOAN.quanly,
+    password: samplePassword(),
+  });
+  const { data: anh } = loiDangNhap
+    ? { data: null }
+    : await sb.from("hinh_anh").select("id").limit(1);
+  const idAnh = anh?.[0]?.id ?? null;
+  if (idAnh) {
+    const mongGetThat: Record<VaiTroTest, string> = {
+      quanly: "200",
+      vanphong: "200",
+      thukho1: "200",
+      chixem: "200",
+      khach: "401",
+    };
+    for (const duong of [`/anh/${idAnh}`, `/anh/${idAnh}?co=nho`]) {
+      for (const vt of role) {
+        tong++;
+        const res = await fetch(`${BASE_URL}${duong}`, {
+          headers: cookie[vt] ? { cookie: cookie[vt] } : {},
+          redirect: "manual",
+        });
+        const thuc = String(res.status);
+        if (thuc !== mongGetThat[vt]) {
+          lech.push(`${duong.padEnd(34)} ${vt.padEnd(9)} mong ${mongGetThat[vt]}, thực ${thuc}`);
+        }
+      }
+    }
+  } else {
+    console.warn("⚠ chưa có ảnh nào — bỏ qua /anh/<id> thật");
+  }
+
+  const mongTaiLen: Record<VaiTroTest, string> = {
+    quanly: "400",
+    vanphong: "400",
+    thukho1: "403",
+    chixem: "403",
+    khach: "401",
+  };
+  for (const vt of role) {
+    tong++;
+    const res = await fetch(`${BASE_URL}/api/anh/tai-len`, {
+      method: "POST",
+      headers: cookie[vt] ? { cookie: cookie[vt] } : {},
+      body: new FormData(),
+      redirect: "manual",
+    });
+    const thuc = String(res.status);
+    if (thuc !== mongTaiLen[vt]) {
+      lech.push(`${"POST /api/anh/tai-len".padEnd(34)} ${vt.padEnd(9)} mong ${mongTaiLen[vt]}, thực ${thuc}`);
+    }
+  }
+
+  const mongXoa: Record<VaiTroTest, string> = {
+    quanly: "400",
+    vanphong: "400",
+    thukho1: "403",
+    chixem: "403",
+    khach: "401",
+  };
+  for (const vt of role) {
+    tong++;
+    const res = await fetch(`${BASE_URL}/api/anh/xoa`, {
+      method: "POST",
+      headers: {
+        ...(cookie[vt] ? { cookie: cookie[vt] } : {}),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+      redirect: "manual",
+    });
+    const thuc = String(res.status);
+    if (thuc !== mongXoa[vt]) {
+      lech.push(`${"POST /api/anh/xoa".padEnd(34)} ${vt.padEnd(9)} mong ${mongXoa[vt]}, thực ${thuc}`);
+    }
+  }
+
+  return { tong, lech };
+}
+
 async function main() {
   try {
     await fetch(BASE_URL, { redirect: "manual" });
@@ -462,6 +593,10 @@ async function main() {
   const kiemKe = await kiemKiemKeExcel(cookie);
   tong += kiemKe.tong;
   lech.push(...kiemKe.lech);
+
+  const anh = await kiemAnh(cookie);
+  tong += anh.tong;
+  lech.push(...anh.lech);
 
   if (lech.length > 0) {
     console.error(`✗ quyền route: ${lech.length}/${tong} ô LỆCH\n`);
