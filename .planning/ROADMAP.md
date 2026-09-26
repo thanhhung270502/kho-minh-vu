@@ -342,10 +342,10 @@ Plans:
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
-- [ ] 09-09-PLAN.md — Route tải ảnh lên / xóa ảnh + ma trận quyền ba route ảnh
-- [ ] 09-10-PLAN.md — Thư viện ảnh trong chi tiết mã: chụp/chọn, ảnh chính, xóa, phóng to
-- [ ] 09-11-PLAN.md — Cột thumbnail ảnh chính + ô xám ở bảng danh mục
-- [ ] 09-12-PLAN.md — Script chép ảnh KiotViet sang Drive (sharp devDependency, chạy lại được)
+- [x] 09-09-PLAN.md — Route tải ảnh lên / xóa ảnh + ma trận quyền ba route ảnh
+- [x] 09-10-PLAN.md — Thư viện ảnh trong chi tiết mã: chụp/chọn, ảnh chính, xóa, phóng to
+- [x] 09-11-PLAN.md — Cột thumbnail ảnh chính + ô xám ở bảng danh mục
+- [x] 09-12-PLAN.md — Script chép ảnh KiotViet sang Drive (sharp devDependency, chạy lại được)
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
@@ -368,4 +368,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. Kiểm kê & Go-live | 16/16 | Complete   | 2026-09-25 |
 | 7. Trang tổng quan | 0/TBD | Not started | - |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |
-| 9. Quản lý hình ảnh | 8/13 | In Progress|  |
+| 9. Quản lý hình ảnh | 12/13 | In Progress|  |
