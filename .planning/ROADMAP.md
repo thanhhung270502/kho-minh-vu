@@ -34,7 +34,7 @@ sau cần dùng ngay.
 - [ ] **Phase 4: Đơn đặt hàng & Phiếu xuất** - Nhân bản cơ chế chứng từ cho chiều xuất, đơn đặt → duyệt → in đi lấy hàng → phiếu xuất, chạy trọn luồng trên máy tính văn phòng
 - [ ] **Phase 5: Tồn kho & Thẻ kho** - Tồn theo mã × kho, thẻ kho có tồn lũy kế, đề xuất định mức và cảnh báo sắp hết
 - [x] **Phase 6: Kiểm kê & Go-live** - Kiểm kê (đếm điện thoại/máy tính/Excel), đặt tồn đầu kỳ, tra cứu lịch sử KiotViet — hệ thống sẵn sàng thay KiotViet (completed 2026-09-25)
-- [ ] **Phase 7: Trang tổng quan** - Tồn theo nhóm/công đoạn, hàng không luân chuyển, biểu đồ nhập–xuất, giá trị tồn, báo cáo xuất âm
+- [ ] **Phase 7: Trang tổng quan** - Nhịp bán hôm nay/hôm qua, báo cáo xuất âm, tồn theo nhóm/công đoạn (chỉ quản lý)
 - [ ] **Phase 8: Mobile & Chuyển kho** - Màn xuất và màn tồn dùng trên điện thoại, thêm dòng bằng ô tìm, chuyển kho
 
 ## Phase Details
@@ -265,17 +265,21 @@ Plans:
 
 ### Phase 7: Trang tổng quan
 
-**Goal**: Quản lý nhìn được bức tranh kho mà không phải hỏi người.
+**Goal**: Quản lý nhìn được bức tranh kho mà không phải hỏi người — thấy ngay ai xuất âm vì
+lý do gì, bán hôm nay nhanh hay chậm, và nhóm hàng nào đang hết/âm.
 **Depends on**: Phase 6
-**Requirements**: TQAN-01, TQAN-03, TQAN-04, TQAN-05, TQAN-06, TON-03
+**Requirements**: TQAN-01, TQAN-06, TQAN-07
+
+> Thu hẹp 26/09 (discuss Phase 7): TQAN-05 đóng (không dùng giá); TQAN-03, TQAN-04, TON-03
+> dời tới khi hệ mới có đủ ≥ 30 ngày dữ liệu, không ghép KiotViet. Quyết định chi tiết:
+> `.planning/phases/07-trang-tong-quan/07-CONTEXT.md`.
 
 **Success Criteria** (what must be TRUE):
 
-  1. Xem tồn kho theo nhóm hàng và theo công đoạn
-  2. Xem tuổi tồn và danh sách hàng không luân chuyển quá 30 ngày
-  3. Xem biểu đồ nhập–xuất 30 ngày gần nhất
-  4. Xem tổng giá trị tồn kho (lưu ý: người dùng chưa dùng giá — cần hỏi lại trước khi làm)
-  5. Xem báo cáo các lần xuất âm trong ngày kèm lý do đã chọn
+  1. Quản lý mở `/` thấy nhịp bán hôm nay so với hôm qua: số phiếu xuất, số dòng, số mã khác nhau (chỉ phiếu `XUAT` đã ghi sổ, không tính phiếu hủy)
+  2. Quản lý thấy các mã bị xuất âm trong ngày (mặc định hôm nay, chọn được ngày khác) từ phiếu `XUAT` và `TRA_NCC`, đếm theo lý do và bảng chi tiết từng mã kèm phiếu, người lập, lý do
+  3. Quản lý thấy tồn theo nhóm hàng và theo công đoạn dưới dạng số mã (tổng/còn/hết/âm/dưới định mức), lọc được theo kho, bấm số mở `/ton-kho` lọc sẵn và số dòng khớp
+  4. Văn phòng, thủ kho, chỉ xem vào `/` được chuyển sang màn làm việc chính; gọi thẳng RPC báo cáo bị database từ chối
 
 **Plans**: TBD
 **UI hint**: yes

@@ -78,7 +78,7 @@
 
 - [x] **TON-01**: Xem tồn theo từng kho, lọc theo nhóm hàng và công đoạn
 - [x] **TON-02**: Xem thẻ kho của một mã — mọi biến động kèm link mở đúng chứng từ sinh ra nó
-- [ ] **TON-03**: Xem tuổi tồn và danh sách hàng không luân chuyển
+- [ ] **TON-03**: Xem tuổi tồn và danh sách hàng không luân chuyển *(dời — chờ hệ mới chạy đủ ≥ 30 ngày, không ghép KiotViet; chốt 26/09)*
 - [ ] **TON-04**: Chuyển hàng giữa hai kho bằng một chứng từ `CHUYEN_KHO`
 - [ ] **TON-05**: Màn tồn kho dùng được trên điện thoại
 
@@ -93,10 +93,11 @@
 
 - [ ] **TQAN-01**: Xem tồn kho theo nhóm hàng và theo công đoạn
 - [x] **TQAN-02**: Xem danh sách mã dưới định mức tồn tối thiểu
-- [ ] **TQAN-03**: Xem danh sách hàng không luân chuyển quá 30 ngày
-- [ ] **TQAN-04**: Xem biểu đồ nhập–xuất 30 ngày gần nhất
-- [ ] **TQAN-05**: Xem tổng giá trị tồn kho
+- [ ] **TQAN-03**: Xem danh sách hàng không luân chuyển quá 30 ngày *(dời — như TON-03; chốt 26/09)*
+- [ ] **TQAN-04**: Xem biểu đồ nhập–xuất 30 ngày gần nhất *(dời — như TON-03; tạm thay bằng TQAN-07; chốt 26/09)*
+- [x] **TQAN-05**: Xem tổng giá trị tồn kho *(đóng 26/09 — không dùng giá, như DLIEU-05)*
 - [ ] **TQAN-06**: Xem báo cáo các lần xuất âm trong ngày kèm lý do đã chọn
+- [ ] **TQAN-07**: Xem nhịp bán hôm nay so với hôm qua (số phiếu xuất, số dòng, số mã) *(thêm 26/09 — bản hẹp thay TQAN-04)*
 
 ### Cài đặt (CDAT)
 
@@ -214,15 +215,16 @@
 | XUAT-09 | Phase 4 | Complete |
 | TON-01 | Phase 5 | Complete |
 | TON-02 | Phase 5 | Complete |
-| TON-03 | Phase 7 | Pending |
+| TON-03 | Deferred | Chờ ≥ 30 ngày dữ liệu |
 | TON-04 | Phase 8 | Pending |
 | TON-05 | Phase 8 | Pending |
 | TQAN-01 | Phase 7 | Pending |
 | TQAN-02 | Phase 5 | Complete |
-| TQAN-03 | Phase 7 | Pending |
-| TQAN-04 | Phase 7 | Pending |
-| TQAN-05 | Phase 7 | Pending |
+| TQAN-03 | Deferred | Chờ ≥ 30 ngày dữ liệu |
+| TQAN-04 | Deferred | Chờ ≥ 30 ngày dữ liệu |
+| TQAN-05 | — | Closed (không dùng giá) |
 | TQAN-06 | Phase 7 | Pending |
+| TQAN-07 | Phase 7 | Pending |
 | KKE-01 | Phase 6 | Pending |
 | KKE-02 | Phase 6 | Pending |
 | KKE-03 | Phase 6 | Pending |
