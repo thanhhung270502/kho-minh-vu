@@ -50,11 +50,14 @@ export type NavItem = {
 // Xuất (2) và Nhập (3) giữ nguyên vị trí người dùng đã quen từ UAT Phase 4.
 export const NAV_ITEMS: NavItem[] = [
   {
+    // Quyền "view-dashboard" (D-11) — CHỈ quản lý, khác mọi mục còn lại của
+    // menu này. Ba vai trò kia không có trang tổng quan, mục này ẩn hẳn khỏi
+    // menu của họ (không chỉ disable) và không chiếm ô nào của thanh tab đáy.
     href: "/",
     label: "Tổng quan",
     shortLabel: "Tổng quan",
     icon: "dashboard",
-    permission: "view-catalog",
+    permission: "view-dashboard",
     mobilePriority: 1,
   },
   {

@@ -59,6 +59,7 @@ import {
   splitMobileItems,
   NAV_ITEMS,
 } from "../src/shared/lib/navigation";
+import { homePathForRole } from "../src/features/dashboard/lib/home-path";
 
 assert.equal(removeDiacritics("Đặng Thị Ngọc"), "Dang Thi Ngoc");
 assert.equal(normalizeUsername("  Kim.Chi "), "kim.chi");
@@ -91,6 +92,17 @@ assert.equal(hasPermission("van_phong", "manage-lookups"), true);
 assert.equal(hasPermission("van_phong", "manage-users"), false);
 assert.equal(hasPermission("chi_xem", "view-cost"), false);
 
+// --- Trang chủ theo vai trò + quyền "view-dashboard" (Phase 7, 07-04) -----
+assert.equal(homePathForRole("quan_ly"), "/");
+assert.equal(homePathForRole("van_phong"), "/xuat-kho");
+assert.equal(homePathForRole("thu_kho"), "/ton-kho");
+assert.equal(homePathForRole("chi_xem"), "/ton-kho");
+
+assert.equal(hasPermission("quan_ly", "view-dashboard"), true);
+assert.equal(hasPermission("van_phong", "view-dashboard"), false);
+assert.equal(hasPermission("thu_kho", "view-dashboard"), false);
+assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
+
 // filterNavItems (06-16): menu "Kiểm kê" cho mọi vai trò, "Lịch sử KiotViet"
 // ẩn hẳn khi chưa bật công tắc theo người (D-13).
 {
@@ -106,6 +118,10 @@ assert.equal(hasPermission("chi_xem", "view-cost"), false);
     !thuKhoItems.some((i) => i.href === "/lich-su-kiotviet"),
     "thủ kho chưa bật công tắc thì KHÔNG thấy /lich-su-kiotviet",
   );
+  assert.ok(
+    !thuKhoItems.some((i) => i.href === "/"),
+    "thủ kho không có quyền view-dashboard nên không thấy mục Tổng quan (07-04)",
+  );
 
   const vanPhongItems = filterNavItems(
     { role: "van_phong", canViewKiotVietHistory: true },
@@ -116,6 +132,10 @@ assert.equal(hasPermission("chi_xem", "view-cost"), false);
       vanPhongItems.some((i) => i.href === "/lich-su-kiotviet"),
     "văn phòng đã bật công tắc thấy cả hai mục mới",
   );
+  assert.ok(
+    !vanPhongItems.some((i) => i.href === "/"),
+    "văn phòng không thấy mục Tổng quan",
+  );
 
   const quanLyItems = filterNavItems(
     { role: "quan_ly", canViewKiotVietHistory: true },
@@ -124,8 +144,9 @@ assert.equal(hasPermission("chi_xem", "view-cost"), false);
   assert.ok(
     quanLyItems.some((i) => i.href === "/kiem-ke") &&
       quanLyItems.some((i) => i.href === "/lich-su-kiotviet") &&
-      quanLyItems.some((i) => i.href === "/cai-dat"),
-    "quản lý thấy cả hai mục mới cộng /cai-dat",
+      quanLyItems.some((i) => i.href === "/cai-dat") &&
+      quanLyItems.some((i) => i.href === "/"),
+    "quản lý thấy cả hai mục mới cộng /cai-dat và Tổng quan",
   );
 
   const chiXemItems = filterNavItems(
@@ -137,12 +158,20 @@ assert.equal(hasPermission("chi_xem", "view-cost"), false);
       !chiXemItems.some((i) => i.href === "/cai-dat"),
     "chỉ xem thấy /kiem-ke nhưng không thấy /cai-dat",
   );
+  assert.ok(
+    !chiXemItems.some((i) => i.href === "/"),
+    "chỉ xem không thấy mục Tổng quan",
+  );
 
   const { primary } = splitMobileItems(thuKhoItems);
+  assert.ok(
+    !primary.some((i) => i.href === "/"),
+    "thanh tab đáy của thủ kho không còn ô Tổng quan trỏ vòng (07-04, mất quyền view-dashboard)",
+  );
   assert.deepEqual(
     primary.map((i) => i.href),
-    ["/", "/xuat-kho", "/nhap-kho", "/ton-kho"],
-    "thanh tab đáy vẫn giữ 4 ô của Phase 5, 'Kiểm kê' không chiếm chỗ",
+    ["/xuat-kho", "/nhap-kho", "/ton-kho", "/dat-hang"],
+    "mất ô Tổng quan thì mục ưu tiên 5 (Đặt hàng) đôn lên lấp đủ 4 ô",
   );
 }
 

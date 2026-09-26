@@ -14,7 +14,8 @@ export type Permission =
   | "manage-users"
   | "manage-warehouses"
   | "load-provisional-stock"
-  | "manage-doc-numbering";
+  | "manage-doc-numbering"
+  | "view-dashboard";
 
 const PERMISSION_MATRIX: Record<Permission, readonly Role[]> = {
   "view-catalog": ["quan_ly", "van_phong", "thu_kho", "chi_xem"],
@@ -27,6 +28,10 @@ const PERMISSION_MATRIX: Record<Permission, readonly Role[]> = {
   "manage-doc-numbering": ["quan_ly"],
   // Nạp tồn tạm từ KiotViet (D-05). Chặn thật: RPC nap_ton_tam trả 42501 cho vai trò khác.
   "load-provisional-stock": ["quan_ly"],
+  // Trang tổng quan chỉ dành cho quản lý (D-11). Đây chỉ là ẩn menu — chặn thật
+  // ở redirect của `app/(app)/page.tsx` (07-09) và 42501 của các RPC dashboard
+  // (07-01..03).
+  "view-dashboard": ["quan_ly"],
 };
 
 export function hasPermission(
