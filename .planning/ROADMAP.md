@@ -336,9 +336,9 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 09-06-PLAN.md — Lớp server hinh_anh + route đọc /anh/[id] (cache private) + proxy 401
-- [ ] 09-07-PLAN.md — Lớp dữ liệu client ảnh: api, query key, hook (nén rồi tải lên)
-- [ ] 09-08-PLAN.md — Bộ lọc Có ảnh / Chưa có ảnh (?anh=co|chua) ở danh mục
+- [x] 09-06-PLAN.md — Lớp server hinh_anh + route đọc /anh/[id] (cache private) + proxy 401
+- [x] 09-07-PLAN.md — Lớp dữ liệu client ảnh: api, query key, hook (nén rồi tải lên)
+- [x] 09-08-PLAN.md — Bộ lọc Có ảnh / Chưa có ảnh (?anh=co|chua) ở danh mục
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -368,4 +368,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. Kiểm kê & Go-live | 16/16 | Complete   | 2026-09-25 |
 | 7. Trang tổng quan | 0/TBD | Not started | - |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |
-| 9. Quản lý hình ảnh | 5/13 | In Progress|  |
+| 9. Quản lý hình ảnh | 8/13 | In Progress|  |
