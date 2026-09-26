@@ -297,7 +297,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 07-06-PLAN.md — lớp dữ liệu features/dashboard: mapper, api, keys, hooks + Làm mới
+- [x] 07-06-PLAN.md — lớp dữ liệu features/dashboard: mapper, api, keys, hooks + Làm mới
 
 **Wave 4** *(blocked on Wave 3 completion)*
 
@@ -337,5 +337,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 4. Đơn đặt hàng & Phiếu xuất | 0/TBD | Not started | - |
 | 5. Tồn kho & Tổng quan | 12/12 | Executed — chờ verify |  |
 | 6. Kiểm kê & Go-live | 16/16 | Complete   | 2026-09-25 |
-| 7. Trang tổng quan | 5/9 | In Progress|  |
+| 7. Trang tổng quan | 6/9 | In Progress|  |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |

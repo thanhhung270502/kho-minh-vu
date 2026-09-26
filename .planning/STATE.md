@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to verify
-stopped_at: Hoan thanh 07-04-PLAN.md (ham thuan trang tong quan)
-last_updated: "2026-09-26T13:27:24.840Z"
+stopped_at: Hoan thanh 07-06-PLAN.md (lop du lieu trang tong quan)
+last_updated: "2026-09-26T13:41:44.820Z"
 last_activity: 2026-09-26
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 101
-  completed_plans: 64
+  completed_plans: 65
   percent: 38
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-09-12)
 
 Phase: 7 (Trang tổng quan) — EXECUTING
 tự động, đang chờ checkpoint)
-Plan: 6 of 9
+Plan: 7 of 9
 phiên + danh sách phiên kiểm kê, route /kiem-ke; xem 06-10-SUMMARY.md)
 trả lời "đạt" (cả 10 mục), NHƯNG lúc 15:01 UTC database chưa có nạp tồn tạm (0 DIEU_CHINH,
 ton_kho 0 dòng khác 0), chưa duyệt định mức nào — xem 05-11-SUMMARY.md. Nạp tồn tạm + duyệt
@@ -551,6 +551,7 @@ và `errorCount > 0` đều đạt. **CHƯA kiểm bằng mắt trên trình duy
 | Phase 07 P02 | ~30min | 2 tasks | 2 files |
 | Phase 07 P03 | 20min | 2 tasks | 2 files |
 | Phase 07 P04 | 25min | 2 tasks | 6 files |
+| Phase 07 P06 | 35m | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -649,6 +650,9 @@ Recent decisions affecting current work:
 - [Phase 07]: 07-02: RPC ton_theo_nhom co dinh dang_kinh_doanh=true (D-17), khong loc theo kho cua thu kho, doi chieu cheo pgTAP voi danh_sach_ton_kho tren toan bo du lieu that (D-08)
 - [Phase 07-03]: nhip_ban khong doc don_dat_hang, chi dem XUAT HOAN_THANH theo chung_tu.ngay_ct (D-10) — Don dat hang chua xuat khong tinh vao nhip ban, khop dung D-09/D-10
 - [Phase 07]: 07-04: menu Tong quan chi hien voi quan_ly qua quyen view-dashboard moi; ba vai tro con lai ve home theo homePathForRole (D-11)
+- [Phase 07]: 07-06: toSalesPace tu sap theo ngay giam dan roi tach today/yesterday theo vi tri, nem Error neu RPC khong tra du hai dong
+- [Phase 07]: 07-06: StockByGroupRow.key = nhom_id ?? __none__ vi kieu sinh tu dong ghi string khong null nhung SQL (0070) van co the tra null luc chay that
+- [Phase 07]: 07-06: fetchNegativeStockReport chi nhan p_ngay - RPC bao_cao_xuat_am (0069) khong co tham so p_kho_id
 
 ### Pending Todos
 
@@ -669,7 +673,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-26T13:21:58.443Z
-Stopped at: Hoan thanh 07-04-PLAN.md (ham thuan trang tong quan)
+Last session: 2026-09-26T13:41:18.803Z
+Stopped at: Hoan thanh 07-06-PLAN.md (lop du lieu trang tong quan)
 Last activity: 2026-09-26
 Resume file: None
