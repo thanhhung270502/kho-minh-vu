@@ -3,6 +3,8 @@ import type { ProductFilter } from "../schemas/filter.schema";
 /** Khai một chỗ, không rải chuỗi khắp nơi (CLAUDE.md Bước 4). */
 export const productKeys = {
   all: ["products"] as const,
+  /** Tiền tố của `list(filter)` — dùng để làm mới mọi trang bảng danh mục mà không đụng detail/thẻ kho. */
+  lists: ["products", "list"] as const,
   list: (filter: ProductFilter) => ["products", "list", filter] as const,
   detail: (id: string) => ["products", "detail", id] as const,
   stockCard: (id: string, warehouseId: string | null, page: number) =>
