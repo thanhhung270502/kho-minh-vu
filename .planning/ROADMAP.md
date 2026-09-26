@@ -298,7 +298,7 @@ Plans:
 
 ### Phase 9: Quản lý hình ảnh
 
-**Goal**: Văn phòng và thủ kho chụp/tải ảnh mã hàng (và ảnh chứng từ nếu chốt ở bước discuss) và xem lại ngay trong app, không tốn tiền cloud — ảnh nằm trên Google Drive, nhưng database và giao diện không phụ thuộc Drive để sau này chuyển sang cloud chỉ bằng một script copy.
+**Goal**: Quản lý và văn phòng chụp/tải ảnh mã hàng, mọi vai trò xem lại ngay trong app để nhận ra mặt hàng, không tốn tiền cloud — ảnh nằm trên Google Drive, nhưng database và giao diện không phụ thuộc Drive để sau này chuyển sang cloud chỉ bằng một script copy.
 **Depends on**: Phase 2 (chi tiết mã hàng là nơi gắn ảnh)
 **Requirements**: ANH-01, ANH-02, ANH-03, ANH-04, ANH-05, ANH-06 (chỉ ảnh mã hàng — chốt ở discuss 26/09, xem 09-CONTEXT.md)
 
