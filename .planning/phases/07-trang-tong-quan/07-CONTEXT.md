@@ -67,6 +67,13 @@ hướng theo vai trò ở `/`.
 - **D-13:** Thứ tự từ trên xuống: **Nhịp bán → Xuất âm → Tồn theo nhóm/công đoạn**.
 - **D-14:** Làm mới: **tải khi mở trang + nút "Làm mới"**. Không polling, không Realtime.
 
+### Chốt sau nghiên cứu (26/09, giả định A1/A2/A4 trong 07-RESEARCH.md)
+- **D-15:** Một mã bị hai dòng phiếu khác nhau đẩy xuống dưới 0 trong cùng ngày → **hai dòng
+  báo cáo**, mỗi dòng một phiếu gây âm.
+- **D-16:** "Người lập" = `chung_tu.nguoi_tao_id` (người tạo phiếu), không phải người ghi sổ.
+- **D-17:** Tồn theo nhóm/công đoạn **mặc định chỉ tính mã đang kinh doanh**, giống hệt
+  mặc định `/ton-kho` (`p_dang_kinh_doanh = true`), để số đếm khớp khi bấm vào.
+
 ### Claude's Discretion
 - Cách xác định "dòng này làm tồn xuống dưới 0" (tính lũy kế từ `kho_movement` theo thứ tự
   ghi sổ, hay cột/trigger sẵn có) — researcher chọn, miễn đúng và không sửa sổ cái.
