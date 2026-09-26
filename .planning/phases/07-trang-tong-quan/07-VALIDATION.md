@@ -52,9 +52,9 @@ created: 2026-09-26
 
 ## Wave 0 Requirements
 
-- [x] Ba file pgTAP mới — viết trong chính WU tạo RPC (Wave 1), test trước rồi mới migration
-- [x] Helper `pg_temp.dang_nhap_nhu()` / `dang_xuat()` — copy từ `supabase/tests/33_the_kho_luy_ke_test.sql`
-- [x] Không neo vào bộ đếm sống — dữ liệu test tự tạo, dùng ngày giả định (năm 2091–2093)
+- [ ] Ba file pgTAP mới — viết trong chính WU tạo RPC (Wave 1), test trước rồi mới migration
+- [ ] Helper `pg_temp.dang_nhap_nhu()` / `dang_xuat()` — copy từ `supabase/tests/33_the_kho_luy_ke_test.sql`
+- [ ] Không neo vào bộ đếm sống — dữ liệu test tự tạo, dùng ngày giả định (năm 2091–2093)
 
 ---
 
