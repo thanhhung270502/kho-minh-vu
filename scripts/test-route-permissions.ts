@@ -36,7 +36,8 @@ const AI_CUNG_XEM: Record<VaiTroTest, KyVong> = {
 };
 
 const MA_TRAN: Dong[] = [
-  { route: "/", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
+  // Phase 7 (D-11): chỉ quản lý xem tổng quan, vai trò khác chuyển sang màn làm việc chính — không phải /khong-du-quyen.
+  { route: "/", ky_vong: { quanly: "200", vanphong: "→/xuat-kho", thukho1: "→/ton-kho", chixem: "→/ton-kho", khach: "dangnhap" } },
   // /cai-dat chỉ redirect sang tab đầu tiên theo quyền. UAT Phase 2 bắt được
   // lỗi page này crash vì gọi hàm client từ server — ma trận cũ thiếu đúng nó.
   { route: "/cai-dat", ky_vong: { quanly: "→/cai-dat/nguoi-dung", vanphong: "→/cai-dat/nhom-hang", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
