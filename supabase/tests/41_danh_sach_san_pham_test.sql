@@ -74,6 +74,9 @@ insert into public.kho_movement (kho_id, san_pham_id, so_luong, gia_von_tai_thoi
 select k1, sp3, 7, 100 from t_ds;
 insert into public.kho_movement (kho_id, san_pham_id, so_luong, gia_von_tai_thoi_diem)
 select k2, sp3, 5, 100 from t_ds;
+-- 002 tồn âm mà chưa đặt định mức: không được lọt vào "dưới định mức" (0067).
+insert into public.kho_movement (kho_id, san_pham_id, so_luong, gia_von_tai_thoi_diem)
+select k1, sp2, -2, 100 from t_ds;
 
 -- --- Quản lý ----------------------------------------------------------------
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
@@ -139,7 +142,7 @@ select is(
   (select string_agg(ma_hang, ',') from public.danh_sach_san_pham(
      p_tu_khoa => 'DS-ZQX', p_trang_thai_ton => 'duoi_dinh_muc')),
   'DS-ZQX-003',
-  'lọc dưới định mức so tồn cộng dồn với tồn tối thiểu'
+  'lọc dưới định mức so tồn cộng dồn với tồn tối thiểu — mã tồn âm chưa đặt định mức (002) không lọt'
 );
 
 select ok(

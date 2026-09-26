@@ -58,6 +58,7 @@ $helper$;
 create temp table t_tk as
 select pg_temp.sp_test('TON-ZQX-001') as sp1,   -- 7@K1 + 3@K2 = 10, ton_toi_thieu mặc định 0
        pg_temp.sp_test('TON-ZQX-002') as sp2,   -- 1@K2, ton_toi_thieu = 5 → dưới định mức
+       pg_temp.sp_test('TON-ZQX-003') as sp3,   -- -2@K1, CHƯA đặt định mức → KHÔNG dưới định mức
        pg_temp.kho_id('K1')           as k1,
        pg_temp.kho_id('K2')           as k2;
 
@@ -73,6 +74,10 @@ insert into public.kho_movement (kho_id, san_pham_id, so_luong, gia_von_tai_thoi
 select k2, sp1, 3, 100 from t_tk;
 insert into public.kho_movement (kho_id, san_pham_id, so_luong, gia_von_tai_thoi_diem)
 select k2, sp2, 1, 100 from t_tk;
+-- Tồn âm mà chưa đặt định mức (ton_toi_thieu mặc định 0): trước 0067 lọt vào
+-- "dưới định mức" vì -2 < 0 (UAT 05 bài 7).
+insert into public.kho_movement (kho_id, san_pham_id, so_luong, gia_von_tai_thoi_diem)
+select k1, sp3, -2, 100 from t_tk;
 
 -- --- Quản lý ----------------------------------------------------------------
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
@@ -129,7 +134,7 @@ select is(
   (select string_agg(ma_hang, ',' order by ma_hang) from public.danh_sach_ton_kho(
      p_tu_khoa => 'TON-ZQX', p_trang_thai_ton => 'duoi_dinh_muc')),
   'TON-ZQX-002',
-  'lọc dưới định mức chỉ trả về mã 002, không trả về mã 001'
+  'lọc dưới định mức chỉ trả về mã 002 — không trả 001 (đủ tồn), không trả 003 (tồn âm nhưng chưa đặt định mức)'
 );
 
 select ok(
@@ -143,8 +148,8 @@ select ok(
 select is(
   (select distinct tong_so_dong from public.danh_sach_ton_kho(
      p_tu_khoa => 'TON-ZQX', p_kich_thuoc => 1)),
-  2::bigint,
-  'tong_so_dong đếm trên toàn bộ kết quả lọc (2 mã), không phải trên trang hiện tại (kích thước 1)'
+  3::bigint,
+  'tong_so_dong đếm trên toàn bộ kết quả lọc (3 mã), không phải trên trang hiện tại (kích thước 1)'
 );
 
 -- --- Thủ kho K1 -------------------------------------------------------------
