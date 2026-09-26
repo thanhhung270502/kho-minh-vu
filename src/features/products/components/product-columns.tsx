@@ -7,6 +7,7 @@ import Link from "next/link";
 import type { ProductFilter, SortField } from "../schemas/filter.schema";
 import type { Lookups, ProductRow } from "../types";
 import { InlineEditCell } from "./inline-edit-cell";
+import { thumbnailColumn } from "./thumbnail-column";
 
 /** Tiền và số lượng từ Postgres về có thể là string — chỉ dùng để HIỂN THỊ. */
 export function formatNumber(value: number | string | null | undefined): string {
@@ -51,6 +52,7 @@ export function buildProductColumns({
   }));
 
   return [
+    thumbnailColumn(),
     {
       title: "Mã hàng",
       dataIndex: "code",
