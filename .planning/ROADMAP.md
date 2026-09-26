@@ -320,7 +320,37 @@ Plans:
   4. Ảnh upload lên đều dưới giới hạn body của Vercel nhờ nén ở client; ảnh HEIC từ iPhone xử lý được hoặc báo lỗi đọc hiểu được
   5. Chuyển nơi lưu chỉ cần viết một bản cài đặt `ImageStorage` mới + script migrate đổi `noi_luu`/`khoa_luu` — không sửa component hay URL nào (kiểm bằng review: ngoài lớp storage không chỗ nào biết tới Drive)
 
-**Plans**: TBD
+**Plans**: 13 plans trong 5 wave
+
+Plans:
+**Wave 1**
+
+- [ ] 09-01-PLAN.md — DB: bảng hinh_anh, RLS + quyền cột, RPC them_anh/xoa_anh/dat_anh_chinh/lay_khoa_anh/nap_anh_kiotviet, lọc p_co_anh + pgTAP 43
+- [ ] 09-02-PLAN.md — Mã nguồn Apps Script (apps-script/) + README thiết lập tiếng Việt
+- [ ] 09-03-PLAN.md — Quy tắc ảnh, URL /anh, nén WebP + thumb phía trình duyệt (hàm thuần có test)
+- [ ] 09-04-PLAN.md — Lớp ImageStorage + bản cài đặt Google Drive, biến môi trường server-only
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 09-05-PLAN.md — [BLOCKING] đẩy 0068 lên cloud, sinh lại kiểu, chạy pgTAP
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 09-06-PLAN.md — Lớp server hinh_anh + route đọc /anh/[id] (cache private) + proxy 401
+- [ ] 09-07-PLAN.md — Lớp dữ liệu client ảnh: api, query key, hook (nén rồi tải lên)
+- [ ] 09-08-PLAN.md — Bộ lọc Có ảnh / Chưa có ảnh (?anh=co|chua) ở danh mục
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 09-09-PLAN.md — Route tải ảnh lên / xóa ảnh + ma trận quyền ba route ảnh
+- [ ] 09-10-PLAN.md — Thư viện ảnh trong chi tiết mã: chụp/chọn, ảnh chính, xóa, phóng to
+- [ ] 09-11-PLAN.md — Cột thumbnail ảnh chính + ô xám ở bảng danh mục
+- [ ] 09-12-PLAN.md — Script chép ảnh KiotViet sang Drive (sharp devDependency, chạy lại được)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 09-13-PLAN.md — [CHECKPOINT] thiết lập Apps Script, kiểm chứng hệ thật, UAT, chép toàn bộ ảnh KiotViet
+
 **UI hint**: yes
 
 ## Progress
