@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
-  }
   public: {
     Tables: {
       anh_xa_ghi_chu_kiotviet: {
@@ -584,6 +579,76 @@ export type Database = {
         }
         Relationships: []
       }
+      hinh_anh: {
+        Row: {
+          created_at: string
+          id: string
+          khoa_luu: string
+          khoa_luu_thumb: string
+          la_anh_chinh: boolean
+          nguoi_tao_id: string | null
+          nguoi_xoa_id: string | null
+          nguon_url: string | null
+          noi_luu: string
+          san_pham_id: string
+          thu_tu: number
+          updated_at: string
+          xoa_luc: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          khoa_luu: string
+          khoa_luu_thumb: string
+          la_anh_chinh?: boolean
+          nguoi_tao_id?: string | null
+          nguoi_xoa_id?: string | null
+          nguon_url?: string | null
+          noi_luu: string
+          san_pham_id: string
+          thu_tu?: number
+          updated_at?: string
+          xoa_luc?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          khoa_luu?: string
+          khoa_luu_thumb?: string
+          la_anh_chinh?: boolean
+          nguoi_tao_id?: string | null
+          nguoi_xoa_id?: string | null
+          nguon_url?: string | null
+          noi_luu?: string
+          san_pham_id?: string
+          thu_tu?: number
+          updated_at?: string
+          xoa_luc?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hinh_anh_nguoi_tao_id_fkey"
+            columns: ["nguoi_tao_id"]
+            isOneToOne: false
+            referencedRelation: "nguoi_dung"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hinh_anh_nguoi_xoa_id_fkey"
+            columns: ["nguoi_xoa_id"]
+            isOneToOne: false
+            referencedRelation: "nguoi_dung"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hinh_anh_san_pham_id_fkey"
+            columns: ["san_pham_id"]
+            isOneToOne: false
+            referencedRelation: "san_pham"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kho: {
         Row: {
           created_at: string
@@ -1116,6 +1181,18 @@ export type Database = {
     }
     Functions: {
       _cap_nhat_tien_do_ddh: { Args: { p_ddh_id: string }; Returns: undefined }
+      _chen_anh: {
+        Args: {
+          p_id: string
+          p_khoa_luu: string
+          p_khoa_luu_thumb: string
+          p_nguoi_tao_id: string
+          p_nguon_url: string
+          p_noi_luu: string
+          p_san_pham_id: string
+        }
+        Returns: boolean
+      }
       _doi_chieu_ton_he_thong: { Args: never; Returns: number }
       _ghi_so_chuyen_kho: {
         Args: {
@@ -1422,6 +1499,7 @@ export type Database = {
       danh_sach_san_pham: {
         Args: {
           p_can_ra?: boolean
+          p_co_anh?: boolean
           p_cong_doan_id?: string
           p_dang_kinh_doanh?: boolean
           p_dvt_id?: string
@@ -1490,6 +1568,7 @@ export type Database = {
           tong_ton: number
         }[]
       }
+      dat_anh_chinh: { Args: { p_id: string }; Returns: undefined }
       dat_dem_lai: {
         Args: { p_dem_lai: boolean; p_dong_id: string }
         Returns: undefined
@@ -1763,6 +1842,14 @@ export type Database = {
         Returns: boolean
       }
       la_chung_tu_kiem_ke: { Args: { p_chung_tu_id: string }; Returns: boolean }
+      lay_khoa_anh: {
+        Args: { p_id: string }
+        Returns: {
+          khoa_luu: string
+          khoa_luu_thumb: string
+          noi_luu: string
+        }[]
+      }
       lich_su_giao_dich_doi_tac: {
         Args: { p_doi_tac_id: string; p_kich_thuoc?: number; p_trang?: number }
         Returns: {
@@ -1889,6 +1976,17 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      nap_anh_kiotviet: {
+        Args: {
+          p_id: string
+          p_khoa_luu: string
+          p_khoa_luu_thumb: string
+          p_nguon_url: string
+          p_noi_luu: string
+          p_san_pham_id: string
+        }
+        Returns: boolean
       }
       nap_danh_muc_kiotviet: { Args: { p_du_lieu: Json }; Returns: Json }
       nap_ton_tam: {
@@ -2045,6 +2143,16 @@ export type Database = {
           tong_so_dong: number
         }[]
       }
+      them_anh: {
+        Args: {
+          p_id: string
+          p_khoa_luu: string
+          p_khoa_luu_thumb: string
+          p_noi_luu: string
+          p_san_pham_id: string
+        }
+        Returns: boolean
+      }
       thu_hoi_phien_nguoi_dung: {
         Args: { p_nguoi_dung_id: string }
         Returns: number
@@ -2119,6 +2227,14 @@ export type Database = {
         }
       }
       xem_duoc_lich_su_kiotviet: { Args: never; Returns: boolean }
+      xoa_anh: {
+        Args: { p_id: string }
+        Returns: {
+          khoa_luu: string
+          khoa_luu_thumb: string
+          noi_luu: string
+        }[]
+      }
       xoa_dong_kiem_ke: { Args: { p_dong_id: string }; Returns: undefined }
     }
     Enums: {
@@ -2279,3 +2395,4 @@ export const Constants = {
     },
   },
 } as const
+
