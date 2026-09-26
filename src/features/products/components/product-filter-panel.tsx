@@ -8,6 +8,7 @@ import { filterByLabel } from "@/shared/lib/text";
 import {
   DEFAULT_PRODUCT_FILTER,
   countActiveFilters,
+  type ImageFilter,
   type ProductFilter,
   type StockStatus,
   type TradingStatus,
@@ -25,6 +26,11 @@ const STOCK_STATUS_OPTIONS: Array<{ value: StockStatus; label: string }> = [
   { value: "het_hang", label: "Hết hàng" },
   { value: "am", label: "Tồn âm" },
   { value: "duoi_dinh_muc", label: "Dưới định mức" },
+];
+
+const IMAGE_FILTER_OPTIONS: Array<{ value: ImageFilter; label: string }> = [
+  { value: "with", label: "Có ảnh" },
+  { value: "without", label: "Chưa có ảnh" },
 ];
 
 const TRADING_STATUS_OPTIONS: Array<{ value: TradingStatus; label: string }> = [
@@ -120,6 +126,17 @@ export function ProductFilterPanel({ filter, lookups, onChange }: Props) {
           value={filter.stockStatus}
           options={STOCK_STATUS_OPTIONS}
           onChange={(value) => change({ stockStatus: value ?? null })}
+        />
+      </FilterGroup>
+
+      <FilterGroup label="Hình ảnh">
+        <Select
+          allowClear
+          className="w-full"
+          placeholder="Tất cả"
+          value={filter.hasImage}
+          options={IMAGE_FILTER_OPTIONS}
+          onChange={(value) => change({ hasImage: value ?? null })}
         />
       </FilterGroup>
 
