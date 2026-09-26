@@ -15,7 +15,12 @@ import path from "node:path";
 
 import { docSheet, readString } from "../import-kiotviet/read-file";
 import { taoAdminClient } from "../_supabase-admin";
-import { parseImageCell, buildCopyPlan, type SourceRow, type CopyJob } from "./parse-image-cell";
+import {
+  parseImageCell,
+  buildCopyPlan,
+  type SourceRow,
+  type CopyJob,
+} from "./parse-image-cell";
 import { GDriveImageStorage } from "../../src/features/images/lib/storage/gdrive-storage.server";
 import { ImageStorageError } from "../../src/features/images/lib/storage/image-storage";
 import {
@@ -52,7 +57,9 @@ function duongDanSanPham(): string {
   try {
     ungVien = readdirSync(THU_MUC)
       .filter((f) => f.toLowerCase().endsWith(".xlsx") && !f.startsWith("~$"))
-      .filter((f) => f.toLowerCase().startsWith(TIEN_TO_SAN_PHAM.toLowerCase()));
+      .filter((f) =>
+        f.toLowerCase().startsWith(TIEN_TO_SAN_PHAM.toLowerCase()),
+      );
   } catch {
     throw new Error(
       `Không tìm thấy thư mục ${THU_MUC}.\nCách xử lý: đặt file export ${TIEN_TO_SAN_PHAM}*.xlsx vào data/kiotviet/.`,
@@ -64,7 +71,9 @@ function duongDanSanPham(): string {
     );
   }
   ungVien.sort(
-    (a, b) => statSync(path.join(THU_MUC, b)).mtimeMs - statSync(path.join(THU_MUC, a)).mtimeMs,
+    (a, b) =>
+      statSync(path.join(THU_MUC, b)).mtimeMs -
+      statSync(path.join(THU_MUC, a)).mtimeMs,
   );
   if (ungVien.length > 1) {
     console.warn(
@@ -94,7 +103,10 @@ async function docTatCaSanPham(db: AdminClient): Promise<Map<string, string>> {
   const map = new Map<string, string>();
   let from = 0;
   for (;;) {
-    const { data, error } = await db.from("san_pham").select("id, ma_hang").range(from, from + TRANG - 1);
+    const { data, error } = await db
+      .from("san_pham")
+      .select("id, ma_hang")
+      .range(from, from + TRANG - 1);
     if (error) throw error;
     if (!data || data.length === 0) break;
     for (const row of data) map.set(row.ma_hang.trim().toUpperCase(), row.id);
@@ -155,7 +167,9 @@ async function taiVeCoThuLai(url: string): Promise<Buffer> {
       lanCuoi = e;
     }
   }
-  throw lanCuoi instanceof Error ? lanCuoi : new Error("Không tải được ảnh sau 3 lần thử");
+  throw lanCuoi instanceof Error
+    ? lanCuoi
+    : new Error("Không tải được ảnh sau 3 lần thử");
 }
 
 async function nenAnh(
@@ -167,13 +181,23 @@ async function nenAnh(
 ): Promise<Buffer> {
   let out = await sharp(buf)
     .rotate()
-    .resize({ width: maxEdge, height: maxEdge, fit: "inside", withoutEnlargement: true })
+    .resize({
+      width: maxEdge,
+      height: maxEdge,
+      fit: "inside",
+      withoutEnlargement: true,
+    })
     .webp({ quality: Math.round(quality * 100) })
     .toBuffer();
   if (out.byteLength > maxBytes) {
     out = await sharp(buf)
       .rotate()
-      .resize({ width: maxEdge, height: maxEdge, fit: "inside", withoutEnlargement: true })
+      .resize({
+        width: maxEdge,
+        height: maxEdge,
+        fit: "inside",
+        withoutEnlargement: true,
+      })
       .webp({ quality: Math.round(FALLBACK_QUALITY * 100) })
       .toBuffer();
   }
@@ -194,21 +218,45 @@ async function xuLyMotAnh(
   try {
     buf = await taiVeCoThuLai(job.url);
   } catch (e) {
-    ctx.brokenLinks.push({ code: job.productCode, url: job.url, lyDo: xuatLoi(e) });
+    ctx.brokenLinks.push({
+      code: job.productCode,
+      url: job.url,
+      lyDo: xuatLoi(e),
+    });
     return { ok: false, skippedDuplicate: false };
   }
 
   let full: Buffer;
   let thumb: Buffer;
   try {
-    full = await nenAnh(ctx.sharp, buf, FULL_MAX_EDGE, FULL_QUALITY, MAX_FULL_BYTES);
-    thumb = await nenAnh(ctx.sharp, buf, THUMB_MAX_EDGE, THUMB_QUALITY, MAX_THUMB_BYTES);
+    full = await nenAnh(
+      ctx.sharp,
+      buf,
+      FULL_MAX_EDGE,
+      FULL_QUALITY,
+      MAX_FULL_BYTES,
+    );
+    thumb = await nenAnh(
+      ctx.sharp,
+      buf,
+      THUMB_MAX_EDGE,
+      THUMB_QUALITY,
+      MAX_THUMB_BYTES,
+    );
   } catch {
-    ctx.brokenLinks.push({ code: job.productCode, url: job.url, lyDo: "không phải ảnh đọc được" });
+    ctx.brokenLinks.push({
+      code: job.productCode,
+      url: job.url,
+      lyDo: "không phải ảnh đọc được",
+    });
     return { ok: false, skippedDuplicate: false };
   }
   if (full.byteLength > MAX_FULL_BYTES || thumb.byteLength > MAX_THUMB_BYTES) {
-    ctx.errors.push({ code: job.productCode, url: job.url, lyDo: "nén xong vẫn vượt dung lượng cho phép" });
+    ctx.errors.push({
+      code: job.productCode,
+      url: job.url,
+      lyDo: "nén xong vẫn vượt dung lượng cho phép",
+    });
     return { ok: false, skippedDuplicate: false };
   }
 
@@ -247,7 +295,11 @@ async function xuLyMotAnh(
     if (error.code === "23505") {
       return { ok: true, skippedDuplicate: true };
     }
-    ctx.errors.push({ code: job.productCode, url: job.url, lyDo: error.message });
+    ctx.errors.push({
+      code: job.productCode,
+      url: job.url,
+      lyDo: error.message,
+    });
     return { ok: false, skippedDuplicate: false };
   }
 
@@ -272,16 +324,25 @@ async function luuVoiThuLai(
   for (let lan = 0; lan < cho.length; lan++) {
     if (cho[lan]! > 0) await new Promise((r) => setTimeout(r, cho[lan]));
     try {
-      return await storage.put({ variant, fileName, bytes: new Uint8Array(bytes) });
+      return await storage.put({
+        variant,
+        fileName,
+        bytes: new Uint8Array(bytes),
+      });
     } catch (e) {
       if (e instanceof ImageStorageError && e.kind === "forbidden") {
-        throw new DungToanBo("Secret Apps Script sai — kiểm APPS_SCRIPT_SECRET");
+        throw new DungToanBo(
+          "Secret Apps Script sai — kiểm APPS_SCRIPT_SECRET",
+        );
       }
       lanCuoi = e;
-      if (!(e instanceof ImageStorageError && e.kind === "unavailable")) throw e;
+      if (!(e instanceof ImageStorageError && e.kind === "unavailable"))
+        throw e;
     }
   }
-  throw lanCuoi instanceof Error ? lanCuoi : new Error("Không lưu được ảnh sau nhiều lần thử");
+  throw lanCuoi instanceof Error
+    ? lanCuoi
+    : new Error("Không lưu được ảnh sau nhiều lần thử");
 }
 
 async function xuLyMotMa(
@@ -355,7 +416,11 @@ async function chayThat(jobs: CopyJob[], db: AdminClient): Promise<void> {
       if (idx >= dsMa.length) return;
       const [, dsJobs] = dsMa[idx]!;
       try {
-        const kq = await xuLyMotMa(dsJobs, { db, storage, sharp: sharpMod, brokenLinks, errors }, tienDo);
+        const kq = await xuLyMotMa(
+          dsJobs,
+          { db, storage, sharp: sharpMod, brokenLinks, errors },
+          tienDo,
+        );
         tongDaChep += kq.daChep;
         tongBoQuaTrung += kq.boQuaTrung;
       } catch (e) {
@@ -363,7 +428,11 @@ async function chayThat(jobs: CopyJob[], db: AdminClient): Promise<void> {
           dungSom = e.message;
           return;
         }
-        errors.push({ code: dsJobs[0]?.productCode ?? "?", url: dsJobs[0]?.url ?? "", lyDo: xuatLoi(e) });
+        errors.push({
+          code: dsJobs[0]?.productCode ?? "?",
+          url: dsJobs[0]?.url ?? "",
+          lyDo: xuatLoi(e),
+        });
       }
     }
   }
@@ -376,7 +445,8 @@ async function chayThat(jobs: CopyJob[], db: AdminClient): Promise<void> {
 
   if (brokenLinks.length) {
     console.log(`\nLink hỏng (${brokenLinks.length}):`);
-    for (const b of brokenLinks) console.log(`  ${b.code}  ${b.url}  — ${b.lyDo}`);
+    for (const b of brokenLinks)
+      console.log(`  ${b.code}  ${b.url}  — ${b.lyDo}`);
   }
   if (errors.length) {
     console.log(`\nLỗi khác (${errors.length}):`);
@@ -393,31 +463,47 @@ async function chayThat(jobs: CopyJob[], db: AdminClient): Promise<void> {
     process.exit(1);
   }
 
-  console.log("\nXong. Chạy lại lệnh này lần nữa sẽ báo 0 ảnh mới (đã chép hết).\n");
+  // --gioi-han chỉ chép một lô, nên chạy lại sẽ còn ảnh — không hứa "đã chép hết"
+  console.log(
+    GIOI_HAN === null
+      ? "\nXong. Chạy lại lệnh này lần nữa sẽ báo 0 ảnh mới (đã chép hết).\n"
+      : "\nXong lô này. Chạy dry-run (bỏ --ghi) để xem còn bao nhiêu ảnh chưa chép.\n",
+  );
 }
 
 async function main() {
   console.log("═══ CHÉP ẢNH MÃ HÀNG TỪ KIOTVIET SANG DRIVE ═══");
-  console.log(`Chế độ:  ${GHI ? "GHI THẬT" : "THỬ (không ghi database, không gọi Apps Script)"}`);
+  console.log(
+    `Chế độ:  ${GHI ? "GHI THẬT" : "THỬ (không ghi database, không gọi Apps Script)"}`,
+  );
 
   const { file, rows } = await docSanPham();
   console.log(`File:    ${path.basename(file)}`);
 
   const db = taoAdminClient();
-  const [productIdByCode, existing] = await Promise.all([docTatCaSanPham(db), docTatCaAnhDaChep(db)]);
+  const [productIdByCode, existing] = await Promise.all([
+    docTatCaSanPham(db),
+    docTatCaAnhDaChep(db),
+  ]);
 
   const plan = buildCopyPlan(rows, productIdByCode, existing);
-  const jobs = GIOI_HAN !== null && GIOI_HAN >= 0 ? plan.jobs.slice(0, GIOI_HAN) : plan.jobs;
+  const jobs =
+    GIOI_HAN !== null && GIOI_HAN >= 0
+      ? plan.jobs.slice(0, GIOI_HAN)
+      : plan.jobs;
 
   console.log("\n" + "─".repeat(70));
-  console.log(`Mã có ảnh trong file:     ${inDongKeChia(plan.productsWithImages)}`);
+  console.log(
+    `Mã có ảnh trong file:     ${inDongKeChia(plan.productsWithImages)}`,
+  );
   console.log(`Tổng số ảnh trong file:   ${inDongKeChia(plan.totalImages)}`);
   console.log(`Đã chép từ trước:         ${inDongKeChia(plan.alreadyCopied)}`);
   console.log(`Sẽ chép lần này:          ${inDongKeChia(jobs.length)}`);
   if (plan.unknownCodes.length) {
     console.log(`\nMã không khớp danh mục (${plan.unknownCodes.length}):`);
     for (const c of plan.unknownCodes.slice(0, 50)) console.log(`  ${c}`);
-    if (plan.unknownCodes.length > 50) console.log(`  ... và ${plan.unknownCodes.length - 50} mã nữa`);
+    if (plan.unknownCodes.length > 50)
+      console.log(`  ... và ${plan.unknownCodes.length - 50} mã nữa`);
   }
 
   if (!GHI) {
@@ -430,6 +516,10 @@ async function main() {
 }
 
 main().catch((e) => {
-  console.error("\nimport:kiotviet-images thất bại:\n", e instanceof Error ? e.message : e, "\n");
+  console.error(
+    "\nimport:kiotviet-images thất bại:\n",
+    e instanceof Error ? e.message : e,
+    "\n",
+  );
   process.exit(1);
 });
