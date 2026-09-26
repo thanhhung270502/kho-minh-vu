@@ -288,7 +288,7 @@ Plans:
 
 - [x] 07-01-PLAN.md — DB RPC bao_cao_xuat_am (lũy kế sổ cái theo kho × mã) + pgTAP 92
 - [x] 07-02-PLAN.md — DB RPC ton_theo_nhom khớp danh_sach_ton_kho (0067) + pgTAP 93 đối chiếu chéo
-- [ ] 07-03-PLAN.md — DB RPC nhip_ban hôm nay/hôm qua + pgTAP 94
+- [x] 07-03-PLAN.md — DB RPC nhip_ban hôm nay/hôm qua + pgTAP 94
 - [ ] 07-04-PLAN.md — hàm thuần: trang chủ theo vai trò, ẩn menu Tổng quan, URL drill-down /ton-kho, đếm theo lý do, so nhịp bán
 
 **Wave 2** *(blocked on Wave 1 completion)*
@@ -337,5 +337,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 4. Đơn đặt hàng & Phiếu xuất | 0/TBD | Not started | - |
 | 5. Tồn kho & Tổng quan | 12/12 | Executed — chờ verify |  |
 | 6. Kiểm kê & Go-live | 16/16 | Complete   | 2026-09-25 |
-| 7. Trang tổng quan | 2/9 | In Progress|  |
+| 7. Trang tổng quan | 3/9 | In Progress|  |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |
