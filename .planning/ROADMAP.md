@@ -325,10 +325,10 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 09-01-PLAN.md — DB: bảng hinh_anh, RLS + quyền cột, RPC them_anh/xoa_anh/dat_anh_chinh/lay_khoa_anh/nap_anh_kiotviet, lọc p_co_anh + pgTAP 43
-- [ ] 09-02-PLAN.md — Mã nguồn Apps Script (apps-script/) + README thiết lập tiếng Việt
-- [ ] 09-03-PLAN.md — Quy tắc ảnh, URL /anh, nén WebP + thumb phía trình duyệt (hàm thuần có test)
-- [ ] 09-04-PLAN.md — Lớp ImageStorage + bản cài đặt Google Drive, biến môi trường server-only
+- [x] 09-01-PLAN.md — DB: bảng hinh_anh, RLS + quyền cột, RPC them_anh/xoa_anh/dat_anh_chinh/lay_khoa_anh/nap_anh_kiotviet, lọc p_co_anh + pgTAP 43
+- [x] 09-02-PLAN.md — Mã nguồn Apps Script (apps-script/) + README thiết lập tiếng Việt
+- [x] 09-03-PLAN.md — Quy tắc ảnh, URL /anh, nén WebP + thumb phía trình duyệt (hàm thuần có test)
+- [x] 09-04-PLAN.md — Lớp ImageStorage + bản cài đặt Google Drive, biến môi trường server-only
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -368,4 +368,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. Kiểm kê & Go-live | 16/16 | Complete   | 2026-09-25 |
 | 7. Trang tổng quan | 0/TBD | Not started | - |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |
-| 9. Quản lý hình ảnh | 0/TBD | Not started | - |
+| 9. Quản lý hình ảnh | 4/13 | In Progress|  |
