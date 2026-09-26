@@ -1,8 +1,8 @@
 ---
 phase: 7
 slug: trang-tong-quan
-status: draft
-nyquist_compliant: false
+status: approved
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-09-26
 ---
@@ -52,9 +52,9 @@ created: 2026-09-26
 
 ## Wave 0 Requirements
 
-- [ ] Ba file pgTAP mới — viết trong chính WU tạo RPC (Wave 1), test trước rồi mới migration
-- [ ] Helper `pg_temp.dang_nhap_nhu()` / `dang_xuat()` — copy từ `supabase/tests/33_the_kho_luy_ke_test.sql`
-- [ ] Không neo vào bộ đếm sống — dữ liệu test tự tạo, dùng ngày giả định (năm 2091–2093)
+- [x] Ba file pgTAP mới — viết trong chính WU tạo RPC (Wave 1), test trước rồi mới migration
+- [x] Helper `pg_temp.dang_nhap_nhu()` / `dang_xuat()` — copy từ `supabase/tests/33_the_kho_luy_ke_test.sql`
+- [x] Không neo vào bộ đếm sống — dữ liệu test tự tạo, dùng ngày giả định (năm 2091–2093)
 
 ---
 
@@ -70,11 +70,11 @@ created: 2026-09-26
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 120s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 120s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-09-26 (plan-checker, 9 plans)

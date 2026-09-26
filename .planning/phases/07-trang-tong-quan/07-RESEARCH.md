@@ -416,16 +416,16 @@ export async function fetchNegativeStockReport(
 **Nếu người dùng xác nhận ngược với A1/A2/A4 khi review PLAN, sửa ngay trong PLAN trước khi
 viết migration — đây là chỗ rẻ nhất để sửa.**
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **A1 ở trên — gộp theo mã hay giữ theo từng dòng phiếu trong cùng một ngày?**
+1. **A1 ở trên — gộp theo mã hay giữ theo từng dòng phiếu trong cùng một ngày?** — RESOLVED: D-15 (hai dòng báo cáo)
    - What we know: D-01 nói "theo mã bị âm, không theo phiếu" nhưng cũng liệt kê "số phiếu"
      số ít trên mỗi dòng.
    - What's unclear: Trường hợp hiếm (một mã bị âm bởi ≥ 2 phiếu khác nhau cùng ngày).
    - Recommendation: Implement theo A1 (một dòng/sự kiện), viết pgTAP phủ đúng kịch bản
      "2 phiếu, cùng mã, cùng ngày, cả hai đều đẩy âm" để hành vi rõ ràng và có thể xem lại.
 
-2. **`nguoi_duyet_id` có nên hiện thêm bên cạnh `nguoi_tao_id` không?**
+2. **`nguoi_duyet_id` có nên hiện thêm bên cạnh `nguoi_tao_id` không?** — RESOLVED: D-16 (chỉ người tạo phiếu)
    - What we know: `chi_tiet_chung_tu` (0051) đã trả cả hai cột.
    - What's unclear: D-01 chỉ nói "người lập" — không rõ có cần "người ghi sổ" nếu khác nhau.
    - Recommendation: Chỉ hiện `nguoi_tao_id` theo đúng chữ D-01; không thêm cột thừa.
