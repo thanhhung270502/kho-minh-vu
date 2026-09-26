@@ -641,6 +641,10 @@ Recent decisions affecting current work:
 - [Phase ?]: Zod schema cua nhap_so_dem_kiem_ke coi moi truong chi tiet la optional - ba nhanh tra ve khong nhanh nao co du cung mot bo khoa
 - [Phase ?]: count-import-result.tsx tach khoi count-excel-import.tsx tu dau, khuon provisional-stock-issues.tsx, giu ca hai file duoi 200 dong
 
+### Roadmap Evolution
+
+- Phase 9 added (2026-09-26): Quản lý hình ảnh — ảnh mã hàng lưu Google Drive qua Apps Script, lớp lưu trữ trừu tượng (`noi_luu`/`khoa_luu`, hiển thị qua `/anh/<id>` có cache) để sau chuyển cloud không đổi giao diện
+
 ### Pending Todos
 
 None yet.

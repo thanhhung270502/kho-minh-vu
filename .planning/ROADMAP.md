@@ -36,6 +36,7 @@ sau cần dùng ngay.
 - [x] **Phase 6: Kiểm kê & Go-live** - Kiểm kê (đếm điện thoại/máy tính/Excel), đặt tồn đầu kỳ, tra cứu lịch sử KiotViet — hệ thống sẵn sàng thay KiotViet (completed 2026-09-25)
 - [ ] **Phase 7: Trang tổng quan** - Tồn theo nhóm/công đoạn, hàng không luân chuyển, biểu đồ nhập–xuất, giá trị tồn, báo cáo xuất âm
 - [ ] **Phase 8: Mobile & Chuyển kho** - Màn xuất và màn tồn dùng trên điện thoại, thêm dòng bằng ô tìm, chuyển kho
+- [ ] **Phase 9: Quản lý hình ảnh** - Upload và hiển thị ảnh mã hàng lưu trên Google Drive qua Apps Script, lớp lưu trữ trừu tượng để sau chuyển cloud không đổi giao diện
 
 ## Phase Details
 
@@ -295,10 +296,37 @@ Plans:
 **Plans**: TBD
 **UI hint**: yes
 
+### Phase 9: Quản lý hình ảnh
+
+**Goal**: Văn phòng và thủ kho chụp/tải ảnh mã hàng (và ảnh chứng từ nếu chốt ở bước discuss) và xem lại ngay trong app, không tốn tiền cloud — ảnh nằm trên Google Drive, nhưng database và giao diện không phụ thuộc Drive để sau này chuyển sang cloud chỉ bằng một script copy.
+**Depends on**: Phase 2 (chi tiết mã hàng là nơi gắn ảnh)
+**Requirements**: chưa có mã — chốt ở bước discuss (câu còn treo: chỉ ảnh mã hàng, hay cả ảnh chứng từ)
+
+**Hướng kỹ thuật đã bàn** (chi tiết chốt ở discuss/plan):
+
+- Bảng `hinh_anh` lưu `noi_luu` (`GDRIVE` | `SUPABASE` | `R2`) + `khoa_luu` (fileId gốc và thumb) — **không lưu URL Drive**; RLS theo vai trò
+- Ghi: trình duyệt nén WebP 1200px + thumb 300px → Route Handler (`getUser()` + vai trò) → Apps Script web app ("Execute as me", tài khoản Google riêng cho hệ thống) → Drive
+- Đọc: luôn qua URL của app `/anh/<id>` — Route Handler kiểm quyền, lấy base64 từ Apps Script, trả binary với `Cache-Control: immutable` để CDN giữ; file Drive để private
+- `APPS_SCRIPT_URL` / `APPS_SCRIPT_SECRET` chỉ ở server, không `NEXT_PUBLIC_*`; Apps Script kiểm secret
+- Folder Drive nông, theo thứ không đổi: `san-pham/{goc,thumb}`, `chung-tu/<năm>/<tháng>/{goc,thumb}`; tên file `<mã>__<uuid>.webp`; ID folder cache trong `PropertiesService`, tạo folder bọc `LockService`
+- Code Apps Script nằm trong repo (`apps-script/`, đẩy bằng `clasp`); deploy bằng "New version" để giữ URL `/exec`
+- Tham chiếu: tax-web (`/Users/hungly/Desktop/tax-web`) đã kết nối Drive qua Apps Script theo mẫu một endpoint + `action`
+
+**Success Criteria** (what must be TRUE):
+
+  1. Mở chi tiết mã hàng, chụp bằng camera điện thoại hoặc chọn file máy tính, ảnh hiện ngay trong thư viện ảnh của mã; đặt được ảnh chính và xóa ảnh (xóa mềm, file Drive vào thùng rác)
+  2. Ảnh chỉ xem được qua `/anh/<id>` khi đã đăng nhập; mở link Drive gốc hoặc gọi thẳng Apps Script không có secret đều bị từ chối
+  3. Bảng danh mục có thumbnail mà không chậm đi rõ rệt: lần xem thứ hai của cùng một ảnh không gọi Apps Script (xác nhận bằng header cache / log)
+  4. Ảnh upload lên đều dưới giới hạn body của Vercel nhờ nén ở client; ảnh HEIC từ iPhone xử lý được hoặc báo lỗi đọc hiểu được
+  5. Chuyển nơi lưu chỉ cần viết một bản cài đặt `ImageStorage` mới + script migrate đổi `noi_luu`/`khoa_luu` — không sửa component hay URL nào (kiểm bằng review: ngoài lớp storage không chỗ nào biết tới Drive)
+
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -310,3 +338,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 6. Kiểm kê & Go-live | 16/16 | Complete   | 2026-09-25 |
 | 7. Trang tổng quan | 0/TBD | Not started | - |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |
+| 9. Quản lý hình ảnh | 0/TBD | Not started | - |
