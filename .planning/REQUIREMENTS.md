@@ -117,11 +117,11 @@
 
 ### Hình ảnh (ANH)
 
-- [x] **ANH-01**: Người có quyền sửa danh mục (quản lý, văn phòng) thêm ảnh cho mã hàng bằng camera điện thoại hoặc chọn file; một mã có nhiều ảnh, không giới hạn
-- [x] **ANH-02**: Đặt ảnh chính cho mã (ảnh đầu tiên tự là ảnh chính, đổi được) và xóa mềm ảnh (ảnh chính bị xóa thì ảnh kế tiếp thay)
-- [x] **ANH-03**: Mọi vai trò đã đăng nhập xem thư viện ảnh trong chi tiết mã và phóng to tại chỗ; ảnh chỉ đọc được qua `/anh/<id>`, chặn bằng RLS + kiểm đăng nhập
-- [x] **ANH-04**: Bảng danh mục có cột thumbnail ảnh chính (ô xám khi chưa có ảnh) và bộ lọc Có ảnh / Chưa có ảnh
-- [x] **ANH-05**: Ảnh lưu trên Google Drive qua Apps Script, database chỉ lưu `noi_luu` + khóa; đổi nơi lưu không phải sửa giao diện
+- [ ] **ANH-01**: Người có quyền sửa danh mục (quản lý, văn phòng) thêm ảnh cho mã hàng bằng camera điện thoại hoặc chọn file; một mã có nhiều ảnh, không giới hạn
+- [ ] **ANH-02**: Đặt ảnh chính cho mã (ảnh đầu tiên tự là ảnh chính, đổi được) và xóa mềm ảnh (ảnh chính bị xóa thì ảnh kế tiếp thay)
+- [ ] **ANH-03**: Mọi vai trò đã đăng nhập xem thư viện ảnh trong chi tiết mã và phóng to tại chỗ; ảnh chỉ đọc được qua `/anh/<id>`, chặn bằng RLS + kiểm đăng nhập
+- [ ] **ANH-04**: Bảng danh mục có cột thumbnail ảnh chính (ô xám khi chưa có ảnh) và bộ lọc Có ảnh / Chưa có ảnh
+- [ ] **ANH-05**: Ảnh lưu trên Google Drive qua Apps Script, database chỉ lưu `noi_luu` + khóa; đổi nơi lưu không phải sửa giao diện
 - [ ] **ANH-06**: Chép một lần ảnh mã hàng từ file export KiotViet (1.094 mã) sang nơi lưu mới bằng script chạy lại được, có báo cáo link hỏng / mã không khớp
 
 ## v2 Requirements
@@ -239,11 +239,11 @@
 | DLIEU-05 | Phase 6 | Closed (không cần) |
 | DLIEU-06 | Phase 6 | Pending |
 | DLIEU-07 | Phase 6 | Complete |
-| ANH-01 | Phase 9 | Complete |
-| ANH-02 | Phase 9 | Complete |
-| ANH-03 | Phase 9 | Complete |
-| ANH-04 | Phase 9 | Complete |
-| ANH-05 | Phase 9 | Complete |
+| ANH-01 | Phase 9 | Pending |
+| ANH-02 | Phase 9 | Pending |
+| ANH-03 | Phase 9 | Pending |
+| ANH-04 | Phase 9 | Pending |
+| ANH-05 | Phase 9 | Pending |
 | ANH-06 | Phase 9 | Pending |
 
 **Coverage:**
