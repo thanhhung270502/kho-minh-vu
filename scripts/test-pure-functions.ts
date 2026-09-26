@@ -67,6 +67,7 @@ import {
   splitMobileItems,
   NAV_ITEMS,
 } from "../src/shared/lib/navigation";
+import { parseImageCell, buildCopyPlan } from "./copy-kiotviet-images/parse-image-cell";
 
 assert.equal(removeDiacritics("Đặng Thị Ngọc"), "Dang Thi Ngoc");
 assert.equal(normalizeUsername("  Kim.Chi "), "kim.chi");
@@ -573,6 +574,57 @@ async function kiemCsvLoi() {
 
   assert.equal(imageUrl("abc"), "/anh/abc", "URL ảnh gốc");
   assert.equal(imageUrl("abc", "thumb"), "/anh/abc?co=nho", "URL ảnh thumb dùng tham số tiếng Việt không dấu");
+}
+
+// --- Chép ảnh KiotViet (09-12) ----------------------------------------------
+{
+  assert.deepEqual(parseImageCell(null), [], "null trả mảng rỗng");
+  assert.deepEqual(parseImageCell(""), [], "chuỗi rỗng trả mảng rỗng");
+  assert.deepEqual(
+    parseImageCell("https://cdn2-retail-images.kiotviet.vn/a.jpg"),
+    ["https://cdn2-retail-images.kiotviet.vn/a.jpg"],
+    "một URL hợp lệ",
+  );
+  assert.deepEqual(
+    parseImageCell(" https://x/a.jpg , https://x/b.jpg,https://x/a.jpg "),
+    ["https://x/a.jpg", "https://x/b.jpg"],
+    "trim, giữ thứ tự, bỏ trùng",
+  );
+  assert.deepEqual(
+    parseImageCell("abc, ftp://x/y.jpg, https://x/c.jpg"),
+    ["https://x/c.jpg"],
+    "chỉ nhận http/https",
+  );
+
+  const plan = buildCopyPlan(
+    [
+      { code: "A", urls: ["u1", "u2"] },
+      { code: "ZZ", urls: ["u3"] },
+      { code: "B", urls: [] },
+    ],
+    new Map([["A", "id-a"], ["B", "id-b"]]),
+    new Set(["id-a|u1"]),
+  );
+  assert.deepEqual(
+    plan.jobs,
+    [{ productId: "id-a", productCode: "A", url: "u2", order: 1 }],
+    "chỉ còn ảnh chưa chép, order theo vị trí trong ô",
+  );
+  assert.deepEqual(plan.unknownCodes, ["ZZ"], "mã không khớp danh mục");
+  assert.equal(plan.alreadyCopied, 1, "đã chép trước đó");
+  assert.equal(plan.productsWithImages, 2, "mã B không có url không tính");
+  assert.equal(plan.totalImages, 3, "tổng số ảnh trong các dòng có url");
+
+  const planCaseInsensitive = buildCopyPlan(
+    [{ code: " a ", urls: ["u1"] }],
+    new Map([["A", "id-a"]]),
+    new Set(),
+  );
+  assert.deepEqual(
+    planCaseInsensitive.jobs,
+    [{ productId: "id-a", productCode: " a ", url: "u1", order: 0 }],
+    "mã so khớp không phân biệt hoa thường và trim",
+  );
 }
 
 void kiemCsvLoi().then(() => {
