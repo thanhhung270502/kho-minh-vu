@@ -60,6 +60,14 @@ import {
   NAV_ITEMS,
 } from "../src/shared/lib/navigation";
 import { homePathForRole } from "../src/features/dashboard/lib/home-path";
+import {
+  buildInventoryDrilldownUrl,
+  type StockGroupBy,
+} from "../src/features/dashboard/lib/stock-drilldown";
+import {
+  countNegativeByReason,
+  compareSalesPace,
+} from "../src/features/dashboard/lib/dashboard-stats";
 
 assert.equal(removeDiacritics("Đặng Thị Ngọc"), "Dang Thi Ngoc");
 assert.equal(normalizeUsername("  Kim.Chi "), "kim.chi");
@@ -256,6 +264,94 @@ assert.equal(
   0,
   "ô tìm KHÔNG tính vào số điều kiện của panel lọc",
 );
+
+// --- Drill-down từ trang tổng quan sang /ton-kho (Phase 7, 07-04) ----------
+{
+  const groupId = "44444444-4444-4444-8444-444444444444";
+  assert.equal(
+    buildInventoryDrilldownUrl({
+      groupBy: "category" as StockGroupBy,
+      groupId,
+      warehouseId: null,
+      stockStatus: "am",
+    }),
+    `/ton-kho?nhom=${groupId}&ton=am`,
+    "drill-down theo nhóm hàng + trạng thái âm",
+  );
+
+  const stageUrl = buildInventoryDrilldownUrl({
+    groupBy: "stage",
+    groupId,
+    warehouseId: warehouseUuid,
+    stockStatus: "duoi_dinh_muc",
+  });
+  const stageParams = new URLSearchParams(stageUrl.split("?")[1]);
+  assert.equal(stageParams.get("cong_doan"), groupId);
+  assert.equal(stageParams.get("kho"), warehouseUuid);
+  assert.equal(stageParams.get("ton"), "duoi_dinh_muc");
+  assert.equal(stageParams.get("kinh_doanh"), null, "không đặt kinh_doanh, dùng mặc định 'đang kinh doanh'");
+  assert.equal(stageParams.get("nhom"), null, "groupBy=stage không được kèm nhom");
+  assert.equal(stageParams.get("trang"), null, "không mang theo trang từ lần lọc trước");
+
+  assert.equal(
+    buildInventoryDrilldownUrl({
+      groupBy: "category",
+      groupId,
+      warehouseId: null,
+      stockStatus: null,
+    }),
+    `/ton-kho?nhom=${groupId}`,
+    "cột 'Tổng mã' không có stockStatus thì không có ?ton=",
+  );
+
+  const roundTrip = readInventoryFilterFromUrl(new URLSearchParams(stageUrl.split("?")[1]));
+  assert.equal(roundTrip.stageId, groupId);
+  assert.equal(roundTrip.warehouseId, warehouseUuid);
+  assert.equal(roundTrip.stockStatus, "duoi_dinh_muc");
+  assert.equal(roundTrip.tradingStatus, "active", "URL drill-down luôn quay vòng về 'đang kinh doanh'");
+}
+
+// --- Đếm xuất âm theo lý do + so nhịp bán (Phase 7, 07-04) -----------------
+{
+  const empty = countNegativeByReason([]);
+  assert.equal(empty.length, 4, "luôn trả đủ 4 lý do cố định kể cả không có dòng nào");
+  assert.deepEqual(
+    empty.map((r) => r.code),
+    ["MA_BI_TACH", "HANG_VE_CHUA_NHAP", "LECH_TON_CHO_KIEM_KE", "KHAC"],
+    "đúng thứ tự NEGATIVE_REASONS",
+  );
+  assert.ok(
+    empty.every((r) => r.count === 0),
+    "mảng rỗng thì mọi lý do cố định đếm 0",
+  );
+
+  const withLines = countNegativeByReason([
+    { reasonCode: "KHAC" },
+    { reasonCode: "KHAC" },
+    { reasonCode: "MA_BI_TACH" },
+    { reasonCode: "ZQX_LA" },
+    { reasonCode: null },
+  ]);
+  const byCode = new Map(withLines.map((r) => [r.code, r]));
+  assert.equal(byCode.get("KHAC")?.count, 2);
+  assert.equal(byCode.get("MA_BI_TACH")?.count, 1);
+  assert.equal(byCode.get("HANG_VE_CHUA_NHAP")?.count, 0);
+  assert.equal(byCode.get("LECH_TON_CHO_KIEM_KE")?.count, 0);
+  assert.equal(byCode.get("ZQX_LA")?.count, 1, "mã lạ vẫn được đếm, nhãn giữ nguyên văn");
+  assert.equal(byCode.get("ZQX_LA")?.label, "ZQX_LA");
+  assert.equal(byCode.get(null)?.count, 1);
+  assert.equal(byCode.get(null)?.label, "Chưa ghi lý do");
+  assert.equal(
+    withLines.reduce((sum, r) => sum + r.count, 0),
+    5,
+    "tổng count bằng đúng số dòng đầu vào",
+  );
+}
+
+assert.deepEqual(compareSalesPace(5, 3), { diff: 2, trend: "up" });
+assert.deepEqual(compareSalesPace(3, 5), { diff: -2, trend: "down" });
+assert.deepEqual(compareSalesPace(4, 4), { diff: 0, trend: "same" });
+assert.deepEqual(compareSalesPace(7, 0), { diff: 7, trend: "up" }, "hôm qua = 0 không được chia nổ");
 
 // Ghi chú KiotViet thật: dòng 1 là tên + địa chỉ, dòng 2 là SĐT.
 assert.equal(
