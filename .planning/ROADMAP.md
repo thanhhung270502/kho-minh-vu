@@ -36,7 +36,7 @@ sau cần dùng ngay.
 - [x] **Phase 6: Kiểm kê & Go-live** - Kiểm kê (đếm điện thoại/máy tính/Excel), đặt tồn đầu kỳ, tra cứu lịch sử KiotViet — hệ thống sẵn sàng thay KiotViet (completed 2026-09-25)
 - [ ] **Phase 7: Trang tổng quan** - Tồn theo nhóm/công đoạn, hàng không luân chuyển, biểu đồ nhập–xuất, giá trị tồn, báo cáo xuất âm
 - [ ] **Phase 8: Mobile & Chuyển kho** - Màn xuất và màn tồn dùng trên điện thoại, thêm dòng bằng ô tìm, chuyển kho
-- [ ] **Phase 9: Quản lý hình ảnh** - Upload và hiển thị ảnh mã hàng lưu trên Google Drive qua Apps Script, lớp lưu trữ trừu tượng để sau chuyển cloud không đổi giao diện
+- [x] **Phase 9: Quản lý hình ảnh** - Upload và hiển thị ảnh mã hàng lưu trên Google Drive qua Apps Script, lớp lưu trữ trừu tượng để sau chuyển cloud không đổi giao diện (completed 2026-09-26)
 
 ## Phase Details
 
@@ -349,7 +349,7 @@ Plans:
 
 **Wave 5** *(blocked on Wave 4 completion)*
 
-- [ ] 09-13-PLAN.md — [CHECKPOINT] thiết lập Apps Script, kiểm chứng hệ thật, UAT, chép toàn bộ ảnh KiotViet
+- [x] 09-13-PLAN.md — [CHECKPOINT] thiết lập Apps Script, kiểm chứng hệ thật, UAT, chép toàn bộ ảnh KiotViet
 
 **UI hint**: yes
 
@@ -368,4 +368,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. Kiểm kê & Go-live | 16/16 | Complete   | 2026-09-25 |
 | 7. Trang tổng quan | 0/TBD | Not started | - |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |
-| 9. Quản lý hình ảnh | 12/13 | In Progress|  |
+| 9. Quản lý hình ảnh | 13/13 | Complete   | 2026-09-26 |
