@@ -293,7 +293,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 07-05-PLAN.md — [BLOCKING] đẩy 0068-0070 lên phonzyruoalimgaovljm (MCP, không qua .env.local sai), sinh lại kiểu, chạy toàn bộ pgTAP
+- [x] 07-05-PLAN.md — [BLOCKING] đẩy 0068-0070 lên phonzyruoalimgaovljm (MCP, không qua .env.local sai), sinh lại kiểu, chạy toàn bộ pgTAP
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -337,5 +337,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 4. Đơn đặt hàng & Phiếu xuất | 0/TBD | Not started | - |
 | 5. Tồn kho & Tổng quan | 12/12 | Executed — chờ verify |  |
 | 6. Kiểm kê & Go-live | 16/16 | Complete   | 2026-09-25 |
-| 7. Trang tổng quan | 4/9 | In Progress|  |
+| 7. Trang tổng quan | 5/9 | In Progress|  |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |
