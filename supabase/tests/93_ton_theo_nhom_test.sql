@@ -268,7 +268,7 @@ select is(
 -- 8. Tổng tong_ma mọi dòng (kể cả nhom_id null) = tổng số mã đang kinh doanh
 -- (tong_so_dong của danh_sach_ton_kho, không phụ thuộc p_kich_thuoc).
 select is(
-  (select coalesce(sum(tong_ma), 0) from public.ton_theo_nhom('nhom')),
+  (select coalesce(sum(tong_ma), 0)::bigint from public.ton_theo_nhom('nhom')),
   (select tong_so_dong from public.danh_sach_ton_kho(p_kich_thuoc := 1)),
   'D-08: tổng tong_ma mọi dòng (kể cả chưa có nhóm) = tong_so_dong của danh_sach_ton_kho'
 );
@@ -278,7 +278,7 @@ select is(
 -- ---------------------------------------------------------------------------
 select throws_ok(
   $$select * from public.ton_theo_nhom('khac')$$,
-  '22023',
+  '22023', null,
   'p_theo ngoài nhom/cong_doan bị từ chối 22023'
 );
 
@@ -289,7 +289,7 @@ select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select throws_ok(
   $$select * from public.ton_theo_nhom('nhom')$$,
-  '42501',
+  '42501', null,
   'D-12: văn phòng gọi thẳng RPC bị chặn 42501'
 );
 
@@ -297,7 +297,7 @@ select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 select throws_ok(
   $$select * from public.ton_theo_nhom('nhom')$$,
-  '42501',
+  '42501', null,
   'D-12: thủ kho gọi thẳng RPC bị chặn 42501'
 );
 
@@ -305,7 +305,7 @@ select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('chixem@khominhvu.local');
 select throws_ok(
   $$select * from public.ton_theo_nhom('nhom')$$,
-  '42501',
+  '42501', null,
   'D-12: chỉ xem gọi thẳng RPC bị chặn 42501'
 );
 

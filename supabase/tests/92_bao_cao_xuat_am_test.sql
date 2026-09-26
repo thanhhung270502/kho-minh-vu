@@ -80,8 +80,10 @@ select
 
 -- Chứng từ: N1 nhập (nền), X6 xuất ngày 05-09, X1..X5 + T1 xuất/trả ngày 05-10.
 -- T1 (TRA_NCC) bắt buộc chung_tu_goc_id (ck_tra_hang_co_goc) -> trỏ về N1.
+-- Dòng đầu của union ép kiểu tường minh: chuỗi trơn trong union all bị suy ra
+-- là text, mà text -> enum/date không có cast ngầm khi insert (42804).
 insert into public.chung_tu (id, so_ct, loai_ct, ngay_ct, kho_id, trang_thai, ly_do_xuat_am, ghi_chu_ly_do, nguoi_tao_id, chung_tu_goc_id)
-select t_ct.n1, 'ZQX-XA-N1', 'NHAP',    '2091-05-09', t_xa.k1, 'HOAN_THANH', null,                    null,             t_xa.vp, null   from t_ct, t_xa
+select t_ct.n1, 'ZQX-XA-N1', 'NHAP'::public.loai_ct, '2091-05-09'::date, t_xa.k1, 'HOAN_THANH'::public.trang_thai_ct, null::text,                    null::text,       t_xa.vp, null::uuid from t_ct, t_xa
 union all
 select t_ct.x6, 'ZQX-XA-X6', 'XUAT',    '2091-05-09', t_xa.k1, 'HOAN_THANH', 'KHAC',                  null,             t_xa.vp, null   from t_ct, t_xa
 union all
@@ -237,7 +239,7 @@ select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select throws_ok(
   $$select * from public.bao_cao_xuat_am('2091-05-10')$$,
-  '42501',
+  '42501', null,
   'D-12: văn phòng gọi thẳng RPC bị chặn 42501'
 );
 
@@ -245,7 +247,7 @@ select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 select throws_ok(
   $$select * from public.bao_cao_xuat_am('2091-05-10')$$,
-  '42501',
+  '42501', null,
   'D-12: thủ kho gọi thẳng RPC bị chặn 42501'
 );
 
@@ -253,7 +255,7 @@ select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('chixem@khominhvu.local');
 select throws_ok(
   $$select * from public.bao_cao_xuat_am('2091-05-10')$$,
-  '42501',
+  '42501', null,
   'D-12: chỉ xem gọi thẳng RPC bị chặn 42501'
 );
 

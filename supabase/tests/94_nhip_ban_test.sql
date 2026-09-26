@@ -80,8 +80,10 @@ select
   uuid_generate_v4() as p8;
 grant select on t_nb to authenticated;
 
+-- Dòng đầu của union ép kiểu tường minh: chuỗi trơn trong union all bị suy ra
+-- là text, mà text -> enum/date không có cast ngầm khi insert (42804).
 insert into public.chung_tu (id, so_ct, loai_ct, ngay_ct, kho_id, trang_thai)
-select p1, 'ZQX-NB-P1', 'XUAT', '2092-03-15', k1, 'HOAN_THANH' from t_nb
+select p1, 'ZQX-NB-P1', 'XUAT'::public.loai_ct, '2092-03-15'::date, k1, 'HOAN_THANH'::public.trang_thai_ct from t_nb
 union all select p2, 'ZQX-NB-P2', 'XUAT', '2092-03-15', k1, 'HOAN_THANH' from t_nb
 union all select p3, 'ZQX-NB-P3', 'XUAT', '2092-03-15', k1, 'DA_HUY'     from t_nb
 union all select p4, 'ZQX-NB-P4', 'XUAT', '2092-03-15', k1, 'NHAP_LIEU'  from t_nb
@@ -189,7 +191,7 @@ select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select throws_ok(
   $$select * from public.nhip_ban('2092-03-15')$$,
-  '42501',
+  '42501', null,
   'D-12: văn phòng gọi thẳng RPC bị chặn 42501'
 );
 
@@ -197,7 +199,7 @@ select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 select throws_ok(
   $$select * from public.nhip_ban('2092-03-15')$$,
-  '42501',
+  '42501', null,
   'D-12: thủ kho gọi thẳng RPC bị chặn 42501'
 );
 
@@ -205,7 +207,7 @@ select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('chixem@khominhvu.local');
 select throws_ok(
   $$select * from public.nhip_ban('2092-03-15')$$,
-  '42501',
+  '42501', null,
   'D-12: chỉ xem gọi thẳng RPC bị chặn 42501'
 );
 
