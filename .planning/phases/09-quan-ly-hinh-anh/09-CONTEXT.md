@@ -80,6 +80,14 @@ KHÔNG thuộc phase này: ảnh chứng từ, thumbnail ở ô tìm mã / dòng
   sắp thứ tự.
 - **D-21:** Xóa ảnh là **xóa mềm** trong DB; file Drive chuyển vào thùng rác Drive (không xóa hẳn).
 
+### Chốt thêm sau research (26/09)
+- **D-22:** Người dùng cho phép khai báo `sharp` làm **devDependency**, CHỈ dùng trong script chép
+  ảnh KiotViet (bản trùng với bản Next.js đang kéo về). Không import `sharp` trong `src/`.
+- **D-23:** `/anh/<id>` KHÔNG dùng `Cache-Control: public` / `s-maxage` (CDN Vercel không phân
+  biệt cookie phiên → lộ ảnh cho người chưa đăng nhập). Dùng `private, max-age=…, immutable`
+  cho trình duyệt + cache phía server cho chặng gọi Apps Script; mỗi request vẫn `getUser()`.
+  (Research 09-RESEARCH.md, Key Finding 1 — thay cho câu "cache dài hạn để CDN Vercel giữ" ở D-06.)
+
 ### Claude's Discretion
 - Luồng tải nhiều ảnh cùng lúc (chọn nhiều file / chụp liên tiếp), thanh tiến độ từng ảnh
 - Xử lý ảnh HEIC từ iPhone (chuyển được thì chuyển, không thì báo lỗi đọc hiểu được)
