@@ -19,6 +19,7 @@ import {
 } from "../src/features/stock-in/schemas/receipt.schema";
 import {
   DEFAULT_PRODUCT_FILTER,
+  countActiveFilters,
   readFilterFromUrl,
   writeFilterToUrl,
   toListRpcArgs,
@@ -161,6 +162,7 @@ const sampleFilter: ProductFilter = {
   stockStatus: "duoi_dinh_muc",
   tradingStatus: "inactive",
   needsReview: true,
+  hasImage: "without",
   sortBy: "totalStock",
   sortDir: "desc",
   page: 3,
@@ -181,6 +183,42 @@ assert.equal(
 );
 assert.equal(toListRpcArgs(DEFAULT_PRODUCT_FILTER).p_dang_kinh_doanh, true);
 assert.equal(toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, needsReview: false }).p_can_ra, undefined);
+
+// --- Bộ lọc "Hình ảnh" (Phase 9, 09-08, D-18, ANH-04) ----------------------
+assert.equal(readFilterFromUrl(new URLSearchParams("anh=co")).hasImage, "with", "?anh=co đọc thành with");
+assert.equal(readFilterFromUrl(new URLSearchParams("anh=chua")).hasImage, "without", "?anh=chua đọc thành without");
+assert.equal(readFilterFromUrl(new URLSearchParams("anh=xyz")).hasImage, null, "giá trị anh lạ bị bỏ");
+assert.equal(readFilterFromUrl(new URLSearchParams("")).hasImage, null, "không có khóa anh thì null");
+assert.equal(
+  writeFilterToUrl({ ...DEFAULT_PRODUCT_FILTER, hasImage: "with" }).get("anh"),
+  "co",
+  "hasImage with ghi ?anh=co",
+);
+assert.equal(
+  writeFilterToUrl({ ...DEFAULT_PRODUCT_FILTER, hasImage: "without" }).get("anh"),
+  "chua",
+  "hasImage without ghi ?anh=chua",
+);
+assert.equal(
+  toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, hasImage: "with" }).p_co_anh,
+  true,
+  "hasImage with -> p_co_anh true",
+);
+assert.equal(
+  toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, hasImage: "without" }).p_co_anh,
+  false,
+  "hasImage without -> p_co_anh false",
+);
+assert.equal(
+  toListRpcArgs(DEFAULT_PRODUCT_FILTER).p_co_anh,
+  undefined,
+  "hasImage mặc định null -> p_co_anh undefined",
+);
+assert.equal(
+  countActiveFilters({ ...DEFAULT_PRODUCT_FILTER, hasImage: "without" }),
+  1,
+  "ô Hình ảnh tính vào số điều kiện đang bật",
+);
 
 // --- Bộ lọc màn tồn kho (Phase 5, 05-06) -----------------------------------
 const warehouseUuid = "33333333-3333-4333-8333-333333333333";
