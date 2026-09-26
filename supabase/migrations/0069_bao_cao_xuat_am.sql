@@ -1,5 +1,5 @@
 -- =============================================================================
--- 0068 — RPC bao_cao_xuat_am(p_ngay): báo cáo xuất âm theo ngày (TQAN-06)
+-- 0069 — RPC bao_cao_xuat_am(p_ngay): báo cáo xuất âm theo ngày (TQAN-06)
 --
 -- Không có cột lũy kế nào sẵn trên kho_movement (sổ cái append-only, chỉ ghi
 -- so_luong dương/âm của từng dòng — xem 0008_so_cai_ton_kho.sql). "Tồn sau"

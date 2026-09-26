@@ -1,5 +1,5 @@
 -- =============================================================================
--- 0070 — RPC nhip_ban(p_ngay): nhịp bán hôm nay so với hôm qua (TQAN-07).
+-- 0071 — RPC nhip_ban(p_ngay): nhịp bán hôm nay so với hôm qua (TQAN-07).
 --
 -- Nỗi đau C — quản lý không biết hôm nay bán nhanh hay chậm. Bản hẹp thay cho
 -- biểu đồ 30 ngày (TQAN-04 đã dời, hệ mới chưa chạy đủ dữ liệu). Chỉ đếm số

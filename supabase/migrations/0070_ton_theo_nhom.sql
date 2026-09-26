@@ -1,5 +1,5 @@
 -- =============================================================================
--- 0069 — RPC ton_theo_nhom(p_theo, p_kho_id): đếm mã theo nhóm hàng / công
+-- 0070 — RPC ton_theo_nhom(p_theo, p_kho_id): đếm mã theo nhóm hàng / công
 -- đoạn theo trạng thái tồn (TQAN-01), để trang tổng quan bấm một con số là mở
 -- `/ton-kho` lọc sẵn với ĐÚNG số dòng đó (D-08).
 --
