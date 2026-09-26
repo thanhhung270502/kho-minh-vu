@@ -44,6 +44,12 @@ const URL_TO_TRADING_STATUS: Record<string, TradingStatus> = {
   tat_ca: "all",
 };
 
+export type ImageFilter = "with" | "without";
+
+/** Giá trị tham số URL `anh` — bề mặt người dùng, tiếng Việt không dấu (D-18). */
+const IMAGE_FILTER_TO_URL: Record<ImageFilter, string> = { with: "co", without: "chua" };
+const URL_TO_IMAGE_FILTER: Record<string, ImageFilter> = { co: "with", chua: "without" };
+
 export type ProductFilter = {
   q: string;
   categoryId: string | null;
@@ -52,6 +58,7 @@ export type ProductFilter = {
   stockStatus: StockStatus | null;
   tradingStatus: TradingStatus;
   needsReview: boolean;
+  hasImage: ImageFilter | null;
   sortBy: SortField | null;
   sortDir: "asc" | "desc";
   page: number;
@@ -66,6 +73,7 @@ export const DEFAULT_PRODUCT_FILTER: ProductFilter = {
   stockStatus: null,
   tradingStatus: "active",
   needsReview: false,
+  hasImage: null,
   sortBy: null,
   sortDir: "asc",
   page: 1,
@@ -82,6 +90,7 @@ export function countActiveFilters(filter: ProductFilter): number {
   if (filter.unitId !== null) count++;
   if (filter.stockStatus !== null) count++;
   if (filter.needsReview) count++;
+  if (filter.hasImage !== null) count++;
   if (filter.tradingStatus !== DEFAULT_PRODUCT_FILTER.tradingStatus) count++;
   return count;
 }
@@ -112,6 +121,7 @@ export function readFilterFromUrl(
   const sort = params.get("sap_xep");
   const trading = params.get("kinh_doanh");
   const direction = params.get("sortDir");
+  const image = params.get("anh");
 
   return {
     q: params.get("q")?.trim() ?? "",
@@ -125,6 +135,7 @@ export function readFilterFromUrl(
       (trading ? URL_TO_TRADING_STATUS[trading] : undefined) ??
       DEFAULT_PRODUCT_FILTER.tradingStatus,
     needsReview: params.get("can_ra") === "1",
+    hasImage: (image ? URL_TO_IMAGE_FILTER[image] : undefined) ?? null,
     sortBy: (sort ? COLUMN_TO_SORT_FIELD[sort] : undefined) ?? null,
     sortDir: direction === "desc" ? "desc" : "asc",
     page: readInt("trang", 1, 1, 100_000),
@@ -144,6 +155,7 @@ export function writeFilterToUrl(filter: ProductFilter): URLSearchParams {
     params.set("kinh_doanh", TRADING_STATUS_TO_URL[filter.tradingStatus]);
   }
   if (filter.needsReview) params.set("can_ra", "1");
+  if (filter.hasImage) params.set("anh", IMAGE_FILTER_TO_URL[filter.hasImage]);
   if (filter.sortBy) params.set("sap_xep", SORT_FIELD_TO_COLUMN[filter.sortBy]);
   if (filter.sortDir !== DEFAULT_PRODUCT_FILTER.sortDir) {
     params.set("sortDir", filter.sortDir);
@@ -168,6 +180,7 @@ export function toListRpcArgs(filter: ProductFilter): ListArgs {
     p_trang_thai_ton: filter.stockStatus ?? undefined,
     p_dang_kinh_doanh: filter.tradingStatus === "active",
     p_can_ra: filter.needsReview ? true : undefined,
+    p_co_anh: filter.hasImage === null ? undefined : filter.hasImage === "with",
     p_sap_xep: filter.sortBy ? SORT_FIELD_TO_COLUMN[filter.sortBy] : undefined,
     p_huong: filter.sortDir,
     p_trang: filter.page,
