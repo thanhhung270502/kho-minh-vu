@@ -33,7 +33,8 @@ sau cần dùng ngay.
 - [ ] **Phase 3: Phiếu nhập** - Luồng chứng từ hoàn chỉnh đầu tiên: tạo, thêm dòng, ghi sổ, hủy đảo, in — giá vốn bình quân chạy thật
 - [ ] **Phase 4: Đơn đặt hàng & Phiếu xuất** - Nhân bản cơ chế chứng từ cho chiều xuất, đơn đặt → duyệt → in đi lấy hàng → phiếu xuất, chạy trọn luồng trên máy tính văn phòng
 - [ ] **Phase 5: Tồn kho & Thẻ kho** - Tồn theo mã × kho, thẻ kho có tồn lũy kế, đề xuất định mức và cảnh báo sắp hết
-- [x] **Phase 6: Kiểm kê & Go-live** - Kiểm kê (đếm điện thoại/máy tính/Excel), đặt tồn đầu kỳ, tra cứu lịch sử KiotViet — hệ thống sẵn sàng thay KiotViet (completed 2026-09-25)
+- [x] **Phase 6: Kiểm kê & Go-live** - Kiểm kê (đếm điện thoại/máy tính/Excel), đặt tồn đầu kỳ, tra cứu lịch sử KiotViet — hệ thống sẵn sàng thay KiotViet
+ (completed 2026-09-25)
 - [ ] **Phase 7: Trang tổng quan** - Nhịp bán hôm nay/hôm qua, báo cáo xuất âm, tồn theo nhóm/công đoạn (chỉ quản lý)
 - [ ] **Phase 8: Mobile & Chuyển kho** - Màn xuất và màn tồn dùng trên điện thoại, thêm dòng bằng ô tìm, chuyển kho
 
@@ -281,7 +282,31 @@ lý do gì, bán hôm nay nhanh hay chậm, và nhóm hàng nào đang hết/âm
   3. Quản lý thấy tồn theo nhóm hàng và theo công đoạn dưới dạng số mã (tổng/còn/hết/âm/dưới định mức), lọc được theo kho, bấm số mở `/ton-kho` lọc sẵn và số dòng khớp
   4. Văn phòng, thủ kho, chỉ xem vào `/` được chuyển sang màn làm việc chính; gọi thẳng RPC báo cáo bị database từ chối
 
-**Plans**: TBD
+**Plans**: 9 plans
+Plans:
+**Wave 1**
+
+- [ ] 07-01-PLAN.md — DB RPC bao_cao_xuat_am (lũy kế sổ cái theo kho × mã) + pgTAP 92
+- [ ] 07-02-PLAN.md — DB RPC ton_theo_nhom khớp danh_sach_ton_kho (0067) + pgTAP 93 đối chiếu chéo
+- [ ] 07-03-PLAN.md — DB RPC nhip_ban hôm nay/hôm qua + pgTAP 94
+- [ ] 07-04-PLAN.md — hàm thuần: trang chủ theo vai trò, ẩn menu Tổng quan, URL drill-down /ton-kho, đếm theo lý do, so nhịp bán
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 07-05-PLAN.md — [BLOCKING] đẩy 0068-0070 lên phonzyruoalimgaovljm (MCP, không qua .env.local sai), sinh lại kiểu, chạy toàn bộ pgTAP
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [ ] 07-06-PLAN.md — lớp dữ liệu features/dashboard: mapper, api, keys, hooks + Làm mới
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [ ] 07-07-PLAN.md — thẻ nhịp bán + khối xuất âm (chọn ngày, đếm theo lý do, bảng mở phiếu)
+- [ ] 07-08-PLAN.md — khối tồn theo nhóm/công đoạn (hai tab, lọc kho, số bấm mở /ton-kho)
+
+**Wave 5** *(blocked on Wave 4 completion)*
+
+- [ ] 07-09-PLAN.md — ghép trang /, điều hướng theo vai trò, ma trận quyền route, kiểm mắt (có checkpoint)
 **UI hint**: yes
 
 ### Phase 8: Mobile & Chuyển kho
