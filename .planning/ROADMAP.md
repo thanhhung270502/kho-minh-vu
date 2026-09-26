@@ -300,7 +300,7 @@ Plans:
 
 **Goal**: Văn phòng và thủ kho chụp/tải ảnh mã hàng (và ảnh chứng từ nếu chốt ở bước discuss) và xem lại ngay trong app, không tốn tiền cloud — ảnh nằm trên Google Drive, nhưng database và giao diện không phụ thuộc Drive để sau này chuyển sang cloud chỉ bằng một script copy.
 **Depends on**: Phase 2 (chi tiết mã hàng là nơi gắn ảnh)
-**Requirements**: chưa có mã — chốt ở bước discuss (câu còn treo: chỉ ảnh mã hàng, hay cả ảnh chứng từ)
+**Requirements**: ANH-01, ANH-02, ANH-03, ANH-04, ANH-05, ANH-06 (chỉ ảnh mã hàng — chốt ở discuss 26/09, xem 09-CONTEXT.md)
 
 **Hướng kỹ thuật đã bàn** (chi tiết chốt ở discuss/plan):
 
