@@ -3,7 +3,7 @@ status: complete
 phase: 05-ton-kho-tong-quan
 source: [05-05-SUMMARY.md, 05-06-SUMMARY.md, 05-07-SUMMARY.md, 05-08-SUMMARY.md, 05-09-SUMMARY.md, 05-10-SUMMARY.md, 05-11-SUMMARY.md]
 started: 2026-09-21T15:20:00Z
-updated: 2026-09-25T08:00:00Z
+updated: 2026-09-26T02:00:00Z
 ---
 
 ## Current Test
@@ -44,7 +44,9 @@ ghi_chu: "Cảnh báo 'chỉ trải 10 ngày' + cột Căn cứ (Theo lịch s�
 
 ### 7. Danh sách dưới định mức
 expected: Mở /ton-kho?ton=duoi_dinh_muc (hoặc chọn Tồn = "Dưới định mức"): ra danh sách mã, không rỗng, mỗi dòng có nhãn cam "Dưới định mức" ở cột Tổng.
-result: issue
+result: pass
+retest: "26/09 sau migration 0067 — danh_sach_ton_kho và danh_sach_san_pham lọc duoi_dinh_muc trả rỗng (3 mã có định mức đều trên mức), 2 mã tồn âm vẫn ra ở lọc 'am'"
+first_result: issue
 reported: "Claude kiểm: /ton-kho?ton=duoi_dinh_muc ra 2 mã YE15-35FZĐ-PP (-1) và YE19-46-1305-S (-6) — cả hai CHƯA đặt định mức (—), không có nhãn cam; ba mã vừa duyệt đều tồn trên định mức nên đúng là không lọt."
 severity: major
 
@@ -66,8 +68,8 @@ ghi_chu: "Qua đúng menu Excel ở /danh-muc: Nhập từ Excel với file xu�
 ## Summary
 
 total: 10
-passed: 9
-issues: 1
+passed: 10
+issues: 0
 pending: 0
 skipped: 0
 
@@ -75,7 +77,8 @@ skipped: 0
 
 ```yaml
 - truth: "Lọc \"Dưới định mức\" chỉ ra mã có định mức và tồn thấp hơn định mức"
-  status: failed
+  status: resolved
+  fix: "0067 (áp lên kho-vu-tru, md5 lịch sử khớp file) + pgTAP 32/41 đỏ rồi xanh"
   reason: "DB danh_sach_ton_kho lọc `l.tong < l.ton_toi_thieu` với ton_toi_thieu mặc định 0 → mọi mã tồn âm chưa đặt định mức đều lọt; giao diện (stock-columns.tsx isBelowMinimum) lại đòi minStock > 0 nên không gắn nhãn — lệch hai tầng"
   severity: major
   test: 7
@@ -87,3 +90,4 @@ skipped: 0
 
 - 25/09: ĐÃ NẠP TỒN TẠM THẬT (DC26-000001, 2.901 mã, 389.671) theo chốt của người dùng — bước trước go-live, kiểm kê đầu kỳ sẽ đè lên. Đã duyệt định mức 3 mã. Hai việc này KHÔNG hoàn tác.
 - File KiotViet đưa vào trang qua máy chủ tĩnh tạm (127.0.0.1:8799, CORS chỉ localhost:3000) trong scratchpad, đã tắt và xóa bản sao sau khi dùng.
+- 26/09: pgTAP toàn bộ chạy trên cloud bằng psql + DATABASE_URL: 32/34 file xanh, 508 assert. Hai file đỏ KHÔNG liên quan 0067: 36 (A2) và 39 (E5) giả định vanphong chưa bật duyet_kiem_ke — tài khoản này đang bật từ UAT Phase 6.
