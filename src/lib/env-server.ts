@@ -39,3 +39,34 @@ export function getServerEnv() {
 
   return parsed.data;
 }
+
+/**
+ * Biến môi trường cho lớp lưu ảnh mã hàng qua Google Drive/Apps Script — D-07.
+ * TUYỆT ĐỐI không NEXT_PUBLIC_: lộ secret là ai cũng ghi/xóa được file trên Drive
+ * của hệ thống. Đọc lười, không parse lúc import, để `next build` chạy khi chưa khai.
+ */
+const appsScriptSchema = z.object({
+  APPS_SCRIPT_URL: z
+    .string()
+    .url("APPS_SCRIPT_URL phải là URL web app kết thúc /exec")
+    .refine((u) => u.endsWith("/exec"), "APPS_SCRIPT_URL phải kết thúc bằng /exec"),
+  APPS_SCRIPT_SECRET: z.string().min(16, "APPS_SCRIPT_SECRET quá ngắn (tối thiểu 16 ký tự)"),
+});
+
+export function getAppsScriptEnv(): { APPS_SCRIPT_URL: string; APPS_SCRIPT_SECRET: string } {
+  // Dùng `||` chứ không `??` — cùng lý do với getServerEnv() ở trên (bẫy 17).
+  const parsed = appsScriptSchema.safeParse({
+    APPS_SCRIPT_URL: process.env.APPS_SCRIPT_URL || undefined,
+    APPS_SCRIPT_SECRET: process.env.APPS_SCRIPT_SECRET || undefined,
+  });
+
+  if (!parsed.success) {
+    throw new Error(
+      "Chưa cấu hình lưu ảnh (Apps Script).\n" +
+        "Làm theo apps-script/README.md mục 5-8: khai APPS_SCRIPT_URL và " +
+        "APPS_SCRIPT_SECRET trong .env.local (và Vercel), rồi khởi động lại server.",
+    );
+  }
+
+  return parsed.data;
+}

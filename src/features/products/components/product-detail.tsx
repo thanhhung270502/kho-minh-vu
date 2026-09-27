@@ -64,6 +64,7 @@ export function ProductDetailView({
   id,
   permissions,
   kiotVietHistoryTab,
+  imagesSection,
 }: {
   id: string;
   permissions: ProductDetailPermissions;
@@ -72,6 +73,11 @@ export function ProductDetailView({
    * KHÔNG import feature đó trực tiếp ở đây (luật `src/features/README.md`).
    */
   kiotVietHistoryTab?: ReactNode;
+  /**
+   * Mục "Hình ảnh" (Phase 9) — route ghép sẵn từ feature ảnh, giống
+   * `kiotVietHistoryTab`. KHÔNG import feature `images` trực tiếp ở đây.
+   */
+  imagesSection?: ReactNode;
 }) {
   const detail = useProductDetail(id);
   const stockByWarehouse = useStockByWarehouse(id);
@@ -183,6 +189,8 @@ export function ProductDetailView({
                 { key: "note", label: "Ghi chú", children: product.note ?? "—" },
               ]}
             />
+
+            {imagesSection ? <div className="mt-4">{imagesSection}</div> : null}
 
             <div className="mt-4">
               <h3 className="mb-2 text-sm font-medium">Tồn theo kho</h3>

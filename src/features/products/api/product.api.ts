@@ -1,3 +1,4 @@
+import { fetchPrimaryImageIds } from "@/features/images/api/image.api";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Page } from "@/shared/types";
 import type { Json } from "@/types/database.types";
@@ -37,8 +38,12 @@ export async function fetchProducts(
   if (error) throw error;
 
   const raw = data ?? [];
+  const rows = raw.map(toProductRow);
+  // Ảnh chính không có trong RPC danh sách — một truy vấn riêng cho cả trang
+  // (bẫy 5: không select("*") trên san_pham, đây là bảng hinh_anh nên không liên quan).
+  const primary = await fetchPrimaryImageIds(rows.map((row) => row.id));
   return {
-    rows: raw.map(toProductRow),
+    rows: rows.map((row) => ({ ...row, primaryImageId: primary[row.id] ?? null })),
     total: Number(raw[0]?.tong_so_dong ?? 0),
   };
 }

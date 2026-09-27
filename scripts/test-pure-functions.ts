@@ -19,6 +19,7 @@ import {
 } from "../src/features/stock-in/schemas/receipt.schema";
 import {
   DEFAULT_PRODUCT_FILTER,
+  countActiveFilters,
   readFilterFromUrl,
   writeFilterToUrl,
   toListRpcArgs,
@@ -55,6 +56,14 @@ import {
   type KiotVietHistoryFilter,
 } from "../src/features/kiotviet-history/schemas/history-filter.schema";
 import {
+  scaleToFit,
+  checkPickedFile,
+  safeFileStem,
+  isWebp,
+  detectImageFormat,
+} from "../src/features/images/lib/image-rules";
+import { imageUrl } from "../src/features/images/lib/image-url";
+import {
   filterNavItems,
   splitMobileItems,
   NAV_ITEMS,
@@ -68,6 +77,7 @@ import {
   countNegativeByReason,
   compareSalesPace,
 } from "../src/features/dashboard/lib/dashboard-stats";
+import { parseImageCell, buildCopyPlan } from "./copy-kiotviet-images/parse-image-cell";
 
 assert.equal(removeDiacritics("Đặng Thị Ngọc"), "Dang Thi Ngoc");
 assert.equal(normalizeUsername("  Kim.Chi "), "kim.chi");
@@ -191,6 +201,7 @@ const sampleFilter: ProductFilter = {
   stockStatus: "duoi_dinh_muc",
   tradingStatus: "inactive",
   needsReview: true,
+  hasImage: "without",
   sortBy: "totalStock",
   sortDir: "desc",
   page: 3,
@@ -211,6 +222,42 @@ assert.equal(
 );
 assert.equal(toListRpcArgs(DEFAULT_PRODUCT_FILTER).p_dang_kinh_doanh, true);
 assert.equal(toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, needsReview: false }).p_can_ra, undefined);
+
+// --- Bộ lọc "Hình ảnh" (Phase 9, 09-08, D-18, ANH-04) ----------------------
+assert.equal(readFilterFromUrl(new URLSearchParams("anh=co")).hasImage, "with", "?anh=co đọc thành with");
+assert.equal(readFilterFromUrl(new URLSearchParams("anh=chua")).hasImage, "without", "?anh=chua đọc thành without");
+assert.equal(readFilterFromUrl(new URLSearchParams("anh=xyz")).hasImage, null, "giá trị anh lạ bị bỏ");
+assert.equal(readFilterFromUrl(new URLSearchParams("")).hasImage, null, "không có khóa anh thì null");
+assert.equal(
+  writeFilterToUrl({ ...DEFAULT_PRODUCT_FILTER, hasImage: "with" }).get("anh"),
+  "co",
+  "hasImage with ghi ?anh=co",
+);
+assert.equal(
+  writeFilterToUrl({ ...DEFAULT_PRODUCT_FILTER, hasImage: "without" }).get("anh"),
+  "chua",
+  "hasImage without ghi ?anh=chua",
+);
+assert.equal(
+  toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, hasImage: "with" }).p_co_anh,
+  true,
+  "hasImage with -> p_co_anh true",
+);
+assert.equal(
+  toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, hasImage: "without" }).p_co_anh,
+  false,
+  "hasImage without -> p_co_anh false",
+);
+assert.equal(
+  toListRpcArgs(DEFAULT_PRODUCT_FILTER).p_co_anh,
+  undefined,
+  "hasImage mặc định null -> p_co_anh undefined",
+);
+assert.equal(
+  countActiveFilters({ ...DEFAULT_PRODUCT_FILTER, hasImage: "without" }),
+  1,
+  "ô Hình ảnh tính vào số điều kiện đang bật",
+);
 
 // --- Bộ lọc màn tồn kho (Phase 5, 05-06) -----------------------------------
 const warehouseUuid = "33333333-3333-4333-8333-333333333333";
@@ -616,6 +663,105 @@ async function kiemCsvLoi() {
   assert.ok(labelMatches("dung", "CÔNG TY TNHH TMDV DŨNG PHONG"), "đ/Đ và dấu ngã đều bỏ");
   assert.ok(labelMatches("  kho 1 ", "Kho 1"), "bỏ khoảng trắng hai đầu");
   assert.ok(!labelMatches("xyz", "Kho 1"), "không khớp thì trả false");
+}
+
+// --- Ảnh mã hàng: quy tắc nén và URL (09-03) ---------------------------------
+{
+  assert.deepEqual(scaleToFit(4000, 3000, 1200), { width: 1200, height: 900 }, "thu vừa cạnh dài, giữ tỉ lệ");
+  assert.deepEqual(scaleToFit(800, 600, 1200), { width: 800, height: 600 }, "ảnh nhỏ hơn giới hạn thì không phóng to");
+  assert.deepEqual(scaleToFit(3000, 4000, 300), { width: 225, height: 300 }, "ảnh dọc thu theo cạnh dài nhất");
+  const canhCuc = scaleToFit(1, 5000, 300);
+  assert.ok(canhCuc.width >= 1, "chiều rộng không bao giờ ra 0");
+
+  assert.ok(
+    checkPickedFile({ name: "a.heic", type: "image/heic", size: 1000 })?.title.includes("HEIC"),
+    "nhận HEIC theo type",
+  );
+  assert.ok(
+    checkPickedFile({ name: "IMG_1.HEIC", type: "", size: 1000 })?.title.includes("HEIC"),
+    "nhận HEIC theo đuôi khi type rỗng",
+  );
+  assert.notEqual(checkPickedFile({ name: "a.gif", type: "image/gif", size: 1000 }), null, "định dạng không hỗ trợ bị chặn");
+  assert.notEqual(checkPickedFile({ name: "a.jpg", type: "image/jpeg", size: 0 }), null, "file rỗng bị chặn");
+  assert.notEqual(
+    checkPickedFile({ name: "a.jpg", type: "image/jpeg", size: 31 * 1024 * 1024 }),
+    null,
+    "file quá 30 MB bị chặn",
+  );
+  assert.equal(checkPickedFile({ name: "a.jpg", type: "image/jpeg", size: 2_000_000 }), null, "file hợp lệ qua được");
+
+  assert.equal(safeFileStem("PT/XE 01"), "PT_XE_01", "ký tự không hợp lệ thay bằng gạch dưới");
+  assert.equal(safeFileStem("///"), "ma-hang", "toàn ký tự không hợp lệ thì trả về mặc định");
+  assert.equal(safeFileStem("Á-1"), "A-1", "bỏ dấu tiếng Việt");
+  assert.ok(safeFileStem("A".repeat(200)).length <= 80, "cắt tối đa 80 ký tự");
+
+  assert.equal(isWebp(new Uint8Array([82, 73, 70, 70, 0, 0, 0, 0, 87, 69, 66, 80])), true, "nhận đúng magic byte RIFF/WEBP");
+  assert.equal(isWebp(new Uint8Array([0xff, 0xd8, 0xff, 0xe0])), false, "không phải WebP thì trả false");
+  assert.deepEqual(
+    detectImageFormat(new Uint8Array([82, 73, 70, 70, 0, 0, 0, 0, 87, 69, 66, 80])),
+    { mimeType: "image/webp", extension: "webp" },
+    "WebP từ Chrome/Android",
+  );
+  assert.deepEqual(
+    detectImageFormat(new Uint8Array([0xff, 0xd8, 0xff, 0xe0])),
+    { mimeType: "image/jpeg", extension: "jpg" },
+    "JPEG dự phòng từ iPhone",
+  );
+  assert.equal(detectImageFormat(new Uint8Array([0x89, 0x50, 0x4e, 0x47])), null, "PNG thô không nhận");
+
+  assert.equal(imageUrl("abc"), "/anh/abc", "URL ảnh gốc");
+  assert.equal(imageUrl("abc", "thumb"), "/anh/abc?co=nho", "URL ảnh thumb dùng tham số tiếng Việt không dấu");
+}
+
+// --- Chép ảnh KiotViet (09-12) ----------------------------------------------
+{
+  assert.deepEqual(parseImageCell(null), [], "null trả mảng rỗng");
+  assert.deepEqual(parseImageCell(""), [], "chuỗi rỗng trả mảng rỗng");
+  assert.deepEqual(
+    parseImageCell("https://cdn2-retail-images.kiotviet.vn/a.jpg"),
+    ["https://cdn2-retail-images.kiotviet.vn/a.jpg"],
+    "một URL hợp lệ",
+  );
+  assert.deepEqual(
+    parseImageCell(" https://x/a.jpg , https://x/b.jpg,https://x/a.jpg "),
+    ["https://x/a.jpg", "https://x/b.jpg"],
+    "trim, giữ thứ tự, bỏ trùng",
+  );
+  assert.deepEqual(
+    parseImageCell("abc, ftp://x/y.jpg, https://x/c.jpg"),
+    ["https://x/c.jpg"],
+    "chỉ nhận http/https",
+  );
+
+  const plan = buildCopyPlan(
+    [
+      { code: "A", urls: ["u1", "u2"] },
+      { code: "ZZ", urls: ["u3"] },
+      { code: "B", urls: [] },
+    ],
+    new Map([["A", "id-a"], ["B", "id-b"]]),
+    new Set(["id-a|u1"]),
+  );
+  assert.deepEqual(
+    plan.jobs,
+    [{ productId: "id-a", productCode: "A", url: "u2", order: 1 }],
+    "chỉ còn ảnh chưa chép, order theo vị trí trong ô",
+  );
+  assert.deepEqual(plan.unknownCodes, ["ZZ"], "mã không khớp danh mục");
+  assert.equal(plan.alreadyCopied, 1, "đã chép trước đó");
+  assert.equal(plan.productsWithImages, 2, "mã B không có url không tính");
+  assert.equal(plan.totalImages, 3, "tổng số ảnh trong các dòng có url");
+
+  const planCaseInsensitive = buildCopyPlan(
+    [{ code: " a ", urls: ["u1"] }],
+    new Map([["A", "id-a"]]),
+    new Set(),
+  );
+  assert.deepEqual(
+    planCaseInsensitive.jobs,
+    [{ productId: "id-a", productCode: " a ", url: "u1", order: 0 }],
+    "mã so khớp không phân biệt hoa thường và trim",
+  );
 }
 
 void kiemCsvLoi().then(() => {

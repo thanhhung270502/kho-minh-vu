@@ -116,6 +116,15 @@
 - [ ] **DLIEU-06**: Set tồn đầu kỳ từ kết quả kiểm kê thực tế, không bê số 389.671 từ KiotViet
 - [x] **DLIEU-07**: Lưu 594 dòng nhập và 4.732 dòng hóa đơn cũ vào bảng lưu trữ riêng để tra cứu, không nạp vào `chung_tu`
 
+### Hình ảnh (ANH)
+
+- [ ] **ANH-01**: Người có quyền sửa danh mục (quản lý, văn phòng) thêm ảnh cho mã hàng bằng camera điện thoại hoặc chọn file; một mã có nhiều ảnh, không giới hạn
+- [ ] **ANH-02**: Đặt ảnh chính cho mã (ảnh đầu tiên tự là ảnh chính, đổi được) và xóa mềm ảnh (ảnh chính bị xóa thì ảnh kế tiếp thay)
+- [ ] **ANH-03**: Mọi vai trò đã đăng nhập xem thư viện ảnh trong chi tiết mã và phóng to tại chỗ; ảnh chỉ đọc được qua `/anh/<id>`, chặn bằng RLS + kiểm đăng nhập
+- [ ] **ANH-04**: Bảng danh mục có cột thumbnail ảnh chính (ô xám khi chưa có ảnh) và bộ lọc Có ảnh / Chưa có ảnh
+- [ ] **ANH-05**: Ảnh lưu trên Google Drive qua Apps Script, database chỉ lưu `noi_luu` + khóa; đổi nơi lưu không phải sửa giao diện
+- [ ] **ANH-06**: Chép một lần ảnh mã hàng từ file export KiotViet (1.094 mã) sang nơi lưu mới bằng script chạy lại được, có báo cáo link hỏng / mã không khớp
+
 ## v2 Requirements
 
 ### Công nợ (CNO)
@@ -232,12 +241,18 @@
 | DLIEU-05 | Phase 6 | Closed (không cần) |
 | DLIEU-06 | Phase 6 | Pending |
 | DLIEU-07 | Phase 6 | Complete |
+| ANH-01 | Phase 9 | Pending |
+| ANH-02 | Phase 9 | Pending |
+| ANH-03 | Phase 9 | Pending |
+| ANH-04 | Phase 9 | Pending |
+| ANH-05 | Phase 9 | Pending |
+| ANH-06 | Phase 9 | Pending |
 
 **Coverage:**
-- v1 requirements: 74 total
-- Mapped to phases: 74
+- v1 requirements: 80 total
+- Mapped to phases: 80
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-09-12*
-*Last updated: 2026-09-24 — tách Phase 6 thành 6/7/8 (Office Hours 24/09), 8 phases, 100% coverage*
+*Last updated: 2026-09-26 — thêm ANH-01..06 cho Phase 9 (Quản lý hình ảnh), 9 phases, 100% coverage*

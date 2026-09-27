@@ -38,6 +38,11 @@ export type ProductRow = {
   updatedAt: string;
   /** Tổng số dòng của cả bộ lọc — RPC nhét vào mọi dòng. */
   totalRows: number;
+  /**
+   * Id ảnh chính — KHÔNG đến từ RPC `danh_sach_san_pham`. `fetchProducts` gắn
+   * thêm bằng một truy vấn riêng theo danh sách id của trang (09-11).
+   */
+  primaryImageId: string | null;
 };
 
 export type ProductDetail = ProductRow & {
@@ -171,6 +176,7 @@ export function toProductRow(row: ProductRowDb): ProductRow {
     unitNeedsReview: row.can_ra_dvt,
     updatedAt: row.updated_at,
     totalRows: Number(row.tong_so_dong),
+    primaryImageId: null,
   };
 }
 
@@ -200,6 +206,9 @@ export function toProductDetail(row: ProductDetailDb): ProductDetail {
     updatedAt: row.updated_at,
     // Chi tiết trả đúng một mã — không có khái niệm tổng số dòng.
     totalRows: 1,
+    // Chi tiết mã để null — thư viện ảnh (09-10) tự tải danh sách ảnh, không
+    // cần ảnh chính gắn sẵn ở đây.
+    primaryImageId: null,
     barcode: row.barcode,
     note: row.ghi_chu,
     imageUrl: row.hinh_anh_url,

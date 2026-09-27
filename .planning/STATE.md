@@ -7,7 +7,7 @@ stopped_at: Phase 7 complete (9/9) — ready to discuss Phase 8
 last_updated: 2026-09-27T09:05:51.514Z
 last_activity: 2026-09-27
 progress:
-  total_phases: 8
+  total_phases: 9
   completed_phases: 4
   total_plans: 101
   completed_plans: 68
@@ -492,6 +492,8 @@ và `errorCount > 0` đều đạt. **CHƯA kiểm bằng mắt trên trình duy
 06-15), UAT thật sự chỉ làm được sau đó (xem
 `06-14-SUMMARY.md#Cần-mở-trình-duyệt-kiểm-tra`). Không có auth gate._
 
+_Song song: Phase 09 (quan-ly-hinh-anh) đang thực thi ở phiên khác — theo nhánh origin, plan 6/13 lúc merge 27/09._
+
 ## Performance Metrics
 
 **Velocity:**
@@ -553,6 +555,7 @@ và `errorCount > 0` đều đạt. **CHƯA kiểm bằng mắt trên trình duy
 | Phase 07 P04 | 25min | 2 tasks | 6 files |
 | Phase 07 P06 | 35m | 2 tasks | 4 files |
 | Phase 07 P07 | 30min | 2 tasks | 3 files |
+| Phase 09 P05 | 35min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -655,6 +658,11 @@ Recent decisions affecting current work:
 - [Phase 07]: 07-06: StockByGroupRow.key = nhom_id ?? __none__ vi kieu sinh tu dong ghi string khong null nhung SQL (0070) van co the tra null luc chay that
 - [Phase 07]: 07-06: fetchNegativeStockReport chi nhan p_ngay - RPC bao_cao_xuat_am (0069) khong co tham so p_kho_id
 - [Phase 07]: 07-07: ngay chot SalesPaceCard hien trong noi dung, khong dung Card.extra, tranh doc query.data ngoai QueryState children
+- [Phase 09]: CLI supabase mat quyen Management API tren may nay - dung psql DATABASE_URL de day migration 0068 + chay pgTAP, gen types --db-url thay --project-id
+
+### Roadmap Evolution
+
+- Phase 9 added (2026-09-26): Quản lý hình ảnh — ảnh mã hàng lưu Google Drive qua Apps Script, lớp lưu trữ trừu tượng (`noi_luu`/`khoa_luu`, hiển thị qua `/anh/<id>` có cache) để sau chuyển cloud không đổi giao diện
 
 ### Pending Todos
 

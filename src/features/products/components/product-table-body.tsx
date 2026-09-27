@@ -86,6 +86,8 @@ export function ProductTableBody({
           <SummaryRow
             columns={columns}
             hasSelection={hasSelection}
+            // cột "Ảnh" 56px đứng trước "Mã hàng" — nhãn trải qua cả hai cột
+            labelSpan={2}
             label={`Tổng cộng — ${total.toLocaleString("vi-VN")} mã`}
             totals={{
               totalStock: rows.reduce(
@@ -107,8 +109,8 @@ export function ProductTableBody({
 
       {allStockIsZero ? (
         <Typography.Text type="secondary" className="mt-2 block text-xs">
-          Tồn đang bằng 0 cho mọi mã vì chưa có phiếu nhập — tồn thật được đặt khi kiểm kê
-          đầu kỳ.
+          Tồn đang bằng 0 cho mọi mã vì chưa có phiếu nhập — tồn thật được đặt
+          khi kiểm kê đầu kỳ.
         </Typography.Text>
       ) : null}
     </>

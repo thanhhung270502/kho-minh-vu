@@ -33,6 +33,7 @@ function hasActiveFilter(filter: ProductFilter): boolean {
     filter.stageId !== null ||
     filter.unitId !== null ||
     filter.stockStatus !== null ||
+    filter.hasImage !== null ||
     filter.needsReview ||
     filter.tradingStatus !== DEFAULT_PRODUCT_FILTER.tradingStatus
   );

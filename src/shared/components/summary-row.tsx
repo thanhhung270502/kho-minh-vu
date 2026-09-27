@@ -10,6 +10,8 @@ type Props = {
   hasSelection: boolean;
   /** Nội dung ô đầu tiên, vd "Tổng cộng — 3.266 mã". */
   label: ReactNode;
+  /** Số cột đầu mà nhãn trải qua — bảng có cột ảnh hẹp đứng trước cột mã thì đặt 2. */
+  labelSpan?: number;
   /** dataIndex -> tổng của các dòng ĐANG HIỂN THỊ. */
   totals?: Record<string, number>;
 };
@@ -18,7 +20,13 @@ type Props = {
  * Hàng tổng cộng dựng từ CHÍNH mảng cột truyền cho Table để chỉ số ô không
  * bao giờ lệch khi cột bật/tắt theo quyền (Giá vốn, Sửa) hoặc rowSelection.
  */
-export function SummaryRow({ columns, hasSelection, label, totals = {} }: Props) {
+export function SummaryRow({
+  columns,
+  hasSelection,
+  label,
+  labelSpan = 1,
+  totals = {},
+}: Props) {
   return (
     <Table.Summary fixed="top">
       <Table.Summary.Row className="bg-nen-tong font-semibold">
@@ -32,11 +40,13 @@ export function SummaryRow({ columns, hasSelection, label, totals = {} }: Props)
 
           if (position === 0) {
             return (
-              <Table.Summary.Cell key={key} index={index}>
+              <Table.Summary.Cell key={key} index={index} colSpan={labelSpan}>
                 {label}
               </Table.Summary.Cell>
             );
           }
+
+          if (position < labelSpan) return null;
 
           if (dataIndex && dataIndex in totals) {
             const columnTotal = totals[dataIndex] ?? 0;
