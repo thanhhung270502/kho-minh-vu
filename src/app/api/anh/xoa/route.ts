@@ -59,7 +59,13 @@ export async function POST(request: Request) {
   // ảnh này, không cần revalidateTag riêng). Chuyển file Drive vào thùng rác
   // là dọn dẹp thêm — lỗi ở bước này không hồi lại bản ghi đã xóa (D-21), chỉ
   // báo thật cho người dùng biết qua driveTrashed thay vì nuốt im lặng.
-  const storage = getImageStorage(keys.backend);
+  let storage: ReturnType<typeof getImageStorage>;
+  try {
+    storage = getImageStorage(keys.backend);
+  } catch {
+    // Server chưa cấu hình nơi lưu: bản ghi đã xóa mềm, chỉ file chưa vào thùng rác.
+    return Response.json({ driveTrashed: false });
+  }
   const [full, thumb] = await Promise.allSettled([
     storage.remove(keys.key),
     storage.remove(keys.thumbKey),

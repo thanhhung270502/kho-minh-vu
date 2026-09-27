@@ -8,7 +8,13 @@ export type StorageBackend = "GDRIVE"; // thêm "SUPABASE" | "R2" khi có implem
 
 export type ImageVariant = "full" | "thumb";
 
-export type ImageStorageErrorKind = "forbidden" | "bad_request" | "not_found" | "unavailable";
+// not_configured: server thiếu/sai biến môi trường nơi lưu — lỗi của người vận hành, không phải của người dùng.
+export type ImageStorageErrorKind =
+  | "forbidden"
+  | "bad_request"
+  | "not_found"
+  | "unavailable"
+  | "not_configured";
 
 export class ImageStorageError extends Error {
   constructor(

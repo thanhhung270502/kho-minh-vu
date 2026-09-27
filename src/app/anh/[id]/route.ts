@@ -71,6 +71,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       // Cache — xóa ngay để lần xem kế tiếp thử lại thay vì kẹt lỗi vĩnh viễn.
       revalidateTag(tag, { expire: 0 });
 
+      if (e.kind === "not_configured") {
+        return errorResponse(
+          "Server chưa cấu hình nơi lưu ảnh",
+          "Báo quản trị khai APPS_SCRIPT_URL và APPS_SCRIPT_SECRET trên server rồi deploy lại.",
+          503,
+        );
+      }
       if (e.kind === "not_found") {
         return errorResponse(
           "Không tìm thấy file ảnh",

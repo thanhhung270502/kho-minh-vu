@@ -88,7 +88,12 @@ export async function POST(request: Request) {
 
   const id = crypto.randomUUID();
   const stem = `${safeFileStem(code)}__${id}`;
-  const storage = getImageStorage();
+  let storage: ReturnType<typeof getImageStorage>;
+  try {
+    storage = getImageStorage();
+  } catch (e) {
+    return storageErrorResponse(e);
+  }
 
   let key: string;
   let thumbKey: string;
@@ -146,6 +151,13 @@ export async function POST(request: Request) {
 
 function storageErrorResponse(e: unknown): Response {
   if (e instanceof ImageStorageError) {
+    if (e.kind === "not_configured") {
+      return errorResponse(
+        "Server chưa cấu hình nơi lưu ảnh",
+        "Báo quản trị khai APPS_SCRIPT_URL và APPS_SCRIPT_SECRET trên server rồi deploy lại.",
+        503,
+      );
+    }
     if (e.kind === "forbidden") {
       return errorResponse(
         "Không lưu được ảnh lên nơi lưu",

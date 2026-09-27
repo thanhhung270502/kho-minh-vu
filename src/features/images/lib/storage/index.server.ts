@@ -12,8 +12,18 @@ import { ImageStorageError, type ImageStorage } from "./image-storage";
 
 export function getImageStorage(backend?: string): ImageStorage {
   if (backend === undefined || backend === "GDRIVE") {
-    const { APPS_SCRIPT_URL, APPS_SCRIPT_SECRET } = getAppsScriptEnv();
-    return new GDriveImageStorage({ url: APPS_SCRIPT_URL, secret: APPS_SCRIPT_SECRET });
+    let env: ReturnType<typeof getAppsScriptEnv>;
+    try {
+      env = getAppsScriptEnv();
+    } catch (e) {
+      // Ghi log để người vận hành thấy trong log server; route trả câu dễ hiểu (503).
+      console.error(e);
+      throw new ImageStorageError(
+        "not_configured",
+        e instanceof Error ? e.message : "Chưa cấu hình nơi lưu ảnh",
+      );
+    }
+    return new GDriveImageStorage({ url: env.APPS_SCRIPT_URL, secret: env.APPS_SCRIPT_SECRET });
   }
   throw new ImageStorageError("bad_request", `Chưa hỗ trợ nơi lưu ${backend}`);
 }
