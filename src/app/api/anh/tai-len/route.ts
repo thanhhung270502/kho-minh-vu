@@ -151,6 +151,9 @@ export async function POST(request: Request) {
 
 function storageErrorResponse(e: unknown): Response {
   if (e instanceof ImageStorageError) {
+    // Lý do thật từ Apps Script (vd. "fileName không hợp lệ" khi Apps Script còn bản cũ)
+    // chỉ nằm trong log server — người dùng thấy câu hướng dẫn chung bên dưới.
+    console.error(`[tai-len] nơi lưu từ chối (${e.kind}): ${e.message}`);
     if (e.kind === "not_configured") {
       return errorResponse(
         "Server chưa cấu hình nơi lưu ảnh",

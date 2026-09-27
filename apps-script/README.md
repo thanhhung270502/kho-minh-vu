@@ -99,14 +99,18 @@ Thêm vào `.env.local` (chạy local) **và** Vercel → Settings → Environme
 curl -sL "$APPS_SCRIPT_URL"
 # → {"ok":false,"error":"bad_request","message":"Chỉ nhận POST"}
 
-curl -sL -X POST -H 'Content-Type: application/json' \
-  -d '{"secret":"sai","action":"get","fileId":"x"}' "$APPS_SCRIPT_URL"
+curl -sL -H 'Content-Type: application/json' \
+  --data '{"secret":"sai","action":"get","fileId":"x"}' "$APPS_SCRIPT_URL"
 # → {"ok":false,"error":"forbidden","message":"Sai hoặc thiếu secret"}
 ```
 
 Lưu ý cờ `-L`: Apps Script trả HTTP 302 chuyển hướng sang một URL
 `googleusercontent.com` trước khi trả nội dung thật. `fetch()` của Node tự đi theo
 redirect, nhưng `curl` cần `-L` mới thấy JSON.
+
+**Không dùng `-X POST`**: với `-X`, curl giữ nguyên POST khi đi theo 302 và nhận về
+một trang HTML lỗi của Google. Dùng `--data` (không `-X`) để curl tự chuyển sang GET ở
+bước redirect — giống cách `fetch()` làm.
 
 ## 10. Cập nhật code về sau
 
@@ -118,6 +122,21 @@ npx @google/clasp@latest push -f
 
 Rồi vào trình soạn thảo Apps Script → **Deploy** → **Manage deployments** → bấm biểu
 tượng bút chì trên deployment hiện có → **Version: New version** → **Deploy**.
+
+Kiểm bản mới đã chạy thật chưa — gửi một request hợp lệ về tên file/định dạng nhưng
+dữ liệu rỗng (không tạo file nào):
+
+```bash
+curl -sL -H 'Content-Type: application/json' \
+  --data "{\"secret\":\"$APPS_SCRIPT_SECRET\",\"action\":\"put\",\"folder\":\"san-pham/thumb\",\"fileName\":\"kiem.jpg\",\"mimeType\":\"image/jpeg\",\"base64Data\":\"\"}" \
+  "$APPS_SCRIPT_URL"
+# bản mới → {"ok":false,"error":"bad_request","message":"base64Data thiếu hoặc quá lớn"}
+# bản cũ  → {"ok":false,"error":"bad_request","message":"fileName không hợp lệ"}
+```
+
+Vẫn ra "bản cũ" dù đã push: thường là quên bước New version, hoặc sửa nhầm một
+deployment khác với deployment có URL trong `APPS_SCRIPT_URL` (Manage deployments liệt
+kê từng deployment kèm URL — đối chiếu đúng cái đang dùng).
 
 **KHÔNG bấm "New deployment"** cho việc cập nhật thường — nó sinh ra một URL `/exec`
 khác, buộc phải đổi lại `APPS_SCRIPT_URL` ở mọi nơi (bước 8). Chỉ dùng "New version" để
@@ -148,9 +167,10 @@ cả hai.
 
 `folder` chỉ nhận `"san-pham/goc"` hoặc `"san-pham/thumb"`.
 
-`mimeType` nhận `"image/webp"` hoặc `"image/jpeg"` (đuôi `fileName` tương ứng `.webp` / `.jpg`).
-JPEG là đường dự phòng cho iPhone: Safari và mọi trình duyệt trên iOS (đều chạy WebKit)
-không nén được WebP bằng canvas.
+`mimeType` nhận `"image/webp"`, `"image/jpeg"` hoặc `"image/png"`; đuôi `fileName` là
+`.webp`, `.jpg`/`.jpeg` hoặc `.png`. App nhận nhiều định dạng đầu vào (JPEG, PNG, WebP, GIF,
+BMP, AVIF, HEIC) nhưng luôn nén về WebP trước khi gửi — riêng iPhone nén về JPEG vì Safari
+và mọi trình duyệt trên iOS (đều chạy WebKit) không nén được WebP bằng canvas.
 
 **Response** — LUÔN HTTP 200 (Apps Script không đặt được status tùy ý), JSON:
 

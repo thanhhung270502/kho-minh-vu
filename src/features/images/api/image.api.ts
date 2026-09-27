@@ -94,14 +94,20 @@ const uploadResponseSchema = z.object({
   isPrimary: z.boolean(),
 });
 
+function asNamedFile(blob: Blob, name: string): File {
+  const extension = blob.type === "image/jpeg" ? "jpg" : "webp";
+  return new File([blob], `${name}.${extension}`, { type: blob.type });
+}
+
 export async function uploadProductImage(
   productId: string,
   files: { full: Blob; thumb: Blob },
 ): Promise<{ id: string; isPrimary: boolean }> {
   const form = new FormData();
   form.set("san_pham_id", productId);
-  form.set("goc", new File([files.full], "goc.webp", { type: "image/webp" }));
-  form.set("nho", new File([files.thumb], "nho.webp", { type: "image/webp" }));
+  // Blob là WebP, hoặc JPEG trên iPhone — giữ đúng loại; server vẫn kiểm lại bằng magic bytes.
+  form.set("goc", asNamedFile(files.full, "goc"));
+  form.set("nho", asNamedFile(files.thumb, "nho"));
 
   const response = await fetch("/api/anh/tai-len", { method: "POST", body: form });
   if (!response.ok) {
