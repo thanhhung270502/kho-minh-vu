@@ -66,3 +66,19 @@ vai trò/kho) nên lọt qua `npm run check` và cả UAT Phase 2. Grep `message
 
 **Bản rút gọn để dùng khi code nằm ở `CLAUDE.md` mục "Bẫy đã gặp" số 8–12** (file đó nạp
 vào context mỗi phiên). File này giữ phần bối cảnh và cách phát hiện.
+
+
+## 7. 404 trắng trên route có thật = cache Turbopack cũ (Phase 7)
+
+`scripts/test-route-permissions.ts` báo 14 ô lệch: mọi route `/in` trả 404 với phiên
+hợp lệ, dù `.next/app-path-routes-manifest.json` vẫn có route đó. Cách nhận ra: đó
+là trang 404 **mặc định** của Next, không có AppShell, và tiêu đề không phải
+metadata của route. Nghĩa là code của trang chưa hề chạy, chứ trang không tự gọi
+`notFound()`. Cách chữa: `preview_stop` → `rm -rf .next/dev` → `preview_start`, sau
+đó được 150/150. Đừng sửa code chỉ vì triệu chứng này.
+
+## 8. `refetchOnWindowFocus: true` toàn cục
+
+`src/providers/query-client.ts` bật sẵn tùy chọn này (staleTime 30 giây). Khi kiểm
+"không polling", việc cửa sổ lấy lại focus (chụp màn hình, chuyển tab) sẽ sinh thêm
+request, và đó KHÔNG phải polling. Kiểm bằng cách grep `refetchInterval`.

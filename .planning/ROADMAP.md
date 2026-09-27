@@ -337,5 +337,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 4. Đơn đặt hàng & Phiếu xuất | 0/TBD | Not started | - |
 | 5. Tồn kho & Tổng quan | 12/12 | Executed — chờ verify |  |
 | 6. Kiểm kê & Go-live | 16/16 | Complete   | 2026-09-25 |
-| 7. Trang tổng quan | 9/9 | Complete   | 2026-09-27 |
+| 7. Trang tổng quan | 9/9 | Complete    | 2026-09-27 |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |

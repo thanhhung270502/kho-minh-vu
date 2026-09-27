@@ -196,3 +196,30 @@ npm run test:dong-thoi    # race condition giá vốn + đánh số
 npm run verify:hook       # hook thật sự bơm claim khi đăng nhập
 npm run check             # typecheck + lint + build
 ```
+
+---
+
+## 14. Kiểm tĩnh pgTAP bỏ sót lỗi — CHẠY THỬ trước khi đẩy (Phase 7)
+
+Ba file pgTAP của Phase 7 do agent con viết đều "trace tay khớp 100%" nhưng khi chạy
+thật thì cả ba cùng đỏ, vì 4 lỗi mà đọc code không bắt được:
+
+- `throws_ok(sql, '42501', 'mô tả')` dùng 3 tham số thì tham số thứ ba bị hiểu là
+  **nội dung lỗi mong đợi**, không phải mô tả. Phải viết đủ 4 tham số
+  `throws_ok(sql, '42501', null, 'mô tả')`, đúng khuôn của `30_rls_test`.
+- Chuỗi trơn trong `insert … select … union all select …` bị suy ra kiểu `text`, mà
+  text sang enum/date không có cast ngầm khi insert (42804). Ép kiểu tường minh ở
+  **dòng đầu** của union: `'XUAT'::public.loai_ct`, `'2092-03-15'::date`, `null::uuid`.
+- `sum(bigint)` trả `numeric`, nên `is(numeric, bigint)` không tìm thấy hàm (42883).
+  Viết `sum(x)::bigint`.
+
+**Chạy thử không để lại dấu:** trong MỘT lệnh MCP `execute_sql`, làm lần lượt
+`begin` → tạo temp table `_tap(l text, t timestamptz default clock_timestamp())` →
+`grant all … to public` → nguyên văn migration → test, trong đó đổi mỗi
+`select is(…)` thành `insert into pg_temp._tap(l) select is(…)`. Kết thúc bằng
+`do $$ begin raise exception 'TAP%', (select string_agg(l,' | ' order by t) from pg_temp._tap); end $$`.
+Lỗi ép cả transaction rollback, và thông báo lỗi mang về toàn bộ TAP. Nhớ kiểm lại
+sau đó rằng hàm mới **chưa** tồn tại trên cloud.
+
+**Agent con (gsd-executor) KHÔNG có Supabase MCP.** Plan nào cần chạy SQL trên cloud
+thì orchestrator phải tự làm, hoặc tự chạy thử ngay sau wave tạo migration.

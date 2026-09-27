@@ -15,8 +15,10 @@ lại PROJECT.md, CLAUDE.md hay code.
 - **Phase 6 — Kiểm kê & Go-live:** 16/16 plan thực thi, 0063–0066 trên cloud, pgTAP 34/34 file
   (~510 assert), quyền route 145/145. UAT **một phần** (4 đạt, 1 lỗi đã sửa, 9 chưa kiểm) —
   luồng kiểm kê chưa chạy trên giao diện thật, đầu kỳ chưa làm. Xem [[mo-sau-phase-6]].
+- **Phase 7 — Trang tổng quan:** 9/9 plan, 0069–0071 trên cloud, pgTAP 92–94 18/24/14, quyền route
+  150/150, UAT 9 đạt / 1 bỏ qua (xuất âm có dữ liệu — chờ go-live). Xem [[phase-7]].
 - Database: Supabase cloud `kho-vu-tru` (`phonzyruoalimgaovljm`, ap-southeast-1), mới nhất 0066.
-  ⚠ `.env.local` đang bật khối project SAI (`rnpq…`) — xem blockers/mo-sau-phase-6.md.
+  `.env.local` đã bật đúng khối phonzy… từ 27/09 (khối rnpq… bị comment).
 - Dữ liệu thật đã nạp: 3.266 sản phẩm, 90 nhóm, 23 NCC, 594 + 4.732 dòng lưu trữ.
 - Kho mặc định của sản phẩm ở `san_pham.kho_mac_dinh_id`, KHÔNG ở `vi_tri_ke`.
 - Test: 225 pgTAP + test đồng thời + verify:hook + hàm thuần + đọc Excel + quyền route,
@@ -34,8 +36,8 @@ lại PROJECT.md, CLAUDE.md hay code.
 ## Patterns
 
 - [supabase-rls-bao-mat](patterns/supabase-rls-bao-mat.md) — GRANT ≠ RLS, quyền cột theo SQL role, view `security_invoker`, qualify toán tử khi khóa `search_path`
-- [nextjs-antd-supabase-ui](patterns/nextjs-antd-supabase-ui.md) — 4 bẫy giao diện lọt qua `npm run check`: lỗi PostgREST không phải instance, hàm client gọi từ server, query tham số rỗng, prop antd v6 đã bỏ (kể cả `notification message`), ref + React Compiler lint
-- [pgtap-va-test](patterns/pgtap-va-test.md) — false pass do trùng mã lỗi, test đếm không giả định bảng rỗng, test đồng thời bằng 2 psql, `finish(true)` không bắt thiếu assert, 42702 trong `RETURNS TABLE`, đẩy migration qua MCP + md5, `(fn()).*` gọi lại hàm VOLATILE một lần mỗi cột
+- [nextjs-antd-supabase-ui](patterns/nextjs-antd-supabase-ui.md) — 4 bẫy giao diện lọt qua `npm run check`: lỗi PostgREST không phải instance, hàm client gọi từ server, query tham số rỗng, prop antd v6 đã bỏ (kể cả `notification message`), ref + React Compiler lint, 404 do cache Turbopack cũ, refetchOnWindowFocus toàn cục
+- [pgtap-va-test](patterns/pgtap-va-test.md) — false pass do trùng mã lỗi, test đếm không giả định bảng rỗng, test đồng thời bằng 2 psql, `finish(true)` không bắt thiếu assert, 42702 trong `RETURNS TABLE`, đẩy migration qua MCP + md5, `(fn()).*` gọi lại hàm VOLATILE một lần mỗi cột, `throws_ok` 3 tham số / literal union / chạy thử bằng raise, agent con không có MCP
 
 ## Knowledge
 
@@ -44,6 +46,7 @@ lại PROJECT.md, CLAUDE.md hay code.
 ## Decisions
 
 - [phase-1](decisions/phase-1.md) — đảo sang cloud, không tự đặt quy_doi=2, giữ nguyên tên nhóm, tìm kiếm ILIKE + word_similarity
+- [phase-7](decisions/phase-7.md) — thu hẹp theo nỗi đau B+C, chỉ quản lý thấy `/`, đếm số mã theo nhóm, migration 0069–0071
 - [phase-6](decisions/phase-6.md) — không barcode/không giá, chốt tồn theo dòng, công tắc quyền đọc bảng, bỏ KiotViet khỏi thẻ kho
 
 ## Blockers
