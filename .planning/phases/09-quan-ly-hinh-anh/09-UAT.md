@@ -54,7 +54,10 @@ result: [pending]
 
 ### 8. Chụp ảnh bằng điện thoại thật
 expected: Trên điện thoại, chi tiết mã → "Chụp ảnh" mở camera sau → chụp → ảnh hiện trong thư viện; iPhone không báo lỗi định dạng HEIC.
-result: [pending]
+result: issue
+reported: "khi deploy lên dev bị lỗi không thể upload/chụp ảnh, ở local vẫn bình thường" — iPhone hiện "Trình duyệt này không nén được ảnh WebP"
+severity: blocker
+fix: fbaf728 — WebKit không mã hóa WebP trên canvas; client dự phòng JPEG, route + Apps Script nhận JPEG. Chờ người dùng clasp push + deploy New version rồi thử lại.
 
 ### 9. Thủ kho / chỉ xem không thấy nút sửa ảnh
 expected: Đăng nhập thukho1 hoặc chixem → chi tiết mã có ảnh: xem và phóng to được, KHÔNG có "Chụp ảnh", "Chọn ảnh", "Đặt làm ảnh chính", "Xóa"; bảng danh mục vẫn thấy thumbnail.
@@ -72,10 +75,17 @@ result: [pending]
 
 total: 11
 passed: 6
-issues: 0
-pending: 5
+issues: 1
+pending: 4
 skipped: 0
 
 ## Gaps
 
-[none yet]
+- truth: "Chụp/chọn ảnh trên iPhone upload được"
+  status: fixed_pending_retest
+  reason: "User reported: iPhone báo 'Trình duyệt này không nén được ảnh WebP'"
+  severity: blocker
+  test: 8
+  root_cause: "WebKit (Safari + mọi trình duyệt iOS) canvas.toBlob('image/webp') trả PNG; compress-image.ts, route tai-len và Apps Script đều chỉ nhận WebP"
+  artifacts: [src/features/images/lib/compress-image.ts, src/app/api/anh/tai-len/route.ts, apps-script/Code.gs]
+  fix_commit: fbaf728
