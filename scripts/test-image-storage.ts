@@ -218,6 +218,41 @@ async function main() {
     caseCount += 1;
   }
 
+  // put: Apps Script lỗi thoáng qua (internal → unavailable) lần đầu → tự thử lại một lần
+  {
+    const calls: FakeCall[] = [];
+    const storage = makeStorage(
+      [
+        jsonResponse({ ok: false, error: "internal", message: "Lock timeout" }),
+        jsonResponse({ ok: true, fileId: "F-lan-2" }),
+      ],
+      calls,
+    );
+    const fileId = await storage.put({
+      variant: "full",
+      fileName: "A__y.webp",
+      mimeType: "image/webp",
+      bytes: new Uint8Array([1]),
+    });
+    assert.equal(fileId, "F-lan-2");
+    assert.equal(calls.length, 2, "thử lại đúng một lần");
+    caseCount += 1;
+  }
+
+  // put: lỗi bad_request KHÔNG thử lại (dữ liệu sai thì gọi lại cũng vô ích)
+  {
+    const calls: FakeCall[] = [];
+    const storage = makeStorage(
+      [jsonResponse({ ok: false, error: "bad_request", message: "fileName không hợp lệ" })],
+      calls,
+    );
+    await assert.rejects(() =>
+      storage.put({ variant: "full", fileName: "x.jpg", mimeType: "image/jpeg", bytes: new Uint8Array([1]) }),
+    );
+    assert.equal(calls.length, 1);
+    caseCount += 1;
+  }
+
   console.log(`✓ test-image-storage: ${caseCount} case`);
 }
 

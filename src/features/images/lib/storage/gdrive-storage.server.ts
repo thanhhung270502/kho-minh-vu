@@ -61,16 +61,23 @@ export class GDriveImageStorage implements ImageStorage {
     mimeType: "image/webp" | "image/jpeg";
     bytes: Uint8Array;
   }): Promise<string> {
-    const body = await this.call(
-      {
-        action: "put",
-        folder: FOLDER_BY_VARIANT[input.variant],
-        fileName: input.fileName,
-        mimeType: input.mimeType,
-        base64Data: Buffer.from(input.bytes).toString("base64"),
-      },
-      { cache: "no-store" },
-    );
+    const payload = {
+      action: "put",
+      folder: FOLDER_BY_VARIANT[input.variant],
+      fileName: input.fileName,
+      mimeType: input.mimeType,
+      base64Data: Buffer.from(input.bytes).toString("base64"),
+    };
+    let body: Record<string, unknown>;
+    try {
+      body = await this.call(payload, { cache: "no-store" });
+    } catch (error) {
+      // Apps Script thỉnh thoảng lỗi thoáng qua khi hai ảnh lên liền nhau — thử lại MỘT lần.
+      // Lỗi cấu hình / dữ liệu sai (forbidden, bad_request) thử lại cũng vô ích.
+      if (!(error instanceof ImageStorageError) || error.kind !== "unavailable") throw error;
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      body = await this.call(payload, { cache: "no-store" });
+    }
     const fileId = typeof body.fileId === "string" ? body.fileId : "";
     if (fileId === "") {
       throw new ImageStorageError("unavailable", "Apps Script không trả fileId hợp lệ khi lưu ảnh");

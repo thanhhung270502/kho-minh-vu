@@ -11,7 +11,10 @@ import {
 import { imageKeys } from "../api/image.keys";
 import { compressImage } from "../lib/compress-image";
 
-export function useProductImages(productId: string, options?: { enabled?: boolean }) {
+export function useProductImages(
+  productId: string,
+  options?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: imageKeys.product(productId),
     queryFn: () => fetchProductImages(productId),
@@ -25,17 +28,30 @@ function useRefreshImages(productId: string) {
   const queryClient = useQueryClient();
 
   return () => {
-    void queryClient.invalidateQueries({ queryKey: imageKeys.product(productId) });
+    void queryClient.invalidateQueries({
+      queryKey: imageKeys.product(productId),
+    });
     void queryClient.invalidateQueries({ queryKey: productKeys.lists });
   };
 }
+
+export type UploadStage = "compressing" | "uploading";
 
 export function useUploadProductImage(productId: string) {
   const refresh = useRefreshImages(productId);
 
   return useMutation({
-    mutationFn: async (file: File) => {
+    // onStage cho giao diện hiện đúng bước đang chạy — nén trên máy hay gửi lên nơi lưu.
+    mutationFn: async ({
+      file,
+      onStage,
+    }: {
+      file: File;
+      onStage?: (stage: UploadStage) => void;
+    }) => {
+      onStage?.("compressing");
       const files = await compressImage(file);
+      onStage?.("uploading");
       return uploadProductImage(productId, files);
     },
     onSuccess: refresh,
