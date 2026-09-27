@@ -9,7 +9,7 @@
  * HỢP ĐỒNG JSON (chép y nguyên ở 09-02-PLAN.md và 09-04-PLAN.md — sửa một bên thì
  * phải sửa cả hai, đây là ranh giới giữa hai plan chạy song song):
  *   Request  POST body JSON, một trong ba dạng:
- *     { secret, action: "put",    folder, fileName, mimeType: "image/webp", base64Data }
+ *     { secret, action: "put",    folder, fileName, mimeType: "image/webp" | "image/jpeg", base64Data }
  *     { secret, action: "get",    fileId }
  *     { secret, action: "remove", fileId }
  *   Response LUÔN HTTP 200 (Apps Script không set được status tùy ý — xem "Điểm phải
@@ -25,7 +25,10 @@ var ROOT_FOLDER_NAME = 'Kho Minh Vu - Anh';
 // Nhánh 'chung-tu/...' để dành cho phase ảnh chứng từ sau này (D-08) — CHƯA mở ở đây.
 var ALLOWED_FOLDERS = ['san-pham/goc', 'san-pham/thumb'];
 
-var FILE_NAME_PATTERN = /^[A-Za-z0-9._-]{1,120}\.webp$/;
+var FILE_NAME_PATTERN = /^[A-Za-z0-9._-]{1,120}\.(webp|jpg)$/;
+
+// JPEG là đường dự phòng cho iPhone — WebKit không mã hóa được WebP trên canvas.
+var ALLOWED_MIME_TYPES = ['image/webp', 'image/jpeg'];
 
 // ~2MB base64 (~1.5MB ảnh gốc) — Vercel Route Handler đã chặn payload lớn hơn trước
 // khi gọi tới đây, đây là lớp phòng thủ thứ hai (đe dọa T-09-09).
@@ -89,8 +92,8 @@ function put_(body) {
   if (typeof body.fileName !== 'string' || !FILE_NAME_PATTERN.test(body.fileName)) {
     return fail_('bad_request', 'fileName không hợp lệ');
   }
-  if (body.mimeType !== 'image/webp') {
-    return fail_('bad_request', 'mimeType phải là image/webp');
+  if (ALLOWED_MIME_TYPES.indexOf(body.mimeType) < 0) {
+    return fail_('bad_request', 'mimeType phải là image/webp hoặc image/jpeg');
   }
   if (
     typeof body.base64Data !== 'string' ||
@@ -102,7 +105,7 @@ function put_(body) {
 
   var blob = Utilities.newBlob(
     Utilities.base64Decode(body.base64Data),
-    'image/webp',
+    body.mimeType,
     body.fileName
   );
   var file = getFolder_(body.folder).createFile(blob);

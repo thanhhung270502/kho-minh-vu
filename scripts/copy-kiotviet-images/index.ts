@@ -327,6 +327,7 @@ async function luuVoiThuLai(
       return await storage.put({
         variant,
         fileName,
+        mimeType: "image/webp",
         bytes: new Uint8Array(bytes),
       });
     } catch (e) {

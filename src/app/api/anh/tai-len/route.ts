@@ -1,6 +1,11 @@
 import { getCurrentUser } from "@/features/auth/api/current-user.server";
 import { fetchProductCode, insertImageRecord } from "@/features/images/api/image.server";
-import { MAX_FULL_BYTES, MAX_THUMB_BYTES, isWebp, safeFileStem } from "@/features/images/lib/image-rules";
+import {
+  MAX_FULL_BYTES,
+  MAX_THUMB_BYTES,
+  detectImageFormat,
+  safeFileStem,
+} from "@/features/images/lib/image-rules";
 import { getImageStorage, ImageStorageError } from "@/features/images/lib/storage/index.server";
 import { explainError } from "@/shared/lib/errors";
 import { hasPermission } from "@/shared/lib/permissions";
@@ -59,7 +64,10 @@ export async function POST(request: Request) {
   const fullBytes = new Uint8Array(await goc.arrayBuffer());
   const thumbBytes = new Uint8Array(await nho.arrayBuffer());
 
-  if (!isWebp(fullBytes) || !isWebp(thumbBytes)) {
+  // WebP từ Chrome/Android; JPEG từ iPhone (WebKit không mã hóa được WebP).
+  const fullFormat = detectImageFormat(fullBytes);
+  const thumbFormat = detectImageFormat(thumbBytes);
+  if (!fullFormat || !thumbFormat) {
     return errorResponse(
       "Ảnh không đúng định dạng",
       "Ảnh phải được nén trong trình duyệt trước khi gửi — tải lại trang rồi thử lại.",
@@ -79,19 +87,29 @@ export async function POST(request: Request) {
   }
 
   const id = crypto.randomUUID();
-  const fileName = `${safeFileStem(code)}__${id}.webp`;
+  const stem = `${safeFileStem(code)}__${id}`;
   const storage = getImageStorage();
 
   let key: string;
   let thumbKey: string;
   try {
-    key = await storage.put({ variant: "full", fileName, bytes: fullBytes });
+    key = await storage.put({
+      variant: "full",
+      fileName: `${stem}.${fullFormat.extension}`,
+      mimeType: fullFormat.mimeType,
+      bytes: fullBytes,
+    });
   } catch (e) {
     return storageErrorResponse(e);
   }
 
   try {
-    thumbKey = await storage.put({ variant: "thumb", fileName, bytes: thumbBytes });
+    thumbKey = await storage.put({
+      variant: "thumb",
+      fileName: `${stem}.${thumbFormat.extension}`,
+      mimeType: thumbFormat.mimeType,
+      bytes: thumbBytes,
+    });
   } catch (e) {
     // Bù trừ: ảnh gốc đã lên nơi lưu nhưng thumb lỗi — dọn luôn, không để mồ côi.
     // Lỗi ở bước dọn không quan trọng bằng lỗi gốc đã bắt được, nên bỏ qua.

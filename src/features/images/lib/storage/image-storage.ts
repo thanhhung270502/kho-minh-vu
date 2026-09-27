@@ -23,7 +23,12 @@ export class ImageStorageError extends Error {
 export interface ImageStorage {
   readonly backend: StorageBackend;
   /** Lưu ảnh, trả về khóa lưu (fileId của backend) để ghi vào hinh_anh.khoa_luu. */
-  put(input: { variant: ImageVariant; fileName: string; bytes: Uint8Array }): Promise<string>;
+  put(input: {
+    variant: ImageVariant;
+    fileName: string;
+    mimeType: "image/webp" | "image/jpeg";
+    bytes: Uint8Array;
+  }): Promise<string>;
   /**
    * Đọc ảnh theo khóa lưu. Có `cacheTag` thì dùng Next.js Data Cache (force-cache),
    * không có thì luôn gọi backend (no-store) — D-23.

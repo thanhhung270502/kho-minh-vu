@@ -55,13 +55,18 @@ export class GDriveImageStorage implements ImageStorage {
 
   constructor(private readonly options: Options) {}
 
-  async put(input: { variant: ImageVariant; fileName: string; bytes: Uint8Array }): Promise<string> {
+  async put(input: {
+    variant: ImageVariant;
+    fileName: string;
+    mimeType: "image/webp" | "image/jpeg";
+    bytes: Uint8Array;
+  }): Promise<string> {
     const body = await this.call(
       {
         action: "put",
         folder: FOLDER_BY_VARIANT[input.variant],
         fileName: input.fileName,
-        mimeType: "image/webp",
+        mimeType: input.mimeType,
         base64Data: Buffer.from(input.bytes).toString("base64"),
       },
       { cache: "no-store" },

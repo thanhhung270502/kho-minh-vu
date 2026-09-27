@@ -148,6 +148,10 @@ cả hai.
 
 `folder` chỉ nhận `"san-pham/goc"` hoặc `"san-pham/thumb"`.
 
+`mimeType` nhận `"image/webp"` hoặc `"image/jpeg"` (đuôi `fileName` tương ứng `.webp` / `.jpg`).
+JPEG là đường dự phòng cho iPhone: Safari và mọi trình duyệt trên iOS (đều chạy WebKit)
+không nén được WebP bằng canvas.
+
 **Response** — LUÔN HTTP 200 (Apps Script không đặt được status tùy ý), JSON:
 
 ```json

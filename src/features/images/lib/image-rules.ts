@@ -68,7 +68,7 @@ export function checkPickedFile(file: {
 }
 
 /**
- * Tên file Drive an toàn suy từ mã hàng: `${safeFileStem(ma_hang)}__${uuid}.webp`
+ * Tên file Drive an toàn suy từ mã hàng: `${safeFileStem(ma_hang)}__${uuid}.<webp|jpg>`
  * (D-08) — Apps Script chỉ nhận `[A-Za-z0-9._-]`.
  */
 export function safeFileStem(code: string): string {
@@ -89,4 +89,20 @@ export function isWebp(bytes: Uint8Array): boolean {
   const isWebpTag =
     bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
   return isRiff && isWebpTag;
+}
+
+export type StoredImageFormat = {
+  mimeType: "image/webp" | "image/jpeg";
+  extension: "webp" | "jpg";
+};
+
+/**
+ * Định dạng ảnh đã nén nhận lưu. JPEG là đường dự phòng cho WebKit (Safari và mọi
+ * trình duyệt trên iPhone) — canvas ở đó không mã hóa được WebP.
+ */
+export function detectImageFormat(bytes: Uint8Array): StoredImageFormat | null {
+  if (isWebp(bytes)) return { mimeType: "image/webp", extension: "webp" };
+  const isJpeg =
+    bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  return isJpeg ? { mimeType: "image/jpeg", extension: "jpg" } : null;
 }

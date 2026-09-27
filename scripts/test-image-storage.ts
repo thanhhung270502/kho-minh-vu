@@ -51,7 +51,7 @@ async function main() {
     const calls: FakeCall[] = [];
     const storage = makeStorage([jsonResponse({ ok: true, fileId: "F1" })], calls);
     const bytes = new Uint8Array([1, 2, 3, 4]);
-    const fileId = await storage.put({ variant: "full", fileName: "A__x.webp", bytes });
+    const fileId = await storage.put({ variant: "full", fileName: "A__x.webp", mimeType: "image/webp", bytes });
     assert.equal(fileId, "F1");
     assert.equal(calls.length, 1);
     const body = JSON.parse(String(calls[0].init.body));
@@ -68,9 +68,15 @@ async function main() {
   {
     const calls: FakeCall[] = [];
     const storage = makeStorage([jsonResponse({ ok: true, fileId: "F2" })], calls);
-    await storage.put({ variant: "thumb", fileName: "A__x-thumb.webp", bytes: new Uint8Array([5]) });
+    await storage.put({
+      variant: "thumb",
+      fileName: "A__x-thumb.jpg",
+      mimeType: "image/jpeg",
+      bytes: new Uint8Array([5]),
+    });
     const body = JSON.parse(String(calls[0].init.body));
     assert.equal(body.folder, "san-pham/thumb");
+    assert.equal(body.mimeType, "image/jpeg", "JPEG dự phòng của iPhone đi nguyên tới Apps Script");
     caseCount += 1;
   }
 
@@ -81,7 +87,7 @@ async function main() {
       [],
     );
     await assert.rejects(
-      () => storage.put({ variant: "full", fileName: "a.webp", bytes: new Uint8Array([1]) }),
+      () => storage.put({ variant: "full", fileName: "a.webp", mimeType: "image/webp", bytes: new Uint8Array([1]) }),
       (error: unknown) => {
         assert.ok(error instanceof ImageStorageError);
         assert.equal(error.kind, "forbidden");

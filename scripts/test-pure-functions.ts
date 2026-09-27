@@ -60,6 +60,7 @@ import {
   checkPickedFile,
   safeFileStem,
   isWebp,
+  detectImageFormat,
 } from "../src/features/images/lib/image-rules";
 import { imageUrl } from "../src/features/images/lib/image-url";
 import {
@@ -571,6 +572,17 @@ async function kiemCsvLoi() {
 
   assert.equal(isWebp(new Uint8Array([82, 73, 70, 70, 0, 0, 0, 0, 87, 69, 66, 80])), true, "nhận đúng magic byte RIFF/WEBP");
   assert.equal(isWebp(new Uint8Array([0xff, 0xd8, 0xff, 0xe0])), false, "không phải WebP thì trả false");
+  assert.deepEqual(
+    detectImageFormat(new Uint8Array([82, 73, 70, 70, 0, 0, 0, 0, 87, 69, 66, 80])),
+    { mimeType: "image/webp", extension: "webp" },
+    "WebP từ Chrome/Android",
+  );
+  assert.deepEqual(
+    detectImageFormat(new Uint8Array([0xff, 0xd8, 0xff, 0xe0])),
+    { mimeType: "image/jpeg", extension: "jpg" },
+    "JPEG dự phòng từ iPhone",
+  );
+  assert.equal(detectImageFormat(new Uint8Array([0x89, 0x50, 0x4e, 0x47])), null, "PNG thô không nhận");
 
   assert.equal(imageUrl("abc"), "/anh/abc", "URL ảnh gốc");
   assert.equal(imageUrl("abc", "thumb"), "/anh/abc?co=nho", "URL ảnh thumb dùng tham số tiếng Việt không dấu");

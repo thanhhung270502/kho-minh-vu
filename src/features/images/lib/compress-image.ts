@@ -24,7 +24,20 @@ export class ImageProcessingError extends Error {
   }
 }
 
-function encode(bitmap: ImageBitmap, maxEdge: number, quality: number): Promise<Blob> {
+type OutputType = "image/webp" | "image/jpeg";
+
+class UnsupportedTypeError extends Error {
+  constructor(readonly type: OutputType) {
+    super(`canvas không mã hóa được ${type}`);
+  }
+}
+
+function encode(
+  bitmap: ImageBitmap,
+  maxEdge: number,
+  quality: number,
+  type: OutputType,
+): Promise<Blob> {
   const { width, height } = scaleToFit(bitmap.width, bitmap.height, maxEdge);
   const canvas = document.createElement("canvas");
   canvas.width = width;
@@ -36,26 +49,51 @@ function encode(bitmap: ImageBitmap, maxEdge: number, quality: number): Promise<
       "Mở bằng Chrome hoặc Safari bản mới rồi thử lại.",
     );
   }
+  // JPEG không có kênh trong suốt — tô nền trắng để PNG trong suốt không thành nền đen.
+  if (type === "image/jpeg") {
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, width, height);
+  }
   ctx.drawImage(bitmap, 0, 0, width, height);
 
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
-        if (!blob || blob.type !== "image/webp") {
-          reject(
-            new ImageProcessingError(
-              "Trình duyệt này không nén được ảnh WebP",
-              "Mở bằng Chrome hoặc Safari bản mới rồi thử lại.",
-            ),
-          );
+        if (!blob || blob.type !== type) {
+          reject(new UnsupportedTypeError(type));
           return;
         }
         resolve(blob);
       },
-      "image/webp",
+      type,
       quality,
     );
   });
+}
+
+/**
+ * WebKit (Safari và MỌI trình duyệt trên iPhone) không mã hóa được WebP — `toBlob`
+ * âm thầm trả PNG. Khi đó dùng JPEG, định dạng canvas nào cũng mã hóa được.
+ */
+async function encodeWithFallback(
+  bitmap: ImageBitmap,
+  maxEdge: number,
+  quality: number,
+): Promise<Blob> {
+  try {
+    return await encode(bitmap, maxEdge, quality, "image/webp");
+  } catch (e) {
+    if (!(e instanceof UnsupportedTypeError)) throw e;
+  }
+  try {
+    return await encode(bitmap, maxEdge, quality, "image/jpeg");
+  } catch (e) {
+    if (!(e instanceof UnsupportedTypeError)) throw e;
+    throw new ImageProcessingError(
+      "Trình duyệt này không nén được ảnh",
+      "Mở bằng Chrome hoặc Safari bản mới rồi thử lại.",
+    );
+  }
 }
 
 async function encodeUnderLimit(
@@ -64,9 +102,9 @@ async function encodeUnderLimit(
   maxBytes: number,
 ): Promise<Blob> {
   const quality = maxEdge === FULL_MAX_EDGE ? FULL_QUALITY : THUMB_QUALITY;
-  let blob = await encode(bitmap, maxEdge, quality);
+  let blob = await encodeWithFallback(bitmap, maxEdge, quality);
   if (blob.size > maxBytes) {
-    blob = await encode(bitmap, maxEdge, FALLBACK_QUALITY);
+    blob = await encodeWithFallback(bitmap, maxEdge, FALLBACK_QUALITY);
   }
   if (blob.size > maxBytes) {
     throw new ImageProcessingError(
@@ -78,9 +116,7 @@ async function encodeUnderLimit(
 }
 
 /**
- * Nén ảnh trình duyệt thành WebP cạnh dài 1200px + thumb 300px (D-05). Dùng
- * Canvas — `toBlob` âm thầm trả PNG khi trình duyệt không mã hóa được WebP nên
- * phải kiểm `blob.type` (research).
+ * Nén ảnh trình duyệt thành WebP (JPEG trên iPhone) cạnh dài 1200px + thumb 300px (D-05).
  */
 export async function compressImage(file: File): Promise<{ full: Blob; thumb: Blob }> {
   const problem = checkPickedFile(file);
