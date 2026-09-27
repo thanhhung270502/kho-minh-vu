@@ -7,6 +7,7 @@ import {
   THUMB_MAX_EDGE,
   THUMB_QUALITY,
   checkPickedFile,
+  isHeic,
   scaleToFit,
 } from "./image-rules";
 
@@ -128,9 +129,15 @@ export async function compressImage(file: File): Promise<{ full: Blob; thumb: Bl
   try {
     bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
   } catch {
+    if (isHeic(file.name, file.type)) {
+      throw new ImageProcessingError(
+        "Trình duyệt này chưa đọc được ảnh HEIC",
+        "Trên iPhone dùng nút Chụp ảnh hoặc Chọn ảnh từ thư viện; trên máy tính mở ảnh bằng Photos, xuất JPEG rồi chọn lại.",
+      );
+    }
     throw new ImageProcessingError(
       `Không đọc được ảnh ${file.name}`,
-      "Nếu là ảnh HEIC từ iPhone, chụp lại bằng nút Chụp ảnh hoặc xuất JPEG rồi chọn lại.",
+      "File có thể bị hỏng hoặc không phải ảnh. Chọn ảnh khác.",
     );
   }
 

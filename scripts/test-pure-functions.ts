@@ -674,14 +674,23 @@ async function kiemCsvLoi() {
   assert.ok(canhCuc.width >= 1, "chiều rộng không bao giờ ra 0");
 
   assert.ok(
-    checkPickedFile({ name: "a.heic", type: "image/heic", size: 1000 })?.title.includes("HEIC"),
-    "nhận HEIC theo type",
+    checkPickedFile({ name: "a.heic", type: "image/heic", size: 1000 }) === null,
+    "HEIC không bị chặn trước — Safari đọc được, trình duyệt khác báo lúc đọc",
   );
   assert.ok(
-    checkPickedFile({ name: "IMG_1.HEIC", type: "", size: 1000 })?.title.includes("HEIC"),
-    "nhận HEIC theo đuôi khi type rỗng",
+    checkPickedFile({ name: "IMG_1.HEIC", type: "", size: 1000 }) === null,
+    "HEIC theo đuôi khi type rỗng cũng cho qua",
   );
-  assert.notEqual(checkPickedFile({ name: "a.gif", type: "image/gif", size: 1000 }), null, "định dạng không hỗ trợ bị chặn");
+  assert.equal(checkPickedFile({ name: "a.gif", type: "image/gif", size: 1000 }), null, "GIF được nhận");
+  assert.equal(checkPickedFile({ name: "a.bmp", type: "image/bmp", size: 1000 }), null, "BMP được nhận");
+  assert.equal(checkPickedFile({ name: "a.avif", type: "image/avif", size: 1000 }), null, "AVIF được nhận");
+  assert.equal(checkPickedFile({ name: "zalo.JPG", type: "", size: 1000 }), null, "type rỗng nhận theo đuôi");
+  assert.notEqual(
+    checkPickedFile({ name: "bao-gia.pdf", type: "application/pdf", size: 1000 }),
+    null,
+    "không phải ảnh thì bị chặn",
+  );
+  assert.notEqual(checkPickedFile({ name: "khong-duoi", type: "", size: 1000 }), null, "không type, không đuôi thì bị chặn");
   assert.notEqual(checkPickedFile({ name: "a.jpg", type: "image/jpeg", size: 0 }), null, "file rỗng bị chặn");
   assert.notEqual(
     checkPickedFile({ name: "a.jpg", type: "image/jpeg", size: 31 * 1024 * 1024 }),

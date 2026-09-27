@@ -16,10 +16,23 @@ export const MAX_FULL_BYTES = 1_000_000;
 export const MAX_THUMB_BYTES = 150_000;
 export const MAX_PICKED_BYTES = 30 * 1024 * 1024;
 
-// KHÔNG liệt kê image/heic: iOS tự đổi HEIC → JPEG khi accept không có HEIC
-// (research Pitfall 5), nên HEIC lọt qua đây được coi là "không đọc được".
-export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+// Nhận nhiều định dạng đầu vào — đầu ra luôn chuẩn hóa về WebP (JPEG trên iPhone)
+// nên nơi lưu không cần biết ảnh gốc là gì. GIF động chỉ giữ khung đầu.
+// KHÔNG liệt kê image/heic trong `accept`: iOS tự đổi HEIC → JPEG khi accept không có
+// HEIC (research Pitfall 5). HEIC chọn từ nơi khác vẫn được thử đọc (Safari đọc được).
+export const ACCEPTED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "image/bmp",
+  "image/avif",
+] as const;
 export const ACCEPT_ATTRIBUTE = ACCEPTED_IMAGE_TYPES.join(",");
+
+// Một số trình chọn file (Android, Zalo, file tải về) để trống `type` — nhận theo đuôi.
+const ACCEPTED_EXTENSIONS = /\.(jpe?g|png|webp|gif|bmp|avif|heic|heif)$/i;
+const ACCEPTED_LABEL = "JPEG, PNG, WebP, GIF, BMP, AVIF hoặc HEIC";
 
 export type ImageProblem = { title: string; action: string };
 
@@ -35,7 +48,7 @@ export function scaleToFit(
   };
 }
 
-function isHeic(name: string, type: string): boolean {
+export function isHeic(name: string, type: string): boolean {
   if (type === "image/heic" || type === "image/heif") return true;
   return /\.(heic|heif)$/i.test(name);
 }
@@ -45,23 +58,20 @@ export function checkPickedFile(file: {
   type: string;
   size: number;
 }): ImageProblem | null {
-  if (isHeic(file.name, file.type)) {
-    return {
-      title: "Ảnh HEIC chưa đọc được trên máy này",
-      action:
-        "Trên điện thoại hãy dùng nút Chụp ảnh; trên máy tính mở ảnh bằng Photos rồi xuất JPEG và chọn lại.",
-    };
-  }
   if (file.size === 0) {
     return { title: "File ảnh rỗng", action: "Chọn lại ảnh khác." };
   }
   if (file.size > MAX_PICKED_BYTES) {
     return { title: "Ảnh lớn hơn 30 MB", action: "Chụp lại hoặc thu nhỏ ảnh rồi chọn lại." };
   }
-  if (!ACCEPTED_IMAGE_TYPES.includes(file.type as (typeof ACCEPTED_IMAGE_TYPES)[number])) {
+  const knownType = ACCEPTED_IMAGE_TYPES.includes(
+    file.type as (typeof ACCEPTED_IMAGE_TYPES)[number],
+  );
+  // HEIC không chặn ở đây: Safari đọc được, trình duyệt khác báo lỗi riêng lúc đọc ảnh.
+  if (!knownType && !isHeic(file.name, file.type) && !ACCEPTED_EXTENSIONS.test(file.name)) {
     return {
       title: "Định dạng ảnh không hỗ trợ",
-      action: "Chỉ nhận ảnh JPEG, PNG hoặc WebP.",
+      action: `Chỉ nhận ảnh ${ACCEPTED_LABEL}.`,
     };
   }
   return null;
