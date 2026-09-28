@@ -682,10 +682,11 @@ None yet.
 | 260921-v15 | Bản demo UI/UX tĩnh (HTML/CSS/JS) cho toàn bộ hệ thống trong design/ | 2026-09-21 | eba487a | [260921-v15-ban-demo-ui-ux-tinh-html-css-js-trong-th](./quick/260921-v15-ban-demo-ui-ux-tinh-html-css-js-trong-th/) |
 | 260928-q4u | Sửa 3 lỗi từ checklist kiểm thử: lưu người dùng chưa có tên đăng nhập, thứ tự thẻ kho, lý do xuất âm trên thẻ kho | 2026-09-28 | be1a918 | [260928-q4u-sua-3-loi-checklist-luu-nguoi-dung-the-k](./quick/260928-q4u-sua-3-loi-checklist-luu-nguoi-dung-the-k/) |
 | 260928-sn5 | Phiếu xuất: mở phiếu đang nhập liệu thì con trỏ nằm sẵn ở ô mã hàng (checklist 5.2) | 2026-09-28 | 319f736 | [260928-sn5-phieu-xuat-tu-focus-o-ma-hang](./quick/260928-sn5-phieu-xuat-tu-focus-o-ma-hang/) |
+| 260928-t0j | Seed tài khoản demo đúng quyền, tự focus ô mã ở phiếu nhập/đơn hàng, migration ten_danh_muc | 2026-09-28 | 0d93f8b | [260928-t0j-seed-quyen-focus-o-ma-ten-danh-muc](./quick/260928-t0j-seed-quyen-focus-o-ma-ten-danh-muc/) |
 
 ## Session Continuity
 
 Last session: 2026-09-27T09:05:51.009Z
 Stopped at: Phase 7 verified - UAT 9 đạt, 1 bỏ qua
-Last activity: 2026-09-28 - Completed quick task 260928-sn5: phiếu xuất tự focus ô mã hàng (5.2)
+Last activity: 2026-09-28 - Completed quick task 260928-t0j: seed, focus ô mã, ten_danh_muc
 Resume file: .planning/phases/07-trang-tong-quan/07-UAT.md
