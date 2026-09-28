@@ -3,7 +3,7 @@
 import type { InputNumberRef } from "@rc-component/input-number";
 import { App, Table } from "antd";
 import type { RefSelectProps } from "antd/es/select";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useLookups } from "@/features/products/hooks/useProducts";
 import type { ProductSearchResult } from "@/shared/components/product-search-input";
@@ -51,6 +51,17 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
 
   const codeInput = useRef<RefSelectProps>(null);
   const quantityInput = useRef<InputNumberRef>(null);
+
+  // Mở phiếu đang nhập liệu là gõ mã được ngay, không phải Tab qua cả menu (5.2).
+  // Chỉ máy có chuột/bàn phím thật: trên điện thoại focus sẽ bật bàn phím ảo che
+  // nửa màn hình. Không giật con trỏ nếu người dùng đã đứng ở ô khác.
+  useEffect(() => {
+    if (!editable || !window.matchMedia("(pointer: fine)").matches) return;
+    const timer = setTimeout(() => {
+      if (document.activeElement === document.body) codeInput.current?.focus();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [editable]);
 
   const warehouses = lookups.data?.warehouses ?? [];
   const hasMultipleWarehouses = warehouses.length > 1;
