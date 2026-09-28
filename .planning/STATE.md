@@ -5,7 +5,7 @@ milestone_name: milestone
 status: ready_to_plan
 stopped_at: Phase 7 complete (9/9) — ready to discuss Phase 8
 last_updated: 2026-09-27T09:05:51.514Z
-last_activity: 2026-09-27
+last_activity: 2026-09-28
 progress:
   total_phases: 9
   completed_phases: 4
@@ -680,10 +680,11 @@ None yet.
 |---|-------------|------|--------|-----------|
 | 260919-dm4 | Design system theo giao diện KiotViet: token + top-nav shell + bố cục trang danh sách | 2026-09-19 | 39da902 | [260919-dm4-update-design-system-theo-giao-dien-kiot](./quick/260919-dm4-update-design-system-theo-giao-dien-kiot/) |
 | 260921-v15 | Bản demo UI/UX tĩnh (HTML/CSS/JS) cho toàn bộ hệ thống trong design/ | 2026-09-21 | eba487a | [260921-v15-ban-demo-ui-ux-tinh-html-css-js-trong-th](./quick/260921-v15-ban-demo-ui-ux-tinh-html-css-js-trong-th/) |
+| 260928-q4u | Sửa 3 lỗi từ checklist kiểm thử: lưu người dùng chưa có tên đăng nhập, thứ tự thẻ kho, lý do xuất âm trên thẻ kho | 2026-09-28 | be1a918 | [260928-q4u-sua-3-loi-checklist-luu-nguoi-dung-the-k](./quick/260928-q4u-sua-3-loi-checklist-luu-nguoi-dung-the-k/) |
 
 ## Session Continuity
 
 Last session: 2026-09-27T09:05:51.009Z
 Stopped at: Phase 7 verified - UAT 9 đạt, 1 bỏ qua
-Last activity: 2026-09-27
+Last activity: 2026-09-28 - Completed quick task 260928-q4u: sửa 3 lỗi từ checklist kiểm thử (9.6, 6.2, 5.6)
 Resume file: .planning/phases/07-trang-tong-quan/07-UAT.md
