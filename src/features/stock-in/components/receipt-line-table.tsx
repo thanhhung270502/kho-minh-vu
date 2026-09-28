@@ -8,6 +8,7 @@ import { useRef, useState } from "react";
 
 import { useLookups } from "@/features/products/hooks/useProducts";
 import { SummaryRow } from "@/shared/components/summary-row";
+import { useFocusOnOpen } from "@/shared/hooks/use-focus-on-open";
 import { explainError } from "@/shared/lib/errors";
 
 import {
@@ -60,6 +61,7 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
   const priceInput = useRef<InputNumberRef>(null);
 
   const editable = receipt.status === "NHAP_LIEU" && canEdit;
+  useFocusOnOpen(codeInput, editable);
   const warehouses = lookups.data?.warehouses ?? [];
   const hasMultipleWarehouses = warehouses.length > 1;
 

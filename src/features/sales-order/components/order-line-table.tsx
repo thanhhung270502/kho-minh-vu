@@ -7,6 +7,7 @@ import { useRef, useState } from "react";
 
 import type { ProductSearchResult } from "@/shared/components/product-search-input";
 import { SummaryRow } from "@/shared/components/summary-row";
+import { useFocusOnOpen } from "@/shared/hooks/use-focus-on-open";
 import { explainError } from "@/shared/lib/errors";
 
 import {
@@ -51,6 +52,7 @@ export function OrderLineTable({ orderId, lines, editable }: Props) {
   const [draft, setDraft] = useState<DraftLine>(EMPTY_DRAFT);
 
   const codeInput = useRef<RefSelectProps>(null);
+  useFocusOnOpen(codeInput, editable);
   const quantityInput = useRef<InputNumberRef>(null);
 
   // Cột Đã xuất/Còn lại chỉ hiện khi đơn đã có phiếu xuất — trước đó mọi dòng
