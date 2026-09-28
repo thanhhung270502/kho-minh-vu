@@ -63,9 +63,19 @@ async function main() {
       warehouseIds.push(id);
     }
 
-    const { error: loiHoSo } = await supabase
-      .from("nguoi_dung")
-      .upsert({ id: userId, ho_ten: tk.fullName, vai_tro: tk.role }, { onConflict: "id" });
+    // Tên đăng nhập suy từ email (giống màn đăng nhập) — để NULL thì màn Người dùng
+    // hiện "—". Công tắc lịch sử KiotViet của văn phòng (backfill 0063) chỉ bật khi
+    // TẠO MỚI: tài khoản đã có thì giữ nguyên lựa chọn quản lý đã đặt trên cloud.
+    const { error: loiHoSo } = await supabase.from("nguoi_dung").upsert(
+      {
+        id: userId,
+        ho_ten: tk.fullName,
+        vai_tro: tk.role,
+        ten_dang_nhap: tk.email.split("@")[0],
+        ...(taoMoi?.user && tk.role === "van_phong" ? { xem_lich_su_kiotviet: true } : {}),
+      },
+      { onConflict: "id" },
+    );
     if (loiHoSo) throw loiHoSo;
 
     const { error: loiXoaKho } = await nguoiDungKho().delete().eq("nguoi_dung_id", userId);
