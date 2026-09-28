@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { usernameToEmail } from "@/shared/lib/text";
-import { explainError } from "@/shared/lib/errors";
+import { explainError, isPostgrestError } from "@/shared/lib/errors";
 
 import {
   updateUserSchema,
@@ -103,6 +103,16 @@ function firstIssue(issues: { path: PropertyKey[]; message: string }[]): ActionR
   };
 }
 
+/**
+ * luu_ho_so_nguoi_dung soạn sẵn câu tiếng Việt cho ca nghiệp vụ 23514 ("Thủ kho
+ * phải được gán ít nhất một kho") — hiện nguyên văn. explainError() dịch 23514
+ * thành câu chung về mã hàng/số lượng, sai ngữ cảnh ở màn tài khoản.
+ */
+function describeProfileError(error: unknown): string {
+  if (isPostgrestError(error) && error.code === "23514") return error.message;
+  return explainError(error).action;
+}
+
 /** Thu hồi phiên: chặn LÀM MỚI token. Token đang cầm hết hạn theo TTL (xem D-05). */
 async function revokeSessions(userId: string) {
   const admin = createSupabaseAdminClient();
@@ -153,7 +163,7 @@ export async function createUser(input: CreateUserInput): Promise<ActionResult> 
   if (profileError) {
     // Hồ sơ hỏng thì tài khoản Auth vừa tạo thành rác: xóa để lần sau tạo lại được.
     await admin.auth.admin.deleteUser(created.user.id);
-    return { ok: false, message: explainError(profileError).action };
+    return { ok: false, message: describeProfileError(profileError) };
   }
 
   revalidatePath("/cai-dat/nguoi-dung");
@@ -185,6 +195,7 @@ export async function updateUser(
   const { error } = await session.supabase.rpc("luu_ho_so_nguoi_dung", {
     p_id: values.id,
     p_ho_ten: values.fullName,
+    // "" = chưa đặt tên đăng nhập (tài khoản từ seed) — RPC ghi thành NULL (0072).
     p_ten_dang_nhap: previous.ten_dang_nhap ?? "",
     p_vai_tro: values.role,
     p_kho_ids: values.warehouseIds,
@@ -193,7 +204,7 @@ export async function updateUser(
     p_duyet_kiem_ke: values.approveStocktake,
   });
 
-  if (error) return { ok: false, message: explainError(error).action };
+  if (error) return { ok: false, message: describeProfileError(error) };
 
   const warehousesChanged =
     previous.warehouseIds.length !== values.warehouseIds.length ||
@@ -270,7 +281,7 @@ export async function resetPassword(
     p_xem_lich_su_kiotviet: previous.xem_lich_su_kiotviet,
     p_duyet_kiem_ke: previous.duyet_kiem_ke,
   });
-  if (error) return { ok: false, message: explainError(error).action };
+  if (error) return { ok: false, message: describeProfileError(error) };
 
   await revokeSessions(values.id);
 
