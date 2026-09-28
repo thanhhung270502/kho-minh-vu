@@ -2161,6 +2161,7 @@ export type Database = {
           kho_id: string
           la_but_toan_dao: boolean
           loai_ct: string
+          ly_do_xuat_am: string
           ngay: string
           nguon: string
           so_ct: string

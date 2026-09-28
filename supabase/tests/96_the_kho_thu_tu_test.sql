@@ -13,7 +13,7 @@
 -- trước mọi dòng ngày 10 vì ngày nghiệp vụ sớm hơn.
 -- =============================================================================
 begin;
-select plan(7);
+select plan(10);
 
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
@@ -53,17 +53,23 @@ grant select on t_tt to authenticated;
 
 -- Phiếu thường: ngay = 00:00 UTC của ngày chứng từ (đúng như ghi_so_chung_tu ghi
 -- ngay_ct), created_at = lúc ghi sổ. Bút toán đảo: ngay = created_at = now() lúc hủy.
-insert into public.kho_movement (kho_id, san_pham_id, so_luong, gia_von_tai_thoi_diem, ngay, created_at, la_but_toan_dao)
-select k1, sp, v.sl, 1000, v.ngay::timestamptz, v.tao::timestamptz, v.dao
+-- 0074: PX2 thuộc một phiếu xuất âm có lý do; PX1 thuộc phiếu không có lý do.
+insert into public.chung_tu (so_ct, loai_ct, ngay_ct, kho_id, trang_thai, ly_do_xuat_am)
+select v.so_ct, 'XUAT', '2091-03-10', k1, 'HOAN_THANH', v.ly_do
+from t_tt, (values ('ZQX-TT-PX1', null), ('ZQX-TT-PX2', 'LECH_TON_CHO_KIEM_KE')) as v(so_ct, ly_do);
+
+insert into public.kho_movement (kho_id, san_pham_id, so_luong, gia_von_tai_thoi_diem, ngay, created_at, la_but_toan_dao, chung_tu_id)
+select k1, sp, v.sl, 1000, v.ngay::timestamptz, v.tao::timestamptz, v.dao,
+       (select id from public.chung_tu where so_ct = v.so_ct)
 from t_tt, (values
-  ( 5, '2091-03-09 00:00:00+00', '2091-03-10 10:00:00+07', false),  -- PN0 ghi lùi ngày 09
-  (10, '2091-03-10 00:00:00+00', '2091-03-10 09:00:00+07', false),  -- PN1
-  (10, '2091-03-10 00:00:00+00', '2091-03-10 09:05:00+07', false),  -- PN2
-  (-10,'2091-03-10 09:10:00+07', '2091-03-10 09:10:00+07', true),   -- hủy PN2
-  (-4, '2091-03-10 00:00:00+00', '2091-03-10 09:20:00+07', false),  -- PX1
-  (-9, '2091-03-10 00:00:00+00', '2091-03-10 09:30:00+07', false),  -- PX2
-  ( 3, '2091-03-10 00:00:00+00', '2091-03-10 09:40:00+07', false)   -- TK1
-) as v(sl, ngay, tao, dao);
+  ( 5, '2091-03-09 00:00:00+00', '2091-03-10 10:00:00+07', false, null),  -- PN0 ghi lùi ngày 09
+  (10, '2091-03-10 00:00:00+00', '2091-03-10 09:00:00+07', false, null),  -- PN1
+  (10, '2091-03-10 00:00:00+00', '2091-03-10 09:05:00+07', false, null),  -- PN2
+  (-10,'2091-03-10 09:10:00+07', '2091-03-10 09:10:00+07', true, null),   -- hủy PN2
+  (-4, '2091-03-10 00:00:00+00', '2091-03-10 09:20:00+07', false, 'ZQX-TT-PX1'),  -- PX1
+  (-9, '2091-03-10 00:00:00+00', '2091-03-10 09:30:00+07', false, 'ZQX-TT-PX2'),  -- PX2
+  ( 3, '2091-03-10 00:00:00+00', '2091-03-10 09:40:00+07', false, null)   -- TK1
+) as v(sl, ngay, tao, dao, so_ct);
 
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 
@@ -105,6 +111,22 @@ select is(
   (select ngay from t_the_kho where la_but_toan_dao),
   '2091-03-10 09:10:00+07'::timestamptz,
   'Bút toán đảo giữ nguyên thời điểm thật'
+);
+
+select is(
+  (select ly_do_xuat_am from t_the_kho where so_luong_xuat = 9),
+  'LECH_TON_CHO_KIEM_KE',
+  '0074: dòng xuất của phiếu xuất âm mang mã lý do'
+);
+select is(
+  (select ly_do_xuat_am from t_the_kho where so_luong_xuat = 4),
+  null,
+  '0074: phiếu xuất không âm thì không có lý do'
+);
+select is(
+  (select count(*) from t_the_kho where ly_do_xuat_am is not null),
+  1::bigint,
+  '0074: chỉ đúng một dòng mang lý do (nhập, bút toán đảo không có)'
 );
 
 select * from finish();

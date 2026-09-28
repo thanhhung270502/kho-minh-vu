@@ -5,6 +5,8 @@ import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import Link from "next/link";
 
+import { negativeReasonLabel } from "@/features/documents/lib/negative-reasons";
+
 import type { StockCardRow } from "../types";
 import { formatNumber } from "./product-columns";
 
@@ -66,8 +68,17 @@ export function buildStockCardColumns({
     {
       title: "Đối tác / Ghi chú",
       key: "partner",
-      ellipsis: true,
-      render: (_, row) => row.partner || row.note,
+      // Không dùng ellipsis: nó cắt mất thẻ lý do xuất âm — đúng thứ cần thấy khi truy vết lệch.
+      render: (_, row) => (
+        <div className="flex flex-wrap items-center gap-1">
+          <span>{row.partner || row.note}</span>
+          {row.negativeReason ? (
+            <Tag color="orange" className="me-0">
+              Xuất âm: {negativeReasonLabel(row.negativeReason)}
+            </Tag>
+          ) : null}
+        </div>
+      ),
     },
     {
       title: "Nhập",

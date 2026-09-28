@@ -72,6 +72,8 @@ export type StockCardRow = {
   // Luôn có giá trị với dòng hệ thống hiện tại (0064 đã bỏ nhánh KiotViet cũ khỏi
   // the_kho_san_pham) — kiểu vẫn để `| null` vì RPC dùng CASE, không cam kết cứng.
   runningBalance: number | null;
+  /** Mã lý do xuất âm của phiếu (chung_tu.ly_do_xuat_am) — chỉ có ở dòng xuất của phiếu đó. */
+  negativeReason: string | null;
 };
 
 export type StageSuggestion = {
@@ -237,6 +239,8 @@ export function toStockCardRow(row: StockCardRowDb): StockCardRow {
     // Kiểu sinh ghi `number` nhưng RPC trả null cho dòng KiotViet — Number(null) ra 0
     // và sẽ hiện "0" sai ở mọi dòng đó.
     runningBalance: row.ton_luy_ke === null ? null : Number(row.ton_luy_ke),
+    // Kiểu sinh ghi `string` nhưng RPC trả null với mọi dòng không phải xuất âm.
+    negativeReason: row.ly_do_xuat_am ?? null,
   };
 }
 
