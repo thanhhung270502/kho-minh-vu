@@ -32,12 +32,16 @@ begin
       insert into auth.users (
         instance_id, id, aud, role, email, encrypted_password,
         email_confirmed_at, created_at, updated_at,
-        raw_app_meta_data, raw_user_meta_data
+        raw_app_meta_data, raw_user_meta_data,
+        -- GoTrue quét các cột này vào string Go: để NULL là mọi lệnh Admin API
+        -- (listUsers, createUser) trả 500 "converting NULL to string".
+        confirmation_token, recovery_token, email_change, email_change_token_new
       ) values (
         '00000000-0000-0000-0000-000000000000', v_id, 'authenticated', 'authenticated',
         r.email, extensions.crypt('MatKhauDemo123!', extensions.gen_salt('bf')),
         now(), now(), now(),
-        '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb
+        '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb,
+        '', '', '', ''
       );
     end if;
 
