@@ -10,6 +10,8 @@ export const documentHeaderSchema = z.object({
   warehouseId: z.string().uuid("Chọn kho"),
   docDate: z.string().min(1, "Chọn ngày"),
   source: z.enum(["NCC", "NHA_MAY"]),
+  /** Chỉ phiếu xuất sinh từ đơn nội bộ — đổi nhân viên nhận (0076). */
+  internalRecipientId: z.string().uuid("Chọn nhân viên nhận hàng").optional(),
   note: z
     .string()
     .trim()
@@ -44,6 +46,9 @@ export function toDocumentUpdate(
   if (input.docDate !== undefined) update.ngay_ct = input.docDate;
   if (input.source !== undefined) update.nguon_nhap = input.source;
   if (input.note !== undefined) update.ghi_chu = input.note;
+  if (input.internalRecipientId !== undefined) {
+    update.nguoi_nhan_id = input.internalRecipientId;
+  }
   return update;
 }
 

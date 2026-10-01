@@ -3,6 +3,8 @@
 import { Button } from "antd";
 import dayjs from "dayjs";
 
+import { formatRecipient } from "@/shared/lib/recipient";
+
 import type { IssueDetail, IssueLine } from "../types";
 
 function formatNumber(value: number | string | null): string {
@@ -65,8 +67,14 @@ export function DeliveryPrintTemplate({
         <div>
           <span className="text-gray-600">Người nhận: </span>
           <strong>
-            {issue.partnerCode ? `${issue.partnerCode} — ` : ""}
-            {issue.partnerName ?? "—"}
+            {issue.recipient?.kind === "internal" ? (
+              formatRecipient(issue.recipient)
+            ) : (
+              <>
+                {issue.partnerCode ? `${issue.partnerCode} — ` : ""}
+                {issue.partnerName ?? "—"}
+              </>
+            )}
           </strong>
         </div>
         {issue.orderNo ? (

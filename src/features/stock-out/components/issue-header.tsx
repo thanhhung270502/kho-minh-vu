@@ -7,11 +7,17 @@ import { useState } from "react";
 
 import { useLookups } from "@/features/products/hooks/useProducts";
 import { PartnerSearchInput } from "@/shared/components/partner-search-input";
+import { StaffSelect } from "@/shared/components/staff-select";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
+import { formatRecipient } from "@/shared/lib/recipient";
 
 import { useUpdateIssueHeader } from "../hooks/useIssues";
 import type { DocumentHeaderInput } from "../schemas/issue.schema";
-import { DOC_STATUS_COLORS, DOC_STATUS_LABELS, type IssueDetail } from "../types";
+import {
+  DOC_STATUS_COLORS,
+  DOC_STATUS_LABELS,
+  type IssueDetail,
+} from "../types";
 
 type Props = { issue: IssueDetail; canEdit: boolean };
 
@@ -37,7 +43,9 @@ export function IssueHeader({ issue, canEdit }: Props) {
       setTimeout(() => setJustSaved(null), 2000);
     } catch (error) {
       if (errorCode(error) === "42501") {
-        message.error("Bạn không có quyền sửa phiếu này. Liên hệ quản trị hệ thống.");
+        message.error(
+          "Bạn không có quyền sửa phiếu này. Liên hệ quản trị hệ thống.",
+        );
         return;
       }
       // Lớp api ném Error thường (không phải PostgrestError) khi RLS lọc im
@@ -83,7 +91,11 @@ export function IssueHeader({ issue, canEdit }: Props) {
         {
           key: "status",
           label: "Trạng thái",
-          children: <Tag color={DOC_STATUS_COLORS[issue.status]}>{DOC_STATUS_LABELS[issue.status]}</Tag>,
+          children: (
+            <Tag color={DOC_STATUS_COLORS[issue.status]}>
+              {DOC_STATUS_LABELS[issue.status]}
+            </Tag>
+          ),
         },
         {
           key: "createdBy",
@@ -97,20 +109,41 @@ export function IssueHeader({ issue, canEdit }: Props) {
             ? dayjs(issue.postedAt).format("HH:mm DD/MM/YYYY")
             : "—",
         },
-        {
-          key: "partner",
-          label: fieldLabel("partnerId", "Người nhận"),
-          children: editable ? (
-            <PartnerSearchInput
-              value={issue.partnerId ?? undefined}
-              onChange={(value) =>
-                value ? void save("partnerId", { partnerId: value }) : null
-              }
-            />
-          ) : (
-            `${issue.partnerCode ?? ""} ${issue.partnerName ?? "—"}`.trim()
-          ),
-        },
+        issue.recipient?.kind === "internal"
+          ? {
+              // Phiếu sinh từ đơn nội bộ: chỉ đổi nhân viên, không đổi chế độ
+              // — chế độ đi theo đơn gốc.
+              key: "partner",
+              label: fieldLabel("internalRecipientId", "Người nhận"),
+              children: editable ? (
+                <StaffSelect
+                  value={issue.recipient.id}
+                  onChange={(value) =>
+                    value
+                      ? void save("internalRecipientId", {
+                          internalRecipientId: value,
+                        })
+                      : null
+                  }
+                />
+              ) : (
+                formatRecipient(issue.recipient)
+              ),
+            }
+          : {
+              key: "partner",
+              label: fieldLabel("partnerId", "Người nhận"),
+              children: editable ? (
+                <PartnerSearchInput
+                  value={issue.partnerId ?? undefined}
+                  onChange={(value) =>
+                    value ? void save("partnerId", { partnerId: value }) : null
+                  }
+                />
+              ) : (
+                `${issue.partnerCode ?? ""} ${issue.partnerName ?? "—"}`.trim()
+              ),
+            },
         {
           key: "warehouse",
           label: fieldLabel("warehouseId", "Kho đầu phiếu"),
@@ -123,7 +156,9 @@ export function IssueHeader({ issue, canEdit }: Props) {
                   value: warehouse.id,
                   label: warehouse.name,
                 }))}
-                onChange={(value) => void save("warehouseId", { warehouseId: value })}
+                onChange={(value) =>
+                  void save("warehouseId", { warehouseId: value })
+                }
               />
               <Typography.Text type="secondary" className="text-xs">
                 Dòng nào chọn kho riêng thì theo kho đó.

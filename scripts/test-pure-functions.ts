@@ -47,6 +47,8 @@ import {
   writeOrderFilterToUrl,
 } from "../src/features/sales-order/schemas/order.schema";
 import { formatRecipient, toRecipient } from "../src/shared/lib/recipient";
+import { toDocumentDetail } from "../src/features/documents/types";
+import { toDocumentUpdate } from "../src/features/documents/schemas/document.schema";
 import { toKiotVietHistoryRow } from "../src/features/kiotviet-history/types";
 import {
   discrepancyOf,
@@ -561,6 +563,25 @@ assert.equal(writeOrderFilterToUrl(DEFAULT_ORDER_FILTER).has("nguoi_nhan"), fals
 assert.equal(toOrderListRpcArgs(internalFilter).p_loai_nhan, "NOI_BO");
 assert.equal(toOrderListRpcArgs(DEFAULT_ORDER_FILTER).p_loai_nhan, undefined, "tất cả → không gửi p_loai_nhan");
 assert.equal(countActiveOrderFilters(internalFilter), 1, "lọc chế độ tính là một điều kiện đang bật");
+
+// Phiếu xuất sinh từ đơn nội bộ: chi_tiet_chung_tu trả nguoi_nhan_id (0076).
+const internalIssue = toDocumentDetail({
+  id: "ct-1", so_ct: "PX26-000001", ngay_ct: "2026-10-01", loai_ct: "XUAT",
+  nguon_nhap: null as unknown as "NCC", trang_thai: "NHAP_LIEU", kho_id: "k1", ten_kho: "Kho 1",
+  doi_tac_id: null as unknown as string, ma_doi_tac: null as unknown as string, ten_doi_tac: null as unknown as string,
+  ghi_chu: null as unknown as string, tong_so_luong: 3, tong_tien: 0, ho_ten_nguoi_tao: "Văn phòng",
+  ngay_ghi_so: null as unknown as string, created_at: "2026-10-01T00:00:00Z",
+  don_dat_hang_id: "dh-1", so_dh: "DH26-000002", chung_tu_goc_id: null as unknown as string,
+  so_ct_goc: null as unknown as string, ly_do_xuat_am: null as unknown as string,
+  ghi_chu_ly_do: null as unknown as string, nguoi_duyet_id: null as unknown as string,
+  nguoi_nhan_id: "nd-1", ten_nguoi_nhan: "Thủ kho K1",
+});
+assert.deepEqual(internalIssue.recipient, { kind: "internal", id: "nd-1", name: "Thủ kho K1" });
+assert.deepEqual(
+  toDocumentUpdate({ internalRecipientId: "nd-2" }),
+  { nguoi_nhan_id: "nd-2" },
+  "đổi nhân viên nhận trên phiếu xuất nội bộ",
+);
 
 // --- Kiểm kê: ngưỡng lệch và nhãn trạng thái phiên (06-09) ------------------
 assert.equal(discrepancyOf(8, 10), -2);

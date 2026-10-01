@@ -1,3 +1,4 @@
+import { toRecipient, type Recipient } from "@/shared/lib/recipient";
 import type { Database } from "@/types/database.types";
 
 type Fn = Database["public"]["Functions"];
@@ -43,6 +44,11 @@ export type DocumentDetail = {
   partnerId: string | null;
   partnerCode: string | null;
   partnerName: string | null;
+  /**
+   * Người nhận của phiếu xuất: đối tác hoặc nhân viên nội bộ (0076). Các field
+   * `partner*` ở trên giữ cho phiếu nhập/trả, nơi đối tác là nhà cung cấp.
+   */
+  recipient: Recipient | null;
   warehouseId: string | null;
   warehouseName: string | null;
   createdByName: string | null;
@@ -122,6 +128,13 @@ export function toDocumentDetail(row: DocumentDetailDb): DocumentDetail {
     partnerId: row.doi_tac_id,
     partnerCode: row.ma_doi_tac,
     partnerName: row.ten_doi_tac,
+    recipient: toRecipient({
+      partnerId: row.doi_tac_id,
+      partnerCode: row.ma_doi_tac,
+      partnerName: row.ten_doi_tac,
+      internalId: row.nguoi_nhan_id,
+      internalName: row.ten_nguoi_nhan,
+    }),
     warehouseId: row.kho_id,
     warehouseName: row.ten_kho,
     createdByName: row.ho_ten_nguoi_tao,

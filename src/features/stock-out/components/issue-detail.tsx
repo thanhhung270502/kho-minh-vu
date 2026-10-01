@@ -10,6 +10,7 @@ import { negativeReasonLabel } from "@/features/documents/lib/negative-reasons";
 import { ReturnButton } from "@/features/returns/components/return-button";
 import { orderKeys } from "@/features/sales-order/api/order.keys";
 import { PageHeader } from "@/shared/components/page-header";
+import { formatRecipient } from "@/shared/lib/recipient";
 import { QueryState } from "@/shared/components/query-state";
 
 import { useIssueDetail, useIssueLines } from "../hooks/useIssues";
@@ -68,7 +69,7 @@ export function IssueDetailView({
                   <Tag color={DOC_STATUS_COLORS[issue.status]}>
                     {DOC_STATUS_LABELS[issue.status]}
                   </Tag>
-                  {issue.partnerName ?? "Chưa chọn người nhận"}
+                  {issue.recipient ? formatRecipient(issue.recipient) : "Chưa chọn người nhận"}
                   {issue.orderId ? (
                     <Link href={`/dat-hang/${issue.orderId}`} className="text-sm">
                       Từ đơn {issue.orderNo}
