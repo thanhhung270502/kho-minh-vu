@@ -38,7 +38,15 @@ const COLUMNS: TableColumnsType<OrderRow> = [
     dataIndex: "recipient",
     width: 220,
     ellipsis: true,
-    render: (recipient: OrderRow["recipient"]) => formatRecipient(recipient),
+    render: (recipient: OrderRow["recipient"]) =>
+      recipient?.kind === "internal" ? (
+        <span>
+          <Tag>Nội bộ</Tag>
+          {recipient.name ?? "—"}
+        </span>
+      ) : (
+        formatRecipient(recipient)
+      ),
   },
   {
     title: "Ngày giao dự kiến",

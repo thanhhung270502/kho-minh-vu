@@ -38,7 +38,14 @@ import {
   UNASSIGNED_WAREHOUSE_LABEL,
 } from "../src/features/sales-order/lib/group-lines-by-warehouse";
 import { toOrderDetail, toOrderRow, type OrderLine } from "../src/features/sales-order/types";
-import { toOrderUpdate } from "../src/features/sales-order/schemas/order.schema";
+import {
+  DEFAULT_ORDER_FILTER,
+  countActiveOrderFilters,
+  readOrderFilterFromUrl,
+  toOrderListRpcArgs,
+  toOrderUpdate,
+  writeOrderFilterToUrl,
+} from "../src/features/sales-order/schemas/order.schema";
 import { formatRecipient, toRecipient } from "../src/shared/lib/recipient";
 import { toKiotVietHistoryRow } from "../src/features/kiotviet-history/types";
 import {
@@ -541,6 +548,19 @@ assert.deepEqual(
   "chuyển về đối tác phải xóa nguoi_nhan_id",
 );
 assert.deepEqual(toOrderUpdate({ note: "x" }), { ghi_chu: "x" }, "không đụng người nhận khi không đổi");
+
+// Bộ lọc chế độ người nhận trên URL — giá trị URL tiếng Việt không dấu, giá trị
+// RPC là hợp đồng với database (p_loai_nhan: DOI_TAC | NOI_BO).
+const internalFilter = readOrderFilterFromUrl(new URLSearchParams("nguoi_nhan=noi_bo"));
+assert.equal(internalFilter.recipientKind, "internal", "?nguoi_nhan=noi_bo → internal");
+assert.equal(readOrderFilterFromUrl(new URLSearchParams("nguoi_nhan=doi_tac")).recipientKind, "partner");
+assert.equal(readOrderFilterFromUrl(new URLSearchParams("nguoi_nhan=bay")).recipientKind, null, "giá trị lạ → bỏ qua");
+assert.equal(readOrderFilterFromUrl(new URLSearchParams("nguoi_nhan=toString")).recipientKind, null, "khóa prototype không lọt qua");
+assert.equal(writeOrderFilterToUrl(internalFilter).get("nguoi_nhan"), "noi_bo", "ghi ngược ra URL");
+assert.equal(writeOrderFilterToUrl(DEFAULT_ORDER_FILTER).has("nguoi_nhan"), false, "mặc định không ghi tham số");
+assert.equal(toOrderListRpcArgs(internalFilter).p_loai_nhan, "NOI_BO");
+assert.equal(toOrderListRpcArgs(DEFAULT_ORDER_FILTER).p_loai_nhan, undefined, "tất cả → không gửi p_loai_nhan");
+assert.equal(countActiveOrderFilters(internalFilter), 1, "lọc chế độ tính là một điều kiện đang bật");
 
 // --- Kiểm kê: ngưỡng lệch và nhãn trạng thái phiên (06-09) ------------------
 assert.equal(discrepancyOf(8, 10), -2);

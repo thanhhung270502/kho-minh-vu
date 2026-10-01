@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import type { ReactNode } from "react";
 
 import { PartnerSearchInput } from "@/shared/components/partner-search-input";
+import { RECIPIENT_KIND_LABELS, type RecipientKind } from "@/shared/lib/recipient";
 
 import { ORDER_STATUSES, ORDER_STATUS_LABELS, type OrderStatus } from "../lib/order-status";
 import {
@@ -16,6 +17,7 @@ import {
 // Bẫy 4/11: mục "Tất cả" phải là một option với value "" — antd v6 bỏ hỗ trợ
 // option có value rỗng dạng null trong danh sách options.
 const ALL_STATUS = "";
+const ALL_KINDS = "";
 
 function FilterGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -59,12 +61,38 @@ export function OrderFilterPanel({
         />
       </FilterGroup>
 
-      <FilterGroup label="Người nhận">
-        <PartnerSearchInput
-          value={filter.partnerId ?? undefined}
-          onChange={(id) => change({ partnerId: id ?? null })}
+      <FilterGroup label="Loại người nhận">
+        <Select
+          className="w-full"
+          value={filter.recipientKind ?? ALL_KINDS}
+          options={[
+            { value: ALL_KINDS, label: "Tất cả" },
+            ...(Object.keys(RECIPIENT_KIND_LABELS) as RecipientKind[]).map((kind) => ({
+              value: kind,
+              label: RECIPIENT_KIND_LABELS[kind],
+            })),
+          ]}
+          onChange={(selected) => {
+            const recipientKind =
+              selected === ALL_KINDS ? null : (selected as RecipientKind);
+            // Lọc theo một đối tác cụ thể vô nghĩa với đơn nội bộ.
+            change(
+              recipientKind === "internal"
+                ? { recipientKind, partnerId: null }
+                : { recipientKind },
+            );
+          }}
         />
       </FilterGroup>
+
+      {filter.recipientKind !== "internal" ? (
+        <FilterGroup label="Đối tác nhận">
+          <PartnerSearchInput
+            value={filter.partnerId ?? undefined}
+            onChange={(id) => change({ partnerId: id ?? null })}
+          />
+        </FilterGroup>
+      ) : null}
 
       <FilterGroup label="Khoảng ngày">
         <DatePicker.RangePicker

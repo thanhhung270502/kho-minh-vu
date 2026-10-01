@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { readDate, readUuid } from "@/features/documents/lib/url-filter";
+import type { RecipientKind } from "@/shared/lib/recipient";
 import type { Database } from "@/types/database.types";
 
 import { ORDER_STATUSES, type OrderStatus } from "../lib/order-status";
@@ -75,12 +76,13 @@ export function toOrderLineUpdate(
 
 // --- Bộ lọc trên URL ---------------------------------------------------------
 //
-// `/dat-hang?q=&trang_thai=&doi_tac=&tu_ngay=&den_ngay=&trang=` — khác tham số
+// `/dat-hang?q=&trang_thai=&nguoi_nhan=&doi_tac=&tu_ngay=&den_ngay=&trang=` — khác tham số
 // của màn nhập (`ncc`, `kho`, `nguon`): đơn không có kho, không có nguồn nhập.
 
 export type OrderFilter = {
   q: string;
   status: OrderStatus | null;
+  recipientKind: RecipientKind | null;
   partnerId: string | null;
   fromDate: string | null;
   toDate: string | null;
@@ -90,6 +92,7 @@ export type OrderFilter = {
 export const DEFAULT_ORDER_FILTER: OrderFilter = {
   q: "",
   status: null,
+  recipientKind: null,
   partnerId: null,
   fromDate: null,
   toDate: null,
@@ -102,9 +105,33 @@ export const ORDER_PAGE_SIZE = 50;
 export function countActiveOrderFilters(filter: OrderFilter): number {
   let count = 0;
   if (filter.status !== null) count++;
+  if (filter.recipientKind !== null) count++;
   if (filter.partnerId !== null) count++;
   if (filter.fromDate !== null || filter.toDate !== null) count++;
   return count;
+}
+
+// URL tiếng Việt không dấu (CLAUDE.md), domain tiếng Anh, RPC giữ giá trị của
+// database — ba bảng tra một chiều, không suy từ nhau.
+const RECIPIENT_KIND_FROM_URL: Record<string, RecipientKind> = {
+  doi_tac: "partner",
+  noi_bo: "internal",
+};
+const RECIPIENT_KIND_TO_URL: Record<RecipientKind, string> = {
+  partner: "doi_tac",
+  internal: "noi_bo",
+};
+// Hợp đồng với `danh_sach_don.p_loai_nhan` (0076).
+const RECIPIENT_KIND_TO_RPC: Record<RecipientKind, string> = {
+  partner: "DOI_TAC",
+  internal: "NOI_BO",
+};
+
+function readRecipientKind(raw: string | null): RecipientKind | null {
+  // hasOwn: chặn "?nguoi_nhan=toString" lấy nhầm hàm của prototype.
+  return raw !== null && Object.hasOwn(RECIPIENT_KIND_FROM_URL, raw)
+    ? RECIPIENT_KIND_FROM_URL[raw]
+    : null;
 }
 
 export function readOrderFilterFromUrl(params: {
@@ -120,6 +147,7 @@ export function readOrderFilterFromUrl(params: {
     status: ORDER_STATUSES.includes(status as OrderStatus)
       ? (status as OrderStatus)
       : null,
+    recipientKind: readRecipientKind(params.get("nguoi_nhan")),
     partnerId: readUuid(params.get("doi_tac")),
     fromDate: readDate(params.get("tu_ngay")),
     toDate: readDate(params.get("den_ngay")),
@@ -131,6 +159,9 @@ export function writeOrderFilterToUrl(filter: OrderFilter): URLSearchParams {
   const params = new URLSearchParams();
   if (filter.q) params.set("q", filter.q);
   if (filter.status) params.set("trang_thai", filter.status);
+  if (filter.recipientKind) {
+    params.set("nguoi_nhan", RECIPIENT_KIND_TO_URL[filter.recipientKind]);
+  }
   if (filter.partnerId) params.set("doi_tac", filter.partnerId);
   if (filter.fromDate) params.set("tu_ngay", filter.fromDate);
   if (filter.toDate) params.set("den_ngay", filter.toDate);
@@ -150,5 +181,8 @@ export function toOrderListRpcArgs(filter: OrderFilter): OrderListArgs {
     p_tu_khoa: filter.q || undefined,
     p_trang: filter.page,
     p_kich_thuoc: ORDER_PAGE_SIZE,
+    p_loai_nhan: filter.recipientKind
+      ? RECIPIENT_KIND_TO_RPC[filter.recipientKind]
+      : undefined,
   };
 }

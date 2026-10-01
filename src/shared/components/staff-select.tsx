@@ -11,14 +11,13 @@ type Props = {
   onChange: (id: string | undefined) => void;
   disabled?: boolean;
   autoFocus?: boolean;
-  status?: "error";
 };
 
 /**
  * Chọn nhân viên nhận hàng cho đơn/phiếu xuất nội bộ. Đặt ở `shared/` vì cả
  * `/dat-hang` lẫn `/xuat-kho` đều dùng (CLAUDE.md: chỉ nâng lên khi ≥ 2 feature).
  */
-export function StaffSelect({ value, onChange, disabled, autoFocus, status }: Props) {
+export function StaffSelect({ value, onChange, disabled, autoFocus }: Props) {
   const staff = useInternalRecipients();
 
   const options = (staff.data ?? []).map((person) => ({
@@ -32,7 +31,6 @@ export function StaffSelect({ value, onChange, disabled, autoFocus, status }: Pr
       allowClear
       autoFocus={autoFocus}
       disabled={disabled}
-      status={status}
       className="w-full"
       placeholder="Gõ tên nhân viên nhận hàng"
       value={value}
