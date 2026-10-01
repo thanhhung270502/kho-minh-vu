@@ -1,3 +1,4 @@
+import { toRecipient, type Recipient } from "@/shared/lib/recipient";
 import type { Database } from "@/types/database.types";
 
 import type { OrderStatus } from "./lib/order-status";
@@ -18,8 +19,7 @@ export type OrderRow = {
   orderDate: string;
   status: OrderStatus;
   deliveryDate: string | null;
-  partnerId: string;
-  partnerName: string | null;
+  recipient: Recipient | null;
   lineCount: number;
   orderedQuantity: number;
   shippedQuantity: number;
@@ -35,9 +35,7 @@ export type OrderDetail = {
   orderDate: string;
   status: OrderStatus;
   deliveryDate: string | null;
-  partnerId: string;
-  partnerCode: string | null;
-  partnerName: string | null;
+  recipient: Recipient | null;
   createdByName: string | null;
   note: string | null;
   orderedQuantity: number;
@@ -67,8 +65,13 @@ export function toOrderRow(row: OrderRowDb): OrderRow {
     orderDate: row.ngay_dh,
     status: row.trang_thai,
     deliveryDate: row.ngay_giao_du_kien,
-    partnerId: row.doi_tac_id,
-    partnerName: row.ten_doi_tac,
+    recipient: toRecipient({
+      partnerId: row.doi_tac_id,
+      partnerCode: null,
+      partnerName: row.ten_doi_tac,
+      internalId: row.nguoi_nhan_id,
+      internalName: row.ten_nguoi_nhan,
+    }),
     lineCount: Number(row.so_dong),
     orderedQuantity: Number(row.tong_so_luong_dat),
     shippedQuantity: Number(row.tong_so_luong_da_xuat),
@@ -86,9 +89,13 @@ export function toOrderDetail(row: OrderDetailDb): OrderDetail {
     orderDate: row.ngay_dh,
     status: row.trang_thai,
     deliveryDate: row.ngay_giao_du_kien,
-    partnerId: row.doi_tac_id,
-    partnerCode: row.ma_doi_tac,
-    partnerName: row.ten_doi_tac,
+    recipient: toRecipient({
+      partnerId: row.doi_tac_id,
+      partnerCode: row.ma_doi_tac,
+      partnerName: row.ten_doi_tac,
+      internalId: row.nguoi_nhan_id,
+      internalName: row.ten_nguoi_nhan,
+    }),
     createdByName: row.ho_ten_nguoi_tao,
     note: row.ghi_chu,
     orderedQuantity: Number(row.tong_so_luong_dat),

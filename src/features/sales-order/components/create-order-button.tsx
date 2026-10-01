@@ -47,7 +47,10 @@ export function CreateOrderButton({ label = "Tạo đơn" }: Props) {
     setError(null);
 
     try {
-      const id = await createOrder.mutateAsync({ partnerId, deliveryDate });
+      const id = await createOrder.mutateAsync({
+        recipient: { kind: "partner", id: partnerId },
+        deliveryDate,
+      });
       setOpen(false);
       reset();
       // Tạo đơn là sinh ngay một đơn có số trên server — không giữ đơn nháp

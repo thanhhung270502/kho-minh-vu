@@ -7,11 +7,17 @@ import { ORDER_STATUSES, type OrderStatus } from "../lib/order-status";
 
 // --- Form đầu đơn / dòng đơn ------------------------------------------------
 //
-// D-03: `partnerId` bắt buộc, `doi_tac_id` giữ NOT NULL — không có ô text tự
-// do. Đơn KHÔNG mang giá (chốt 19/09 câu 7): không có trường giá ở đây.
+// D-03: người nhận bắt buộc, không có ô text tự do. Từ 0076 người nhận là
+// đối tác HOẶC nhân viên nội bộ — database ép đúng một (ck_ddh_mot_nguoi_nhan).
+// Đơn KHÔNG mang giá (chốt 19/09 câu 7): không có trường giá ở đây.
+
+export const recipientChoiceSchema = z.object({
+  kind: z.enum(["partner", "internal"]),
+  id: z.string().uuid("Chọn người nhận"),
+});
 
 export const orderHeaderSchema = z.object({
-  partnerId: z.string().uuid("Chọn đối tác"),
+  recipient: recipientChoiceSchema,
   orderDate: z.string().min(1, "Chọn ngày").optional(),
   deliveryDate: z
     .string()
@@ -42,7 +48,14 @@ type OrderLineUpdate = Partial<
 /** Ranh giới duy nhất đổi khóa miền sang tên cột `don_dat_hang`. */
 export function toOrderUpdate(input: Partial<OrderHeaderInput>): OrderUpdate {
   const update: OrderUpdate = {};
-  if (input.partnerId !== undefined) update.doi_tac_id = input.partnerId;
+  if (input.recipient !== undefined) {
+    // Ghi CẢ HAI cột mỗi lần đổi người nhận: đổi chế độ mà quên xóa cột kia
+    // là vướng CHECK ngay.
+    update.doi_tac_id =
+      input.recipient.kind === "partner" ? input.recipient.id : null;
+    update.nguoi_nhan_id =
+      input.recipient.kind === "internal" ? input.recipient.id : null;
+  }
   if (input.deliveryDate !== undefined) {
     update.ngay_giao_du_kien = input.deliveryDate;
   }

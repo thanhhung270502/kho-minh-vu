@@ -37,7 +37,9 @@ import {
   groupLinesByWarehouse,
   UNASSIGNED_WAREHOUSE_LABEL,
 } from "../src/features/sales-order/lib/group-lines-by-warehouse";
-import type { OrderLine } from "../src/features/sales-order/types";
+import { toOrderDetail, toOrderRow, type OrderLine } from "../src/features/sales-order/types";
+import { toOrderUpdate } from "../src/features/sales-order/schemas/order.schema";
+import { formatRecipient, toRecipient } from "../src/shared/lib/recipient";
 import { toKiotVietHistoryRow } from "../src/features/kiotviet-history/types";
 import {
   discrepancyOf,
@@ -481,6 +483,64 @@ assert.deepEqual(
   [1, 2, 3, 4],
   "STT liên tục trong cả tờ, không đánh lại từ 1 ở mỗi kho",
 );
+
+// --- Người nhận: đối tác hoặc nội bộ (0076) ---------------------------------
+assert.deepEqual(
+  toRecipient({ partnerId: "dt-1", partnerCode: "KH01", partnerName: "Liên Hoa", internalId: null, internalName: null }),
+  { kind: "partner", id: "dt-1", code: "KH01", name: "Liên Hoa" },
+  "có doi_tac_id → người nhận đối tác",
+);
+assert.deepEqual(
+  toRecipient({ partnerId: null, partnerCode: null, partnerName: null, internalId: "nd-1", internalName: "Nguyễn Văn A" }),
+  { kind: "internal", id: "nd-1", name: "Nguyễn Văn A" },
+  "có nguoi_nhan_id → người nhận nội bộ",
+);
+assert.equal(
+  toRecipient({ partnerId: null, partnerCode: null, partnerName: null, internalId: null, internalName: null }),
+  null,
+  "không có cả hai (phiếu nhập, kiểm kê…) → null",
+);
+assert.equal(formatRecipient({ kind: "partner", id: "dt-1", code: "KH01", name: "Liên Hoa" }), "KH01 Liên Hoa");
+assert.equal(formatRecipient({ kind: "partner", id: "dt-1", code: null, name: "Liên Hoa" }), "Liên Hoa");
+assert.equal(formatRecipient({ kind: "internal", id: "nd-1", name: "Nguyễn Văn A" }), "Nội bộ — Nguyễn Văn A");
+assert.equal(formatRecipient(null), "—");
+
+const internalOrderDetail = toOrderDetail({
+  id: "dh-1", so_dh: "DH26-000001", ngay_dh: "2026-10-01", trang_thai: "TAM",
+  ngay_giao_du_kien: null as unknown as string, doi_tac_id: null as unknown as string, ma_doi_tac: null as unknown as string,
+  ten_doi_tac: null as unknown as string, nguoi_nhan_id: "nd-1", ten_nguoi_nhan: "Nguyễn Văn A",
+  ghi_chu: null as unknown as string, tong_so_luong_dat: 0, tong_so_luong_da_xuat: 0,
+  ho_ten_nguoi_tao: "Văn phòng", created_at: "2026-10-01T00:00:00Z",
+});
+assert.deepEqual(
+  internalOrderDetail.recipient,
+  { kind: "internal", id: "nd-1", name: "Nguyễn Văn A" },
+  "chi_tiet_don của đơn nội bộ map ra recipient nội bộ (RPC trả doi_tac_id null dù type khai string)",
+);
+const partnerOrderRow = toOrderRow({
+  id: "dh-2", so_dh: "DH26-000002", ngay_dh: "2026-10-01", trang_thai: "TAM",
+  ngay_giao_du_kien: null as unknown as string, doi_tac_id: "dt-1", ten_doi_tac: "Liên Hoa",
+  nguoi_nhan_id: null as unknown as string, ten_nguoi_nhan: null as unknown as string, so_dong: 0,
+  tong_so_luong_dat: 0, tong_so_luong_da_xuat: 0, ho_ten_nguoi_tao: "Văn phòng",
+  ghi_chu: null as unknown as string, created_at: "2026-10-01T00:00:00Z", tong_so_dong: 1,
+});
+assert.deepEqual(
+  partnerOrderRow.recipient,
+  { kind: "partner", id: "dt-1", code: null, name: "Liên Hoa" },
+  "danh_sach_don không trả mã đối tác → code null",
+);
+
+assert.deepEqual(
+  toOrderUpdate({ recipient: { kind: "internal", id: "nd-1" } }),
+  { doi_tac_id: null, nguoi_nhan_id: "nd-1" },
+  "chuyển sang nội bộ phải xóa doi_tac_id, không thì vướng ck_ddh_mot_nguoi_nhan",
+);
+assert.deepEqual(
+  toOrderUpdate({ recipient: { kind: "partner", id: "dt-1" } }),
+  { doi_tac_id: "dt-1", nguoi_nhan_id: null },
+  "chuyển về đối tác phải xóa nguoi_nhan_id",
+);
+assert.deepEqual(toOrderUpdate({ note: "x" }), { ghi_chu: "x" }, "không đụng người nhận khi không đổi");
 
 // --- Kiểm kê: ngưỡng lệch và nhãn trạng thái phiên (06-09) ------------------
 assert.equal(discrepancyOf(8, 10), -2);

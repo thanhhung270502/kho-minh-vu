@@ -5,6 +5,8 @@ import type { TableColumnsType } from "antd";
 import dayjs from "dayjs";
 import Link from "next/link";
 
+import { formatRecipient } from "@/shared/lib/recipient";
+
 import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from "../lib/order-status";
 import { ORDER_PAGE_SIZE, type OrderFilter } from "../schemas/order.schema";
 import type { OrderRow } from "../types";
@@ -31,7 +33,13 @@ const COLUMNS: TableColumnsType<OrderRow> = [
     width: 110,
     render: (date: string) => dayjs(date).format("DD/MM/YYYY"),
   },
-  { title: "Người nhận", dataIndex: "partnerName", width: 220, ellipsis: true },
+  {
+    title: "Người nhận",
+    dataIndex: "recipient",
+    width: 220,
+    ellipsis: true,
+    render: (recipient: OrderRow["recipient"]) => formatRecipient(recipient),
+  },
   {
     title: "Ngày giao dự kiến",
     dataIndex: "deliveryDate",

@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { PartnerSearchInput } from "@/shared/components/partner-search-input";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
+import { formatRecipient } from "@/shared/lib/recipient";
 
 import { useUpdateOrderHeader } from "../hooks/useOrders";
 import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from "../lib/order-status";
@@ -73,16 +74,18 @@ export function OrderHeader({ order, editable }: Props) {
         },
         {
           key: "partner",
-          label: fieldLabel("partnerId", "Người nhận"),
+          label: fieldLabel("recipient", "Người nhận"),
           children: editable ? (
             <PartnerSearchInput
-              value={order.partnerId}
+              value={order.recipient?.kind === "partner" ? order.recipient.id : undefined}
               onChange={(value) =>
-                value ? void save("partnerId", { partnerId: value }) : null
+                value
+                  ? void save("recipient", { recipient: { kind: "partner", id: value } })
+                  : null
               }
             />
           ) : (
-            `${order.partnerCode ?? ""} ${order.partnerName ?? "—"}`.trim()
+            formatRecipient(order.recipient)
           ),
         },
         {

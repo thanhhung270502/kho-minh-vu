@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
+import { formatRecipient } from "@/shared/lib/recipient";
 
 import { useOrderDetail, useOrderLines } from "../hooks/useOrders";
 import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from "../lib/order-status";
@@ -59,7 +60,7 @@ export function OrderDetailView({
                   <Tag color={ORDER_STATUS_COLORS[order.status]}>
                     {ORDER_STATUS_LABELS[order.status]}
                   </Tag>
-                  {order.partnerName ?? "Chưa chọn người nhận"}
+                  {formatRecipient(order.recipient)}
                 </span>
               }
               actions={

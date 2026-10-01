@@ -3,6 +3,8 @@
 import { Button } from "antd";
 import dayjs from "dayjs";
 
+import { formatRecipient } from "@/shared/lib/recipient";
+
 import { groupLinesByWarehouse } from "../lib/group-lines-by-warehouse";
 import type { OrderDetail, OrderLine } from "../types";
 
@@ -57,7 +59,7 @@ export function PickingPrintTemplate({
       <section className="mb-4 grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
         <div>
           <span className="text-gray-600">Người nhận: </span>
-          <strong>{order.partnerName ?? "—"}</strong>
+          <strong>{formatRecipient(order.recipient)}</strong>
         </div>
         <div>
           <span className="text-gray-600">Ngày giao dự kiến: </span>

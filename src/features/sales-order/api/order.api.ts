@@ -1,4 +1,5 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import type { RecipientChoice } from "@/shared/lib/recipient";
 
 import {
   toOrderLineUpdate,
@@ -63,7 +64,7 @@ export async function fetchOrderLines(id: string): Promise<OrderLine[]> {
  * client, hai người tạo đơn cùng lúc sẽ trùng `so_dh` nếu làm vậy.
  */
 export async function createOrder(input: {
-  partnerId: string;
+  recipient: RecipientChoice;
   deliveryDate?: string | null;
 }): Promise<string> {
   const supabase = getSupabaseBrowserClient();
@@ -78,7 +79,10 @@ export async function createOrder(input: {
     .from("don_dat_hang")
     .insert({
       so_dh: orderNo,
-      doi_tac_id: input.partnerId,
+      doi_tac_id:
+        input.recipient.kind === "partner" ? input.recipient.id : null,
+      nguoi_nhan_id:
+        input.recipient.kind === "internal" ? input.recipient.id : null,
       ngay_giao_du_kien: input.deliveryDate ?? null,
     })
     .select("id")

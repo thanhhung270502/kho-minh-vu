@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-query";
 
 import { documentKeys } from "@/features/documents/api/document.keys";
+import type { RecipientChoice } from "@/shared/lib/recipient";
 
 import {
   addOrderLine,
@@ -75,7 +76,10 @@ function useRefreshOrder(id?: string) {
 export function useCreateOrder() {
   const refresh = useRefreshOrder();
   return useMutation({
-    mutationFn: (input: { partnerId: string; deliveryDate?: string | null }) =>
+    mutationFn: (input: {
+      recipient: RecipientChoice;
+      deliveryDate?: string | null;
+    }) =>
       createOrder(input),
     onSuccess: refresh,
   });
