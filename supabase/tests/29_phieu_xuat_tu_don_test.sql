@@ -1,5 +1,8 @@
 -- =============================================================================
 -- 0056 — tao_phieu_xuat_tu_don (D-10, XUAT-01)
+-- 0078: hàm thành bước NỘI BỘ của hoan_thanh_don — client (authenticated) mất
+-- quyền gọi thẳng, nên các test hành vi chạy dưới quyền postgres; một đơn tối
+-- đa một hóa đơn chưa hủy (test 14).
 -- Khuôn: supabase/tests/22_kho_theo_dong_test.sql
 -- =============================================================================
 begin;
@@ -64,8 +67,6 @@ values ('PXD-ZQX-C', 'Hàng test PXD-ZQX-C',
         (select id from public.don_vi_tinh where ma = 'CAI'),
         (select id from public.cong_doan where ma = 'MUA_NGOAI'))
 on conflict (ma_hang) do update set ten_hang = excluded.ten_hang, kho_mac_dinh_id = null;
-
-select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 
 -- ─── Đơn A: TAM, chưa xác nhận ──────────────────────────────────────────────
 insert into public.don_dat_hang (so_dh, doi_tac_id)
@@ -177,25 +178,20 @@ select is(
   'khong co chung_tu nao duoc tao khi bi chan boi ma thieu kho mac dinh (atomic)'
 );
 
--- ─── 13: thu_kho khong tao duoc phieu xuat ──────────────────────────────────
-select pg_temp.dang_xuat();
-select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
+-- ─── 13: client không gọi thẳng được (0078) ─────────────────────────────────
+select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select throws_ok(
   $$ select public.tao_phieu_xuat_tu_don((select id from public.don_dat_hang where so_dh = 'DH-PXD-B')) $$,
   '42501', null,
-  'thu_kho goi tao_phieu_xuat_tu_don bi tu choi 42501'
+  'van_phong goi thang tao_phieu_xuat_tu_don bi tu choi 42501 — phai qua hoan_thanh_don'
 );
-
--- ─── 14: goi hai lan tren cung don sinh hai phieu khac so_ct (khong chan) ──
 select pg_temp.dang_xuat();
-select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
-select public.tao_phieu_xuat_tu_don((select id from public.don_dat_hang where so_dh = 'DH-PXD-B'));
 
-select is(
-  (select count(distinct so_ct) from public.chung_tu
-    where don_dat_hang_id = (select id from public.don_dat_hang where so_dh = 'DH-PXD-B')),
-  2::bigint,
-  'goi lan hai tren cung don sinh phieu thu hai voi so_ct khac, khong bi chan'
+-- ─── 14: goi lan hai tren cung don bi unique index chan (0078) ───────────────
+select throws_ok(
+  $$ select public.tao_phieu_xuat_tu_don((select id from public.don_dat_hang where so_dh = 'DH-PXD-B')) $$,
+  '23505', null,
+  'goi lan hai tren cung don bi chan: mot don toi da mot hoa don chua huy'
 );
 
 select * from finish();

@@ -1375,12 +1375,14 @@ export type Database = {
           doi_tac_id: string
           ghi_chu: string
           ho_ten_nguoi_tao: string
+          hoa_don_id: string
           id: string
           ma_doi_tac: string
           ngay_dh: string
           ngay_giao_du_kien: string
           nguoi_nhan_id: string
           so_dh: string
+          so_hoa_don: string
           ten_doi_tac: string
           ten_nguoi_nhan: string
           tong_so_luong_da_xuat: number
@@ -1876,6 +1878,46 @@ export type Database = {
           ton: number
         }[]
       }
+      hoan_thanh_don: {
+        Args: {
+          p_don_id: string
+          p_ghi_chu_ly_do?: string
+          p_ly_do_xuat_am?: string
+        }
+        Returns: {
+          chung_tu_goc_id: string | null
+          created_at: string
+          doi_tac_id: string | null
+          don_dat_hang_id: string | null
+          ghi_chu: string | null
+          ghi_chu_ly_do: string | null
+          giam_gia: number
+          id: string
+          kho_den_id: string | null
+          kho_id: string
+          loai_ct: Database["public"]["Enums"]["loai_ct"]
+          ly_do_xuat_am: string | null
+          ngay_ct: string
+          ngay_ghi_so: string | null
+          nguoi_duyet_id: string | null
+          nguoi_nhan_id: string | null
+          nguoi_tao_id: string | null
+          nguon_nhap: Database["public"]["Enums"]["nguon_nhap"] | null
+          pham_vi_nhom_hang: string[] | null
+          so_ct: string
+          tong_so_luong: number
+          tong_tien: number
+          trang_thai: Database["public"]["Enums"]["trang_thai_ct"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "chung_tu"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      hoan_thanh_duoc_don: { Args: never; Returns: boolean }
       huy_chung_tu: {
         Args: { p_chung_tu_id: string; p_ly_do: string }
         Returns: {
@@ -1911,6 +1953,29 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      huy_don: {
+        Args: { p_id: string; p_ly_do: string }
+        Returns: {
+          created_at: string
+          doi_tac_id: string | null
+          ghi_chu: string | null
+          id: string
+          ngay_dh: string
+          ngay_giao_du_kien: string | null
+          nguoi_nhan_id: string | null
+          nguoi_tao_id: string | null
+          so_dh: string
+          trang_thai: Database["public"]["Enums"]["trang_thai_ddh"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "don_dat_hang"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      huy_duoc_don: { Args: never; Returns: boolean }
       kho_hien_tai: { Args: never; Returns: string[] }
       khop_danh_muc: {
         Args: { p_bang: string; p_gia_tri: string }

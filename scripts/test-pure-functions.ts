@@ -545,6 +545,7 @@ const internalOrderDetail = toOrderDetail({
   ten_doi_tac: null as unknown as string, nguoi_nhan_id: "nd-1", ten_nguoi_nhan: "Nguyễn Văn A",
   ghi_chu: null as unknown as string, tong_so_luong_dat: 0, tong_so_luong_da_xuat: 0,
   ho_ten_nguoi_tao: "Văn phòng", created_at: "2026-10-01T00:00:00Z",
+  hoa_don_id: null as unknown as string, so_hoa_don: null as unknown as string,
 });
 assert.deepEqual(
   internalOrderDetail.recipient,
