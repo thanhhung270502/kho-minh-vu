@@ -147,7 +147,7 @@ export function ExcelImport({ open, onClose, onViewRecentlyEdited }: Props) {
   return (
     <Modal
       open={open}
-      title="Nhập danh mục từ Excel"
+      title="Cập nhật danh mục từ Excel"
       width={900}
       closable={!state.submitting}
       mask={{ closable: !state.submitting }}

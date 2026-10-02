@@ -4,7 +4,7 @@ import { Badge, Button } from "antd";
 import type { ReactNode } from "react";
 
 import type { ProductFilter } from "../schemas/filter.schema";
-import { ExcelButton } from "./excel-button";
+import { ExcelButton, type ImportKind } from "./excel-button";
 
 type Props = {
   filter: ProductFilter;
@@ -12,7 +12,7 @@ type Props = {
   reviewCount: number;
   canEdit: boolean;
   onFilterChange: (filter: ProductFilter) => void;
-  onOpenImport?: () => void;
+  onOpenImport?: (kind: ImportKind) => void;
   /** Nút do route ghép vào (vd. "Danh mục phụ" của feature settings). */
   extraActions?: ReactNode;
 };

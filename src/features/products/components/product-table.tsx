@@ -18,6 +18,7 @@ import {
 } from "../schemas/filter.schema";
 import type { CatalogPermissions } from "../types";
 import { BulkAssignBar } from "./bulk-assign-bar";
+import type { ImportKind } from "./excel-button";
 import { buildProductColumns } from "./product-columns";
 import { ProductFilterPanel } from "./product-filter-panel";
 import { ProductModals } from "./product-modals";
@@ -66,7 +67,7 @@ export function ProductTable({
   });
   const [selected, setSelected] = useState<string[]>([]);
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
-  const [importOpen, setImportOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState<ImportKind | null>(null);
 
   // Badge "Cần rà": lấy tổng từ chính RPC danh sách, không thêm RPC mới.
   const reviewCount = useProducts({
@@ -148,7 +149,7 @@ export function ProductTable({
                 canEdit={permissions.canEdit}
                 extraActions={extraActions}
                 onFilterChange={changeFilter}
-                onOpenImport={() => setImportOpen(true)}
+                onOpenImport={setImportOpen}
               />
             }
             addButton={
@@ -228,9 +229,9 @@ export function ProductTable({
         suggestionsOpen={suggestionsOpen}
         onCloseSuggestions={() => setSuggestionsOpen(false)}
         importOpen={importOpen}
-        onCloseImport={() => setImportOpen(false)}
+        onCloseImport={() => setImportOpen(null)}
         onViewRecentlyEdited={() => {
-          setImportOpen(false);
+          setImportOpen(null);
           changeFilter({
             ...DEFAULT_PRODUCT_FILTER,
             sortBy: "updatedAt",

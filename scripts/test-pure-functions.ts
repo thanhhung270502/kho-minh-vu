@@ -14,6 +14,14 @@ import { fetchAllPages } from "../src/shared/lib/fetch-all-pages";
 import { isInteractiveTarget, readSelectedId, withSelectedId } from "../src/shared/lib/selected-id";
 import { docTypeLabel, toPartnerRow } from "../src/features/partners/types";
 import { duplicateProblemsInFile } from "../src/features/products/lib/new-product-file";
+import {
+  CATALOG_REASONS,
+  applyToRows,
+  catalogProblemsFrom,
+  draftProblems,
+  toDraftRows,
+  toImportPayload,
+} from "../src/features/products/lib/new-product-import";
 import { toAnalysisRow, type AnalysisRow, type AnalysisSettings } from "../src/features/analytics/types";
 import {
   buildReorderCsv,
@@ -1041,6 +1049,49 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.deepEqual(problems.get(3), ["Mã hàng trùng với dòng 2"]);
   assert.deepEqual(problems.get(4), ["Tên hàng trùng với dòng 2"]);
   assert.equal(problems.get(5), undefined, "dòng không trùng không có lỗi");
+}
+
+// --- Phase 15: màn xem trước nhập mã mới (IMP-02/03) -----------------------
+{
+  const cai = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
+  const lh = "11111111-1111-4111-8111-111111111111";
+  const drafts = toDraftRows(
+    [
+      { row: 2, code: "A", name: "Áo", stock: 3, description: "d", problems: [] },
+      { row: 3, code: "B", name: "Bé", stock: 0, description: "", problems: ["Tồn kho không phải là số"] },
+      { row: 4, code: "C", name: "Cá", stock: 1, description: "", problems: [] },
+    ],
+    { unitId: cai },
+  );
+  assert.equal(drafts[0].unitId, cai, "ĐVT mặc định CAI");
+  assert.equal(drafts[0].isActive && drafts[0].directSale, true, "mặc định đang KD + bán trực tiếp");
+
+  // Áp hàng loạt chỉ đổi đúng dòng đã chọn, không đụng mảng gốc.
+  const applied = applyToRows(drafts, [2, 4], { productTypeId: lh, directSale: false });
+  assert.deepEqual(applied.map((r) => r.productTypeId), [lh, null, lh]);
+  assert.deepEqual(applied.map((r) => r.directSale), [false, true, false]);
+  assert.equal(drafts[0].productTypeId, null, "không sửa mảng gốc");
+
+  // Lỗi của dòng = lỗi đọc file + trùng trong file + thiếu ĐVT + đã có trong danh mục.
+  const catalog = catalogProblemsFrom([
+    { dong: 4, ly_do: "Tên hàng đã có trong danh mục; Chưa chọn đơn vị tính" },
+  ]);
+  assert.deepEqual(catalog.get(4), [CATALOG_REASONS.name], "chỉ giữ lỗi trùng danh mục, bỏ lỗi đã tự kiểm ở client");
+  const noUnit = applyToRows(applied, [2], { unitId: null });
+  const problems = draftProblems(noUnit, catalog);
+  assert.deepEqual(problems.get(2), ["Chưa chọn đơn vị tính"]);
+  assert.deepEqual(problems.get(3), ["Tồn kho không phải là số"]);
+  assert.deepEqual(problems.get(4), [CATALOG_REASONS.name]);
+
+  // Payload: chỉ dòng sạch, khóa jsonb đúng hợp đồng RPC nhap_ma_hang_moi.
+  const clean = applyToRows(drafts, [4], { vehicleLineId: lh, shelfLocation: " K-1 " });
+  const payload = toImportPayload(clean, new Map([[3, ["x"]]]));
+  assert.deepEqual(payload.map((p) => p.dong), [2, 4], "bỏ dòng đang lỗi");
+  assert.deepEqual(payload[1], {
+    dong: 4, ma_hang: "C", ten_hang: "Cá", ton_kho: 1, ghi_chu: "",
+    dvt_id: cai, nhom_hang_id: null, loai_hang_id: null, dong_xe_id: lh,
+    dang_kinh_doanh: true, duoc_ban_truc_tiep: true, vi_tri_ke: "K-1",
+  });
 }
 
 async function kiemTaiTheoTrang() {

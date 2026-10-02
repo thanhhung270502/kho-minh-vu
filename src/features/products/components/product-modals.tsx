@@ -1,13 +1,15 @@
 "use client";
 
+import type { ImportKind } from "./excel-button";
 import { ExcelImport } from "./excel-import";
+import { NewProductImportDialog } from "./new-product-import/import-dialog";
 import { ProductDrawer } from "./product-drawer";
 import { StageSuggestions } from "./stage-suggestions";
 
 type Props = {
   suggestionsOpen: boolean;
   onCloseSuggestions: () => void;
-  importOpen: boolean;
+  importOpen: ImportKind | null;
   onCloseImport: () => void;
   onViewRecentlyEdited: () => void;
   drawer: { open: boolean; id: string | null };
@@ -31,8 +33,10 @@ export function ProductModals({
     <>
       <StageSuggestions open={suggestionsOpen} onClose={onCloseSuggestions} />
 
+      <NewProductImportDialog open={importOpen === "new"} onClose={onCloseImport} />
+
       <ExcelImport
-        open={importOpen}
+        open={importOpen === "update"}
         onClose={onCloseImport}
         onViewRecentlyEdited={onViewRecentlyEdited}
       />

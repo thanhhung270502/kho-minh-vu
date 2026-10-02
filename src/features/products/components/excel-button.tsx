@@ -9,9 +9,11 @@ type Props = {
   filter: ProductFilter;
   productCount: number;
   /** Chỉ truyền khi người dùng có quyền sửa. */
-  onOpenImport?: () => void;
-  /** Chỉ truyền cho QUẢN LÝ — giá vốn đầu kỳ là việc một lần, không phải việc hằng ngày. */
+  onOpenImport?: (kind: ImportKind) => void;
 };
+
+/** "new" = nhập mã mới từ file 4 cột (Phase 15); "update" = cập nhật mã đã có (mẫu 12 cột / KiotViet). */
+export type ImportKind = "new" | "update";
 
 type DownloadResult = { ok: true } | { ok: false; message: string };
 
@@ -79,12 +81,17 @@ export function ExcelButton({
       <Dropdown
         menu={{
           items: [
-            { key: "template", label: "Tải file mẫu trống" },
-            ...(onOpenImport ? [{ key: "import", label: "Nhập từ Excel…" }] : []),
+            ...(onOpenImport ? [{ key: "import-new", label: "Nhập mã hàng mới…" }] : []),
+            { key: "template-new", label: "Tải file mẫu nhập mã mới" },
+            { type: "divider" as const },
+            ...(onOpenImport ? [{ key: "import-update", label: "Cập nhật từ Excel…" }] : []),
+            { key: "template", label: "Tải file mẫu cập nhật" },
           ],
           onClick: ({ key }) => {
             if (key === "template") void run("/api/danh-muc/mau-excel");
-            if (key === "import") onOpenImport?.();
+            if (key === "template-new") void run("/api/danh-muc/mau-nhap-moi");
+            if (key === "import-new") onOpenImport?.("new");
+            if (key === "import-update") onOpenImport?.("update");
           },
         }}
       >
