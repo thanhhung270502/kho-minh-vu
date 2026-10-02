@@ -15,6 +15,7 @@ import ExcelJS from "exceljs";
 
 import { buildCodeDictionary, parseProductCode } from "../src/features/product-codes/lib/parse-product-code";
 import { readSourceSheet } from "../src/features/product-codes/lib/source-sheet";
+import { dictionaryFromEntries, toSyncEntries } from "../src/features/product-codes/lib/sync-entries";
 
 const DIR = "data/quy-chuan";
 const CATALOG = join(DIR, "danh-muc-hang-hoa.xlsx");
@@ -36,7 +37,10 @@ async function main() {
   }
   assert.ok(existsSync(CATALOG) && existsSync(SNAPSHOT), `Cần ${CATALOG} và ${SNAPSHOT} — xem ${DIR}/README.md`);
 
-  const dict = buildCodeDictionary(readSourceSheet(readFileSync(SNAPSHOT, "utf8")));
+  const sourceRows = readSourceSheet(readFileSync(SNAPSHOT, "utf8"));
+  const dict = buildCodeDictionary(sourceRows);
+  // Đường thật của app: sheet → bảng ma_hoa → từ điển. Phải cho kết quả y hệt.
+  const dbDict = dictionaryFromEntries(toSyncEntries(sourceRows));
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.readFile(CATALOG);
   const ws = wb.worksheets[0];
@@ -58,6 +62,8 @@ async function main() {
       if (!same(expected, parsed[f])) mismatches.push(`dòng ${r} ${code} [${f}] file="${expected}" tách="${parsed[f]}"`);
     }
     if (!same(cellText(row.getCell(16).value), parsed.note)) noteDiff++;
+    const viaDb = parseProductCode(code, dbDict);
+    if (JSON.stringify(viaDb) !== JSON.stringify(parsed)) mismatches.push(`dòng ${r} ${code}: tách qua bảng ma_hoa khác tách thẳng từ sheet`);
   }
 
   if (mismatches.length > 0) {
@@ -66,7 +72,10 @@ async function main() {
     process.exit(1);
   }
   // Ghi chú chỉ báo — câu chữ phụ thuộc thứ tự lỗi, không chặn.
-  console.log(`✓ quy chuẩn mã: ${total} mã, Hãng/Dòng/Linh kiện/Xử lý trùng 100%` + (noteDiff ? ` (Ghi chú lệch ${noteDiff})` : ""));
+  console.log(
+    `✓ quy chuẩn mã: ${total} mã, Hãng/Dòng/Linh kiện/Xử lý trùng 100%, tách qua bảng ma_hoa y hệt` +
+      (noteDiff ? ` (Ghi chú lệch ${noteDiff})` : ""),
+  );
 }
 
 main().catch((e) => {

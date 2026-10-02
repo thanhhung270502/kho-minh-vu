@@ -80,6 +80,9 @@ const MA_TRAN: Dong[] = [
   { route: "/doi-tac/ra-ghi-chu", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/cai-dat/nguoi-dung", ky_vong: { quanly: "200", vanphong: "quyen", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   // Phase 16 (QUYEN-01): sửa chức vụ cùng quyền với quản trị tài khoản (RLS 0082).
+  // Job cron: proxy miễn kiểm phiên, route tự gác bằng CRON_SECRET — có đăng nhập
+  // mà không có "Authorization: Bearer <CRON_SECRET>" cũng 401.
+  { route: "/api/cron/ma-hoa", ky_vong: ALL("401") },
   { route: "/cai-dat/chuc-vu", ky_vong: { quanly: "200", vanphong: "quyen", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   // Nhân viên phụ trách (0077): cùng nhóm quyền ghi với danh mục — quản lý + văn phòng.
   { route: "/cai-dat/nhan-vien-phu-trach", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },

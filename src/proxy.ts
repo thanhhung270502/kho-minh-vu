@@ -23,6 +23,9 @@ export async function proxy(request: NextRequest) {
     (path) => pathname === path || pathname.startsWith(`${path}/`),
   );
 
+  // Job cron (Vercel Cron) không có phiên đăng nhập — route tự gác bằng CRON_SECRET.
+  if (pathname.startsWith("/api/cron/")) return response;
+
   // `<img src="/anh/…">` không đi theo redirect trang đăng nhập được — trả 401
   // để thẻ ảnh hỏng rõ ràng thay vì âm thầm nhận về HTML trang đăng nhập.
   if (!user && (pathname.startsWith("/api/") || pathname.startsWith("/anh/"))) {

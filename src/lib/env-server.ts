@@ -70,3 +70,17 @@ export function getAppsScriptEnv(): { APPS_SCRIPT_URL: string; APPS_SCRIPT_SECRE
 
   return parsed.data;
 }
+
+/**
+ * Job đồng bộ bộ mã hóa (Quy chuẩn mã). CRON_SECRET: Vercel Cron gửi kèm
+ * `Authorization: Bearer <CRON_SECRET>` — thiếu thì route từ chối mọi lời gọi.
+ * MA_HOA_SHEET_ID: sheet công khai chứa 10 cột quy chuẩn; mặc định là file
+ * trung gian (file gốc của bên làm mã đang để riêng tư).
+ */
+export function getCodeSyncEnv(): { CRON_SECRET: string | null; MA_HOA_SHEET_ID: string } {
+  // `||` chứ không `??` — biến khai trên Vercel nhưng để trống là chuỗi rỗng (bẫy 17).
+  return {
+    CRON_SECRET: process.env.CRON_SECRET || null,
+    MA_HOA_SHEET_ID: process.env.MA_HOA_SHEET_ID || "1PkbqzSaEF7W_LOrxxMLbgPokS71M0QNhIuA4IShnkOc",
+  };
+}

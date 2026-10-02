@@ -555,6 +555,15 @@ server (`ProductSearchInput`, `PartnerSearchInput`) đã tự lo, không cần.
 
 ---
 
+### 22. `DELETE`/`UPDATE` không `WHERE` bị chặn khi gọi qua PostgREST — pgTAP không thấy
+
+Supabase nạp `pg_safeupdate` cho mọi request qua PostgREST: `delete from bang;` trong
+một RPC chạy êm ở pgTAP (gọi bằng `postgres`) nhưng gọi từ app thì văng
+`21000 DELETE requires a WHERE clause`. Xóa toàn bảng có chủ đích thì viết
+`delete from bang where true;`. Không `load 'safeupdate'` trong test được (Supabase chặn),
+nên RPC có xóa/sửa hàng loạt phải chạy thử ít nhất một lần qua supabase-js.
+Lần vấp: `dong_bo_ma_hoa` (0085) — test xanh, job đồng bộ thật chết ngay lần đầu.
+
 # Không tự ý làm
 
 - **Cài thư viện mới** — hỏi trước. Đặc biệt: ORM (Prisma/Drizzle) — đã chọn

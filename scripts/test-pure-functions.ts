@@ -19,6 +19,7 @@ import { editUserFormSchema } from "../src/features/settings/schemas/user.schema
 import { duplicateProblemsInFile } from "../src/features/products/lib/new-product-file";
 import { buildCodeDictionary, parseProductCode } from "../src/features/product-codes/lib/parse-product-code";
 import { SourceSheetError, readSourceSheet } from "../src/features/product-codes/lib/source-sheet";
+import { dictionaryFromEntries, toSyncEntries } from "../src/features/product-codes/lib/sync-entries";
 import {
   copyProductDefaults,
   expandedActions,
@@ -1251,6 +1252,25 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
     /cột 7.*5\.XỬ LÝ/,
     "đổi tên/đổi chỗ cột: báo đúng cột",
   );
+
+  // Đồng bộ: dòng sheet → mục từ điển (mỗi mã giữ lần xuất hiện ĐẦU TIÊN, như MATCH).
+  const source = [
+    { brand: "HONDA", brandCode: "H", model: "Air Blade", modelCode: "A", part: "Mặt nạ", partCode: "75", finish: "xi", finishCode: "X", color: "đỏ bóng", colorCode: "ĐOB" },
+    { brand: "HONDA", brandCode: "H", model: "SH", modelCode: "S", part: "Mặt nạ  trùng", partCode: "75", finish: "", finishCode: "", color: "", colorCode: "" },
+    { brand: "", brandCode: "", model: "Wave Thái", modelCode: "WT", part: "", partCode: "", finish: "", finishCode: "", color: "", colorCode: "" },
+  ];
+  const entries = toSyncEntries(source);
+  assert.deepEqual(
+    entries.map((e) => `${e.loai}:${e.ma_hang ?? ""}:${e.ma}:${e.ten}`),
+    ["hang::H:HONDA", "dong:H:A:Air Blade", "linh_kien::75:Mặt nạ", "xu_ly::X:xi", "mau::ĐOB:đỏ bóng", "dong:H:S:SH"],
+    "dòng thiếu mã hãng (Wave Thái) không tạo cặp — y như cột khóa của sheet CHUAN",
+  );
+  // Dựng lại từ điển từ DB phải tách mã y như dựng thẳng từ sheet.
+  const fromDb = dictionaryFromEntries(entries);
+  const fromSheet = buildCodeDictionary(source);
+  for (const code of ["HA26-75ĐOB-X", "HS-75X", "HWT-75-X"]) {
+    assert.deepEqual(parseProductCode(code, fromDb), parseProductCode(code, fromSheet), code);
+  }
 }
 
 async function kiemTaiTheoTrang() {

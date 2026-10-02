@@ -134,7 +134,9 @@ begin
     return jsonb_build_object('thanh_cong', false, 'so_muc', coalesce(v_so_muc, '{}'::jsonb), 'loi', v_loi);
   end if;
 
-  delete from public.ma_hoa;
+  -- "where true": Supabase bật pg_safeupdate cho request qua PostgREST — DELETE
+  -- không WHERE bị chặn (21000), dù chạy trong hàm. pgTAP gọi bằng postgres nên không thấy.
+  delete from public.ma_hoa where true;
   insert into public.ma_hoa (loai, ma, ten, ma_hang, thu_tu)
   select loai, ma, ten, ma_hang, thu_tu from _ma_hoa_moi;
 
