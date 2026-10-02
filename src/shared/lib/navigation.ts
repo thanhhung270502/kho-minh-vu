@@ -1,11 +1,7 @@
 // File thuần — không đánh dấu client, không import thư viện UI nào cả.
 // Icon để dạng mã chuỗi (NavIconId), ánh xạ sang element ở nav-icons.tsx
 // (file client) — cách chắc chắn để Server Component vẫn import được từ đây.
-import {
-  hasPermission,
-  type Permission,
-  type Role,
-} from "@/shared/lib/permissions";
+import { allows, type AnyPermission, type PermissionSubject } from "@/shared/lib/permissions";
 
 export type NavIconId =
   | "dashboard"
@@ -30,7 +26,8 @@ export type NavItem = {
   /** Nhãn ngắn cho thanh tab đáy — chỗ hẹp, tối đa ~8 ký tự. */
   shortLabel: string;
   icon: NavIconId;
-  permission: Permission;
+  /** Mảng = hiện khi có một trong các quyền. */
+  permission: AnyPermission | readonly AnyPermission[];
   /** null = không vào thanh tab đáy, nằm trong mục "Khác". */
   mobilePriority: number | null;
   /** Thuộc nhóm nào trên menu máy tính; thanh tab đáy vẫn dùng danh sách phẳng. */
@@ -57,7 +54,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Tổng quan",
     shortLabel: "Tổng quan",
     icon: "dashboard",
-    permission: "view-dashboard",
+    permission: "xem_dashboard",
     mobilePriority: 1,
   },
   {
@@ -129,7 +126,8 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Cài đặt",
     shortLabel: "Cài đặt",
     icon: "settings",
-    permission: "manage-lookups",
+    // Cài đặt có tab quản trị (quản lý) và tab Nhân viên phụ trách (quyền chức vụ).
+    permission: ["manage-users", "tao_nhan_vien"],
     // Thủ kho hiếm dùng, đẩy vào "Khác" thay vì chiếm một ô của thanh tab đáy.
     mobilePriority: null,
   },
@@ -172,10 +170,10 @@ export function findActiveHref(pathname: string, items: NavItem[]): string {
 
 /** D-07: menu chỉ hiện mục vai trò có quyền — ẩn hẳn, không chỉ disable. */
 export function filterNavItems(
-  user: { role: Role },
+  user: PermissionSubject,
   items: NavItem[],
 ): NavItem[] {
-  return items.filter((item) => hasPermission(user.role, item.permission));
+  return items.filter((item) => allows(user, item.permission));
 }
 
 /**

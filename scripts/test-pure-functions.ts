@@ -13,7 +13,7 @@ import { buildCsv } from "../src/shared/lib/csv";
 import { fetchAllPages } from "../src/shared/lib/fetch-all-pages";
 import { isInteractiveTarget, readSelectedId, withSelectedId } from "../src/shared/lib/selected-id";
 import { docTypeLabel, toPartnerRow } from "../src/features/partners/types";
-import { BUSINESS_PERMISSIONS, SCOPE_LABELS } from "../src/shared/lib/permissions";
+import { BUSINESS_PERMISSIONS, SCOPE_LABELS, allows, type BusinessPermission, type PermissionSubject, type Role } from "../src/shared/lib/permissions";
 import { jobTitleSchema, titleCodeFromName } from "../src/features/settings/schemas/job-title.schema";
 import { editUserFormSchema } from "../src/features/settings/schemas/user.schema";
 import { duplicateProblemsInFile } from "../src/features/products/lib/new-product-file";
@@ -84,7 +84,7 @@ import {
   formatRecipient,
   toRecipient,
 } from "../src/shared/lib/recipient";
-import { SETTINGS_TABS, firstTabForRole, tabsForRole } from "../src/features/settings/lib/settings-tabs";
+import { SETTINGS_TABS, firstTabFor, tabsFor } from "../src/features/settings/lib/settings-tabs";
 import { staffSchema } from "../src/features/settings/schemas/staff.schema";
 import { toDocumentDetail } from "../src/features/documents/types";
 import { toDocumentUpdate } from "../src/features/documents/schemas/document.schema";
@@ -110,7 +110,7 @@ import {
   buildNavEntries,
   NAV_ITEMS,
 } from "../src/shared/lib/navigation";
-import { homePathForRole } from "../src/features/dashboard/lib/home-path";
+import { homePathFor } from "../src/features/dashboard/lib/home-path";
 import {
   buildCatalogDrilldownUrl,
   type StockGroupBy,
@@ -144,22 +144,40 @@ for (const xau of [
   assert.equal(safeRedirectPath(xau), "/");
 }
 
+
+/** Người dùng giữ chức vụ MẶC ĐỊNH của vai trò — đúng dữ liệu 0082. */
+const DEFAULT_TITLE: Record<Role, BusinessPermission[]> = {
+  quan_ly: ["xem_dashboard", "nhap_kho", "tao_don", "xac_nhan_don", "hoan_thanh_don", "sua_hoa_don", "tao_ma_hang", "tao_nhan_vien", "kiem_kho"],
+  van_phong: ["nhap_kho", "tao_don", "hoan_thanh_don", "tao_ma_hang", "tao_nhan_vien", "kiem_kho"],
+  thu_kho: ["nhap_kho", "kiem_kho"],
+  chi_xem: [],
+};
+const as = (role: Role, extra: BusinessPermission[] = []): PermissionSubject => ({
+  role,
+  permissions: [...DEFAULT_TITLE[role], ...extra],
+});
 assert.equal(hasPermission("thu_kho", "view-catalog"), true);
 assert.equal(hasPermission("thu_kho", "edit-catalog"), false);
-assert.equal(hasPermission("van_phong", "manage-lookups"), true);
 assert.equal(hasPermission("van_phong", "manage-users"), false);
 
 // --- Trang chủ theo vai trò + quyền "view-dashboard" (Phase 7, 07-04) -----
-assert.equal(homePathForRole("quan_ly"), "/");
+assert.equal(homePathFor(as("quan_ly")), "/");
 // Phase 10: Xuất kho thành Hóa đơn, trang Tồn kho gỡ — tra tồn ở Danh sách hàng hóa.
-assert.equal(homePathForRole("van_phong"), "/hoa-don");
-assert.equal(homePathForRole("thu_kho"), "/danh-muc");
-assert.equal(homePathForRole("chi_xem"), "/danh-muc");
+assert.equal(homePathFor(as("van_phong")), "/hoa-don");
+assert.equal(homePathFor(as("thu_kho")), "/danh-muc");
+assert.equal(homePathFor(as("chi_xem")), "/danh-muc");
+// Phase 16: trang chủ theo quyền "Xem dashboard" — tắt cho quản lý không được
+// chuyển hướng về chính "/" (vòng lặp vô hạn); bật cho thủ kho thì về "/".
+assert.equal(homePathFor({ role: "quan_ly", permissions: [] }), "/hoa-don");
+assert.equal(homePathFor(as("thu_kho", ["xem_dashboard"])), "/");
 
-assert.equal(hasPermission("quan_ly", "view-dashboard"), true);
-assert.equal(hasPermission("van_phong", "view-dashboard"), false);
-assert.equal(hasPermission("thu_kho", "view-dashboard"), false);
-assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
+// Phase 16: Tổng quan theo quyền chức vụ "Xem dashboard", không theo vai trò.
+assert.equal(allows(as("quan_ly"), "xem_dashboard"), true);
+assert.equal(allows(as("van_phong"), "xem_dashboard"), false);
+assert.equal(allows(as("thu_kho", ["xem_dashboard"]), "xem_dashboard"), true, "bật cho Thủ kho thì thủ kho xem được");
+assert.equal(allows(as("chi_xem"), "view-catalog"), true, "quyền theo phạm vi vẫn đọc vai trò");
+assert.equal(allows(as("van_phong"), ["manage-users", "tao_nhan_vien"]), true, "mảng = có một trong các quyền");
+assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
 
 // Phase 10 (GON-02): màn Lịch sử KiotViet đã gỡ khỏi giao diện — không còn
 // mục menu nào trỏ tới, và filterNavItems không còn nhận công tắc theo người.
@@ -169,7 +187,7 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
     "không còn mục menu /lich-su-kiotviet",
   );
   assert.ok(
-    filterNavItems({ role: "quan_ly" }, NAV_ITEMS).some((i) => i.href === "/kiem-ke"),
+    filterNavItems(as("quan_ly"), NAV_ITEMS).some((i) => i.href === "/kiem-ke"),
     "filterNavItems chỉ cần vai trò",
   );
 }
@@ -204,9 +222,13 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
   assert.deepEqual(RECIPIENT_KIND_ORDER, ["internal", "partner"], "Nội bộ đứng trước Đối tác");
 
   const nvpt = "/cai-dat/nhan-vien-phu-trach";
-  assert.ok(tabsForRole("van_phong").some((t) => t.duongDan === nvpt), "văn phòng có tab Nhân viên phụ trách");
-  assert.ok(tabsForRole("quan_ly").some((t) => t.duongDan === nvpt), "quản lý có tab Nhân viên phụ trách");
-  assert.ok(!tabsForRole("thu_kho").some((t) => t.duongDan === nvpt), "thủ kho không có tab này");
+  assert.ok(tabsFor(as("van_phong")).some((t) => t.duongDan === nvpt), "văn phòng có tab Nhân viên phụ trách");
+  assert.ok(tabsFor(as("quan_ly")).some((t) => t.duongDan === nvpt), "quản lý có tab Nhân viên phụ trách");
+  assert.ok(!tabsFor(as("thu_kho")).some((t) => t.duongDan === nvpt), "thủ kho không có tab này");
+  // Phase 16: tab theo quyền Tạo nhân viên — bật cho Thủ kho thì thủ kho có tab, và có menu Cài đặt.
+  assert.ok(tabsFor(as("thu_kho", ["tao_nhan_vien"])).some((t) => t.duongDan === nvpt));
+  assert.ok(filterNavItems(as("thu_kho", ["tao_nhan_vien"]), NAV_ITEMS).some((i) => i.href === "/cai-dat"));
+  assert.ok(filterNavItems(as("thu_kho", ["xem_dashboard"]), NAV_ITEMS).some((i) => i.href === "/"));
 
   const ok = staffSchema.safeParse({ shortName: "  An ", fullName: " Nguyễn Văn An ", isActive: true });
   assert.ok(ok.success && ok.data.shortName === "An" && ok.data.fullName === "Nguyễn Văn An", "cắt khoảng trắng hai đầu");
@@ -225,8 +247,8 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
   for (const old of ["/cai-dat/nhom-hang", "/cai-dat/don-vi-tinh", "/cai-dat/cong-doan"]) {
     assert.ok(!SETTINGS_TABS.some((t) => t.duongDan === old), `Cài đặt không còn ${old}`);
   }
-  assert.equal(firstTabForRole("van_phong"), "/cai-dat/nhan-vien-phu-trach");
-  assert.equal(firstTabForRole("quan_ly"), "/cai-dat/nguoi-dung");
+  assert.equal(firstTabFor(as("van_phong")), "/cai-dat/nhan-vien-phu-trach");
+  assert.equal(firstTabFor(as("quan_ly")), "/cai-dat/nguoi-dung");
 }
 
 // Phase 11 (NVPT-04): "+ Thêm mới" nhóm/ĐVT/công đoạn trong form mã hàng.
@@ -250,8 +272,7 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
 
 // filterNavItems (06-16): menu "Kiểm kê" cho mọi vai trò.
 {
-  const thuKhoItems = filterNavItems(
-    { role: "thu_kho" },
+  const thuKhoItems = filterNavItems(as("thu_kho"),
     NAV_ITEMS,
   );
   assert.ok(
@@ -263,8 +284,7 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
     "thủ kho không có quyền view-dashboard nên không thấy mục Tổng quan (07-04)",
   );
 
-  const vanPhongItems = filterNavItems(
-    { role: "van_phong" },
+  const vanPhongItems = filterNavItems(as("van_phong"),
     NAV_ITEMS,
   );
   assert.ok(vanPhongItems.some((i) => i.href === "/kiem-ke"), "văn phòng thấy /kiem-ke");
@@ -273,8 +293,7 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
     "văn phòng không thấy mục Tổng quan",
   );
 
-  const quanLyItems = filterNavItems(
-    { role: "quan_ly" },
+  const quanLyItems = filterNavItems(as("quan_ly"),
     NAV_ITEMS,
   );
   assert.ok(
@@ -284,8 +303,7 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
     "quản lý thấy /kiem-ke, /cai-dat và Tổng quan",
   );
 
-  const chiXemItems = filterNavItems(
-    { role: "chi_xem" },
+  const chiXemItems = filterNavItems(as("chi_xem"),
     NAV_ITEMS,
   );
   assert.ok(
@@ -316,7 +334,7 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
   assert.ok(!NAV_ITEMS.some((i) => i.href === "/ton-kho"), "không còn mục /ton-kho");
   assert.ok(!NAV_ITEMS.some((i) => i.href === "/xuat-kho"), "không còn mục /xuat-kho");
 
-  const entries = buildNavEntries(filterNavItems({ role: "quan_ly" }, NAV_ITEMS));
+  const entries = buildNavEntries(filterNavItems(as("quan_ly"), NAV_ITEMS));
   assert.deepEqual(
     entries.map((e) => e.label),
     ["Tổng quan", "Đơn hàng", "Nhập kho", "Hàng hóa", "Đối tác", "Phân tích", "Cài đặt"],
@@ -331,18 +349,18 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
   const goods = entries.find((e) => e.label === "Hàng hóa");
   assert.equal(goods?.kind === "group" ? goods.items[0]?.label : null, "Danh sách hàng hóa");
 
-  const chiXem = buildNavEntries(filterNavItems({ role: "chi_xem" }, NAV_ITEMS));
+  const chiXem = buildNavEntries(filterNavItems(as("chi_xem"), NAV_ITEMS));
   assert.deepEqual(
     chiXem.map((e) => e.label),
     ["Đơn hàng", "Nhập kho", "Hàng hóa", "Đối tác"],
     "chỉ xem không có Tổng quan, Cài đặt",
   );
   assert.ok(
-    buildNavEntries(filterNavItems({ role: "van_phong" }, NAV_ITEMS)).some((e) => e.label === "Phân tích"),
+    buildNavEntries(filterNavItems(as("van_phong"), NAV_ITEMS)).some((e) => e.label === "Phân tích"),
     "văn phòng thấy Phân tích (đi đặt hàng NCC)",
   );
   assert.ok(
-    !buildNavEntries(filterNavItems({ role: "thu_kho" }, NAV_ITEMS)).some((e) => e.label === "Phân tích"),
+    !buildNavEntries(filterNavItems(as("thu_kho"), NAV_ITEMS)).some((e) => e.label === "Phân tích"),
     "thủ kho không thấy Phân tích (tồn mọi kho)",
   );
 }
@@ -614,9 +632,9 @@ assert.deepEqual(
 // Phase 12 (DON-02/03/05): nút theo trạng thái × quyền. Hoàn thành: QL + VP
 // (canEdit); Hủy / Xác nhận / Mở khóa / Đóng sớm: chỉ QL (canApprove).
 {
-  const ql = { canEdit: true, canApprove: true };
-  const vp = { canEdit: true, canApprove: false };
-  const tk = { canEdit: false, canApprove: false };
+  const ql = { canEdit: true, canApprove: true, canComplete: true, canCancel: true };
+  const vp = { canEdit: true, canApprove: false, canComplete: true, canCancel: false };
+  const tk = { canEdit: false, canApprove: false, canComplete: false, canCancel: false };
   assert.deepEqual(orderActionsFor("TAM", ql), ["approve", "cancel"]);
   assert.deepEqual(orderActionsFor("TAM", vp), []);
   assert.deepEqual(orderActionsFor("DA_XAC_NHAN", ql), ["complete", "print", "unlock", "close-early", "cancel"]);
@@ -625,6 +643,11 @@ assert.deepEqual(
   assert.deepEqual(orderActionsFor("HOAN_THANH", ql), ["print"], "đơn hoàn thành: hủy hóa đơn ở màn hóa đơn, không hủy đơn");
   assert.deepEqual(orderActionsFor("DA_HUY", ql), []);
   assert.ok(!orderActionsFor("DA_XAC_NHAN", ql).includes("create-issue" as never), "không còn nút Tạo hóa đơn rời");
+  // Phase 16: Xác nhận / Hoàn thành theo quyền chức vụ, Hủy đơn vẫn theo phạm vi quản trị.
+  const nvXacNhan = { ...vp, canApprove: true };
+  assert.deepEqual(orderActionsFor("TAM", nvXacNhan), ["approve"], "bật Xác nhận cho Nhân viên: không kèm Hủy đơn");
+  assert.deepEqual(orderActionsFor("DA_XAC_NHAN", { ...ql, canComplete: false }), ["print", "unlock", "close-early", "cancel"],
+    "tắt Hoàn thành: mất nút Hoàn thành dù vẫn sửa được đơn");
 
   // Lỗi xuất âm thiếu lý do của ghi_so_chung_tu (bẫy 8: object thường, không instanceof).
   assert.equal(needsNegativeReason({ code: "23514", message: "Phải chọn lý do xuất âm cho phiếu PX26-000010" }), true);

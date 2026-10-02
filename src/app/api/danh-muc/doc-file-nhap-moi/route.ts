@@ -1,7 +1,7 @@
 import { getCurrentUser } from "@/features/auth/api/current-user.server";
 import { MAX_FILE_MB } from "@/features/products/lib/excel-template";
 import { readNewProductFile } from "@/features/products/lib/read-new-product-file.server";
-import { hasPermission } from "@/shared/lib/permissions";
+import { can } from "@/shared/lib/permissions";
 
 /** exceljs cần Node (stream, zip) — Edge runtime không chạy được. */
 export const runtime = "nodejs";
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   if (!user) {
     return errorResponse("Phiên đăng nhập đã hết hạn", "Đăng nhập lại rồi tải file lên lần nữa.", 401);
   }
-  if (!hasPermission(user.role, "edit-catalog")) {
+  if (!can(user, "tao_ma_hang")) {
     return errorResponse(
       "Tài khoản không có quyền nhập mã hàng",
       "Chỉ quản lý và văn phòng nhập được mã hàng. Liên hệ quản lý nếu bạn cần quyền.",

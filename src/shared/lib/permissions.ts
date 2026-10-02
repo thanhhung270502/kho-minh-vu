@@ -8,24 +8,17 @@ export type Role = Database["public"]["Enums"]["vai_tro"];
 export type Permission =
   | "view-catalog"
   | "edit-catalog"
-  | "manage-lookups"
   | "manage-users"
   | "manage-warehouses"
   | "manage-doc-numbering"
-  | "view-dashboard"
   | "view-analysis";
 
 const PERMISSION_MATRIX: Record<Permission, readonly Role[]> = {
   "view-catalog": ["quan_ly", "van_phong", "thu_kho", "chi_xem"],
   "edit-catalog": ["quan_ly", "van_phong"],
-  "manage-lookups": ["quan_ly", "van_phong"],
   "manage-users": ["quan_ly"],
   "manage-warehouses": ["quan_ly"],
   "manage-doc-numbering": ["quan_ly"],
-  // Trang tổng quan chỉ dành cho quản lý (D-11). Đây chỉ là ẩn menu — chặn thật
-  // ở redirect của `app/(app)/page.tsx` (07-09) và 42501 của các RPC dashboard
-  // (07-01..03).
-  "view-dashboard": ["quan_ly"],
   // Trang Phân tích (Phase 13): văn phòng đi đặt hàng NCC nên cần xem. Tồn mọi
   // kho nên thủ kho không xem; chặn thật ở xem_duoc_phan_tich() (0079).
   "view-analysis": ["quan_ly", "van_phong"],
@@ -71,6 +64,25 @@ export type PermissionSubject = { role: Role; permissions: readonly BusinessPerm
 
 export function can(user: PermissionSubject | null | undefined, permission: BusinessPermission): boolean {
   return !!user && user.permissions.includes(permission);
+}
+
+/** Quyền theo phạm vi (vai trò) hoặc quyền chức vụ — một hàm cho route, menu, tab. */
+export type AnyPermission = Permission | BusinessPermission;
+
+const BUSINESS_KEYS = new Set<string>(BUSINESS_PERMISSIONS.map((p) => p.key));
+
+function isBusinessPermission(permission: AnyPermission): permission is BusinessPermission {
+  return BUSINESS_KEYS.has(permission);
+}
+
+/** Mảng = có MỘT trong các quyền (vd. menu Cài đặt: quản trị tài khoản HOẶC Tạo nhân viên). */
+export function allows(
+  user: PermissionSubject | null | undefined,
+  permission: AnyPermission | readonly AnyPermission[],
+): boolean {
+  if (!user) return false;
+  const list: readonly AnyPermission[] = typeof permission === "string" ? [permission] : permission;
+  return list.some((p) => (isBusinessPermission(p) ? can(user, p) : hasPermission(user.role, p)));
 }
 
 /** Phạm vi của chức vụ = enum vai_tro cũ. */

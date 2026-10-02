@@ -6,6 +6,7 @@ import {
 } from "@/features/stocktake/lib/read-count-file.server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
+import { can } from "@/shared/lib/permissions";
 import type { Json } from "@/types/database.types";
 
 // exceljs + `node:stream` — không chạy được trên Edge runtime.
@@ -30,10 +31,10 @@ export async function POST(request: Request) {
       401,
     );
   }
-  if (user.role === "chi_xem") {
+  if (!can(user, "kiem_kho")) {
     return errorResponse(
-      "Vai trò chỉ xem không nhập số đếm được",
-      "Nhờ thủ kho, văn phòng hoặc quản lý thao tác giúp.",
+      "Chức vụ của bạn chưa có quyền Kiểm kho",
+      "Nhờ quản lý bật quyền Kiểm kho ở Cài đặt › Chức vụ, hoặc nhờ người có quyền thao tác giúp.",
       403,
     );
   }

@@ -8,20 +8,23 @@ export type OrderAction = "approve" | "complete" | "print" | "unlock" | "close-e
  * Nút nào hiện ở đầu chi tiết đơn, theo thứ tự hiển thị. Ẩn nút chỉ là trang
  * trí — chặn thật ở RPC (0052, 0078). Nút thiếu quyền KHÔNG render.
  *
- * - Hoàn thành (tạo + ghi sổ hóa đơn): quản lý + văn phòng (`canEdit`).
- * - Xác nhận / Mở khóa / Đóng sớm / Hủy đơn: chỉ quản lý (`canApprove`).
+ * - Hoàn thành (tạo + ghi sổ hóa đơn): quyền chức vụ "Hoàn thành" (`canComplete`).
+ * - Xác nhận / Mở khóa / Đóng sớm: quyền chức vụ "Xác nhận" (`canApprove`).
+ * - Hủy đơn: phạm vi quản trị (`canCancel`).
  * - Đơn đã hoàn thành không hủy ở đây — hủy hóa đơn của nó, đơn tự về Đã xác nhận.
  */
 export function orderActionsFor(status: OrderStatus, permissions: OrderPermissions): OrderAction[] {
   const actions: OrderAction[] = [];
   switch (status) {
     case "TAM":
-      if (permissions.canApprove) actions.push("approve", "cancel");
+      if (permissions.canApprove) actions.push("approve");
+      if (permissions.canCancel) actions.push("cancel");
       break;
     case "DA_XAC_NHAN":
-      if (permissions.canEdit) actions.push("complete");
+      if (permissions.canComplete) actions.push("complete");
       actions.push("print");
-      if (permissions.canApprove) actions.push("unlock", "close-early", "cancel");
+      if (permissions.canApprove) actions.push("unlock", "close-early");
+      if (permissions.canCancel) actions.push("cancel");
       break;
     case "HOAN_THANH":
       actions.push("print");

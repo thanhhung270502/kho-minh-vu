@@ -339,6 +339,10 @@ Helper RLS đối chiếu claim trong JWT **giao** với bảng `nguoi_dung`/`ng
 một kho khỏi thủ kho là mất quyền ngay lập tức; thêm kho thì phải chờ token làm mới (tối đa
 60 phút, hoặc người dùng tải lại trang). Giao diện phải nói đúng điều này thay vì hứa "đã áp dụng".
 
+Từ Phase 16 chỉ còn **phạm vi** (vai trò, kho) đi theo token. 9 quyền nghiệp vụ của chức vụ
+kiểm bằng `co_quyen()` đọc thẳng bảng (0082/0083) — bật hay tắt đều có hiệu lực ngay. Quyền
+nghiệp vụ mới phải đi qua `co_quyen`, đừng viết thêm `vai_tro_hien_tai() in (...)` cho nó.
+
 ### 7. Đọc Excel chỉ ở server
 
 `src/shared/lib/o-excel.ts` dùng `node:stream`. Reader dạng stream (`styles: "ignore"`) là

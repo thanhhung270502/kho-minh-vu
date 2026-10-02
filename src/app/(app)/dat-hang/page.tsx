@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { requirePermission } from "@/features/auth/api/current-user.server";
 import { OrderTable } from "@/features/sales-order/components/order-table";
 import { PageHeader } from "@/shared/components/page-header";
-import { hasPermission } from "@/shared/lib/permissions";
+import { can } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Đơn đặt hàng" };
 
@@ -20,7 +20,7 @@ export default async function SalesOrderPage() {
 
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}
       <Suspense fallback={null}>
-        <OrderTable canCreate={hasPermission(user.role, "edit-catalog")} />
+        <OrderTable canCreate={can(user, "tao_don")} />
       </Suspense>
     </>
   );

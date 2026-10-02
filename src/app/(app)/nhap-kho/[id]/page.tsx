@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { ReceiptDetailView } from "@/features/stock-in/components/receipt-detail";
 import { requirePermission } from "@/features/auth/api/current-user.server";
-import { hasPermission } from "@/shared/lib/permissions";
+import { can } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Phiếu nhập" };
 
@@ -20,7 +20,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     <ReceiptDetailView
       id={id}
       permissions={{
-        canEdit: hasPermission(user.role, "edit-catalog"),
+        canEdit: can(user, "nhap_kho"),
         // D-11: chỉ quản lý hủy phiếu đã ghi sổ. Chặn thật ở database (plan 10).
         canVoid: user.role === "quan_ly",
       }}

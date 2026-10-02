@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { ReceiptTable } from "@/features/stock-in/components/receipt-table";
 import { requirePermission } from "@/features/auth/api/current-user.server";
 import { PageHeader } from "@/shared/components/page-header";
-import { hasPermission } from "@/shared/lib/permissions";
+import { can } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Phiếu nhập" };
 
@@ -20,7 +20,7 @@ export default async function StockInPage() {
 
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}
       <Suspense fallback={null}>
-        <ReceiptTable canCreate={hasPermission(user.role, "edit-catalog")} />
+        <ReceiptTable canCreate={can(user, "nhap_kho")} />
       </Suspense>
     </>
   );

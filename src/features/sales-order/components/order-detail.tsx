@@ -73,7 +73,7 @@ export function OrderDetailView({
               }
             />
 
-            {order.status === "DA_XAC_NHAN" && permissions.canEdit ? (
+            {order.status === "DA_XAC_NHAN" && (permissions.canEdit || permissions.canComplete) ? (
               <Alert
                 className="mb-4"
                 type="info"

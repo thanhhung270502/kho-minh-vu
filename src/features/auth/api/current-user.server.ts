@@ -3,7 +3,13 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { hasPermission, type Permission, type Role } from "@/shared/lib/permissions";
+import {
+  allows,
+  BUSINESS_PERMISSIONS,
+  type AnyPermission,
+  type BusinessPermission,
+  type Role,
+} from "@/shared/lib/permissions";
 
 export type CurrentUser = {
   id: string;
@@ -17,7 +23,11 @@ export type CurrentUser = {
    * `duyet_duoc_kiem_ke()` (0063).
    */
   canApproveStocktake: boolean;
+  /** 9 quyền của chức vụ (Phase 16) — đọc từ bảng nên đổi là có hiệu lực ở lần tải trang kế tiếp. */
+  permissions: BusinessPermission[];
 };
+
+const KNOWN = new Set<string>(BUSINESS_PERMISSIONS.map((p) => p.key));
 
 /** Đọc vai trò từ BẢNG (không từ claim) để giao diện khớp RLS ngay sau khi quản lý đổi quyền. */
 export async function getCurrentUser(): Promise<CurrentUser | null> {
@@ -39,20 +49,28 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   if (error) throw error;
   if (!data || !data.dang_hoat_dong) return null;
 
+  const { data: granted, error: permissionError } = await supabase.rpc("quyen_cua_toi");
+  if (permissionError) throw permissionError;
+
   return {
     id: data.id,
     fullName: data.ho_ten,
     role: data.vai_tro,
     mustChangePassword: data.phai_doi_mat_khau,
     canApproveStocktake: data.vai_tro === "quan_ly" || data.duyet_kiem_ke,
+    // RPC trả text[] — chỉ giữ khóa giao diện biết (CHECK 0082 cùng danh sách).
+    permissions: (granted ?? []).filter((p): p is BusinessPermission => KNOWN.has(p)),
   };
 }
 
-export async function requirePermission(permission: Permission): Promise<CurrentUser> {
+/** Mảng = cần MỘT trong các quyền. */
+export async function requirePermission(
+  permission: AnyPermission | readonly AnyPermission[],
+): Promise<CurrentUser> {
   const user = await getCurrentUser();
 
   if (!user) redirect("/dang-nhap");
-  if (!hasPermission(user.role, permission)) redirect("/khong-du-quyen");
+  if (!allows(user, permission)) redirect("/khong-du-quyen");
 
   return user;
 }

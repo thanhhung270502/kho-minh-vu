@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { requirePermission } from "@/features/auth/api/current-user.server";
 import { ProductImageGallery } from "@/features/images/components/product-image-gallery";
 import { ProductDetailView } from "@/features/products/components/product-detail";
-import { hasPermission } from "@/shared/lib/permissions";
+import { can, hasPermission } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Chi tiết mã hàng" };
 
@@ -21,13 +21,14 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     <ProductDetailView
       id={id}
       permissions={{
-        canEdit: hasPermission(user.role, "edit-catalog"),
+        canEdit: can(user, "tao_ma_hang"),
+        // Lịch sử sửa đọc theo phạm vi (RLS nhat_ky_sua: quản lý + văn phòng).
         canViewHistory: hasPermission(user.role, "edit-catalog"),
       }}
       imagesSection={
         <ProductImageGallery
           productId={id}
-          canEdit={hasPermission(user.role, "edit-catalog")}
+          canEdit={can(user, "tao_ma_hang")}
         />
       }
     />

@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Tạo đơn đặt hàng" };
 
 export default async function Page() {
   // Khớp policy insert don_dat_hang (0052): quản lý + văn phòng.
-  await requirePermission("edit-catalog");
+  await requirePermission("tao_don");
 
   return (
     <>

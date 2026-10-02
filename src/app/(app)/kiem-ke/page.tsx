@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { requirePermission } from "@/features/auth/api/current-user.server";
+import { can } from "@/shared/lib/permissions";
 import { SessionList } from "@/features/stocktake/components/session-list";
 import { PageHeader } from "@/shared/components/page-header";
 
@@ -21,7 +22,7 @@ export default async function StocktakePage() {
           cùng cách màn tồn kho cũ đã làm ở Phase 5. */}
       <Suspense fallback={null}>
         <SessionList
-          canOpen={user.role !== "chi_xem"}
+          canOpen={can(user, "kiem_kho")}
           isStorekeeper={user.role === "thu_kho"}
         />
       </Suspense>

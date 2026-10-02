@@ -1,22 +1,22 @@
 // File thuần, KHÔNG "use client" — `app/(app)/page.tsx` (Server Component)
 // gọi hàm này để chuyển hướng, bẫy 9 nhắc đừng để lẫn "use client" vào đây.
-import type { Role } from "@/shared/lib/permissions";
+import { can, type PermissionSubject } from "@/shared/lib/permissions";
 
 /**
- * Trang chủ theo vai trò (D-11): chỉ quản lý có trang tổng quan thật (`/`),
- * ba vai trò còn lại về thẳng màn việc hằng ngày của họ — văn phòng lên đơn/
- * hóa đơn nhiều nhất nên về `/hoa-don`, thủ kho và chỉ xem tra tồn nhiều nhất
- * nên về `/danh-muc` (trang Tồn kho đã gỡ ở Phase 10). `switch` không có nhánh `default`: TypeScript sẽ
- * báo thiếu case nếu sau này thêm vai trò mới vào enum `vai_tro`.
+ * Trang chủ: có quyền "Xem dashboard" (chức vụ, Phase 16) thì là `/`. Không có
+ * thì về màn việc hằng ngày theo phạm vi — quản lý / văn phòng lên đơn, hóa
+ * đơn nhiều nhất nên về `/hoa-don`; thủ kho và chỉ xem tra tồn nên về
+ * `/danh-muc`. Không bao giờ trả `/` cho người không xem được dashboard —
+ * `app/(app)/page.tsx` sẽ chuyển hướng vòng tròn. `switch` không có `default`:
+ * TypeScript báo thiếu case nếu enum `vai_tro` thêm giá trị.
  */
-export function homePathForRole(role: Role): string {
-  switch (role) {
+export function homePathFor(user: PermissionSubject): string {
+  if (can(user, "xem_dashboard")) return "/";
+  switch (user.role) {
     case "quan_ly":
-      return "/";
     case "van_phong":
       return "/hoa-don";
     case "thu_kho":
-      return "/danh-muc";
     case "chi_xem":
       return "/danh-muc";
   }

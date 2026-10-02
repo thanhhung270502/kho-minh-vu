@@ -11,7 +11,7 @@ import {
   splitMobileItems,
   NAV_ITEMS,
 } from "@/shared/lib/navigation";
-import type { Role } from "@/shared/lib/permissions";
+import type { BusinessPermission, Role } from "@/shared/lib/permissions";
 
 import { BottomTabBar } from "./bottom-tab-bar";
 import { TopNav } from "./top-nav";
@@ -19,7 +19,7 @@ import { TopNav } from "./top-nav";
 const { Content } = Layout;
 
 type AppShellProps = {
-  user: { fullName: string; role: Role };
+  user: { fullName: string; role: Role; permissions: BusinessPermission[] };
   children: ReactNode;
 };
 

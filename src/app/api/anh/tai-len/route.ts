@@ -8,7 +8,7 @@ import {
 } from "@/features/images/lib/image-rules";
 import { getImageStorage, ImageStorageError } from "@/features/images/lib/storage/index.server";
 import { explainError } from "@/shared/lib/errors";
-import { hasPermission } from "@/shared/lib/permissions";
+import { can } from "@/shared/lib/permissions";
 
 /** Gọi getImageStorage (Apps Script/Drive) — cần Node, không chạy được Edge; hai lượt gọi có thể mất vài giây. */
 export const runtime = "nodejs";
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   if (!user) {
     return errorResponse("Phiên đăng nhập đã hết hạn", "Đăng nhập lại rồi tải ảnh lên lần nữa.", 401);
   }
-  if (!hasPermission(user.role, "edit-catalog")) {
+  if (!can(user, "tao_ma_hang")) {
     return errorResponse(
       "Tài khoản không có quyền thêm ảnh",
       "Chỉ quản lý và văn phòng thêm được ảnh. Liên hệ quản lý nếu bạn cần quyền.",

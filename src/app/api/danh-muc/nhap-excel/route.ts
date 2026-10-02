@@ -3,7 +3,7 @@ import { readCatalogFile } from "@/features/products/lib/read-catalog-file.serve
 import { MAX_FILE_MB } from "@/features/products/lib/excel-template";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { explainError } from "@/shared/lib/errors";
-import { hasPermission } from "@/shared/lib/permissions";
+import { can } from "@/shared/lib/permissions";
 import type { Json } from "@/types/database.types";
 
 /** exceljs cần Node (stream, zip) — Edge runtime không chạy được. */
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   if (!user) {
     return errorResponse("Phiên đăng nhập đã hết hạn", "Đăng nhập lại rồi tải file lên lần nữa.", 401);
   }
-  if (!hasPermission(user.role, "edit-catalog")) {
+  if (!can(user, "tao_ma_hang")) {
     return errorResponse(
       "Tài khoản không có quyền nhập danh mục",
       "Chỉ quản lý và văn phòng nhập được danh mục. Liên hệ quản lý nếu bạn cần quyền.",

@@ -3,14 +3,15 @@
 import { Tabs } from "antd";
 import { usePathname, useRouter } from "next/navigation";
 
-import { tabsForRole } from "../lib/settings-tabs";
-import type { Role } from "@/shared/lib/permissions";
+import type { PermissionSubject } from "@/shared/lib/permissions";
 
-export function SettingsTabs({ role }: { role: Role }) {
+import { tabsFor } from "../lib/settings-tabs";
+
+export function SettingsTabs({ user }: { user: PermissionSubject }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const muc = tabsForRole(role);
+  const muc = tabsFor(user);
   // Trang con (ví dụ /cai-dat/kho/abc) vẫn phải sáng đúng tab cha.
   const dangMo = muc.find((t) => pathname.startsWith(t.duongDan))?.duongDan;
 

@@ -136,6 +136,10 @@ export function isFullyShipped(line: OrderLine): boolean {
 export type OrderPermissions = {
   /** Tạo/sửa đơn còn ở trạng thái tạm, thêm/sửa/xóa dòng (D-06). */
   canEdit: boolean;
-  /** Xác nhận, mở lại đơn đã xác nhận, đóng sớm — chỉ quản lý (D-06/D-07). */
+  /** Xác nhận, mở lại đơn đã xác nhận, đóng sớm — quyền chức vụ "Xác nhận". */
   canApprove: boolean;
+  /** Hoàn thành đơn (tạo + ghi sổ hóa đơn) — quyền chức vụ "Hoàn thành". */
+  canComplete: boolean;
+  /** Hủy đơn — theo phạm vi quản trị (huy_don, 0078), không thuộc 9 quyền chức vụ. */
+  canCancel: boolean;
 };

@@ -1,5 +1,6 @@
 /**
- * Ma trận quyền route × 4 vai trò, kiểm bằng HTTP thật trên phiên thật.
+ * Ma trận quyền route × 4 vai trò (= 4 chức vụ mặc định), kiểm bằng HTTP thật
+ * trên phiên thật; cuối file bật/tắt quyền chức vụ và kiểm lại (Phase 16).
  *
  * Vì sao cần: `src/shared/lib/permissions.ts` chỉ ẩn/hiện nút. Thứ chặn thật 100% nằm ở
  * `requirePermission()` gọi trong từng Server Component `page.tsx` — middleware phiên
@@ -12,7 +13,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { config } from "dotenv";
 
-import { samplePassword } from "./_supabase-admin";
+import type { BusinessPermission } from "../src/shared/lib/permissions";
+import { samplePassword, taoAdminClient } from "./_supabase-admin";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -520,6 +522,76 @@ async function kiemAnh(
   return { tong, lech };
 }
 
+/**
+ * QUYEN-04 (Phase 16): ma trận chạy THEO CHỨC VỤ. Bật/tắt quyền của chức vụ
+ * bằng service role rồi gọi lại bằng ĐÚNG cookie đã đăng nhập từ trước — đổi
+ * quyền không cần token mới. Luôn trả quyền về như cũ, kể cả khi lỗi giữa chừng.
+ */
+async function kiemTheoChucVu(cookie: Record<VaiTroTest, string>): Promise<{ tong: number; lech: string[] }> {
+  const admin = taoAdminClient();
+  const { data: chucVu, error } = await admin.from("chuc_vu").select("id, ma");
+  if (error) throw error;
+  const idCua = (ma: string) => {
+    const id = chucVu?.find((c) => c.ma === ma)?.id;
+    if (!id) throw new Error(`Không có chức vụ ${ma} — chạy migration 0082.`);
+    return id;
+  };
+
+  const doi: Array<{ ma: string; quyen: BusinessPermission; bat: boolean }> = [
+    { ma: "NHAN_VIEN", quyen: "xem_dashboard", bat: true },
+    { ma: "THU_KHO", quyen: "tao_don", bat: true },
+    { ma: "THU_KHO", quyen: "tao_nhan_vien", bat: true },
+    { ma: "THU_KHO", quyen: "kiem_kho", bat: false },
+    { ma: "NHAN_VIEN", quyen: "tao_ma_hang", bat: false },
+    { ma: "QUAN_LY", quyen: "xem_dashboard", bat: false },
+  ];
+  const datQuyen = async (ma: string, quyen: BusinessPermission, bat: boolean) => {
+    const bang = admin.from("chuc_vu_quyen");
+    const { error: loi } = bat
+      ? await bang.upsert({ chuc_vu_id: idCua(ma), quyen }, { ignoreDuplicates: true })
+      : await bang.delete().eq("chuc_vu_id", idCua(ma)).eq("quyen", quyen);
+    if (loi) throw loi;
+  };
+
+  const lech: string[] = [];
+  let tong = 0;
+  const so = (nhan: string, thuc: string, mong: string) => {
+    tong++;
+    if (thuc !== mong) lech.push(`${nhan.padEnd(44)} mong ${mong}, thực ${thuc}`);
+  };
+  const postRong = async (duong: string, vt: VaiTroTest) =>
+    String(
+      (await fetch(`${BASE_URL}${duong}`, {
+        method: "POST",
+        headers: { cookie: cookie[vt] },
+        body: new FormData(),
+        redirect: "manual",
+      })).status,
+    );
+
+  try {
+    for (const d of doi) await datQuyen(d.ma, d.quyen, d.bat);
+
+    so("vanphong / (bật Xem dashboard)", String(await doMot("/", cookie.vanphong)), "200");
+    // Tắt cho quản lý: về /hoa-don, KHÔNG chuyển hướng vòng tròn về "/".
+    so("quanly / (tắt Xem dashboard)", String(await doMot("/", cookie.quanly)), "→/hoa-don");
+    so("thukho1 /dat-hang/moi (bật Tạo đơn)", String(await doMot("/dat-hang/moi", cookie.thukho1)), "200");
+    so("thukho1 /cai-dat (bật Tạo nhân viên)", String(await doMot("/cai-dat", cookie.thukho1)), "→/cai-dat/nhan-vien-phu-trach");
+    so("thukho1 /cai-dat/nhan-vien-phu-trach", String(await doMot("/cai-dat/nhan-vien-phu-trach", cookie.thukho1)), "200");
+    so("thukho1 POST kiem-ke/nhap-excel (tắt Kiểm kho)", await postRong("/api/kiem-ke/nhap-excel", "thukho1"), "403");
+    so("vanphong POST doc-file-nhap-moi (tắt Tạo mã)", await postRong("/api/danh-muc/doc-file-nhap-moi", "vanphong"), "403");
+    so("vanphong /cai-dat/nhan-vien-phu-trach (vẫn có)", String(await doMot("/cai-dat/nhan-vien-phu-trach", cookie.vanphong)), "200");
+  } finally {
+    for (const d of doi) await datQuyen(d.ma, d.quyen, !d.bat);
+  }
+
+  // Trả về như cũ: route quay lại đúng hành vi mặc định ngay, cùng phiên.
+  so("vanphong / (trả quyền)", String(await doMot("/", cookie.vanphong)), "→/hoa-don");
+  so("thukho1 /dat-hang/moi (trả quyền)", String(await doMot("/dat-hang/moi", cookie.thukho1)), "quyen");
+
+  return { tong, lech };
+}
+
 async function main() {
   try {
     await fetch(BASE_URL, { redirect: "manual" });
@@ -614,6 +686,10 @@ async function main() {
   const anh = await kiemAnh(cookie);
   tong += anh.tong;
   lech.push(...anh.lech);
+
+  const theoChucVu = await kiemTheoChucVu(cookie);
+  tong += theoChucVu.tong;
+  lech.push(...theoChucVu.lech);
 
   if (lech.length > 0) {
     console.error(`✗ quyền route: ${lech.length}/${tong} ô LỆCH\n`);
