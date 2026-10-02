@@ -70,10 +70,9 @@ const MA_TRAN: Dong[] = [
   // client (SessionDetail), page.tsx chỉ notFound() khi CHUỖI không đúng
   // khuôn UUID. Phạm vi kho siết ở RPC, không phải ở route.
   { route: "/kiem-ke/00000000-0000-4000-8000-000000000000", ky_vong: AI_CUNG_XEM },
-  // Quyền THEO NGƯỜI (D-13), không theo PERMISSION_MATRIX — kỳ vọng của
-  // vanphong phụ thuộc công tắc xem_lich_su_kiotviet trong database (backfill
-  // 0063). Nếu quản lý tắt công tắc của tài khoản mẫu, dòng này đổi "quyen".
-  { route: "/lich-su-kiotviet", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
+  // Phase 10 (GON-02): màn đã gỡ — redirect trong next.config.ts chạy TRƯỚC
+  // proxy nên cả khách cũng nhận →/danh-muc (rồi mới bị đẩy về đăng nhập).
+  { route: "/lich-su-kiotviet", ky_vong: { quanly: "→/danh-muc", vanphong: "→/danh-muc", thukho1: "→/danh-muc", chixem: "→/danh-muc", khach: "→/danh-muc" } },
 ];
 
 const TAI_KHOAN: Record<Exclude<VaiTroTest, "khach">, string> = {

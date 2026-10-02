@@ -6,7 +6,6 @@ import {
   ContainerOutlined,
   DashboardOutlined,
   ExportOutlined,
-  HistoryOutlined,
   ImportOutlined,
   SettingOutlined,
   ShoppingCartOutlined,
@@ -27,5 +26,4 @@ export const NAV_ICONS: Record<NavIconId, ReactNode> = {
   partners: <TeamOutlined />,
   settings: <SettingOutlined />,
   stocktake: <AuditOutlined />,
-  "kiotviet-history": <HistoryOutlined />,
 };

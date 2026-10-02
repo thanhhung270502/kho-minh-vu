@@ -14,9 +14,8 @@ export type CurrentUser = {
   /**
    * Quyền THEO NGƯỜI (D-13/D-14), không theo vai trò — KHÔNG có trong
    * `PERMISSION_MATRIX` (permissions.ts). Quản lý luôn true, khớp helper SQL
-   * `xem_duoc_lich_su_kiotviet()`/`duyet_duoc_kiem_ke()` (0063).
+   * `duyet_duoc_kiem_ke()` (0063).
    */
-  canViewKiotVietHistory: boolean;
   canApproveStocktake: boolean;
 };
 
@@ -32,7 +31,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   const { data, error } = await supabase
     .from("nguoi_dung")
     .select(
-      "id, ho_ten, vai_tro, dang_hoat_dong, phai_doi_mat_khau, xem_lich_su_kiotviet, duyet_kiem_ke",
+      "id, ho_ten, vai_tro, dang_hoat_dong, phai_doi_mat_khau, duyet_kiem_ke",
     )
     .eq("id", user.id)
     .maybeSingle();
@@ -45,7 +44,6 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     fullName: data.ho_ten,
     role: data.vai_tro,
     mustChangePassword: data.phai_doi_mat_khau,
-    canViewKiotVietHistory: data.vai_tro === "quan_ly" || data.xem_lich_su_kiotviet,
     canApproveStocktake: data.vai_tro === "quan_ly" || data.duyet_kiem_ke,
   };
 }
@@ -55,19 +53,6 @@ export async function requirePermission(permission: Permission): Promise<Current
 
   if (!user) redirect("/dang-nhap");
   if (!hasPermission(user.role, permission)) redirect("/khong-du-quyen");
-
-  return user;
-}
-
-/**
- * Chặn theo quyền THEO NGƯỜI (D-13), không phải theo `Permission`/`Role` tĩnh —
- * dùng cho route "Lịch sử KiotViet". Chặn thật ở RLS/RPC (migration 0064).
- */
-export async function requireKiotVietHistoryAccess(): Promise<CurrentUser> {
-  const user = await getCurrentUser();
-
-  if (!user) redirect("/dang-nhap");
-  if (!user.canViewKiotVietHistory) redirect("/khong-du-quyen");
 
   return user;
 }

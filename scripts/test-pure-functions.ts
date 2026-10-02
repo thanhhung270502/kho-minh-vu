@@ -49,7 +49,6 @@ import {
 import { formatRecipient, toRecipient } from "../src/shared/lib/recipient";
 import { toDocumentDetail } from "../src/features/documents/types";
 import { toDocumentUpdate } from "../src/features/documents/schemas/document.schema";
-import { toKiotVietHistoryRow } from "../src/features/kiotviet-history/types";
 import {
   discrepancyOf,
   isLargeDiscrepancy,
@@ -58,14 +57,6 @@ import {
   sessionStatus,
   SESSION_STATUS_LABELS,
 } from "../src/features/stocktake/lib/session-status";
-import {
-  DEFAULT_HISTORY_FILTER,
-  countActiveHistoryFilters,
-  readHistoryFilterFromUrl,
-  writeHistoryFilterToUrl,
-  toHistoryRpcArgs,
-  type KiotVietHistoryFilter,
-} from "../src/features/kiotviet-history/schemas/history-filter.schema";
 import {
   scaleToFit,
   checkPickedFile,
@@ -132,11 +123,23 @@ assert.equal(hasPermission("van_phong", "view-dashboard"), false);
 assert.equal(hasPermission("thu_kho", "view-dashboard"), false);
 assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
 
-// filterNavItems (06-16): menu "Kiểm kê" cho mọi vai trò, "Lịch sử KiotViet"
-// ẩn hẳn khi chưa bật công tắc theo người (D-13).
+// Phase 10 (GON-02): màn Lịch sử KiotViet đã gỡ khỏi giao diện — không còn
+// mục menu nào trỏ tới, và filterNavItems không còn nhận công tắc theo người.
+{
+  assert.ok(
+    !NAV_ITEMS.some((i) => i.href === "/lich-su-kiotviet"),
+    "không còn mục menu /lich-su-kiotviet",
+  );
+  assert.ok(
+    filterNavItems({ role: "quan_ly" }, NAV_ITEMS).some((i) => i.href === "/kiem-ke"),
+    "filterNavItems chỉ cần vai trò",
+  );
+}
+
+// filterNavItems (06-16): menu "Kiểm kê" cho mọi vai trò.
 {
   const thuKhoItems = filterNavItems(
-    { role: "thu_kho", canViewKiotVietHistory: false },
+    { role: "thu_kho" },
     NAV_ITEMS,
   );
   assert.ok(
@@ -144,42 +147,33 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
     "thủ kho thấy /kiem-ke",
   );
   assert.ok(
-    !thuKhoItems.some((i) => i.href === "/lich-su-kiotviet"),
-    "thủ kho chưa bật công tắc thì KHÔNG thấy /lich-su-kiotviet",
-  );
-  assert.ok(
     !thuKhoItems.some((i) => i.href === "/"),
     "thủ kho không có quyền view-dashboard nên không thấy mục Tổng quan (07-04)",
   );
 
   const vanPhongItems = filterNavItems(
-    { role: "van_phong", canViewKiotVietHistory: true },
+    { role: "van_phong" },
     NAV_ITEMS,
   );
-  assert.ok(
-    vanPhongItems.some((i) => i.href === "/kiem-ke") &&
-      vanPhongItems.some((i) => i.href === "/lich-su-kiotviet"),
-    "văn phòng đã bật công tắc thấy cả hai mục mới",
-  );
+  assert.ok(vanPhongItems.some((i) => i.href === "/kiem-ke"), "văn phòng thấy /kiem-ke");
   assert.ok(
     !vanPhongItems.some((i) => i.href === "/"),
     "văn phòng không thấy mục Tổng quan",
   );
 
   const quanLyItems = filterNavItems(
-    { role: "quan_ly", canViewKiotVietHistory: true },
+    { role: "quan_ly" },
     NAV_ITEMS,
   );
   assert.ok(
     quanLyItems.some((i) => i.href === "/kiem-ke") &&
-      quanLyItems.some((i) => i.href === "/lich-su-kiotviet") &&
       quanLyItems.some((i) => i.href === "/cai-dat") &&
       quanLyItems.some((i) => i.href === "/"),
-    "quản lý thấy cả hai mục mới cộng /cai-dat và Tổng quan",
+    "quản lý thấy /kiem-ke, /cai-dat và Tổng quan",
   );
 
   const chiXemItems = filterNavItems(
-    { role: "chi_xem", canViewKiotVietHistory: false },
+    { role: "chi_xem" },
     NAV_ITEMS,
   );
   assert.ok(
@@ -640,83 +634,6 @@ assert.deepEqual(SESSION_STATUS_LABELS, {
   voided: "Đã hủy",
 });
 
-// --- Bộ lọc lịch sử KiotViet (06-08, D-11/D-12) -----------------------------
-{
-  const parsed = readHistoryFilterFromUrl(
-    new URLSearchParams("loai=XUAT&tim=quynh&trang=2"),
-  );
-  assert.equal(parsed.type, "XUAT", "đọc được ?loai=XUAT");
-  assert.equal(parsed.keyword, "quynh", "đọc được ?tim=quynh");
-  assert.equal(parsed.page, 2, "đọc được ?trang=2");
-}
-assert.equal(
-  readHistoryFilterFromUrl(new URLSearchParams("loai=abc")).type,
-  "",
-  "loại lạ về rỗng (tất cả)",
-);
-assert.equal(
-  readHistoryFilterFromUrl(new URLSearchParams("tu_ngay=2026-13-45")).from,
-  "",
-  "ngày không có thật (tháng 13, ngày 45) bị bỏ dù đúng khuôn số",
-);
-assert.equal(
-  readHistoryFilterFromUrl(new URLSearchParams("trang=-3")).page,
-  1,
-  "page âm về 1",
-);
-assert.equal(
-  writeHistoryFilterToUrl(DEFAULT_HISTORY_FILTER).toString(),
-  "",
-  "bộ lọc lịch sử mặc định không ghi gì vào URL",
-);
-{
-  const params = writeHistoryFilterToUrl({
-    ...DEFAULT_HISTORY_FILTER,
-    type: "NHAP",
-    from: "2026-01-01",
-  });
-  assert.ok(params.toString().includes("loai=NHAP"), "ghi được loai=NHAP");
-  assert.ok(
-    params.toString().includes("tu_ngay=2026-01-01"),
-    "ghi được tu_ngay=2026-01-01",
-  );
-  assert.ok(!params.toString().includes("trang="), "page mặc định không ghi vào URL");
-}
-{
-  const sampleHistoryFilter: KiotVietHistoryFilter = {
-    type: "XUAT",
-    from: "2026-01-01",
-    to: "2026-01-31",
-    keyword: "quynh",
-    voucherNo: "D-10",
-    productCode: "ABC123",
-    page: 3,
-    pageSize: 50,
-  };
-  assert.deepEqual(
-    readHistoryFilterFromUrl(
-      new URLSearchParams(writeHistoryFilterToUrl(sampleHistoryFilter)),
-    ),
-    sampleHistoryFilter,
-    "bộ lọc lịch sử quay vòng qua URL không mất giá trị",
-  );
-}
-assert.equal(
-  toHistoryRpcArgs({ ...DEFAULT_HISTORY_FILTER, keyword: "  " }).p_tu_khoa,
-  undefined,
-  "từ khóa chỉ toàn khoảng trắng không gửi p_tu_khoa",
-);
-assert.equal(
-  toHistoryRpcArgs(DEFAULT_HISTORY_FILTER, { productId: "sp-1" }).p_san_pham_id,
-  "sp-1",
-  "truyền productId ra p_san_pham_id",
-);
-assert.equal(
-  countActiveHistoryFilters(DEFAULT_HISTORY_FILTER),
-  0,
-  "bộ lọc mặc định không có điều kiện nào đang bật",
-);
-
 // tsx biên dịch ra CJS nên KHÔNG có top-level await — bọc phần bất đồng bộ lại.
 async function kiemCsvLoi() {
   // CSV lỗi: Excel trên Windows cần BOM, và dấu nháy trong thông báo phải nhân đôi.
@@ -740,20 +657,6 @@ async function kiemCsvLoi() {
   );
   assert.ok(csv.includes("Đơn vị tính"), "tên cột hiển thị bằng tiêu đề tiếng Việt");
   assert.equal(errorFileName("danh-muc-20260918-1030.xlsx"), "danh-muc-20260918-1030-loi.csv");
-}
-
-// --- Lịch sử KiotViet: khóa dòng bảng -----------------------------------------
-// antd v6 bỏ tham số index của rowKey (bẫy 11) nên khóa phải có sẵn trong dữ
-// liệu. Một phiếu KiotViet có thể lặp cùng mã hàng hai dòng.
-{
-  const dong = {
-    nguon: "XUAT", ma_phieu: "HD000123", ngay: "2025-01-02", doi_tac: "Khách lẻ",
-    ma_hang: "XWA", ten_hang: "BAGA XUỒNG WAVE", so_luong: 2, ghi_chu: "",
-    tong_nhap: 0, tong_so_dong: 2, tong_xuat: 4,
-  };
-  const rows = [dong, dong].map(toKiotVietHistoryRow);
-  assert.equal(typeof rows[0]?.key, "string", "mỗi dòng lịch sử KiotViet có khóa");
-  assert.notEqual(rows[0]?.key, rows[1]?.key, "hai dòng trùng mã trong một phiếu có khóa khác nhau");
 }
 
 // --- Ô chọn tìm không dấu ---------------------------------------------------

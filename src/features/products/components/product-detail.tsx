@@ -63,19 +63,13 @@ function buildRenderValue(lookups: Lookups | undefined) {
 export function ProductDetailView({
   id,
   permissions,
-  kiotVietHistoryTab,
   imagesSection,
 }: {
   id: string;
   permissions: ProductDetailPermissions;
   /**
-   * Tab "Lịch sử KiotViet" (D-11) — route ghép sẵn từ feature tra cứu KiotViet,
-   * KHÔNG import feature đó trực tiếp ở đây (luật `src/features/README.md`).
-   */
-  kiotVietHistoryTab?: ReactNode;
-  /**
-   * Mục "Hình ảnh" (Phase 9) — route ghép sẵn từ feature ảnh, giống
-   * `kiotVietHistoryTab`. KHÔNG import feature `images` trực tiếp ở đây.
+   * Mục "Hình ảnh" (Phase 9) — route ghép sẵn từ feature ảnh. KHÔNG import
+   * feature `images` trực tiếp ở đây (luật `src/features/README.md`).
    */
   imagesSection?: ReactNode;
 }) {
@@ -226,15 +220,6 @@ export function ProductDetailView({
                     />
                   ),
                 },
-                ...(kiotVietHistoryTab
-                  ? [
-                      {
-                        key: "lich-su-kiotviet",
-                        label: "Lịch sử KiotViet",
-                        children: kiotVietHistoryTab,
-                      },
-                    ]
-                  : []),
                 ...(permissions.canViewHistory
                   ? [
                       {

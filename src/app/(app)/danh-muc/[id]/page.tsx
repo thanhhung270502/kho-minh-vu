@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 
 import { requirePermission } from "@/features/auth/api/current-user.server";
 import { ProductImageGallery } from "@/features/images/components/product-image-gallery";
-import { ProductHistoryTab } from "@/features/kiotviet-history/components/product-history-tab";
 import { ProductDetailView } from "@/features/products/components/product-detail";
 import { hasPermission } from "@/shared/lib/permissions";
 
@@ -27,10 +26,6 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         canEditSalePrice: hasPermission(user.role, "edit-sale-price"),
         canViewHistory: hasPermission(user.role, "edit-catalog"),
       }}
-      // Quyền THEO NGƯỜI (D-13), KHÔNG qua hasPermission()/PERMISSION_MATRIX.
-      kiotVietHistoryTab={
-        user.canViewKiotVietHistory ? <ProductHistoryTab productId={id} /> : undefined
-      }
       imagesSection={
         <ProductImageGallery
           productId={id}

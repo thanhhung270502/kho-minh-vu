@@ -39,7 +39,6 @@ type UserFormValues = {
   role: Role;
   warehouseIds: string[];
   tempPassword: string;
-  viewKiotVietHistory: boolean;
   approveStocktake: boolean;
 };
 
@@ -71,7 +70,6 @@ export function UserDrawer({ open, user, onClose }: Props) {
       role: "thu_kho",
       warehouseIds: [],
       tempPassword: "",
-      viewKiotVietHistory: false,
       approveStocktake: false,
     },
   });
@@ -87,7 +85,6 @@ export function UserDrawer({ open, user, onClose }: Props) {
             role: user.vai_tro,
             warehouseIds: userWarehouses(user).map((k) => k.id),
             tempPassword: "",
-            viewKiotVietHistory: user.xem_lich_su_kiotviet,
             approveStocktake: user.duyet_kiem_ke,
           }
         : {
@@ -96,7 +93,6 @@ export function UserDrawer({ open, user, onClose }: Props) {
             role: "thu_kho",
             warehouseIds: [],
             tempPassword: generateTempPassword(),
-            viewKiotVietHistory: false,
             approveStocktake: false,
           },
     );
@@ -113,7 +109,6 @@ export function UserDrawer({ open, user, onClose }: Props) {
             fullName: v.fullName,
             role: v.role,
             warehouseIds: v.role === "thu_kho" ? v.warehouseIds : [],
-            viewKiotVietHistory: v.viewKiotVietHistory,
             approveStocktake: v.approveStocktake,
           })
         : await createUser({
@@ -122,7 +117,6 @@ export function UserDrawer({ open, user, onClose }: Props) {
             role: v.role,
             warehouseIds: v.role === "thu_kho" ? v.warehouseIds : [],
             tempPassword: v.tempPassword,
-            viewKiotVietHistory: v.viewKiotVietHistory,
             approveStocktake: v.approveStocktake,
           });
 
