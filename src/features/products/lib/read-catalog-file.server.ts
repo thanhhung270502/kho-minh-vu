@@ -119,7 +119,7 @@ const HUONG_DAN: Array<[string, string]> = [
   ["Mã hàng", "Khóa để đối chiếu. Mã chưa có thì thêm mới, mã đã có thì cập nhật."],
   [
     "Nhóm hàng / Đơn vị tính / Công đoạn / Kho mặc định",
-    "Phải là tên hoặc mã đã có trong Cài đặt. Chưa có thì tạo trước, file sẽ báo lỗi dòng.",
+    "Phải là tên hoặc mã đã có (Danh sách hàng hóa → Danh mục phụ; kho ở Cài đặt). Chưa có thì tạo trước, file sẽ báo lỗi dòng.",
   ],
   ["Đang kinh doanh", "Ghi Có / Không (hoặc 1 / 0)."],
   ["Tồn hiện tại", "Chỉ để xem. Nhập vào sẽ bị bỏ qua — tồn chỉ đổi bằng chứng từ."],

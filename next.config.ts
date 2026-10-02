@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
       // /ton-kho/:path*: /ton-kho/dinh-muc vẫn sống tới khi chuyển sang Phân tích.
       { source: "/ton-kho", destination: "/danh-muc", permanent: false },
       { source: "/ton-kho/nap-tam", destination: "/danh-muc", permanent: false },
+      // Nhóm hàng / ĐVT / Công đoạn rời Cài đặt (Phase 11) — quản lý bằng nút
+      // "Danh mục phụ" ở Danh sách hàng hóa.
+      { source: "/cai-dat/nhom-hang", destination: "/danh-muc", permanent: false },
+      { source: "/cai-dat/don-vi-tinh", destination: "/danh-muc", permanent: false },
+      { source: "/cai-dat/cong-doan", destination: "/danh-muc", permanent: false },
     ];
   },
 };

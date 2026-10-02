@@ -14,9 +14,6 @@ export const SETTINGS_TABS: SettingsTab[] = [
   { duongDan: "/cai-dat/nguoi-dung", label: "Người dùng", quyen: "manage-users" },
   { duongDan: "/cai-dat/kho", label: "Kho", quyen: "manage-warehouses" },
   { duongDan: "/cai-dat/nhan-vien-phu-trach", label: "Nhân viên phụ trách", quyen: "manage-lookups" },
-  { duongDan: "/cai-dat/nhom-hang", label: "Nhóm hàng", quyen: "manage-lookups" },
-  { duongDan: "/cai-dat/don-vi-tinh", label: "Đơn vị tính", quyen: "manage-lookups" },
-  { duongDan: "/cai-dat/cong-doan", label: "Công đoạn", quyen: "manage-lookups" },
   { duongDan: "/cai-dat/so-chung-tu", label: "Số chứng từ", quyen: "manage-doc-numbering" },
 ];
 
@@ -24,6 +21,8 @@ export function tabsForRole(role: Role): SettingsTab[] {
   return SETTINGS_TABS.filter((t) => hasPermission(role, t.quyen));
 }
 
+// Nhóm hàng / ĐVT / Công đoạn rời Cài đặt ở Phase 11 — quản lý bằng nút "Danh
+// mục phụ" ở Danh sách hàng hóa. Tab ít quyền nhất còn lại là Nhân viên phụ trách.
 export function firstTabForRole(role: Role): string {
-  return tabsForRole(role)[0]?.duongDan ?? "/cai-dat/nhom-hang";
+  return tabsForRole(role)[0]?.duongDan ?? "/cai-dat/nhan-vien-phu-trach";
 }

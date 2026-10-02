@@ -13,7 +13,7 @@ import {
 
 /**
  * Dùng CHUNG tiền tố với `productKeys.lookups` để sửa nhóm hàng / ĐVT / công
- * đoạn ở Cài đặt làm mới luôn ô chọn bên Danh mục hàng — một lần invalidate
+ * đoạn ở "Danh mục phụ" làm mới luôn ô chọn trong form mã hàng — một lần invalidate
  * `["lookups"]` phủ cả hai.
  */
 export const lookupKeys = {

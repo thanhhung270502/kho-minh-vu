@@ -46,7 +46,7 @@ import {
   formatRecipient,
   toRecipient,
 } from "../src/shared/lib/recipient";
-import { tabsForRole } from "../src/features/settings/lib/settings-tabs";
+import { SETTINGS_TABS, firstTabForRole, tabsForRole } from "../src/features/settings/lib/settings-tabs";
 import { staffSchema } from "../src/features/settings/schemas/staff.schema";
 import { toDocumentDetail } from "../src/features/documents/types";
 import { toDocumentUpdate } from "../src/features/documents/schemas/document.schema";
@@ -171,6 +171,16 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
     ["fullName", "shortName"],
     "lỗi gắn đúng từng ô",
   );
+}
+
+// Phase 11 (NVPT-04): Nhóm hàng / ĐVT / Công đoạn rời Cài đặt — quản lý ở
+// Danh sách hàng hóa. Văn phòng vẫn còn tab (Nhân viên phụ trách) để vào Cài đặt.
+{
+  for (const old of ["/cai-dat/nhom-hang", "/cai-dat/don-vi-tinh", "/cai-dat/cong-doan"]) {
+    assert.ok(!SETTINGS_TABS.some((t) => t.duongDan === old), `Cài đặt không còn ${old}`);
+  }
+  assert.equal(firstTabForRole("van_phong"), "/cai-dat/nhan-vien-phu-trach");
+  assert.equal(firstTabForRole("quan_ly"), "/cai-dat/nguoi-dung");
 }
 
 // filterNavItems (06-16): menu "Kiểm kê" cho mọi vai trò.

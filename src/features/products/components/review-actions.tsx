@@ -2,6 +2,7 @@
 
 import { Badge, Button } from "antd";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import type { ProductFilter } from "../schemas/filter.schema";
 import { ExcelButton } from "./excel-button";
@@ -13,6 +14,8 @@ type Props = {
   canEdit: boolean;
   onFilterChange: (filter: ProductFilter) => void;
   onOpenImport?: () => void;
+  /** Nút do route ghép vào (vd. "Danh mục phụ" của feature settings). */
+  extraActions?: ReactNode;
 };
 
 /** Nút "Cần rà" (badge số lượng) + nút xuất/nhập Excel — cụm hành động phụ trên thanh công cụ. */
@@ -23,6 +26,7 @@ export function ReviewActions({
   canEdit,
   onFilterChange,
   onOpenImport,
+  extraActions,
 }: Props) {
   return (
     <>
@@ -43,6 +47,7 @@ export function ReviewActions({
           <Button>Định mức</Button>
         </Link>
       ) : null}
+      {extraActions}
       <ExcelButton
         filter={filter}
         productCount={total}

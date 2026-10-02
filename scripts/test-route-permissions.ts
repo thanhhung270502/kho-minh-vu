@@ -71,7 +71,10 @@ const MA_TRAN: Dong[] = [
   { route: "/cai-dat/nguoi-dung", ky_vong: { quanly: "200", vanphong: "quyen", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   // Nhân viên phụ trách (0077): cùng nhóm quyền ghi với danh mục — quản lý + văn phòng.
   { route: "/cai-dat/nhan-vien-phu-trach", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
-  { route: "/cai-dat/nhom-hang", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
+  // Phase 11 (NVPT-04): ba danh mục phụ rời Cài đặt, quản lý ở Danh sách hàng hóa.
+  { route: "/cai-dat/nhom-hang", ky_vong: ALL("→/danh-muc") },
+  { route: "/cai-dat/don-vi-tinh", ky_vong: ALL("→/danh-muc") },
+  { route: "/cai-dat/cong-doan", ky_vong: ALL("→/danh-muc") },
   { route: "/cai-dat/so-chung-tu", ky_vong: { quanly: "200", vanphong: "quyen", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/api/danh-muc/mau-excel", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "401" } },
   // Mở /dang-nhap khi đã đăng nhập phải quay về page gốc, và `tiep_tuc` trỏ ra

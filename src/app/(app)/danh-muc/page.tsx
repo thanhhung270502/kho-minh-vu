@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { ProductTable } from "@/features/products/components/product-table";
+import { LookupManagerButton } from "@/features/settings/components/lookup-manager-button";
 import { requirePermission } from "@/features/auth/api/current-user.server";
 import { PageHeader } from "@/shared/components/page-header";
 import { hasPermission } from "@/shared/lib/permissions";
@@ -24,6 +25,8 @@ export default async function ProductsPage() {
           permissions={{
             canEdit: hasPermission(user.role, "edit-catalog"),
           }}
+          // Quyền khớp RLS danh mục phụ (0015/0040): quản lý + văn phòng.
+          extraActions={hasPermission(user.role, "manage-lookups") ? <LookupManagerButton /> : null}
         />
       </Suspense>
     </>

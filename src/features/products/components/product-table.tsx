@@ -2,7 +2,7 @@
 
 import { Button } from "antd";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
@@ -39,7 +39,14 @@ function hasActiveFilter(filter: ProductFilter): boolean {
   );
 }
 
-export function ProductTable({ permissions }: { permissions: CatalogPermissions }) {
+export function ProductTable({
+  permissions,
+  extraActions,
+}: {
+  permissions: CatalogPermissions;
+  /** Nút do route ghép vào thanh công cụ — xem `danh-muc/page.tsx`. */
+  extraActions?: ReactNode;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -122,6 +129,7 @@ export function ProductTable({ permissions }: { permissions: CatalogPermissions 
                 total={total}
                 reviewCount={reviewCount.data?.total ?? 0}
                 canEdit={permissions.canEdit}
+                extraActions={extraActions}
                 onFilterChange={changeFilter}
                 onOpenImport={() => setImportOpen(true)}
               />

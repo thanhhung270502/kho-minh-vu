@@ -5,14 +5,14 @@ import { SettingsTabs } from "@/features/settings/components/settings-tabs";
 import { PageHeader } from "@/shared/components/page-header";
 
 export default async function SettingsLayout({ children }: { children: ReactNode }) {
-  // Tab ít quyền nhất là danh mục phụ; từng page con còn tự gác quyền của nó.
+  // Tab ít quyền nhất là Nhân viên phụ trách; từng page con còn tự gác quyền của nó.
   const nd = await requirePermission("manage-lookups");
 
   return (
     <>
       <PageHeader
         title="Cài đặt"
-        description="Người dùng & vai trò, kho, nhóm hàng/ĐVT, quy tắc đánh số chứng từ."
+        description="Người dùng & vai trò, kho, nhân viên phụ trách, quy tắc đánh số chứng từ."
       />
 
       <SettingsTabs role={nd.role} />
