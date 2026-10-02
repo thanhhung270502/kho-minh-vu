@@ -130,8 +130,8 @@ select public.ghi_so_chung_tu((select id from public.chung_tu where so_ct = 'XU-
 select throws_ok(
   $$select public.huy_chung_tu((select id from public.chung_tu where so_ct = 'XU-M24-HUY'), 'van phong tu huy')$$,
   '42501',
-  'Chỉ quản lý được hủy chứng từ đã ghi sổ',
-  'van_phong bị chặn 42501 khi hủy phiếu XUAT đã ghi sổ'
+  'Chức vụ của bạn chưa có quyền Sửa hóa đơn',
+  'van_phong bị chặn 42501 khi hủy phiếu XUAT đã ghi sổ (chức vụ Nhân viên chưa có quyền Sửa hóa đơn)'
 );
 
 select pg_temp.dang_xuat();
