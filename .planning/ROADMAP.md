@@ -50,7 +50,7 @@ sau cần dùng ngay.
 - [x] **Phase 13: Phân tích tồn kho** - Trang `/phan-tich`: bán TB/ngày, dự kiến hết hàng, đề nghị nhập, tồn chậm, ngưỡng chỉnh được, duyệt định mức
 - [x] **Phase 14: Panel chi tiết** - Bấm dòng Danh sách hàng hóa và Đối tác mở panel cạnh bảng, không rời trang
 - [x] **Phase 15: Import danh mục v2** - File 4 cột, bảng chọn trường từng dòng, bỏ qua dòng lỗi và tải file lỗi, tồn kho ghi bằng phiếu điều chỉnh
-- [ ] **Phase 16: Chức vụ & quyền** - Chức vụ động với 9 quyền, chặn ở database bằng `co_quyen()` đọc DB, có hiệu lực ngay (rủi ro cao nhất, đụng RLS)
+- [x] **Phase 16: Chức vụ & quyền** - Chức vụ động với 9 quyền, chặn ở database bằng `co_quyen()` đọc DB, có hiệu lực ngay (rủi ro cao nhất, đụng RLS)
  (completed 2026-09-26)
 
 ## Phase Details
@@ -584,7 +584,19 @@ nhau, chạy song song được. Migration kế tiếp là `0077`.
   3. Tắt một quyền của chức vụ thì người đó bị database từ chối ngay (kể cả gọi thẳng API), không phải đăng nhập lại
   4. Menu, nút và route ẩn/chặn đúng theo quyền chức vụ; ma trận kiểm thử quyền route chạy theo chức vụ và xanh
 
-**Plans**: TBD
+**Plans**: 4 task — làm theo quickplan (không qua `/gsd:execute-phase`), branch `feature/phase-16-chuc-vu` (tách từ `feature/phase-15-import-v2`)
+- [x] Migration `0082`: `chuc_vu` (mang phạm vi = enum vai_tro cũ) + `chuc_vu_quyen`, 4 chức vụ mặc định giữ đúng quyền cũ, `nguoi_dung.chuc_vu_id` + trigger đồng bộ vai_tro, `co_quyen()` / `quyen_cua_toi()` đọc DB, `luu_nguoi_dung` (`b3f0e42`)
+- [x] Migration `0083`: 23 hàm + 26 policy của 9 nghiệp vụ chuyển sang `co_quyen` (thân hàm lấy từ `pg_get_functiondef`); vá NULL lọt ở `ghi_so_chung_tu` / `huy_chung_tu` (`61d1539`)
+- [x] Cài đặt › Chức vụ (bảng chức vụ × 9 quyền), form người dùng chọn chức vụ, `0084` bỏ `luu_ho_so_nguoi_dung` theo vai trò (`226c44f`)
+- [x] Menu, nút, route theo quyền chức vụ (`allows()`), nút đơn tách Xác nhận / Hoàn thành / Hủy; ma trận route bật/tắt quyền trên cùng phiên (`cb4e8a7`)
+
+> **Hoàn thành 02/10/2026.** Kiểm trên Supabase local: `npm run check`, pgTAP 48 file / 748 test (toàn bộ test cũ xanh = không ai
+> mất/thêm quyền), test hàm thuần, test đọc Excel, ma trận quyền route 220/220 (gồm 10 ô bật/tắt quyền trên cùng cookie),
+> `npm run test:concurrency`, `npm run verify:hook`; xem trên trình duyệt. Quyết định khi làm: chức vụ chứa phạm vi (người dùng
+> chỉ chọn chức vụ, vai_tro suy ra); thêm chức vụ mặc định "Chỉ xem"; "Nhập đơn hàng" = phiếu nhập kho; "Tạo nhân viên" =
+> nhân viên phụ trách; "Sửa hóa đơn" = hủy hóa đơn đã ghi sổ; danh mục phụ đi cùng "Tạo mã hàng"; Hủy đơn, đối tác, người dùng,
+> kho, số chứng từ, giá vốn vẫn theo phạm vi. Đổi phạm vi vẫn chờ token mới (bẫy 6); 9 quyền có hiệu lực ngay. Còn lỗ
+> `coalesce(vai_tro, 'quan_ly')` ở các RPC ngoài 9 quyền — đã tách việc riêng. `0082`–`0084` mới áp ở local.
 **UI hint**: yes
 
 ## Progress
@@ -609,4 +621,4 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 | 13. Phân tích tồn kho | 4/4 | Complete | 2026-10-02 |
 | 14. Panel chi tiết | 4/4 | Complete | 2026-10-02 |
 | 15. Import danh mục v2 | 4/4 | Complete | 2026-10-02 |
-| 16. Chức vụ & quyền | 0/TBD | Not started | - |
+| 16. Chức vụ & quyền | 4/4 | Complete | 2026-10-02 |

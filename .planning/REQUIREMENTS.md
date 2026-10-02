@@ -181,10 +181,10 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 
 ### Chức vụ & quyền (QUYEN)
 
-- [ ] **QUYEN-01**: Quản lý tạo/sửa chức vụ (mặc định có Quản lý, Thủ kho, Nhân viên) và bật/tắt 9 quyền cho từng chức vụ: Xem dashboard, Nhập đơn hàng, Tạo đơn đặt hàng, Xác nhận, Hoàn thành, Sửa hóa đơn, Tạo mã hàng, Tạo nhân viên, Kiểm kho
-- [ ] **QUYEN-02**: Mỗi người dùng được gán một chức vụ; người dùng hiện có được chuyển sang chức vụ tương ứng với vai trò cũ, không ai mất quyền đang có
-- [ ] **QUYEN-03**: Quyền được chặn ở database (RLS/RPC qua `co_quyen()` đọc DB), không chỉ ẩn nút; đổi quyền của chức vụ có hiệu lực ngay, không phải chờ token mới
-- [ ] **QUYEN-04**: Menu, nút và route ẩn/chặn đúng theo quyền của chức vụ; ma trận kiểm thử quyền route chạy theo chức vụ
+- [x] **QUYEN-01**: Quản lý tạo/sửa chức vụ (mặc định có Quản lý, Thủ kho, Nhân viên) và bật/tắt 9 quyền cho từng chức vụ: Xem dashboard, Nhập đơn hàng, Tạo đơn đặt hàng, Xác nhận, Hoàn thành, Sửa hóa đơn, Tạo mã hàng, Tạo nhân viên, Kiểm kho
+- [x] **QUYEN-02**: Mỗi người dùng được gán một chức vụ; người dùng hiện có được chuyển sang chức vụ tương ứng với vai trò cũ, không ai mất quyền đang có
+- [x] **QUYEN-03**: Quyền được chặn ở database (RLS/RPC qua `co_quyen()` đọc DB), không chỉ ẩn nút; đổi quyền của chức vụ có hiệu lực ngay, không phải chờ token mới
+- [x] **QUYEN-04**: Menu, nút và route ẩn/chặn đúng theo quyền của chức vụ; ma trận kiểm thử quyền route chạy theo chức vụ
 
 ## v2 Requirements
 
@@ -342,10 +342,10 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 | IMP-03 | Phase 15 | Complete |
 | IMP-04 | Phase 15 | Complete |
 | IMP-05 | Phase 15 | Complete |
-| QUYEN-01 | Phase 16 | Pending |
-| QUYEN-02 | Phase 16 | Pending |
-| QUYEN-03 | Phase 16 | Pending |
-| QUYEN-04 | Phase 16 | Pending |
+| QUYEN-01 | Phase 16 | Complete |
+| QUYEN-02 | Phase 16 | Complete |
+| QUYEN-03 | Phase 16 | Complete |
+| QUYEN-04 | Phase 16 | Complete |
 
 **Coverage:**
 - v1 requirements: 80 total

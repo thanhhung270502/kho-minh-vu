@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Phản hồi vận hành
-status: ready_to_plan
-stopped_at: Phase 15 complete (quickplan, 4 task) — Phase 16 kế tiếp
-last_updated: 2026-10-02T17:00:00.000Z
+status: milestone_complete
+stopped_at: Phase 16 complete — milestone v1.1 xong cả 7 phase (10–16)
+last_updated: 2026-10-02T21:00:00.000Z
 last_activity: 2026-10-02
 progress:
   total_phases: 16
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 101
-  completed_plans: 76
-  percent: 63
+  completed_plans: 80
+  percent: 69
 ---
 
 # Project State
@@ -21,14 +21,42 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-02)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Milestone v1.1 Phản hồi vận hành — Phase 10–15 xong, kế tiếp Phase 16 (Chức vụ & quyền)
+**Current focus:** Milestone v1.1 Phản hồi vận hành — xong cả Phase 10–16; còn đẩy migration 0076–0084 lên cloud, merge branch, đóng milestone
 
 ## Current Position
 
-Phase: 16 — ready to plan (Phase 10–15 complete)
+Phase: v1.1 — milestone complete (Phase 10–16 complete)
 Plan: —
-Status: Ready to plan
-Last activity: 2026-10-02 — Phase 15 Import danh mục v2 hoàn thành
+Status: Milestone complete — chờ deploy + đóng milestone
+Last activity: 2026-10-02 — Phase 16 Chức vụ & quyền hoàn thành
+
+### Phase 16 — đã xong (02/10/2026)
+
+Làm theo `/spartan:quickplan`, không có thư mục `.planning/phases/16-*`. Branch
+`feature/phase-16-chuc-vu` **tách từ `feature/phase-15-import-v2`** (chưa push, chưa merge — merge
+10 → 11 → 12 → 13 → 14 → 15 → 16 theo thứ tự): `b3f0e42`, `61d1539`, `226c44f`, `cb4e8a7`.
+QUYEN-01..04 xong; kiểm trên Supabase local (`npm run check`, pgTAP 48 file / 748 test, test hàm
+thuần, test đọc Excel, ma trận quyền route 220/220, `npm run test:concurrency`, `npm run verify:hook`)
+và xem trên trình duyệt.
+
+Hệ quả cần nhớ:
+- Mô hình quyền: chức vụ mang **phạm vi** (enum vai_tro: kho, quản trị — theo token, bẫy 6) +
+  **9 quyền nghiệp vụ** (`co_quyen()` đọc DB, có hiệu lực ngay). Giao diện dùng `allows(user, …)`
+  gộp cả hai (`src/shared/lib/permissions.ts`); `getCurrentUser()` trả `permissions`.
+- Quyền nghiệp vụ mới phải đi qua `co_quyen` — đã ghi vào CLAUDE.md bẫy 6.
+- `seed:users` ghi `chuc_vu_id` → cần 0082 trước. `luu_ho_so_nguoi_dung` đã bỏ (0084), dùng `luu_nguoi_dung`.
+- Còn lỗ `coalesce(vai_tro, 'quan_ly')` ở `huy_duoc_don`, `tao_phieu_tra`, `dat_dinh_muc`,
+  `nap_ton_tam`, `tao_phieu_xuat_tu_don`, `xem_duoc_phan_tich`, `sinh_so_ct` — đã tạo việc riêng.
+- **`0082`–`0084` mới áp ở local.**
+
+### Việc còn lại của milestone v1.1
+
+- Đẩy migration 0076–0084 lên cloud: xử lý lệch lịch sử migration từ 0072 trước; 0078 dừng nếu dữ
+  liệu thật có đơn mang 2 hóa đơn chưa hủy (xem ghi chú Phase 12); chạy lại `npm run seed:users`
+  sau 0082 nếu dùng tài khoản mẫu trên cloud.
+- Merge 7 branch theo thứ tự 10 → 16 (hoặc mở PR chồng nhau), rồi `/gsd:complete-milestone`.
+- Việc treo: "Sửa xuất Excel danh mục bị cắt ở 1.000 mã", vá lỗ coalesce ở RPC ngoài 9 quyền,
+  trang xem phiếu điều chỉnh (thẻ kho chưa bấm mở được phiếu DC).
 
 ### Phase 15 — đã xong (02/10/2026)
 
@@ -148,8 +176,8 @@ Hệ quả cho các phase sau:
   việc vận hành bắt buộc trước go-live") phải chốt lại: tồn đầu kỳ đi bằng kiểm kê (KKE-04 /
   DLIEU-06), hoặc chạy RPC `nap_ton_tam` bằng script nếu vẫn cần.
 
-Kế tiếp (sau Phase 15): Phase 16 (Chức vụ & quyền) — `/spartan:quickplan phase 16`.
-Migration kế tiếp là `0082`.
+Kế tiếp (sau Phase 16): milestone v1.1 xong — xem "Việc còn lại của milestone v1.1" ở trên.
+Migration kế tiếp là `0085`.
 
 ### Việc v1.0 còn treo (giữ nguyên, chạy song song)
 
