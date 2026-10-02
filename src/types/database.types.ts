@@ -99,6 +99,59 @@ export type Database = {
         }
         Relationships: []
       }
+      chuc_vu: {
+        Row: {
+          created_at: string
+          id: string
+          ma: string
+          pham_vi: Database["public"]["Enums"]["vai_tro"]
+          ten: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ma: string
+          pham_vi: Database["public"]["Enums"]["vai_tro"]
+          ten: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ma?: string
+          pham_vi?: Database["public"]["Enums"]["vai_tro"]
+          ten?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      chuc_vu_quyen: {
+        Row: {
+          chuc_vu_id: string
+          created_at: string
+          quyen: string
+        }
+        Insert: {
+          chuc_vu_id: string
+          created_at?: string
+          quyen: string
+        }
+        Update: {
+          chuc_vu_id?: string
+          created_at?: string
+          quyen?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chuc_vu_quyen_chuc_vu_id_fkey"
+            columns: ["chuc_vu_id"]
+            isOneToOne: false
+            referencedRelation: "chuc_vu"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chung_tu: {
         Row: {
           chung_tu_goc_id: string | null
@@ -931,6 +984,7 @@ export type Database = {
       }
       nguoi_dung: {
         Row: {
+          chuc_vu_id: string
           created_at: string
           dang_hoat_dong: boolean
           duyet_kiem_ke: boolean
@@ -944,6 +998,7 @@ export type Database = {
           xem_lich_su_kiotviet: boolean
         }
         Insert: {
+          chuc_vu_id: string
           created_at?: string
           dang_hoat_dong?: boolean
           duyet_kiem_ke?: boolean
@@ -957,6 +1012,7 @@ export type Database = {
           xem_lich_su_kiotviet?: boolean
         }
         Update: {
+          chuc_vu_id?: string
           created_at?: string
           dang_hoat_dong?: boolean
           duyet_kiem_ke?: boolean
@@ -970,6 +1026,13 @@ export type Database = {
           xem_lich_su_kiotviet?: boolean
         }
         Relationships: [
+          {
+            foreignKeyName: "nguoi_dung_chuc_vu_id_fkey"
+            columns: ["chuc_vu_id"]
+            isOneToOne: false
+            referencedRelation: "chuc_vu"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "nguoi_dung_kho_id_fkey"
             columns: ["kho_id"]
@@ -1525,6 +1588,7 @@ export type Database = {
       }
       chuan_hoa_ghi_chu: { Args: { p: string }; Returns: string }
       chuan_hoa_ten: { Args: { p: string }; Returns: string }
+      co_quyen: { Args: { p_quyen: string }; Returns: boolean }
       co_quyen_xem_gia_von: { Args: never; Returns: boolean }
       cong_doan_theo_duoi: { Args: { p_ma_hang: string }; Returns: string }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
@@ -2170,6 +2234,19 @@ export type Database = {
         }
         Returns: undefined
       }
+      luu_nguoi_dung: {
+        Args: {
+          p_chuc_vu_id: string
+          p_duyet_kiem_ke?: boolean
+          p_ho_ten: string
+          p_id: string
+          p_kho_ids: string[]
+          p_phai_doi_mat_khau: boolean
+          p_ten_dang_nhap: string
+          p_xem_lich_su_kiotviet?: boolean
+        }
+        Returns: undefined
+      }
       mo_khoa_don: {
         Args: { p_id: string; p_ly_do: string }
         Returns: {
@@ -2312,6 +2389,7 @@ export type Database = {
         Args: { p_chung_tu_id: string }
         Returns: boolean
       }
+      quyen_cua_toi: { Args: never; Returns: string[] }
       quyet_ghi_chu: {
         Args: {
           p_doi_tac_id?: string

@@ -25,6 +25,12 @@ async function main() {
   }
   const khoTheoMa = new Map(khoList.map((k) => [k.ma, k.id]));
 
+  // Chức vụ mặc định theo vai trò (0082) — seed ghi chức vụ, trigger tự đặt vai_tro.
+  const { data: chucVuList, error: loiChucVu } = await supabase.from("chuc_vu").select("id, ma");
+  if (loiChucVu) throw loiChucVu;
+  const MA_CHUC_VU = { quan_ly: "QUAN_LY", van_phong: "NHAN_VIEN", thu_kho: "THU_KHO", chi_xem: "CHI_XEM" } as const;
+  const chucVuTheoMa = new Map((chucVuList ?? []).map((c) => [c.ma, c.id]));
+
   const ketQua: Array<{ email: string; role: string; kho: string; trangThai: string }> = [];
 
   // TODO(plan 02-09): bỏ ép kiểu "as never" sau khi `npm run db:types` sinh lại
@@ -66,11 +72,14 @@ async function main() {
     // Tên đăng nhập suy từ email (giống màn đăng nhập) — để NULL thì màn Người dùng
     // hiện "—". Công tắc lịch sử KiotViet của văn phòng (backfill 0063) chỉ bật khi
     // TẠO MỚI: tài khoản đã có thì giữ nguyên lựa chọn quản lý đã đặt trên cloud.
+    const chucVuId = chucVuTheoMa.get(MA_CHUC_VU[tk.role]);
+    if (!chucVuId) throw new Error(`Không có chức vụ ${MA_CHUC_VU[tk.role]}. Chạy migration 0082 trước.`);
+
     const { error: loiHoSo } = await supabase.from("nguoi_dung").upsert(
       {
         id: userId,
         ho_ten: tk.fullName,
-        vai_tro: tk.role,
+        chuc_vu_id: chucVuId,
         ten_dang_nhap: tk.email.split("@")[0],
         ...(taoMoi?.user && tk.role === "van_phong" ? { xem_lich_su_kiotviet: true } : {}),
       },
