@@ -16,8 +16,6 @@ import { StockCard } from "./stock-card";
 
 export type ProductDetailPermissions = {
   canEdit: boolean;
-  canViewCost: boolean;
-  canEditSalePrice: boolean;
   canViewHistory: boolean;
 };
 
@@ -32,6 +30,7 @@ const FIELD_LABELS: Record<string, string> = {
   kho_mac_dinh_id: "Kho mặc định",
   ton_toi_thieu: "Tồn tối thiểu",
   ton_toi_da: "Tồn tối đa",
+  // Giá bán đã bỏ khỏi giao diện (Phase 10) — giữ nhãn để đọc nhật ký sửa cũ.
   gia_ban: "Giá bán",
   dang_kinh_doanh: "Đang kinh doanh",
   barcode: "Barcode",
@@ -151,20 +150,6 @@ export function ProductDetailView({
                       : formatNumber(product.maxStock)
                   }`,
                 },
-                {
-                  key: "salePrice",
-                  label: "Giá bán",
-                  children: formatNumber(product.salePrice),
-                },
-                ...(permissions.canViewCost
-                  ? [
-                      {
-                        key: "costPrice",
-                        label: "Giá vốn",
-                        children: formatNumber(product.costPrice),
-                      },
-                    ]
-                  : []),
                 { key: "barcode", label: "Barcode", children: product.barcode ?? "—" },
                 {
                   key: "status",
@@ -214,10 +199,7 @@ export function ProductDetailView({
                   key: "stock-card",
                   label: "Thẻ kho",
                   children: (
-                    <StockCard
-                      productId={id}
-                      canViewCost={permissions.canViewCost}
-                    />
+                    <StockCard productId={id} />
                   ),
                 },
                 ...(permissions.canViewHistory
@@ -242,7 +224,6 @@ export function ProductDetailView({
             <ProductDrawer
               id={id}
               open={editOpen}
-              permissions={permissions}
               onClose={() => setEditOpen(false)}
             />
           </>

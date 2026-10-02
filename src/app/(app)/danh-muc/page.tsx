@@ -23,8 +23,6 @@ export default async function ProductsPage() {
         <ProductTable
           permissions={{
             canEdit: hasPermission(user.role, "edit-catalog"),
-            canViewCost: hasPermission(user.role, "view-cost"),
-            canEditSalePrice: hasPermission(user.role, "edit-sale-price"),
           }}
         />
       </Suspense>

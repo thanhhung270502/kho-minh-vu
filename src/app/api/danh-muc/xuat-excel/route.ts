@@ -6,7 +6,6 @@ import { readFilterFromUrl, toListRpcArgs } from "@/features/products/schemas/fi
 import { getCurrentUser } from "@/features/auth/api/current-user.server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { explainError } from "@/shared/lib/errors";
-import { hasPermission } from "@/shared/lib/permissions";
 
 export const runtime = "nodejs";
 
@@ -79,7 +78,6 @@ export async function GET(request: NextRequest) {
   }
 
   const warehouseName = new Map((warehouseRows ?? []).map((w) => [w.id, w.ten]));
-  const includeCost = hasPermission(user.role, "view-cost");
 
   const exportRows: ExportRowPayload[] = rows.map((row, index) => ({
     dong: index + 2,
@@ -92,15 +90,12 @@ export async function GET(request: NextRequest) {
     kho_mac_dinh: row.kho_mac_dinh_id ? (warehouseName.get(row.kho_mac_dinh_id) ?? null) : null,
     ton_toi_thieu: row.ton_toi_thieu === null ? null : Number(row.ton_toi_thieu),
     ton_toi_da: row.ton_toi_da === null ? null : Number(row.ton_toi_da),
-    gia_ban: row.gia_ban === null ? null : Number(row.gia_ban),
     dang_kinh_doanh: row.dang_kinh_doanh,
     ghi_chu: null,
     tong_ton: row.tong_ton === null ? null : Number(row.tong_ton),
-    // Cột giá vốn chỉ có mặt khi được phép xem; RPC cũng đã trả null cho vai trò khác.
-    gia_von: includeCost && row.gia_von !== null ? Number(row.gia_von) : null,
   }));
 
-  const buf = await buildTemplateWorkbook(exportRows, { includeCost });
+  const buf = await buildTemplateWorkbook(exportRows);
 
   return new Response(new Uint8Array(buf), {
     headers: {

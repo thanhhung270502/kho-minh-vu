@@ -11,7 +11,6 @@ type Props = {
   /** Chỉ truyền khi người dùng có quyền sửa. */
   onOpenImport?: () => void;
   /** Chỉ truyền cho QUẢN LÝ — giá vốn đầu kỳ là việc một lần, không phải việc hằng ngày. */
-  onOpenCostImport?: () => void;
 };
 
 type DownloadResult = { ok: true } | { ok: false; message: string };
@@ -54,7 +53,6 @@ export function ExcelButton({
   filter,
   productCount,
   onOpenImport,
-  onOpenCostImport,
 }: Props) {
   const { message } = App.useApp();
   const [downloading, setDownloading] = useState(false);
@@ -83,14 +81,10 @@ export function ExcelButton({
           items: [
             { key: "template", label: "Tải file mẫu trống" },
             ...(onOpenImport ? [{ key: "import", label: "Nhập từ Excel…" }] : []),
-            ...(onOpenCostImport
-              ? [{ key: "cost", label: "Nạp giá vốn đầu kỳ…" }]
-              : []),
           ],
           onClick: ({ key }) => {
             if (key === "template") void run("/api/danh-muc/mau-excel");
             if (key === "import") onOpenImport?.();
-            if (key === "cost") onOpenCostImport?.();
           },
         }}
       >

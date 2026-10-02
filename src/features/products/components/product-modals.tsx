@@ -1,13 +1,10 @@
 "use client";
 
-import type { CatalogPermissions } from "../types";
-import { CostImport } from "./cost-import";
 import { ExcelImport } from "./excel-import";
 import { ProductDrawer } from "./product-drawer";
 import { StageSuggestions } from "./stage-suggestions";
 
 type Props = {
-  permissions: CatalogPermissions;
   suggestionsOpen: boolean;
   onCloseSuggestions: () => void;
   importOpen: boolean;
@@ -15,8 +12,6 @@ type Props = {
   onViewRecentlyEdited: () => void;
   drawer: { open: boolean; id: string | null };
   onCloseDrawer: () => void;
-  costImportOpen: boolean;
-  onCloseCostImport: () => void;
 };
 
 /**
@@ -24,7 +19,6 @@ type Props = {
  * product-table.tsx cho gọn.
  */
 export function ProductModals({
-  permissions,
   suggestionsOpen,
   onCloseSuggestions,
   importOpen,
@@ -32,12 +26,9 @@ export function ProductModals({
   onViewRecentlyEdited,
   drawer,
   onCloseDrawer,
-  costImportOpen,
-  onCloseCostImport,
 }: Props) {
   return (
     <>
-      <CostImport open={costImportOpen} onClose={onCloseCostImport} />
       <StageSuggestions open={suggestionsOpen} onClose={onCloseSuggestions} />
 
       <ExcelImport
@@ -49,7 +40,6 @@ export function ProductModals({
       <ProductDrawer
         id={drawer.id}
         open={drawer.open}
-        permissions={permissions}
         onClose={onCloseDrawer}
       />
     </>

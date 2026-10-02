@@ -9,6 +9,8 @@ import { hasPermission } from "../src/shared/lib/permissions";
 import { safeRedirectPath } from "../src/shared/lib/redirect-path";
 import { suggestCustomerName, extractPhoneNumber } from "../src/features/partners/lib/notes";
 import { buildErrorCsv, errorFileName } from "../src/features/products/lib/error-file";
+import { toProductInsert, type ProductInput } from "../src/features/products/types";
+import { TEMPLATE_COLUMNS } from "../src/features/products/lib/excel-template";
 import {
   DEFAULT_RECEIPT_FILTER,
   countActiveReceiptFilters,
@@ -99,11 +101,8 @@ for (const xau of [
 
 assert.equal(hasPermission("thu_kho", "view-catalog"), true);
 assert.equal(hasPermission("thu_kho", "edit-catalog"), false);
-assert.equal(hasPermission("van_phong", "view-cost"), true);
-assert.equal(hasPermission("van_phong", "edit-sale-price"), false);
 assert.equal(hasPermission("van_phong", "manage-lookups"), true);
 assert.equal(hasPermission("van_phong", "manage-users"), false);
-assert.equal(hasPermission("chi_xem", "view-cost"), false);
 
 // --- Trang chủ theo vai trò + quyền "view-dashboard" (Phase 7, 07-04) -----
 assert.equal(homePathForRole("quan_ly"), "/");
@@ -128,6 +127,21 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
     filterNavItems({ role: "quan_ly" }, NAV_ITEMS).some((i) => i.href === "/kiem-ke"),
     "filterNavItems chỉ cần vai trò",
   );
+}
+
+// Phase 10 (GON-03): bỏ giá khỏi giao diện. Payload ghi mã hàng KHÔNG BAO GIỜ
+// mang gia_ban — có khóa đó là sửa mã sẽ ghi đè giá thật trong DB.
+{
+  const input = {
+    code: "ABC", name: "Tên", categoryId: null, unitId: "u", stageId: "s",
+    conversion: 1, defaultWarehouseId: null, minStock: 0, maxStock: null,
+    barcode: null, note: null, isActive: true,
+  } as ProductInput;
+  const payload = toProductInsert(input);
+  assert.ok(!("gia_ban" in payload), "payload ghi mã hàng không có gia_ban");
+  assert.ok(!("gia_von" in payload), "payload ghi mã hàng không có gia_von");
+  const keys = TEMPLATE_COLUMNS.map((c) => c.key as string);
+  assert.ok(!keys.includes("gia_ban") && !keys.includes("gia_von"), "mẫu Excel không có cột giá");
 }
 
 // filterNavItems (06-16): menu "Kiểm kê" cho mọi vai trò.

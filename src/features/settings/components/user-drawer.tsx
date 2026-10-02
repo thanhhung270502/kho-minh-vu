@@ -27,9 +27,9 @@ import { TempPasswordField, generateTempPassword } from "./temp-password-field";
 import { UserSpecialPermissions } from "./user-special-permissions";
 
 const MO_TA_VAI_TRO: Record<Role, string> = {
-  quan_ly: "Toàn quyền, kể cả Cài đặt và giá bán",
-  van_phong: "Sửa danh mục, đối tác, xem giá vốn",
-  thu_kho: "Chỉ kho được gán, không xem giá vốn",
+  quan_ly: "Toàn quyền, kể cả Cài đặt và người dùng",
+  van_phong: "Sửa danh mục, đối tác, lập chứng từ",
+  thu_kho: "Chỉ làm việc trên kho được gán",
   chi_xem: "Xem, không tạo hay sửa gì",
 };
 

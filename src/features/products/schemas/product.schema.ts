@@ -25,7 +25,6 @@ export const productSchema = z
     defaultWarehouseId: z.string().uuid().nullable(),
     minStock: nonNegative("Tồn tối thiểu"),
     maxStock: nonNegative("Tồn tối đa").nullable(),
-    salePrice: nonNegative("Giá bán"),
     barcode: z
       .string()
       .trim()

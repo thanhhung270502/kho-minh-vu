@@ -22,12 +22,10 @@ import { filterByLabel } from "@/shared/lib/text";
 import { useLookups, useProductDetail, useSaveProduct } from "../hooks/useProducts";
 import { productSchema, type ProductFormValues } from "../schemas/product.schema";
 import type { Lookups, ProductInput } from "../types";
-import { formatNumber } from "./product-columns";
 
 type Props = {
   id: string | null;
   open: boolean;
-  permissions: { canEditSalePrice: boolean; canViewCost: boolean };
   onClose: () => void;
 };
 
@@ -41,7 +39,6 @@ const EMPTY_FORM: ProductFormValues = {
   defaultWarehouseId: null,
   minStock: 0,
   maxStock: null,
-  salePrice: 0,
   barcode: null,
   note: null,
   isActive: true,
@@ -56,7 +53,7 @@ function defaultsForNewProduct(lookups: Lookups | undefined): ProductFormValues 
   };
 }
 
-export function ProductDrawer({ id, open, permissions, onClose }: Props) {
+export function ProductDrawer({ id, open, onClose }: Props) {
   const { message } = App.useApp();
   const lookups = useLookups();
   const detail = useProductDetail(id ?? "");
@@ -98,7 +95,6 @@ export function ProductDrawer({ id, open, permissions, onClose }: Props) {
         defaultWarehouseId: product.defaultWarehouseId ?? null,
         minStock: product.minStock,
         maxStock: product.maxStock,
-        salePrice: product.salePrice,
         barcode: product.barcode ?? null,
         note: product.note ?? null,
         isActive: product.isActive,
@@ -117,18 +113,13 @@ export function ProductDrawer({ id, open, permissions, onClose }: Props) {
       defaultWarehouseId: values.defaultWarehouseId,
       minStock: Number(values.minStock),
       maxStock: values.maxStock === null ? null : Number(values.maxStock),
-      salePrice: Number(values.salePrice),
       barcode: values.barcode,
       note: values.note,
       isActive: values.isActive,
     };
 
     try {
-      await save.mutateAsync({
-        id: id ?? undefined,
-        values: input,
-        includeSalePrice: permissions.canEditSalePrice,
-      });
+      await save.mutateAsync({ id: id ?? undefined, values: input });
       message.success(
         isNew ? `Đã tạo mã ${values.code}` : `Đã lưu mã ${values.code}`,
       );
@@ -156,7 +147,7 @@ export function ProductDrawer({ id, open, permissions, onClose }: Props) {
         if (error.code === "42501") {
           setError("root", {
             message:
-              "Tài khoản không có quyền sửa danh mục hoặc giá bán. Nhờ quản lý thao tác giúp.",
+              "Tài khoản không có quyền sửa danh mục. Nhờ quản lý thao tác giúp.",
           });
           return;
         }
@@ -373,41 +364,6 @@ export function ProductDrawer({ id, open, permissions, onClose }: Props) {
                 )}
               />
             </Form.Item>
-
-            <Form.Item
-              label="Giá bán"
-              validateStatus={errors.salePrice ? "error" : undefined}
-              help={
-                errors.salePrice?.message ??
-                (permissions.canEditSalePrice ? undefined : "Chỉ quản lý đặt giá bán")
-              }
-            >
-              <Controller
-                name="salePrice"
-                control={control}
-                render={({ field }) => (
-                  <InputNumber
-                    {...field}
-                    className="w-full"
-                    min={0}
-                    disabled={!permissions.canEditSalePrice}
-                    formatter={(value) =>
-                      value === undefined ? "" : formatNumber(value)
-                    }
-                    parser={(value) => Number((value ?? "").replace(/\D/g, ""))}
-                  />
-                )}
-              />
-            </Form.Item>
-
-            {permissions.canViewCost && product ? (
-              <Form.Item
-                label="Giá vốn"
-                help="Tính tự động từ phiếu nhập, không sửa tay"
-              >
-                <Input readOnly value={formatNumber(product.costPrice)} />
-              </Form.Item>
-            ) : null}
           </div>
 
           <Form.Item label="Barcode">

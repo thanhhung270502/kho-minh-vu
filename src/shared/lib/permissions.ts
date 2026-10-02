@@ -8,26 +8,19 @@ export type Role = Database["public"]["Enums"]["vai_tro"];
 export type Permission =
   | "view-catalog"
   | "edit-catalog"
-  | "view-cost"
-  | "edit-sale-price"
   | "manage-lookups"
   | "manage-users"
   | "manage-warehouses"
-  | "load-provisional-stock"
   | "manage-doc-numbering"
   | "view-dashboard";
 
 const PERMISSION_MATRIX: Record<Permission, readonly Role[]> = {
   "view-catalog": ["quan_ly", "van_phong", "thu_kho", "chi_xem"],
   "edit-catalog": ["quan_ly", "van_phong"],
-  "view-cost": ["quan_ly", "van_phong"],
-  "edit-sale-price": ["quan_ly"],
   "manage-lookups": ["quan_ly", "van_phong"],
   "manage-users": ["quan_ly"],
   "manage-warehouses": ["quan_ly"],
   "manage-doc-numbering": ["quan_ly"],
-  // Nạp tồn tạm từ KiotViet (D-05). Chặn thật: RPC nap_ton_tam trả 42501 cho vai trò khác.
-  "load-provisional-stock": ["quan_ly"],
   // Trang tổng quan chỉ dành cho quản lý (D-11). Đây chỉ là ẩn menu — chặn thật
   // ở redirect của `app/(app)/page.tsx` (07-09) và 42501 của các RPC dashboard
   // (07-01..03).

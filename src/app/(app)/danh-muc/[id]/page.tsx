@@ -22,8 +22,6 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       id={id}
       permissions={{
         canEdit: hasPermission(user.role, "edit-catalog"),
-        canViewCost: hasPermission(user.role, "view-cost"),
-        canEditSalePrice: hasPermission(user.role, "edit-sale-price"),
         canViewHistory: hasPermission(user.role, "edit-catalog"),
       }}
       imagesSection={

@@ -29,11 +29,7 @@ const SOURCE_LABELS: Record<string, { label: string; color?: string }> = {
   HE_THONG: { label: "Hệ thống", color: "green" },
 };
 
-export function buildStockCardColumns({
-  canViewCost,
-}: {
-  canViewCost: boolean;
-}): ColumnsType<StockCardRow> {
+export function buildStockCardColumns(): ColumnsType<StockCardRow> {
   return [
     {
       title: "Ngày giờ",
@@ -100,17 +96,6 @@ export function buildStockCardColumns({
           <span className="text-red-600">{formatNumber(value)}</span>
         ) : null,
     },
-    ...(canViewCost
-      ? [
-          {
-            title: "Giá vốn lúc đó",
-            dataIndex: "costPriceAtTime",
-            width: 130,
-            align: "right" as const,
-            render: formatNumber,
-          },
-        ]
-      : []),
     {
       title: "Tồn lũy kế",
       dataIndex: "runningBalance",

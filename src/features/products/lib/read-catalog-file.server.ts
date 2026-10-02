@@ -63,7 +63,6 @@ function parseTemplateRow(o: Record<string, unknown>, rowNumber: number): Import
     kho_mac_dinh: readString(o["kho_mac_dinh"]),
     ton_toi_thieu: readNumber(o["ton_toi_thieu"]),
     ton_toi_da: toiDa,
-    gia_ban: readNumber(o["gia_ban"]),
     dang_kinh_doanh: docCo(o["dang_kinh_doanh"]),
     barcode: readString(o["barcode"]),
     ghi_chu: readString(o["ghi_chu"]),
@@ -73,7 +72,6 @@ function parseTemplateRow(o: Record<string, unknown>, rowNumber: number): Import
 function parseKiotVietRow(o: Record<string, unknown>, rowNumber: number): ImportRowPayload {
   const tach = splitUnitStage(readString(o["dvt"]));
   const toiDa = readNumber(o["ton_lon_nhat"]);
-  const salePrice = readNumber(o["gia_ban"]);
 
   return {
     dong: rowNumber,
@@ -91,8 +89,6 @@ function parseKiotVietRow(o: Record<string, unknown>, rowNumber: number): Import
     kho_mac_dinh: readString(o["vi_tri"]),
     ton_toi_thieu: readNumber(o["ton_nho_nhat"]),
     ton_toi_da: toiDa === null || toiDa >= KHONG_GIOI_HAN ? null : toiDa,
-    // Giá bán trên hệ cũ bằng 0 cho cả 3.266 mã — gửi 0 là ghi đè giá quản lý vừa đặt.
-    gia_ban: salePrice ? salePrice : null,
     dang_kinh_doanh: readString(o["dang_kinh_doanh"]) !== "0",
     ghi_chu: readString(o["mo_ta"]),
   };
@@ -126,15 +122,12 @@ const HUONG_DAN: Array<[string, string]> = [
     "Phải là tên hoặc mã đã có trong Cài đặt. Chưa có thì tạo trước, file sẽ báo lỗi dòng.",
   ],
   ["Đang kinh doanh", "Ghi Có / Không (hoặc 1 / 0)."],
-  ["Tồn hiện tại, Giá vốn", "Chỉ để xem. Nhập vào sẽ bị bỏ qua — tồn chỉ đổi bằng chứng từ."],
+  ["Tồn hiện tại", "Chỉ để xem. Nhập vào sẽ bị bỏ qua — tồn chỉ đổi bằng chứng từ."],
 ];
 
 /** Ghi file mẫu hệ mới. Dùng workbook thường (ghi không gặp bẫy styles như khi đọc). */
-export async function buildTemplateWorkbook(
-  dong: ExportRowPayload[],
-  { includeCost }: { includeCost: boolean },
-): Promise<Buffer> {
-  const cot = TEMPLATE_COLUMNS.filter((c) => c.key !== "gia_von" || includeCost);
+export async function buildTemplateWorkbook(dong: ExportRowPayload[]): Promise<Buffer> {
+  const cot = TEMPLATE_COLUMNS;
 
   const wb = new ExcelJS.Workbook();
   wb.creator = "Kho Minh Vũ";

@@ -15,7 +15,6 @@ import {
   type ProductDetail,
   toProductInsert,
   type ProductInput,
-  type ProductInsert,
   type ProductRow,
   type StageSuggestion,
   type StockCardRow,
@@ -129,39 +128,20 @@ export async function fetchLookups(): Promise<Lookups> {
   };
 }
 
-/** Văn phòng không được đụng giá bán (trigger 0015) — bỏ hẳn khóa khỏi payload. */
-function toWritePayload(
-  values: ProductInput,
-  includeSalePrice: boolean,
-): ProductInsert {
-  const payload = toProductInsert(values);
-  if (includeSalePrice) return payload;
-
-  delete payload.gia_ban;
-  return payload;
-}
-
-export async function createProduct(
-  values: ProductInput,
-  includeSalePrice: boolean,
-): Promise<string> {
+export async function createProduct(values: ProductInput): Promise<string> {
   const { data, error } = await getSupabaseBrowserClient()
     .from("san_pham")
-    .insert(toWritePayload(values, includeSalePrice))
+    .insert(toProductInsert(values))
     .select("id")
     .single();
   if (error) throw error;
   return data.id;
 }
 
-export async function updateProduct(
-  id: string,
-  values: ProductInput,
-  includeSalePrice: boolean,
-): Promise<void> {
+export async function updateProduct(id: string, values: ProductInput): Promise<void> {
   const { error } = await getSupabaseBrowserClient()
     .from("san_pham")
-    .update(toWritePayload(values, includeSalePrice))
+    .update(toProductInsert(values))
     .eq("id", id);
   if (error) throw error;
 }

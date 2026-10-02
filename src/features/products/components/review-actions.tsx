@@ -13,7 +13,6 @@ type Props = {
   canEdit: boolean;
   onFilterChange: (filter: ProductFilter) => void;
   onOpenImport?: () => void;
-  onOpenCostImport?: () => void;
 };
 
 /** Nút "Cần rà" (badge số lượng) + nút xuất/nhập Excel — cụm hành động phụ trên thanh công cụ. */
@@ -24,7 +23,6 @@ export function ReviewActions({
   canEdit,
   onFilterChange,
   onOpenImport,
-  onOpenCostImport,
 }: Props) {
   return (
     <>
@@ -49,7 +47,6 @@ export function ReviewActions({
         filter={filter}
         productCount={total}
         onOpenImport={canEdit ? onOpenImport : undefined}
-        onOpenCostImport={onOpenCostImport}
       />
     </>
   );

@@ -16,7 +16,7 @@ export async function GET() {
     );
   }
 
-  const buf = await buildTemplateWorkbook([], { includeCost: false });
+  const buf = await buildTemplateWorkbook([]);
 
   return new Response(new Uint8Array(buf), {
     headers: {

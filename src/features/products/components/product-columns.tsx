@@ -22,7 +22,6 @@ function sortOrderFor(filter: ProductFilter, field: SortField) {
 
 type Params = {
   filter: ProductFilter;
-  canViewCost: boolean;
   canEdit: boolean;
   lookups: Lookups | undefined;
   onEdit: (id: string) => void;
@@ -30,7 +29,6 @@ type Params = {
 
 export function buildProductColumns({
   filter,
-  canViewCost,
   canEdit,
   lookups,
   onEdit,
@@ -136,26 +134,6 @@ export function buildProductColumns({
           formatNumber(stock)
         ),
     },
-    {
-      title: "Giá bán",
-      dataIndex: "salePrice",
-      width: 110,
-      align: "right",
-      className: "tabular-nums",
-      render: formatNumber,
-    },
-    ...(canViewCost
-      ? [
-          {
-            title: "Giá vốn",
-            dataIndex: "costPrice",
-            width: 110,
-            align: "right" as const,
-            className: "tabular-nums",
-            render: formatNumber,
-          },
-        ]
-      : []),
     {
       title: "Trạng thái",
       key: "status",

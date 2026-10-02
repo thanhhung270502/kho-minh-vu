@@ -28,9 +28,6 @@ export type ProductRow = {
   defaultWarehouseId: string | null;
   minStock: number;
   maxStock: number | null;
-  salePrice: number;
-  /** Chỉ về khi vai trò có quyền xem giá vốn (RPC tự lọc). */
-  costPrice: number;
   totalStock: number;
   isActive: boolean;
   needsReview: boolean;
@@ -63,7 +60,6 @@ export type StockCardRow = {
   warehouseName: string;
   quantityIn: number;
   quantityOut: number;
-  costPriceAtTime: number;
   partner: string | null;
   source: string | null;
   note: string | null;
@@ -104,15 +100,14 @@ export type WarehouseStock = {
 
 export type CatalogPermissions = {
   canEdit: boolean;
-  canViewCost: boolean;
-  canEditSalePrice: boolean;
 };
 
 /**
  * Trường ghi được của mã hàng.
  *
- * `costPrice` KHÔNG có ở đây: chỉ trigger giá vốn ghi cột đó, client không có
- * quyền (migration 0015 + 0029).
+ * Không có giá: giao diện không dùng giá (Phase 10, GON-03). `gia_ban` giữ
+ * nguyên trong DB vì payload không bao giờ mang khóa đó; `gia_von` chỉ trigger
+ * ghi được (migration 0015 + 0029).
  */
 export type ProductInput = {
   code: string;
@@ -124,7 +119,6 @@ export type ProductInput = {
   defaultWarehouseId: string | null;
   minStock: number;
   maxStock: number | null;
-  salePrice: number;
   barcode: string | null;
   note: string | null;
   isActive: boolean;
@@ -144,7 +138,6 @@ export function toProductInsert(input: ProductInput): ProductInsert {
     kho_mac_dinh_id: input.defaultWarehouseId,
     ton_toi_thieu: input.minStock,
     ton_toi_da: input.maxStock,
-    gia_ban: input.salePrice,
     barcode: input.barcode,
     ghi_chu: input.note,
     dang_kinh_doanh: input.isActive,
@@ -170,8 +163,6 @@ export function toProductRow(row: ProductRowDb): ProductRow {
     defaultWarehouseId: row.kho_mac_dinh_id,
     minStock: Number(row.ton_toi_thieu),
     maxStock: row.ton_toi_da === null ? null : Number(row.ton_toi_da),
-    salePrice: Number(row.gia_ban),
-    costPrice: Number(row.gia_von),
     totalStock: Number(row.tong_ton),
     isActive: row.dang_kinh_doanh,
     needsReview: row.can_ra,
@@ -199,8 +190,6 @@ export function toProductDetail(row: ProductDetailDb): ProductDetail {
     defaultWarehouseId: row.kho_mac_dinh_id,
     minStock: Number(row.ton_toi_thieu),
     maxStock: row.ton_toi_da === null ? null : Number(row.ton_toi_da),
-    salePrice: Number(row.gia_ban),
-    costPrice: Number(row.gia_von),
     totalStock: Number(row.tong_ton),
     isActive: row.dang_kinh_doanh,
     needsReview: row.can_ra,
@@ -230,7 +219,6 @@ export function toStockCardRow(row: StockCardRowDb): StockCardRow {
     warehouseName: row.ten_kho,
     quantityIn: Number(row.so_luong_nhap),
     quantityOut: Number(row.so_luong_xuat),
-    costPriceAtTime: Number(row.gia_von_tai_thoi_diem),
     partner: row.doi_tac,
     source: row.nguon,
     note: row.ghi_chu,

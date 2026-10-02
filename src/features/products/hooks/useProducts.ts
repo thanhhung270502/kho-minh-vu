@@ -93,16 +93,12 @@ export function useSaveProduct() {
   const refresh = useRefreshProducts();
 
   return useMutation({
-    mutationFn: async (input: {
-      id?: string;
-      values: ProductInput;
-      includeSalePrice: boolean;
-    }) => {
+    mutationFn: async (input: { id?: string; values: ProductInput }) => {
       if (input.id) {
-        await updateProduct(input.id, input.values, input.includeSalePrice);
+        await updateProduct(input.id, input.values);
         return input.id;
       }
-      return createProduct(input.values, input.includeSalePrice);
+      return createProduct(input.values);
     },
     onSuccess: refresh,
   });

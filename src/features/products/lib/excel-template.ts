@@ -19,12 +19,10 @@ export type ColumnKey =
   | "kho_mac_dinh"
   | "ton_toi_thieu"
   | "ton_toi_da"
-  | "gia_ban"
   | "dang_kinh_doanh"
   | "barcode"
   | "ghi_chu"
-  | "tong_ton"
-  | "gia_von";
+  | "tong_ton";
 
 export type TemplateColumn = {
   key: ColumnKey;
@@ -44,12 +42,10 @@ export const TEMPLATE_COLUMNS: readonly TemplateColumn[] = [
   { key: "kho_mac_dinh", title: "Kho mặc định", width: 14 },
   { key: "ton_toi_thieu", title: "Tồn tối thiểu", width: 14 },
   { key: "ton_toi_da", title: "Tồn tối đa", width: 12 },
-  { key: "gia_ban", title: "Giá bán", width: 14 },
   { key: "dang_kinh_doanh", title: "Đang kinh doanh", width: 16 },
   { key: "barcode", title: "Barcode", width: 16 },
   { key: "ghi_chu", title: "Ghi chú", width: 30 },
   { key: "tong_ton", title: "Tồn hiện tại", width: 13, exportOnly: true },
-  { key: "gia_von", title: "Giá vốn", width: 14, exportOnly: true },
 ];
 
 export const COLUMN_LABELS: Record<string, string> = Object.fromEntries(
@@ -78,7 +74,6 @@ export type ImportRowPayload = {
   kho_mac_dinh?: string | null;
   ton_toi_thieu?: number | null;
   ton_toi_da?: number | null;
-  gia_ban?: number | null;
   dang_kinh_doanh?: boolean | null;
   barcode?: string | null;
   ghi_chu?: string | null;
@@ -87,7 +82,6 @@ export type ImportRowPayload = {
 /** Một dòng để ghi ra file mẫu hệ mới. */
 export type ExportRowPayload = ImportRowPayload & {
   tong_ton?: number | null;
-  gia_von?: number | null;
 };
 
 export const MAX_FILE_MB = 5;

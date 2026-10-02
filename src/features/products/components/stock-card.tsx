@@ -9,13 +9,7 @@ import { useLookups, useStockCard } from "../hooks/useProducts";
 import type { StockCardRow } from "../types";
 import { buildStockCardColumns } from "./stock-card-columns";
 
-export function StockCard({
-  productId,
-  canViewCost,
-}: {
-  productId: string;
-  canViewCost: boolean;
-}) {
+export function StockCard({ productId }: { productId: string }) {
   // antd cảnh báo khi option có `value: null` — dùng chuỗi rỗng làm "tất cả",
   // đổi về null ngay khi gọi API.
   const [warehouseId, setWarehouseId] = useState<string>("");
@@ -23,7 +17,7 @@ export function StockCard({
   const lookups = useLookups();
   const stockCard = useStockCard(productId, warehouseId || null, page);
 
-  const columns = buildStockCardColumns({ canViewCost });
+  const columns = buildStockCardColumns();
 
   return (
     <>

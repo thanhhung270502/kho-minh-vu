@@ -54,7 +54,6 @@ export function ProductTable({ permissions }: { permissions: CatalogPermissions 
   const [selected, setSelected] = useState<string[]>([]);
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
-  const [costImportOpen, setCostImportOpen] = useState(false);
 
   // Badge "Cần rà": lấy tổng từ chính RPC danh sách, không thêm RPC mới.
   const reviewCount = useProducts({
@@ -98,7 +97,6 @@ export function ProductTable({ permissions }: { permissions: CatalogPermissions 
 
   const columns = buildProductColumns({
     filter,
-    canViewCost: permissions.canViewCost,
     canEdit: permissions.canEdit,
     lookups: lookups.data,
     onEdit: (id) => setDrawer({ open: true, id }),
@@ -120,9 +118,6 @@ export function ProductTable({ permissions }: { permissions: CatalogPermissions 
             onChange={changeFilter}
             secondaryActions={
               <ReviewActions
-                onOpenCostImport={
-                  permissions.canEditSalePrice ? () => setCostImportOpen(true) : undefined
-                }
                 filter={filter}
                 total={total}
                 reviewCount={reviewCount.data?.total ?? 0}
@@ -194,9 +189,6 @@ export function ProductTable({ permissions }: { permissions: CatalogPermissions 
       </ListLayout>
 
       <ProductModals
-        costImportOpen={costImportOpen}
-        onCloseCostImport={() => setCostImportOpen(false)}
-        permissions={permissions}
         suggestionsOpen={suggestionsOpen}
         onCloseSuggestions={() => setSuggestionsOpen(false)}
         importOpen={importOpen}

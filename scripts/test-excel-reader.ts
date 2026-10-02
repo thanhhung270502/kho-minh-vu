@@ -51,8 +51,8 @@ async function main() {
   );
 
   assert.ok(
-    kv.dong.every((d) => d.gia_ban === null),
-    "giá bán 0 của hệ cũ không được gửi đi (sẽ ghi đè giá quản lý vừa đặt)",
+    kv.dong.every((d) => !("gia_ban" in d)),
+    "không gửi giá bán đi — giao diện bỏ giá (Phase 10), RPC giữ nguyên giá đang có",
   );
 
   const coKho = kv.dong.filter((d) => d.kho_mac_dinh === "Kho 2").length;
@@ -60,7 +60,7 @@ async function main() {
 
   // Quay vòng: xuất mẫu hệ mới rồi đọc lại
   const nam = kv.dong.slice(0, 5);
-  const buf = await buildTemplateWorkbook(nam.map(toExportRow), { includeCost: false });
+  const buf = await buildTemplateWorkbook(nam.map(toExportRow));
   const mm = await readCatalogFile(buf);
 
   assert.equal(mm.dinhDang, "mau_moi", "nhận ra mẫu hệ mới");
