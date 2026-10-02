@@ -14,6 +14,31 @@ Ngày đầu go-live, **toàn bộ 923 phiếu xuất/tuần và 78 phiếu nh�
 mà không ai phải mở KiotViet để đối chiếu.** Đó là tiêu chí thành công duy nhất — không
 phải số lượng tính năng.
 
+## Current Milestone: v1.1 Phản hồi vận hành
+
+**Goal:** Đưa hệ thống khớp cách Minh Vũ vận hành thật theo phản hồi 28/09–02/10/2026
+(Notion Task board): luồng Đặt hàng → Hóa đơn, menu gọn, panel thay trang chi tiết,
+trang Phân tích thay trang Tồn kho, import chịu được dòng lỗi, phân quyền theo chức vụ.
+
+**Target features:**
+- Dọn dẹp & menu nhóm (Đơn hàng: Đặt hàng, Hóa đơn · Hàng hóa: Danh sách, Kiểm kho); Xuất kho → Hóa đơn; bỏ Lịch sử KiotViet, bỏ Tồn kho, bỏ giá bán
+- Danh mục Nhân viên phụ trách; đặt hàng chọn Nội bộ / Đối tác; thêm Nhóm hàng/ĐVT/Công đoạn ngay trong form mã hàng
+- Luồng đơn Đơn tạm → Xác nhận (in phiếu lấy hàng) → Hoàn thành (ghi sổ Hóa đơn atomic), hủy đơn
+- Trang Phân tích tồn kho: dự kiến hết hàng, đề nghị nhập, tồn chậm
+- Panel chi tiết cho Danh mục hàng hóa và Đối tác
+- Import Excel v2: file 4 cột, chọn trường từng dòng, bỏ qua dòng lỗi
+- Chức vụ động + 9 quyền, RLS đọc quyền từ DB
+
+**Quyết định đã chốt (02/10/2026):**
+- Người nhận nội bộ dùng bảng `nhan_vien_phu_trach` riêng (tên viết tắt, tên đầy đủ), chuyển dữ liệu từ `nguoi_dung`; mặc định Nội bộ; đối tác = Khách hàng + Cả hai; hiển thị tên đầy đủ
+- Bỏ Giá bán ở mọi màn, ẩn Giá vốn khỏi Danh mục, GIỮ Đơn giá phiếu nhập (nuôi giá vốn bình quân)
+- Bỏ `/ton-kho`: Định mức gộp vào Phân tích, bỏ Nạp tồn tạm
+- Phân tích: kỳ 7/30/90 (mặc định 30), chia ngày lịch, chỉ hóa đơn hoàn thành, không tính đơn nội bộ, tồn khả dụng = tồn − khách đặt, ngưỡng đỏ 7 / vàng 14 lưu chung
+- 1 đơn = 1 hóa đơn, không giao nhiều đợt (dùng "đóng đơn sớm")
+- Xuất kho đổi tên Hóa đơn, route `/hoa-don`, `/xuat-kho` chuyển hướng
+- Import: tồn kho trong file sinh phiếu DIEU_CHINH, không ghi thẳng; Hàng thành phần hoãn sang milestone sau
+- v1.0 để mở song song (Phase 4 checkpoint, Phase 8); 04-12/04-13 bị Phase 12 thay thế
+
 ## Requirements
 
 ### Validated
@@ -166,4 +191,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-09-12 after initialization*
+*Last updated: 2026-10-02 — bắt đầu milestone v1.1 Phản hồi vận hành*

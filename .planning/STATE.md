@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: ready_to_plan
+milestone: v1.1
+milestone_name: Phản hồi vận hành
+status: defining_requirements
 stopped_at: Phase 7 complete (9/9) — ready to discuss Phase 8
 last_updated: 2026-09-27T09:05:51.514Z
-last_activity: 2026-09-28
+last_activity: 2026-10-02
 progress:
   total_phases: 9
   completed_phases: 4
@@ -18,12 +18,19 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-09-12)
+See: .planning/PROJECT.md (updated 2026-10-02)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Phase 8 — mobile & chuyển kho
+**Current focus:** Milestone v1.1 Phản hồi vận hành — đang định nghĩa requirements
 
 ## Current Position
+
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-10-02 — Milestone v1.1 started
+
+### Việc v1.0 còn treo (giữ nguyên, chạy song song)
 
 Phase: 8
 tự động, đang chờ checkpoint)
