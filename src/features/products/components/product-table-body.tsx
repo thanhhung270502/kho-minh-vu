@@ -91,7 +91,8 @@ export function ProductTableBody({
           },
         })}
         loading={loading}
-        scroll={{ x: 1100 }}
+        // +240px cho hai cột dự báo của quản lý / văn phòng.
+        scroll={{ x: 1340 }}
         onChange={(pagination, _filters, sorter) =>
           handleTableChange(pagination, sorter)
         }

@@ -8,7 +8,10 @@ import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
 import { readSelectedId, withSelectedId } from "@/shared/lib/selected-id";
 
+import { useAnalysisRows } from "@/features/analytics/hooks/useAnalytics";
+
 import { useLookups, useProducts } from "../hooks/useProducts";
+import { forecastById } from "../lib/product-expanded";
 import {
   DEFAULT_PRODUCT_FILTER,
   countActiveFilters,
@@ -46,12 +49,15 @@ export function ProductTable({
   permissions,
   extraActions,
   forecastSection,
+  showForecast = false,
 }: {
   permissions: CatalogPermissions;
   /** Nút do route ghép vào thanh công cụ — xem `danh-muc/page.tsx`. */
   extraActions?: ReactNode;
   /** Dự báo trong panel chi tiết — route chỉ ghép khi có quyền xem phân tích. */
   forecastSection?: ReactNode;
+  /** Quản lý + văn phòng (view-analysis): hai cột Khách đặt / Dự kiến hết hàng. */
+  showForecast?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -61,6 +67,9 @@ export function ProductTable({
   const selectedId = readSelectedId(searchParams);
   const products = useProducts(filter);
   const lookups = useLookups();
+  // RPC phân tích chặn thủ kho / chỉ xem (0079) — không gọi khi không có quyền.
+  const analysis = useAnalysisRows(30, { enabled: showForecast });
+  const forecastMap = useMemo(() => forecastById(analysis.data ?? []), [analysis.data]);
   const [drawer, setDrawer] = useState<{ open: boolean; id: string | null }>({
     open: false,
     id: null,
@@ -125,6 +134,7 @@ export function ProductTable({
     canEdit: permissions.canEdit,
     lookups: lookups.data,
     onEdit: (id) => setDrawer({ open: true, id }),
+    forecasts: showForecast ? { byId: forecastMap, loading: analysis.isPending } : null,
   });
 
   return (

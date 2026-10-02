@@ -18,6 +18,11 @@ import { jobTitleSchema, titleCodeFromName } from "../src/features/settings/sche
 import { editUserFormSchema } from "../src/features/settings/schemas/user.schema";
 import { duplicateProblemsInFile } from "../src/features/products/lib/new-product-file";
 import {
+  copyProductDefaults,
+  forecastById,
+  stockLimitLabel,
+} from "../src/features/products/lib/product-expanded";
+import {
   CATALOG_REASONS,
   applyToRows,
   catalogProblemsFrom,
@@ -1143,6 +1148,34 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.ok(editUserFormSchema.safeParse({ fullName: "An", jobTitleId: title, role: "van_phong", warehouseIds: [] }).success);
   const noWarehouse = editUserFormSchema.safeParse({ fullName: "An", jobTitleId: title, role: "thu_kho", warehouseIds: [] });
   assert.ok(!noWarehouse.success && noWarehouse.error.issues[0].path[0] === "warehouseIds");
+}
+
+// --- Danh mục: chi tiết dạng dòng mở rộng (sửa PANEL-01, ảnh mẫu KiotViet) -
+{
+  assert.equal(stockLimitLabel(0, null), "0 – không giới hạn");
+  assert.equal(stockLimitLabel(5, 1200), "5 – 1.200");
+
+  // Sao chép: giữ mọi trường, mã để trống để người dùng gõ mã mới.
+  const copied = copyProductDefaults({
+    code: "HA26-33K-PC", name: "Hộc chứa đồ", categoryId: "c", unitId: "u", stageId: "s",
+    conversion: 2, defaultWarehouseId: "k", minStock: 1, maxStock: 9, barcode: "123",
+    note: "n", isActive: false, productTypeId: "t", vehicleLineId: "v", directSale: false,
+    shelfLocation: "A-1",
+  });
+  assert.equal(copied.code, "");
+  assert.equal(copied.barcode, null, "barcode thường là duy nhất — không chép");
+  assert.equal(copied.isActive, true, "mã mới luôn đang kinh doanh");
+  assert.equal(copied.name, "Hộc chứa đồ");
+  assert.equal(copied.vehicleLineId, "v");
+
+  // Ghép số phân tích vào từng dòng bảng theo id sản phẩm.
+  const map = forecastById([
+    { productId: "a", customerOrdered: 3, avgDailySales: 1, daysOfCover: 4.2, stockoutDate: "2026-10-06" },
+    { productId: "b", customerOrdered: 0, avgDailySales: null, daysOfCover: null, stockoutDate: null },
+  ]);
+  assert.deepEqual(map.get("a"), { customerOrdered: 3, stockoutDate: "2026-10-06", daysOfCover: 4.2, selling: true });
+  assert.equal(map.get("b")?.selling, false, "không bán trong kỳ: hiện 'Không bán', không có ngày");
+  assert.equal(map.get("zzz"), undefined);
 }
 
 async function kiemTaiTheoTrang() {

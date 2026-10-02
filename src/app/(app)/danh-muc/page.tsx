@@ -31,6 +31,7 @@ export default async function ProductsPage() {
           extraActions={can(user, "tao_ma_hang") ? <LookupManagerButton /> : null}
           // Thủ kho không thấy khách đặt / dự kiến hết hàng (PANEL-01).
           forecastSection={hasPermission(user.role, "view-analysis") ? <ProductForecast /> : null}
+          showForecast={hasPermission(user.role, "view-analysis")}
         />
       </Suspense>
     </>

@@ -1,8 +1,10 @@
 "use client";
 
 import { Button, Space, Tag, Tooltip, Typography } from "antd";
+import dayjs from "dayjs";
 import type { TableColumnsType } from "antd";
 
+import type { ProductForecast } from "../lib/product-expanded";
 import type { ProductFilter, SortField } from "../schemas/filter.schema";
 import type { Lookups, ProductRow } from "../types";
 import { InlineEditCell } from "./inline-edit-cell";
@@ -24,6 +26,8 @@ type Params = {
   canEdit: boolean;
   lookups: Lookups | undefined;
   onEdit: (id: string) => void;
+  /** null = người xem không có quyền xem phân tích → không có hai cột dự báo. */
+  forecasts: { byId: Map<string, ProductForecast>; loading: boolean } | null;
 };
 
 export function buildProductColumns({
@@ -31,6 +35,7 @@ export function buildProductColumns({
   canEdit,
   lookups,
   onEdit,
+  forecasts,
 }: Params): TableColumnsType<ProductRow> {
   const categoryOptions = [
     { value: "", label: "(không nhóm)" },
@@ -140,6 +145,7 @@ export function buildProductColumns({
           formatNumber(stock)
         ),
     },
+    ...(forecasts ? forecastColumns(forecasts) : []),
     {
       title: "Trạng thái",
       key: "status",
@@ -177,5 +183,41 @@ export function buildProductColumns({
           },
         ]
       : []),
+  ];
+}
+
+/**
+ * Khách đặt / Dự kiến hết hàng — cùng số với trang Phân tích (nhịp bán 30 ngày).
+ * Số ghép ở trình duyệt nên KHÔNG sắp xếp được theo hai cột này.
+ */
+function forecastColumns(forecasts: {
+  byId: Map<string, ProductForecast>;
+  loading: boolean;
+}): TableColumnsType<ProductRow> {
+  const pending = <Typography.Text type="secondary">…</Typography.Text>;
+  return [
+    {
+      title: "Khách đặt",
+      key: "customerOrdered",
+      width: 100,
+      align: "right",
+      className: "tabular-nums",
+      render: (_: unknown, row: ProductRow) => {
+        const f = forecasts.byId.get(row.id);
+        if (!f) return forecasts.loading ? pending : "—";
+        return f.customerOrdered === 0 ? <Typography.Text type="secondary">0</Typography.Text> : formatNumber(f.customerOrdered);
+      },
+    },
+    {
+      title: "Dự kiến hết hàng",
+      key: "stockoutDate",
+      width: 140,
+      render: (_: unknown, row: ProductRow) => {
+        const f = forecasts.byId.get(row.id);
+        if (!f) return forecasts.loading ? pending : "—";
+        if (!f.selling) return <Typography.Text type="secondary">Không bán</Typography.Text>;
+        return f.stockoutDate ? dayjs(f.stockoutDate).format("DD/MM/YYYY") : "—";
+      },
+    },
   ];
 }
