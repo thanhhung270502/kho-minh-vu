@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Test đồng thời cho trigger giá vốn và hàm đánh số chứng từ.
+# Test đồng thời cho trigger giá vốn, hàm đánh số chứng từ và Hoàn thành đơn.
 #
 #   npm run test:dong-thoi
 #
@@ -40,6 +40,8 @@ HELP
 fi
 
 MA_TEST="CONCURRENCY-TEST"
+MA_HTD="CONCURRENCY-HTD"
+SO_DH_HTD="DH-CONCURRENCY-HTD"
 PSQL=(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -q -t -A)
 
 echo "═══ TEST ĐỒNG THỜI ═══"
@@ -58,6 +60,33 @@ delete from public.ton_kho
   where san_pham_id in (select id from public.san_pham where ma_hang = '$MA_TEST');
 delete from public.san_pham where ma_hang = '$MA_TEST';
 delete from public.chuoi_so_ct where loai_ct = 'DIEU_CHINH' and nam = 2099;
+-- PHẦN 3: hóa đơn sinh từ đơn test. Trả bộ đếm XUAT về như cũ nếu số vừa dùng
+-- vẫn là số cuối (không ai lập hóa đơn thật trong lúc test) — tránh lủng số.
+update public.chuoi_so_ct c
+set so_hien_tai = so_hien_tai - 1
+where c.loai_ct = 'XUAT' and c.nam = extract(year from now())::smallint
+  and exists (
+    select 1 from public.chung_tu ct
+    join public.don_dat_hang d on d.id = ct.don_dat_hang_id
+    where d.so_dh = '$SO_DH_HTD'
+      and right(ct.so_ct, 6)::int = c.so_hien_tai
+  );
+delete from public.kho_movement
+  where san_pham_id in (select id from public.san_pham where ma_hang = '$MA_HTD');
+delete from public.ton_kho
+  where san_pham_id in (select id from public.san_pham where ma_hang = '$MA_HTD');
+delete from public.chung_tu_dong
+  where chung_tu_id in (select ct.id from public.chung_tu ct
+                        join public.don_dat_hang d on d.id = ct.don_dat_hang_id
+                        where d.so_dh = '$SO_DH_HTD');
+delete from public.chung_tu
+  where don_dat_hang_id in (select id from public.don_dat_hang where so_dh = '$SO_DH_HTD');
+delete from public.nhat_ky_sua
+  where bang = 'don_dat_hang' and ban_ghi_id in (select id from public.don_dat_hang where so_dh = '$SO_DH_HTD');
+delete from public.don_dat_hang_dong
+  where don_dat_hang_id in (select id from public.don_dat_hang where so_dh = '$SO_DH_HTD');
+delete from public.don_dat_hang where so_dh = '$SO_DH_HTD';
+delete from public.san_pham where ma_hang = '$MA_HTD';
 set session_replication_role = origin;
 SQL
 }
@@ -171,6 +200,63 @@ else
   echo "  ✗ Bộ đếm sai. Hai phiên đã đọc cùng một giá trị — số chứng từ sẽ trùng."
   echo "    Kiểm lại sinh_so_ct (migration 0009): phải là MỘT câu lệnh"
   echo "    INSERT ... ON CONFLICT DO UPDATE ... RETURNING, không phải SELECT rồi UPDATE."
+  LOI=1
+fi
+
+# ─── PHẦN 3: hai người cùng bấm Hoàn thành một đơn (0078, DON-04) ─────────
+echo
+echo "PHẦN 3 — Hoàn thành đơn"
+echo "  Hai kết nối cùng gọi hoan_thanh_don cho MỘT đơn đã xác nhận (đặt 4 cái)."
+
+"${PSQL[@]}" >/dev/null <<SQL
+insert into public.san_pham (ma_hang, ten_hang, dvt_id, cong_doan_id, kho_mac_dinh_id)
+values ('$MA_HTD', 'Hàng test hoàn thành đơn đồng thời',
+        (select id from public.don_vi_tinh where ma = 'CAI'),
+        (select id from public.cong_doan where ma = 'MUA_NGOAI'),
+        (select id from public.kho where ma = 'K1'));
+insert into public.don_dat_hang (so_dh, doi_tac_id)
+values ('$SO_DH_HTD', (select id from public.doi_tac order by ma limit 1));
+insert into public.don_dat_hang_dong (don_dat_hang_id, san_pham_id, so_luong_dat)
+values ((select id from public.don_dat_hang where so_dh = '$SO_DH_HTD'),
+        (select id from public.san_pham where ma_hang = '$MA_HTD'), 4);
+select public.xac_nhan_don((select id from public.don_dat_hang where so_dh = '$SO_DH_HTD'));
+SQL
+
+# Mỗi bên giữ transaction thêm 1 giây sau khi gọi để chắc chắn hai bên chồng
+# nhau. Bên thua PHẢI bị từ chối (23514 đơn đã hoàn thành, hoặc 23505 unique
+# index) — lỗi đó là kết quả đúng, nên không để set -e dừng script.
+hoan_thanh() {
+  "${PSQL[@]}" 2>&1 <<SQL || true
+begin;
+select (public.hoan_thanh_don(
+  (select id from public.don_dat_hang where so_dh = '$SO_DH_HTD'),
+  'LECH_TON_CHO_KIEM_KE')).so_ct;
+select pg_sleep(1);
+commit;
+SQL
+}
+
+KQ_A=$(hoan_thanh) &
+PID_H=$!
+KQ_B=$(hoan_thanh)
+wait $PID_H || true
+
+SO_HD=$("${PSQL[@]}" -c "select count(*) from public.chung_tu ct join public.don_dat_hang d on d.id = ct.don_dat_hang_id where d.so_dh = '$SO_DH_HTD' and ct.loai_ct = 'XUAT' and ct.trang_thai = 'HOAN_THANH';")
+DA_TRU=$("${PSQL[@]}" -c "select coalesce(-sum(so_luong), 0)::int from public.kho_movement where san_pham_id = (select id from public.san_pham where ma_hang = '$MA_HTD');")
+TRANG_THAI=$("${PSQL[@]}" -c "select trang_thai from public.don_dat_hang where so_dh = '$SO_DH_HTD';")
+
+echo
+echo "  Hóa đơn đã ghi sổ: $SO_HD  (cần 1)"
+echo "  Tổng đã trừ tồn:   $DA_TRU  (cần 4)"
+echo "  Trạng thái đơn:    $TRANG_THAI  (cần HOAN_THANH)"
+
+if [ "$SO_HD" = "1" ] && [ "$DA_TRU" = "4" ] && [ "$TRANG_THAI" = "HOAN_THANH" ]; then
+  echo "  ✓ Chỉ một hóa đơn, chỉ trừ tồn một lần."
+  echo "    hoan_thanh_don khóa đơn (FOR UPDATE) trước; bên sau chờ rồi bị từ chối."
+else
+  echo "  ✗ Hai bên cùng hoàn thành được — tồn bị trừ hai lần."
+  echo "    Kiểm lại hoan_thanh_don (migration 0078): phải 'select ... for update'"
+  echo "    đơn TRƯỚC khi tạo hóa đơn, và uq_chung_tu_hoa_don_cua_don phải còn."
   LOI=1
 fi
 
