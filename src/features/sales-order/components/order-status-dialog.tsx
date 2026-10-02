@@ -5,9 +5,9 @@ import { useState } from "react";
 
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 
-import { useCloseOrderEarly, useUnlockOrder } from "../hooks/useOrders";
+import { useCancelOrder, useCloseOrderEarly, useUnlockOrder } from "../hooks/useOrders";
 
-type Mode = "unlock" | "close-early";
+type Mode = "unlock" | "close-early" | "cancel";
 
 type Props = {
   mode: Mode;
@@ -33,6 +33,12 @@ const COPY: Record<
       "Đơn chuyển sang Hoàn thành dù chưa giao đủ. Dùng khi khách không lấy nốt phần còn lại.",
     okText: "Đóng sớm",
   },
+  cancel: {
+    title: (orderNo) => `Hủy đơn ${orderNo}`,
+    description:
+      "Đơn chuyển sang Đã hủy, không hoàn thành hay sửa lại được nữa. Tồn không đổi vì đơn chưa xuất hàng.",
+    okText: "Hủy đơn",
+  },
 };
 
 /** Copy khuôn `void-receipt-dialog.tsx`: ô lý do bắt buộc ≥ 5 ký tự, chặn
@@ -40,7 +46,8 @@ const COPY: Record<
 export function OrderStatusDialog({ mode, open, onClose, orderId, orderNo }: Props) {
   const unlock = useUnlockOrder(orderId);
   const closeEarly = useCloseOrderEarly(orderId);
-  const mutation = mode === "unlock" ? unlock : closeEarly;
+  const cancel = useCancelOrder(orderId);
+  const mutation = mode === "unlock" ? unlock : mode === "close-early" ? closeEarly : cancel;
   const copy = COPY[mode];
 
   const [reason, setReason] = useState("");

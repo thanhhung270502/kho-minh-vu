@@ -107,6 +107,7 @@ as $$
 declare
   v_don public.don_dat_hang;
   v_ct public.chung_tu;
+  v_am text;
 begin
   if not public.hoan_thanh_duoc_don() then
     raise exception 'Tài khoản không có quyền hoàn thành đơn' using errcode = '42501';
@@ -131,6 +132,29 @@ begin
   end if;
 
   v_ct := public.tao_phieu_xuat_tu_don(p_don_id);
+
+  -- Kiểm xuất âm TRƯỚC ghi_so_chung_tu để báo bằng MÃ HÀNG — câu của ghi_so chỉ
+  -- có uuid sản phẩm, người dùng không đọc được. Cùng phép tính với ghi_so
+  -- (tồn tại kho của dòng, rơi về kho đầu phiếu). Câu phải chứa "lý do xuất âm":
+  -- client dựa vào đó để hỏi lý do (sales-order/lib/complete-order.ts).
+  if p_ly_do_xuat_am is null then
+    select string_agg(
+             format('%s (tồn %s, xuất %s)', sp.ma_hang,
+                    trim_scale(coalesce(tk.so_luong, 0)), trim_scale(ctd.so_luong)),
+             '; ' order by sp.ma_hang)
+      into v_am
+    from public.chung_tu_dong ctd
+    join public.san_pham sp on sp.id = ctd.san_pham_id
+    left join public.ton_kho tk
+      on tk.san_pham_id = ctd.san_pham_id and tk.kho_id = coalesce(ctd.kho_id, v_ct.kho_id)
+    where ctd.chung_tu_id = v_ct.id
+      and coalesce(tk.so_luong, 0) - ctd.so_luong < 0;
+
+    if v_am is not null then
+      raise exception 'Xuất quá tồn: %. Phải chọn lý do xuất âm trước khi hoàn thành.', v_am
+        using errcode = '23514';
+    end if;
+  end if;
 
   if p_ly_do_xuat_am is not null then
     update public.chung_tu

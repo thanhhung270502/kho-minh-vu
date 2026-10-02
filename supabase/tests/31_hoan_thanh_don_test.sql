@@ -111,9 +111,10 @@ select pg_temp.dang_xuat();
 
 -- ─── 6–9: xuất âm thiếu lý do — từ chối, KHÔNG để lại gì ────────────────────
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
-select throws_ok(
+select throws_like(
   $$ select public.hoan_thanh_don(pg_temp.don('DH-HTD-1')) $$,
-  '23514', null, 'Xuất âm mà không chọn lý do bị từ chối'
+  '%HTD-ZQX-A (tồn %lý do xuất âm%',
+  'Xuất âm mà không chọn lý do bị từ chối, báo bằng mã hàng'
 );
 select throws_ok(
   $$ select public.hoan_thanh_don(pg_temp.don('DH-HTD-1'), 'BAY_BA') $$,

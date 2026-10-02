@@ -8,13 +8,15 @@ import {
 } from "@tanstack/react-query";
 
 import { documentKeys } from "@/features/documents/api/document.keys";
+import { productKeys } from "@/features/products/api/product.keys";
 import type { RecipientChoice } from "@/shared/lib/recipient";
 
 import {
   addOrderLine,
   approveOrder,
+  cancelOrder,
   closeOrderEarly,
-  createIssueFromOrder,
+  completeOrder,
   createOrder,
   deleteOrderLine,
   fetchOrderDetail,
@@ -144,19 +146,28 @@ export function useCloseOrderEarly(id: string) {
 }
 
 /**
- * Phiếu xuất mới phải hiện ngay ở màn `/hoa-don` — làm mới thêm
- * `documentKeys.all`. Không đụng cache danh mục sản phẩm ở đây: tạo phiếu
- * (chưa ghi sổ) không đổi tồn hay giá vốn, khác `usePostReceipt`/`useVoidReceipt`.
+ * Hoàn thành = hóa đơn mới ĐÃ GHI SỔ: hiện ngay ở `/hoa-don` và tồn đổi — làm
+ * mới cả chứng từ lẫn danh mục/thẻ kho, khuôn `usePostDocument`.
  */
-export function useCreateIssueFromOrder(id: string) {
+export function useCompleteOrder(id: string) {
   const queryClient = useQueryClient();
   const refresh = useRefreshOrder(id);
 
   return useMutation({
-    mutationFn: () => createIssueFromOrder(id),
+    mutationFn: (reason?: { code: string; note: string | null }) => completeOrder(id, reason),
     onSuccess: () => {
       refresh();
       void queryClient.invalidateQueries({ queryKey: documentKeys.all });
+      void queryClient.invalidateQueries({ queryKey: productKeys.all });
     },
+  });
+}
+
+export function useCancelOrder(id: string) {
+  const refresh = useRefreshOrder(id);
+
+  return useMutation({
+    mutationFn: (reason: string) => cancelOrder(id, reason),
+    onSuccess: refresh,
   });
 }

@@ -2,13 +2,14 @@
 
 import { App, Button, Space } from "antd";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 
-import { useApproveOrder, useCreateIssueFromOrder } from "../hooks/useOrders";
+import { useApproveOrder } from "../hooks/useOrders";
+import { orderActionsFor } from "../lib/order-actions";
 import type { OrderDetail, OrderLine, OrderPermissions } from "../types";
+import { CompleteOrderDialog } from "./complete-order-dialog";
 import { OrderStatusDialog } from "./order-status-dialog";
 
 type Props = {
@@ -18,21 +19,22 @@ type Props = {
   permissions: OrderPermissions;
 };
 
+type ReasonMode = "unlock" | "close-early" | "cancel";
+
 /**
- * Nút nào hiện khi nào (bảng ở 04-12-PLAN.md <context>): ẩn nút chỉ là trang
- * trí, chặn thật nằm ở ba RPC duyệt đơn (plan 04-02). Nút thiếu quyền KHÔNG
- * render — không dùng `disabled`.
+ * Nút theo trạng thái × quyền — bảng ở `lib/order-actions.ts`. Ẩn nút chỉ là
+ * trang trí, chặn thật nằm ở RPC (0052, 0078).
  */
 export function OrderActions({ orderId, order, lines, permissions }: Props) {
   const { message, modal } = App.useApp();
-  const router = useRouter();
   const approve = useApproveOrder(orderId);
-  const createIssue = useCreateIssueFromOrder(orderId);
+  const actions = orderActionsFor(order.status, permissions);
 
-  const [statusDialog, setStatusDialog] = useState<{
-    mode: "unlock" | "close-early";
-    open: boolean;
-  }>({ mode: "unlock", open: false });
+  const [statusDialog, setStatusDialog] = useState<{ mode: ReasonMode; open: boolean }>({
+    mode: "unlock",
+    open: false,
+  });
+  const [completeOpen, setCompleteOpen] = useState(false);
 
   function confirmApprove() {
     modal.confirm({
@@ -43,7 +45,7 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
       onOk: async () => {
         try {
           await approve.mutateAsync();
-          message.success("Đã xác nhận. In phiếu đi lấy hàng hoặc tạo hóa đơn.");
+          message.success("Đã xác nhận. In phiếu đi lấy hàng, giao xong bấm Hoàn thành.");
         } catch (error) {
           if (isPostgrestError(error) && error.code === "23514") {
             message.error(error.message);
@@ -60,79 +62,36 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
     });
   }
 
-  function confirmCreateIssue() {
-    modal.confirm({
-      title: `Tạo hóa đơn từ đơn ${order.orderNo}?`,
-      width: 560,
-      content: `Sinh hóa đơn từ đơn ${order.orderNo}: ${lines.length} dòng, mọi dòng điền sẵn số lượng bằng số đặt. Kho từng dòng lấy theo kho mặc định của mã hàng. Sửa lại dòng nào kho lấy thiếu rồi ghi sổ.`,
-      okText: "Tạo hóa đơn",
-      cancelText: "Thôi",
-      onOk: async () => {
-        try {
-          const issueId = await createIssue.mutateAsync();
-          router.push(`/hoa-don/${issueId}`);
-        } catch (error) {
-          // 23514 hay gặp nhất: mã thiếu kho mặc định (liệt kê đúng mã) hoặc
-          // đơn vừa bị mở khóa — hiện nguyên văn message RPC (bẫy 8).
-          if (isPostgrestError(error) && error.code === "23514") {
-            modal.error({
-              title: "Không tạo được hóa đơn",
-              content: (
-                <Space direction="vertical">
-                  <span>{error.message}</span>
-                  <Link href="/danh-muc">
-                    <Button type="link" className="px-0">
-                      Đi sửa kho mặc định ở Danh mục
-                    </Button>
-                  </Link>
-                </Space>
-              ),
-            });
-            return;
-          }
-          if (errorCode(error) === "42501") {
-            message.error("Tài khoản không có quyền tạo hóa đơn.");
-            return;
-          }
-          const explained = explainError(error);
-          message.error(`${explained.title}. ${explained.action}`);
-        }
-      },
-    });
-  }
-
-  const canShowPrint = order.status !== "TAM" && order.status !== "DA_HUY";
+  const openReason = (mode: ReasonMode) => setStatusDialog({ mode, open: true });
 
   return (
     <>
       <Space wrap>
-        {order.status === "TAM" && permissions.canApprove ? (
+        {actions.includes("approve") ? (
           <Button type="primary" loading={approve.isPending} onClick={confirmApprove}>
             Xác nhận đơn
           </Button>
         ) : null}
-
-        {order.status === "DA_XAC_NHAN" && permissions.canApprove ? (
-          <>
-            <Button onClick={() => setStatusDialog({ mode: "unlock", open: true })}>
-              Mở khóa
-            </Button>
-            <Button onClick={() => setStatusDialog({ mode: "close-early", open: true })}>
-              Đóng sớm
-            </Button>
-          </>
-        ) : null}
-
-        {order.status === "DA_XAC_NHAN" && permissions.canEdit ? (
-          <Button loading={createIssue.isPending} onClick={confirmCreateIssue}>
-            Tạo hóa đơn
+        {actions.includes("complete") ? (
+          <Button type="primary" onClick={() => setCompleteOpen(true)}>
+            Hoàn thành
           </Button>
         ) : null}
-
-        {canShowPrint ? (
+        {actions.includes("print") ? (
           <Link href={`/dat-hang/${orderId}/in`} target="_blank">
             <Button>In phiếu đi lấy hàng</Button>
           </Link>
+        ) : null}
+        {actions.includes("unlock") ? (
+          <Button onClick={() => openReason("unlock")}>Mở khóa</Button>
+        ) : null}
+        {actions.includes("close-early") ? (
+          <Button onClick={() => openReason("close-early")}>Đóng sớm</Button>
+        ) : null}
+        {actions.includes("cancel") ? (
+          <Button danger onClick={() => openReason("cancel")}>
+            Hủy đơn
+          </Button>
         ) : null}
       </Space>
 
@@ -142,6 +101,14 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
         onClose={() => setStatusDialog((current) => ({ ...current, open: false }))}
         orderId={orderId}
         orderNo={order.orderNo}
+      />
+      <CompleteOrderDialog
+        open={completeOpen}
+        onClose={() => setCompleteOpen(false)}
+        orderId={orderId}
+        orderNo={order.orderNo}
+        lineCount={lines.length}
+        orderedQuantity={order.orderedQuantity}
       />
     </>
   );

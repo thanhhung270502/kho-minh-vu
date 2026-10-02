@@ -37,6 +37,8 @@ import {
   UNASSIGNED_WAREHOUSE_LABEL,
 } from "../src/features/sales-order/lib/group-lines-by-warehouse";
 import { toOrderDetail, toOrderRow, type OrderLine } from "../src/features/sales-order/types";
+import { orderActionsFor } from "../src/features/sales-order/lib/order-actions";
+import { needsNegativeReason } from "../src/features/sales-order/lib/complete-order";
 import {
   DEFAULT_ORDER_FILTER,
   countActiveOrderFilters,
@@ -547,6 +549,42 @@ const internalOrderDetail = toOrderDetail({
   ho_ten_nguoi_tao: "Văn phòng", created_at: "2026-10-01T00:00:00Z",
   hoa_don_id: null as unknown as string, so_hoa_don: null as unknown as string,
 });
+// Phase 12 (DON-06): chi_tiet_don mang hóa đơn của đơn; chưa có thì null.
+assert.equal(internalOrderDetail.invoice, null, "đơn chưa hoàn thành: không có hóa đơn");
+assert.deepEqual(
+  toOrderDetail({
+    id: "dh-2", so_dh: "DH26-000002", ngay_dh: "2026-10-01", trang_thai: "HOAN_THANH",
+    ngay_giao_du_kien: null as unknown as string, doi_tac_id: "dt-1", ma_doi_tac: "KH01",
+    ten_doi_tac: "Liên Hoa", nguoi_nhan_id: null as unknown as string, ten_nguoi_nhan: null as unknown as string,
+    ghi_chu: null as unknown as string, tong_so_luong_dat: 3, tong_so_luong_da_xuat: 3,
+    ho_ten_nguoi_tao: "Văn phòng", created_at: "2026-10-01T00:00:00Z",
+    hoa_don_id: "ct-9", so_hoa_don: "PX26-000009",
+  }).invoice,
+  { id: "ct-9", number: "PX26-000009" },
+  "đơn hoàn thành: link sang hóa đơn",
+);
+
+// Phase 12 (DON-02/03/05): nút theo trạng thái × quyền. Hoàn thành: QL + VP
+// (canEdit); Hủy / Xác nhận / Mở khóa / Đóng sớm: chỉ QL (canApprove).
+{
+  const ql = { canEdit: true, canApprove: true };
+  const vp = { canEdit: true, canApprove: false };
+  const tk = { canEdit: false, canApprove: false };
+  assert.deepEqual(orderActionsFor("TAM", ql), ["approve", "cancel"]);
+  assert.deepEqual(orderActionsFor("TAM", vp), []);
+  assert.deepEqual(orderActionsFor("DA_XAC_NHAN", ql), ["complete", "print", "unlock", "close-early", "cancel"]);
+  assert.deepEqual(orderActionsFor("DA_XAC_NHAN", vp), ["complete", "print"]);
+  assert.deepEqual(orderActionsFor("DA_XAC_NHAN", tk), ["print"]);
+  assert.deepEqual(orderActionsFor("HOAN_THANH", ql), ["print"], "đơn hoàn thành: hủy hóa đơn ở màn hóa đơn, không hủy đơn");
+  assert.deepEqual(orderActionsFor("DA_HUY", ql), []);
+  assert.ok(!orderActionsFor("DA_XAC_NHAN", ql).includes("create-issue" as never), "không còn nút Tạo hóa đơn rời");
+
+  // Lỗi xuất âm thiếu lý do của ghi_so_chung_tu (bẫy 8: object thường, không instanceof).
+  assert.equal(needsNegativeReason({ code: "23514", message: "Phải chọn lý do xuất âm cho phiếu PX26-000010" }), true);
+  assert.equal(needsNegativeReason({ code: "23514", message: "Đơn DH26-1 đang ở trạng thái TAM" }), false);
+  assert.equal(needsNegativeReason(new Error("mạng")), false);
+}
+
 assert.deepEqual(
   internalOrderDetail.recipient,
   { kind: "internal", id: "nd-1", name: "Nguyễn Văn A" },

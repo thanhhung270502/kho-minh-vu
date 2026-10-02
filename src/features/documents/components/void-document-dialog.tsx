@@ -95,7 +95,7 @@ export function VoidDocumentDialog({ document, canVoid, extraInvalidateKeys }: P
                 sử, không hoàn tác được.
               </li>
               {document.orderId ? (
-                <li>Tiến độ đơn gắn với phiếu này sẽ tính lại theo số đã xuất còn lại.</li>
+                <li>Đơn đặt hàng gắn với hóa đơn này quay về Đã xác nhận — hoàn thành lại hoặc hủy đơn.</li>
               ) : null}
             </ul>
           }

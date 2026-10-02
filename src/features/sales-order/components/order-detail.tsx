@@ -82,12 +82,33 @@ export function OrderDetailView({
                 description="Muốn sửa đầu đơn hoặc dòng đơn, nhờ quản lý mở lại đơn về đơn tạm trước."
               />
             ) : null}
-            {order.status === "HOAN_THANH" || order.status === "DA_HUY" ? (
+            {order.status === "HOAN_THANH" ? (
+              <Alert
+                className="mb-4"
+                type="success"
+                showIcon
+                title="Đơn đã hoàn thành"
+                description={
+                  order.invoice ? (
+                    <>
+                      Hóa đơn{" "}
+                      <Link href={`/hoa-don/${order.invoice.id}`} className="font-mono">
+                        {order.invoice.number}
+                      </Link>{" "}
+                      đã ghi sổ. Giao sai thì quản lý hủy hóa đơn đó — đơn quay về Đã xác nhận.
+                    </>
+                  ) : (
+                    "Đơn đóng sớm, không có hóa đơn. Khách lấy thêm thì lập đơn mới."
+                  )
+                }
+              />
+            ) : null}
+            {order.status === "DA_HUY" ? (
               <Alert
                 className="mb-4"
                 type="info"
                 showIcon
-                title={order.status === "HOAN_THANH" ? "Đơn đã hoàn thành" : "Đơn đã hủy"}
+                title="Đơn đã hủy"
                 description="Đơn này không mở lại được. Khách lấy thêm thì lập đơn mới."
               />
             ) : null}

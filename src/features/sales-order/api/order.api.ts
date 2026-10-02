@@ -187,17 +187,28 @@ export async function closeOrderEarly(
 }
 
 /**
- * D-08/D-10: in được chỉ từ đơn đã xác nhận; mọi dòng phiếu xuất sinh ra điền
- * sẵn bằng số đặt. Trả `id` của chứng từ `XUAT` vừa sinh để điều hướng sang.
+ * Hoàn thành đơn (0078): tạo hóa đơn từ đơn + ghi sổ trong MỘT transaction.
+ * `reason` là mã lý do xuất âm (negative-reasons.ts) — chỉ gửi khi lần gọi
+ * trước bị từ chối vì xuất âm. Trả `id` hóa đơn vừa ghi sổ.
  */
-export async function createIssueFromOrder(orderId: string): Promise<string> {
-  const { data, error } = await getSupabaseBrowserClient().rpc(
-    "tao_phieu_xuat_tu_don",
-    { p_don_id: orderId },
-  );
+export async function completeOrder(
+  orderId: string,
+  reason?: { code: string; note: string | null },
+): Promise<string> {
+  const { data, error } = await getSupabaseBrowserClient().rpc("hoan_thanh_don", {
+    p_don_id: orderId,
+    ...(reason ? { p_ly_do_xuat_am: reason.code, p_ghi_chu_ly_do: reason.note ?? undefined } : {}),
+  });
   if (error) throw error;
-  if (!data) {
-    throw new Error("Không tạo được hóa đơn từ đơn này.");
-  }
+  if (!data) throw new Error("Không hoàn thành được đơn này.");
   return data.id;
+}
+
+/** Hủy đơn chưa hoàn thành — chỉ quản lý, lý do >= 5 ký tự (0078). */
+export async function cancelOrder(id: string, reason: string): Promise<void> {
+  const { error } = await getSupabaseBrowserClient().rpc("huy_don", {
+    p_id: id,
+    p_ly_do: reason,
+  });
+  if (error) throw error;
 }
