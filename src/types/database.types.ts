@@ -51,6 +51,30 @@ export type Database = {
           },
         ]
       }
+      cau_hinh_phan_tich: {
+        Row: {
+          id: boolean
+          nguong_do: number
+          nguong_vang: number
+          so_ngay_du_tru: number
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          nguong_do?: number
+          nguong_vang?: number
+          so_ngay_du_tru?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          nguong_do?: number
+          nguong_vang?: number
+          so_ngay_du_tru?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cau_hinh_so_ct: {
         Row: {
           loai_ct: Database["public"]["Enums"]["loai_ct"]
@@ -2170,6 +2194,38 @@ export type Database = {
           so_phieu: number
         }[]
       }
+      nhip_ban_theo_ngay: {
+        Args: { p_ngay?: string; p_so_ngay?: number }
+        Returns: {
+          ngay: string
+          so_hoa_don: number
+          so_luong: number
+        }[]
+      }
+      phan_tich_ton_kho: {
+        Args: { p_ngay?: string; p_san_pham_id?: string; p_so_ngay?: number }
+        Returns: {
+          ban_nua_dau: number
+          ban_nua_sau: number
+          ban_tb_ngay: number
+          ban_trong_ky: number
+          cong_doan_ma: string
+          khach_dat: number
+          ma_hang: string
+          ngay_ban_cuoi: string
+          ngay_het_du_kien: string
+          nhom_hang_id: string
+          san_pham_id: string
+          so_ngay_con: number
+          so_ngay_thuc: number
+          ten_dvt: string
+          ten_hang: string
+          ten_nhom_hang: string
+          ton: number
+          ton_kha_dung: number
+          ton_toi_thieu: number
+        }[]
+      }
       phieu_co_dong_thuoc_kho_hien_tai: {
         Args: { p_chung_tu_id: string }
         Returns: boolean
@@ -2404,6 +2460,7 @@ export type Database = {
         }
       }
       xem_duoc_lich_su_kiotviet: { Args: never; Returns: boolean }
+      xem_duoc_phan_tich: { Args: never; Returns: boolean }
       xoa_anh: {
         Args: { p_id: string }
         Returns: {
