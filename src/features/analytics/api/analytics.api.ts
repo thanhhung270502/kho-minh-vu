@@ -1,4 +1,5 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { fetchAllPages } from "@/shared/lib/fetch-all-pages";
 
 import {
   toAnalysisRow,
@@ -12,12 +13,16 @@ import {
 
 /** Lớp api (cùng mapper ở types.ts) là chỗ DUY NHẤT chạm tên RPC/cột tiếng Việt. */
 
+/** Toàn danh mục (3.266 mã) — vượt max_rows 1000 nên tải theo trang. */
 export async function fetchAnalysisRows(period: Period): Promise<AnalysisRow[]> {
-  const { data, error } = await getSupabaseBrowserClient().rpc("phan_tich_ton_kho", {
-    p_so_ngay: period,
+  const rows = await fetchAllPages(async (from, to) => {
+    const { data, error } = await getSupabaseBrowserClient()
+      .rpc("phan_tich_ton_kho", { p_so_ngay: period })
+      .range(from, to);
+    if (error) throw error;
+    return data ?? [];
   });
-  if (error) throw error;
-  return (data ?? []).map(toAnalysisRow);
+  return rows.map(toAnalysisRow);
 }
 
 export async function fetchSalesDays(period: Period): Promise<SalesDay[]> {

@@ -48,11 +48,16 @@ export type CoverBucket = "no-data" | "out" | "le-x" | "x-30" | "31-90" | "91-36
 
 export const COVER_BUCKETS: CoverBucket[] = ["no-data", "out", "le-x", "x-30", "31-90", "91-364", "ge-365"];
 
+/** Ngưỡng vàng >= 30 thì khoảng "X+1–30 ngày" rỗng — bỏ khỏi biểu đồ và tab. */
+export function visibleCoverBuckets(settings: AnalysisSettings): CoverBucket[] {
+  return COVER_BUCKETS.filter((b) => b !== "x-30" || settings.yellowDays < 30);
+}
+
 export function coverBucketLabel(bucket: CoverBucket, settings: AnalysisSettings): string {
   const x = settings.yellowDays;
   switch (bucket) {
     case "no-data":
-      return "Chưa đủ dữ liệu";
+      return "Còn tồn, không bán";
     case "out":
       return "Đã hết";
     case "le-x":
@@ -68,9 +73,13 @@ export function coverBucketLabel(bucket: CoverBucket, settings: AnalysisSettings
   }
 }
 
-/** Nhóm cho biểu đồ "Số ngày còn hàng". X = ngưỡng vàng. */
-export function coverBucket(row: AnalysisRow, settings: AnalysisSettings): CoverBucket {
-  if (row.avgDailySales === null || row.daysOfCover === null) return "no-data";
+/**
+ * Nhóm cho biểu đồ "Số ngày còn hàng". X = ngưỡng vàng. Mã không tồn và không
+ * bán ("Ngừng bán?") trả null — không có gì để phân tích, đưa vào chỉ làm cột
+ * "Chưa đủ dữ liệu" che hết các cột khác.
+ */
+export function coverBucket(row: AnalysisRow, settings: AnalysisSettings): CoverBucket | null {
+  if (row.avgDailySales === null || row.daysOfCover === null) return row.stock > 0 ? "no-data" : null;
   if (row.stock <= 0 || row.daysOfCover <= 0) return "out";
   const days = row.daysOfCover;
   if (days <= settings.yellowDays) return "le-x";

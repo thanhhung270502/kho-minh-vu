@@ -69,6 +69,8 @@ const MA_TRAN: Dong[] = [
   // Nạp tồn tạm gỡ ở Phase 10 — route cụ thể, KHÔNG wildcard để /ton-kho/dinh-muc sống.
   { route: "/ton-kho/nap-tam", ky_vong: ALL("→/danh-muc") },
   { route: "/danh-muc", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
+  // Phase 13: phân tích tồn mọi kho — quản lý + văn phòng (xem_duoc_phan_tich, 0079).
+  { route: "/phan-tich", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/doi-tac", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/doi-tac/ra-ghi-chu", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/cai-dat/nguoi-dung", ky_vong: { quanly: "200", vanphong: "quyen", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },

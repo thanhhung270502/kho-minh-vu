@@ -16,6 +16,7 @@ export type NavIconId =
   | "partners"
   | "settings"
   | "stocktake"
+  | "analytics"
   | "orders"
   | "goods";
 
@@ -112,6 +113,15 @@ export const NAV_ITEMS: NavItem[] = [
     shortLabel: "Đối tác",
     icon: "partners",
     permission: "view-catalog",
+    mobilePriority: null,
+  },
+  {
+    // Phase 13 — việc định kỳ của văn phòng/quản lý, không chiếm ô tab đáy.
+    href: "/phan-tich",
+    label: "Phân tích",
+    shortLabel: "Phân tích",
+    icon: "analytics",
+    permission: "view-analysis",
     mobilePriority: null,
   },
   {

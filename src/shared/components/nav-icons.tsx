@@ -3,6 +3,7 @@
 import {
   AppstoreOutlined,
   AuditOutlined,
+  BarChartOutlined,
   DashboardOutlined,
   ExportOutlined,
   ImportOutlined,
@@ -26,6 +27,7 @@ export const NAV_ICONS: Record<NavIconId, ReactNode> = {
   partners: <TeamOutlined />,
   settings: <SettingOutlined />,
   stocktake: <AuditOutlined />,
+  analytics: <BarChartOutlined />,
   orders: <ProfileOutlined />,
   goods: <InboxOutlined />,
 };

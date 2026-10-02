@@ -10,11 +10,13 @@ import { safeRedirectPath } from "../src/shared/lib/redirect-path";
 import { suggestCustomerName, extractPhoneNumber } from "../src/features/partners/lib/notes";
 import { buildErrorCsv, errorFileName } from "../src/features/products/lib/error-file";
 import { buildCsv } from "../src/shared/lib/csv";
+import { fetchAllPages } from "../src/shared/lib/fetch-all-pages";
 import { toAnalysisRow, type AnalysisRow, type AnalysisSettings } from "../src/features/analytics/types";
 import {
   buildReorderCsv,
   coverBucket,
   finishOf,
+  visibleCoverBuckets,
   kpisOf,
   reorderTabs,
   salesPaceChange,
@@ -295,8 +297,8 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
   const entries = buildNavEntries(filterNavItems({ role: "quan_ly" }, NAV_ITEMS));
   assert.deepEqual(
     entries.map((e) => e.label),
-    ["Tổng quan", "Đơn hàng", "Nhập kho", "Hàng hóa", "Đối tác", "Cài đặt"],
-    "thứ tự menu cấp 1 của quản lý",
+    ["Tổng quan", "Đơn hàng", "Nhập kho", "Hàng hóa", "Đối tác", "Phân tích", "Cài đặt"],
+    "thứ tự menu cấp 1 của quản lý (Phase 13 thêm Phân tích)",
   );
   const groupHrefs = (label: string) => {
     const entry = entries.find((e) => e.label === label);
@@ -312,6 +314,14 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
     chiXem.map((e) => e.label),
     ["Đơn hàng", "Nhập kho", "Hàng hóa", "Đối tác"],
     "chỉ xem không có Tổng quan, Cài đặt",
+  );
+  assert.ok(
+    buildNavEntries(filterNavItems({ role: "van_phong" }, NAV_ITEMS)).some((e) => e.label === "Phân tích"),
+    "văn phòng thấy Phân tích (đi đặt hàng NCC)",
+  );
+  assert.ok(
+    !buildNavEntries(filterNavItems({ role: "thu_kho" }, NAV_ITEMS)).some((e) => e.label === "Phân tích"),
+    "thủ kho không thấy Phân tích (tồn mọi kho)",
   );
 }
 
@@ -903,10 +913,17 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.equal(st({ stock: 0, avgDailySales: null }), "stopped", "hết tồn, không bán: Ngừng bán?");
 
   const b = (o: Partial<AnalysisRow>) => coverBucket(arow(o), ANALYSIS_SETTINGS);
-  assert.equal(b({ avgDailySales: null }), "no-data");
+  assert.equal(b({ avgDailySales: null }), "no-data", "còn tồn, không bán: chưa đủ dữ liệu");
+  assert.equal(b({ stock: 0, avgDailySales: null }), null, "không tồn, không bán: không đưa vào biểu đồ");
   assert.equal(b({ stock: 0, avgDailySales: 1, daysOfCover: 0 }), "out");
   assert.equal(b({ avgDailySales: 1, daysOfCover: 14 }), "le-x", "<= X (ngưỡng vàng)");
   assert.equal(b({ avgDailySales: 1, daysOfCover: 30 }), "x-30");
+  assert.deepEqual(
+    visibleCoverBuckets({ ...ANALYSIS_SETTINGS, yellowDays: 30 }).includes("x-30"),
+    false,
+    "ngưỡng vàng >= 30: không còn khoảng X+1..30, bỏ cột đó (tránh nhãn '31–30')",
+  );
+  assert.equal(visibleCoverBuckets(ANALYSIS_SETTINGS).length, 7);
   assert.equal(b({ avgDailySales: 1, daysOfCover: 90 }), "31-90");
   assert.equal(b({ avgDailySales: 1, daysOfCover: 364 }), "91-364");
   assert.equal(b({ avgDailySales: 1, daysOfCover: 365 }), "ge-365");
@@ -961,6 +978,19 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   );
 }
 
+async function kiemTaiTheoTrang() {
+  // PostgREST cắt mỗi lần gọi ở max_rows = 1000 (supabase/config.toml) — 3.266
+  // mã phải tải nhiều trang. Hàm dừng khi trang trả về ít hơn kích thước trang.
+  const goi: Array<[number, number]> = [];
+  const all = await fetchAllPages(async (from, to) => {
+    goi.push([from, to]);
+    return Array.from({ length: Math.max(0, Math.min(to, 2499) - from + 1) }, (_, i) => from + i);
+  }, 1000);
+  assert.equal(all.length, 2500, "ghép đủ 2.500 dòng qua 3 trang");
+  assert.deepEqual(goi, [[0, 999], [1000, 1999], [2000, 2999]], "gọi đúng ba khoảng, dừng ở trang thiếu");
+  assert.equal((await fetchAllPages(async () => [], 1000)).length, 0, "không có dòng nào: một lần gọi, mảng rỗng");
+}
+
 async function kiemCsvPhanTich() {
   const blob = buildCsv(["Mã", "Ghi chú"], [["A1", 'có "nháy", dấu phẩy'], ["B2", 3]]);
   const byte = new Uint8Array(await blob.arrayBuffer());
@@ -978,6 +1008,6 @@ async function kiemCsvPhanTich() {
   assert.ok(csv.includes("RWT") && csv.includes(",65"), "dòng RWT đề nghị 65");
 }
 
-void Promise.all([kiemCsvLoi(), kiemCsvPhanTich()]).then(() => {
+void Promise.all([kiemCsvLoi(), kiemCsvPhanTich(), kiemTaiTheoTrang()]).then(() => {
   console.log("✓ hàm thuần: tất cả assert đạt");
 });

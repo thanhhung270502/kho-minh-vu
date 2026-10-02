@@ -12,7 +12,8 @@ export type Permission =
   | "manage-users"
   | "manage-warehouses"
   | "manage-doc-numbering"
-  | "view-dashboard";
+  | "view-dashboard"
+  | "view-analysis";
 
 const PERMISSION_MATRIX: Record<Permission, readonly Role[]> = {
   "view-catalog": ["quan_ly", "van_phong", "thu_kho", "chi_xem"],
@@ -25,6 +26,9 @@ const PERMISSION_MATRIX: Record<Permission, readonly Role[]> = {
   // ở redirect của `app/(app)/page.tsx` (07-09) và 42501 của các RPC dashboard
   // (07-01..03).
   "view-dashboard": ["quan_ly"],
+  // Trang Phân tích (Phase 13): văn phòng đi đặt hàng NCC nên cần xem. Tồn mọi
+  // kho nên thủ kho không xem; chặn thật ở xem_duoc_phan_tich() (0079).
+  "view-analysis": ["quan_ly", "van_phong"],
 };
 
 export function hasPermission(
