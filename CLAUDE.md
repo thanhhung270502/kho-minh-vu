@@ -383,7 +383,7 @@ mỗi lần mở trang danh mục → HTTP 400. Query nhận id có thể null t
 
 ### 11. antd v6 bỏ prop của v5 — chỉ cảnh báo lúc CHẠY, build vẫn xanh
 
-Đã vấp đủ tám cái:
+Đã vấp đủ chín cái:
 
 | v5 (đã bỏ) | v6 |
 |---|---|
@@ -395,6 +395,7 @@ mỗi lần mở trang danh mục → HTTP 400. Query nhận id có thể null t
 | `<Descriptions items=[{ span: 3 }]>` trong lưới responsive | bỏ `span` cố định |
 | `<Statistic valueStyle=…>` | `styles={{ content: … }}` |
 | `rowKey={(row, index) => …}` | khóa có sẵn trong dữ liệu (mapper gắn `key`) |
+| `<Spin tip=…>` | `description` |
 
 Viết component antd mới thì **mở console một lần** trước khi báo xong.
 
