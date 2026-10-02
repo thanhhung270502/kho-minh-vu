@@ -173,11 +173,11 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 
 ### Import danh mục v2 (IMP)
 
-- [ ] **IMP-01**: File Excel mã hàng chỉ cần 4 cột: Mã hàng, Tên hàng, Tồn kho, Mô tả; có file mẫu tải về
-- [ ] **IMP-02**: Sau khi tải file lên, hiện bảng đủ cột theo thứ tự (Loại hàng, Nhóm hàng, Mã, Tên, Dòng xe, Tồn kho, ĐVT, Đang kinh doanh, Được bán trực tiếp, Vị trí, Mô tả); cột từ file điền sẵn, cột còn lại chọn bằng dropdown/bật tắt cho từng dòng hoặc áp cho nhiều dòng cùng lúc
-- [ ] **IMP-03**: Dòng lỗi (trùng mã, trùng tên — trong file hoặc với danh mục) bị bỏ qua, các dòng hợp lệ vẫn được nhập; người dùng tải về file chỉ chứa dòng lỗi kèm lý do để sửa và import lại
-- [ ] **IMP-04**: Tồn kho trong file được ghi bằng một chứng từ điều chỉnh (DIEU_CHINH), không ghi thẳng vào tồn; thẻ kho truy được về chứng từ đó
-- [ ] **IMP-05**: Mã hàng có thêm các trường Loại hàng, Dòng xe (danh mục chọn được, thêm mới tại chỗ) và Được bán trực tiếp; sửa được trong form mã hàng
+- [x] **IMP-01**: File Excel mã hàng chỉ cần 4 cột: Mã hàng, Tên hàng, Tồn kho, Mô tả; có file mẫu tải về
+- [x] **IMP-02**: Sau khi tải file lên, hiện bảng đủ cột theo thứ tự (Loại hàng, Nhóm hàng, Mã, Tên, Dòng xe, Tồn kho, ĐVT, Đang kinh doanh, Được bán trực tiếp, Vị trí, Mô tả); cột từ file điền sẵn, cột còn lại chọn bằng dropdown/bật tắt cho từng dòng hoặc áp cho nhiều dòng cùng lúc
+- [x] **IMP-03**: Dòng lỗi (trùng mã, trùng tên — trong file hoặc với danh mục) bị bỏ qua, các dòng hợp lệ vẫn được nhập; người dùng tải về file chỉ chứa dòng lỗi kèm lý do để sửa và import lại
+- [x] **IMP-04**: Tồn kho trong file được ghi bằng một chứng từ điều chỉnh (DIEU_CHINH), không ghi thẳng vào tồn; thẻ kho truy được về chứng từ đó
+- [x] **IMP-05**: Mã hàng có thêm các trường Loại hàng, Dòng xe (danh mục chọn được, thêm mới tại chỗ) và Được bán trực tiếp; sửa được trong form mã hàng
 
 ### Chức vụ & quyền (QUYEN)
 
@@ -337,11 +337,11 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 | PANEL-01 | Phase 14 | Complete |
 | PANEL-02 | Phase 14 | Complete |
 | PANEL-03 | Phase 14 | Complete |
-| IMP-01 | Phase 15 | Pending |
-| IMP-02 | Phase 15 | Pending |
-| IMP-03 | Phase 15 | Pending |
-| IMP-04 | Phase 15 | Pending |
-| IMP-05 | Phase 15 | Pending |
+| IMP-01 | Phase 15 | Complete |
+| IMP-02 | Phase 15 | Complete |
+| IMP-03 | Phase 15 | Complete |
+| IMP-04 | Phase 15 | Complete |
+| IMP-05 | Phase 15 | Complete |
 | QUYEN-01 | Phase 16 | Pending |
 | QUYEN-02 | Phase 16 | Pending |
 | QUYEN-03 | Phase 16 | Pending |

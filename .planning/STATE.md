@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Phản hồi vận hành
 status: ready_to_plan
-stopped_at: Phase 14 complete (quickplan, 4 task) — Phase 15 kế tiếp
-last_updated: 2026-10-02T14:00:00.000Z
+stopped_at: Phase 15 complete (quickplan, 4 task) — Phase 16 kế tiếp
+last_updated: 2026-10-02T17:00:00.000Z
 last_activity: 2026-10-02
 progress:
   total_phases: 16
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 101
-  completed_plans: 72
-  percent: 56
+  completed_plans: 76
+  percent: 63
 ---
 
 # Project State
@@ -21,14 +21,32 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-02)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Milestone v1.1 Phản hồi vận hành — Phase 10–14 xong, kế tiếp Phase 15 (Import danh mục v2)
+**Current focus:** Milestone v1.1 Phản hồi vận hành — Phase 10–15 xong, kế tiếp Phase 16 (Chức vụ & quyền)
 
 ## Current Position
 
-Phase: 15 — ready to plan (Phase 10–14 complete)
+Phase: 16 — ready to plan (Phase 10–15 complete)
 Plan: —
 Status: Ready to plan
-Last activity: 2026-10-02 — Phase 14 Panel chi tiết hoàn thành
+Last activity: 2026-10-02 — Phase 15 Import danh mục v2 hoàn thành
+
+### Phase 15 — đã xong (02/10/2026)
+
+Làm theo `/spartan:quickplan`, không có thư mục `.planning/phases/15-*`. Branch
+`feature/phase-15-import-v2` **tách từ `feature/phase-14-panel`** (chưa push, chưa merge — merge
+10 → 11 → 12 → 13 → 14 → 15 theo thứ tự): `a5c4eac`, `a819032`, `3ebc455`, `b5a5889`. IMP-01..05
+xong; kiểm trên Supabase local (`npm run check`, pgTAP 46 file / 719 test, test hàm thuần, test đọc
+Excel, ma trận quyền route 205/205, `npm run test:concurrency`) và chạy trọn luồng trên trình duyệt.
+
+Hệ quả cho các phase sau:
+- Hai đường Excel song song: "Nhập mã hàng mới" (file 4 cột → `nhap_ma_hang_moi`, chỉ tạo mã) và
+  "Cập nhật từ Excel" (mẫu 12 cột / file KiotViet → `nhap_danh_muc`, giữ nguyên).
+- Câu lỗi trùng danh mục được chép ở `products/lib/new-product-import.ts` (`CATALOG_REASONS`) —
+  đổi câu trong 0081 thì đổi luôn ở đó.
+- Chưa có trang xem phiếu DIEU_CHINH: thẻ kho hiện số phiếu nhưng không bấm mở được.
+- Phase 16 (chức vụ & quyền) nhớ: quyền nhập mã mới đang là `edit-catalog` + kiểm vai trò trong RPC.
+- DB local còn dữ liệu thử ZZT-01/02, phiếu DC26-000001, dòng xe "Wave Alpha".
+- **`0081` mới áp ở local.**
 
 ### Phase 14 — đã xong (02/10/2026)
 
@@ -46,7 +64,7 @@ Hệ quả cho các phase sau:
   khi có `view-analysis`). Phase 16 đổi quyền thì nhớ chỗ này.
 - `/doi-tac/[id]` đã gỡ, redirect sang `/doi-tac?chon=<id>` trong `next.config.ts`.
 - Lịch sử giao dịch đối tác chỉ còn phiếu hệ thống đã ghi sổ — bỏ hẳn nhánh KiotViet.
-- **`0080` mới áp ở local.** Kế tiếp: `/spartan:quickplan phase 15`, migration kế tiếp là `0081`.
+- **`0080` mới áp ở local.**
 
 ### Phase 13 — đã xong (02/10/2026)
 
@@ -130,8 +148,8 @@ Hệ quả cho các phase sau:
   việc vận hành bắt buộc trước go-live") phải chốt lại: tồn đầu kỳ đi bằng kiểm kê (KKE-04 /
   DLIEU-06), hoặc chạy RPC `nap_ton_tam` bằng script nếu vẫn cần.
 
-Kế tiếp (sau Phase 14): Phase 15 (Import danh mục v2) — `/spartan:quickplan phase 15`.
-Migration kế tiếp là `0081`.
+Kế tiếp (sau Phase 15): Phase 16 (Chức vụ & quyền) — `/spartan:quickplan phase 16`.
+Migration kế tiếp là `0082`.
 
 ### Việc v1.0 còn treo (giữ nguyên, chạy song song)
 

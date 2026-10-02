@@ -49,7 +49,7 @@ sau cần dùng ngay.
 - [x] **Phase 12: Luồng đơn hàng → hóa đơn** - Đơn tạm → Xác nhận (in phiếu lấy hàng) → Hoàn thành ghi sổ Hóa đơn atomic, 1 đơn = 1 hóa đơn, hủy đơn
 - [x] **Phase 13: Phân tích tồn kho** - Trang `/phan-tich`: bán TB/ngày, dự kiến hết hàng, đề nghị nhập, tồn chậm, ngưỡng chỉnh được, duyệt định mức
 - [x] **Phase 14: Panel chi tiết** - Bấm dòng Danh sách hàng hóa và Đối tác mở panel cạnh bảng, không rời trang
-- [ ] **Phase 15: Import danh mục v2** - File 4 cột, bảng chọn trường từng dòng, bỏ qua dòng lỗi và tải file lỗi, tồn kho ghi bằng phiếu điều chỉnh
+- [x] **Phase 15: Import danh mục v2** - File 4 cột, bảng chọn trường từng dòng, bỏ qua dòng lỗi và tải file lỗi, tồn kho ghi bằng phiếu điều chỉnh
 - [ ] **Phase 16: Chức vụ & quyền** - Chức vụ động với 9 quyền, chặn ở database bằng `co_quyen()` đọc DB, có hiệu lực ngay (rủi ro cao nhất, đụng RLS)
  (completed 2026-09-26)
 
@@ -554,7 +554,18 @@ nhau, chạy song song được. Migration kế tiếp là `0077`.
   3. Tồn kho trong file được ghi bằng một chứng từ DIEU_CHINH; thẻ kho mở được về chứng từ đó, không có dòng nào ghi thẳng vào tồn
   4. Mã hàng có Loại hàng, Dòng xe (chọn được, thêm mới tại chỗ) và Được bán trực tiếp, sửa được trong form mã hàng
 
-**Plans**: TBD
+**Plans**: 4 task — làm theo quickplan (không qua `/gsd:execute-phase`), branch `feature/phase-15-import-v2` (tách từ `feature/phase-14-panel`)
+- [x] Migration `0081`: danh mục `loai_hang`, `dong_xe`; `san_pham` thêm `loai_hang_id`, `dong_xe_id`, `duoc_ban_truc_tiep`; RPC `nhap_ma_hang_moi` (bỏ qua dòng lỗi, tồn vào một phiếu DIEU_CHINH tự ghi sổ) (`a5c4eac`)
+- [x] Form mã hàng: Loại hàng, Dòng xe (thêm mới tại chỗ), Vị trí kệ, Được bán trực tiếp; tab Danh mục phụ; nhãn nhật ký sửa (`a819032`)
+- [x] File mẫu 4 cột, route đọc file, file dòng lỗi (4 cột + Lý do, nhập lại được) (`3ebc455`)
+- [x] Màn xem trước 11 cột, chọn từng dòng / gán hàng loạt, chọn kho ghi tồn, kết quả + tải file lỗi; menu Excel tách "Nhập mã hàng mới" / "Cập nhật từ Excel" (`b5a5889`)
+
+> **Hoàn thành 02/10/2026.** Kiểm trên Supabase local: `npm run check`, pgTAP 46 file / 719 test, test hàm thuần,
+> test đọc Excel, ma trận quyền route 205/205, `npm run test:concurrency`; chạy trọn luồng trên trình duyệt (file 7 dòng → 2 nhập,
+> 5 lỗi; phiếu DC26-000001 đã ghi sổ, thẻ kho hiện đúng). Quyết định khi làm: giữ trình nhập cũ thành "Cập nhật từ Excel";
+> một kho cho cả file (mặc định Kho 1, cũng là kho mặc định của mã mới); Vị trí = `vi_tri_ke`, Mô tả = `ghi_chu`;
+> Loại hàng là danh mục tự do; trùng mã/tên trong file đánh dấu mọi dòng trùng; tên so không dấu; mã mới công đoạn
+> MUA_NGOAI. Chưa có trang xem phiếu điều chỉnh — thẻ kho hiện số phiếu nhưng chưa bấm mở được. `0081` mới áp ở local.
 **UI hint**: yes
 
 ### Phase 16: Chức vụ & quyền
@@ -597,5 +608,5 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 | 12. Luồng đơn hàng → hóa đơn | 4/4 | Complete | 2026-10-02 |
 | 13. Phân tích tồn kho | 4/4 | Complete | 2026-10-02 |
 | 14. Panel chi tiết | 4/4 | Complete | 2026-10-02 |
-| 15. Import danh mục v2 | 0/TBD | Not started | - |
+| 15. Import danh mục v2 | 4/4 | Complete | 2026-10-02 |
 | 16. Chức vụ & quyền | 0/TBD | Not started | - |
