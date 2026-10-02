@@ -25,17 +25,6 @@ export async function fetchAnalysisRows(period: Period): Promise<AnalysisRow[]> 
   return rows.map(toAnalysisRow);
 }
 
-/** Một mã — panel chi tiết ở danh mục. null khi mã không còn trong phân tích. */
-export async function fetchAnalysisRow(period: Period, productId: string): Promise<AnalysisRow | null> {
-  const { data, error } = await getSupabaseBrowserClient().rpc("phan_tich_ton_kho", {
-    p_so_ngay: period,
-    p_san_pham_id: productId,
-  });
-  if (error) throw error;
-  const row = data?.[0];
-  return row ? toAnalysisRow(row) : null;
-}
-
 export async function fetchSalesDays(period: Period): Promise<SalesDay[]> {
   const { data, error } = await getSupabaseBrowserClient().rpc("nhip_ban_theo_ngay", {
     p_so_ngay: period,

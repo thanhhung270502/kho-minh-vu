@@ -1,9 +1,10 @@
 "use client";
 
-import { Button } from "antd";
+import { Button, Grid } from "antd";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 
+import { DetailPanel } from "@/shared/components/detail-panel";
 import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
 import { readSelectedId, withSelectedId } from "@/shared/lib/selected-id";
@@ -25,7 +26,7 @@ import type { ImportKind } from "./excel-button";
 import { buildProductColumns } from "./product-columns";
 import { ProductFilterPanel } from "./product-filter-panel";
 import { ProductModals } from "./product-modals";
-import { ProductPanel } from "./product-panel";
+import { ProductExpandedDetail } from "./product-expanded-detail";
 import { ProductTableBody } from "./product-table-body";
 import { ProductToolbar } from "./product-toolbar";
 import { ReviewActions } from "./review-actions";
@@ -48,14 +49,11 @@ function hasActiveFilter(filter: ProductFilter): boolean {
 export function ProductTable({
   permissions,
   extraActions,
-  forecastSection,
   showForecast = false,
 }: {
   permissions: CatalogPermissions;
   /** Nút do route ghép vào thanh công cụ — xem `danh-muc/page.tsx`. */
   extraActions?: ReactNode;
-  /** Dự báo trong panel chi tiết — route chỉ ghép khi có quyền xem phân tích. */
-  forecastSection?: ReactNode;
   /** Quản lý + văn phòng (view-analysis): hai cột Khách đặt / Dự kiến hết hàng. */
   showForecast?: boolean;
 }) {
@@ -103,6 +101,17 @@ export function ProductTable({
   const selectProduct = useCallback(
     (id: string | null) => replaceUrl(withSelectedId(searchParams, id)),
     [replaceUrl, searchParams],
+  );
+  // Bấm lại đúng dòng đang mở thì đóng.
+  const toggleProduct = useCallback(
+    (id: string) => selectProduct(id === selectedId ? null : id),
+    [selectProduct, selectedId],
+  );
+
+  // Từ 768px chi tiết mở ngay dưới dòng; điện thoại quá chật cho dòng mở rộng.
+  const wide = Grid.useBreakpoint().md ?? false;
+  const renderDetail = (id: string) => (
+    <ProductExpandedDetail productId={id} forecast={showForecast ? (forecastMap.get(id) ?? null) : undefined} />
   );
 
   /**
@@ -176,12 +185,10 @@ export function ProductTable({
         }
         activeFilterCount={countActiveFilters(filter)}
         detailPanel={
-          selectedId ? (
-            <ProductPanel
-              productId={selectedId}
-              onClose={() => selectProduct(null)}
-              forecastSection={forecastSection}
-            />
+          selectedId && !wide ? (
+            <DetailPanel title="Chi tiết mã hàng" onClose={() => selectProduct(null)}>
+              {renderDetail(selectedId)}
+            </DetailPanel>
           ) : null
         }
       >
@@ -229,7 +236,8 @@ export function ProductTable({
               loading={products.isFetching && !products.isPending}
               onFilterChange={changeFilter}
               selectedId={selectedId}
-              onRowClick={selectProduct}
+              onRowClick={toggleProduct}
+              renderExpanded={wide ? (row) => renderDetail(row.id) : undefined}
             />
           )}
         </QueryState>

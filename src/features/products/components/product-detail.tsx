@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Descriptions, Statistic, Tabs, Tag } from "antd";
+import { Button, Descriptions, Tabs, Tag } from "antd";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 
@@ -8,11 +8,12 @@ import { AuditLog } from "@/shared/components/audit-log";
 import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
 
-import { useLookups, useProductDetail, useStockByWarehouse } from "../hooks/useProducts";
+import { useLookups, useProductDetail } from "../hooks/useProducts";
 import type { Lookups } from "../types";
 import { formatNumber } from "./product-columns";
 import { ProductDrawer } from "./product-drawer";
 import { StockCard } from "./stock-card";
+import { WarehouseStock } from "./warehouse-stock";
 
 export type ProductDetailPermissions = {
   canEdit: boolean;
@@ -81,7 +82,6 @@ export function ProductDetailView({
   imagesSection?: ReactNode;
 }) {
   const detail = useProductDetail(id);
-  const stockByWarehouse = useStockByWarehouse(id);
   const lookups = useLookups();
   const [editOpen, setEditOpen] = useState(false);
 
@@ -185,23 +185,7 @@ export function ProductDetailView({
 
             <div className="mt-4">
               <h3 className="mb-2 text-sm font-medium">Tồn theo kho</h3>
-              <QueryState
-                query={stockByWarehouse}
-                emptyDescription="Chưa có tồn — chưa có chứng từ nào cho mã này."
-              >
-                {(stocks) => (
-                  <div className="flex flex-wrap gap-6">
-                    {stocks.map((stock) => (
-                      <Statistic
-                        key={stock.warehouseId}
-                        title={stock.warehouseName}
-                        value={stock.quantity}
-                        suffix={product.unitName}
-                      />
-                    ))}
-                  </div>
-                )}
-              </QueryState>
+              <WarehouseStock productId={id} unitName={product.unitName} />
             </div>
 
             <Tabs

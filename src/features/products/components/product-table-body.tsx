@@ -3,6 +3,7 @@
 import { Table, Typography } from "antd";
 import type { TableColumnsType } from "antd";
 import type { SorterResult } from "antd/es/table/interface";
+import type { ReactNode } from "react";
 
 import { SummaryRow } from "@/shared/components/summary-row";
 import { isInteractiveTarget } from "@/shared/lib/selected-id";
@@ -27,6 +28,8 @@ type Props = {
   onFilterChange: (filter: ProductFilter) => void;
   selectedId: string | null;
   onRowClick: (id: string) => void;
+  /** Có = mở chi tiết NGAY DƯỚI dòng đang chọn (máy tính). Điện thoại dùng ngăn kéo. */
+  renderExpanded?: (row: ProductRow) => ReactNode;
 };
 
 /** Bảng chính của /danh-muc + hàng tổng cộng + ghi chú tồn 0 toàn trang. */
@@ -42,6 +45,7 @@ export function ProductTableBody({
   onFilterChange,
   selectedId,
   onRowClick,
+  renderExpanded,
 }: Props) {
   const allStockIsZero =
     rows.length > 0 && rows.every((row) => Number(row.totalStock) === 0);
@@ -82,6 +86,16 @@ export function ProductTableBody({
             : undefined
         }
         dataSource={rows}
+        expandable={
+          renderExpanded
+            ? {
+                expandedRowKeys: selectedId ? [selectedId] : [],
+                expandedRowRender: renderExpanded,
+                showExpandColumn: false,
+                expandedRowClassName: () => "[&>td]:bg-brand-25",
+              }
+            : undefined
+        }
         rowClassName={(row) =>
           row.id === selectedId ? "cursor-pointer [&>td]:bg-brand-50" : "cursor-pointer"
         }

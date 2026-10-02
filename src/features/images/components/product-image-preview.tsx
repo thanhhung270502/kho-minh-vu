@@ -2,6 +2,7 @@
 
 import { PictureOutlined } from "@ant-design/icons";
 import { Image } from "antd";
+import { useState } from "react";
 
 import { useProductImages } from "../hooks/useProductImages";
 import { imageUrl } from "../lib/image-url";
@@ -9,6 +10,9 @@ import { imageUrl } from "../lib/image-url";
 /** Ảnh chính cỡ lớn ở panel chi tiết — bấm vào phóng to, lướt qua mọi ảnh của mã. */
 export function ProductImagePreview({ productId }: { productId: string }) {
   const images = useProductImages(productId);
+  // Nơi lưu ảnh (Apps Script) đôi khi lỗi ở lần lấy đầu → route trả 502 và tự xóa
+  // cache. Thẻ <img> không tự tải lại, nên thử lại MỘT lần với URL khác đi.
+  const [retried, setRetried] = useState(false);
 
   if (images.isPending) return <div className="h-48 w-full animate-pulse rounded bg-gray-100" aria-label="Đang tải ảnh" />;
 
@@ -26,7 +30,8 @@ export function ProductImagePreview({ productId }: { productId: string }) {
   return (
     <Image.PreviewGroup items={list.map((image) => imageUrl(image.id))}>
       <Image
-        src={imageUrl(primary.id)}
+        src={retried ? `${imageUrl(primary.id)}?thu_lai=1` : imageUrl(primary.id)}
+        onError={() => setRetried(true)}
         alt="Ảnh chính"
         className="max-h-56 w-full rounded object-contain"
         rootClassName="block w-full"
