@@ -125,6 +125,67 @@
 - [ ] **ANH-05**: Ảnh lưu trên Google Drive qua Apps Script, database chỉ lưu `noi_luu` + khóa; đổi nơi lưu không phải sửa giao diện
 - [ ] **ANH-06**: Chép một lần ảnh mã hàng từ file export KiotViet (1.094 mã) sang nơi lưu mới bằng script chạy lại được, có báo cáo link hỏng / mã không khớp
 
+## v1.1 Requirements — Phản hồi vận hành
+
+Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định chốt 02/10/2026 ghi ở PROJECT.md.
+
+### Dọn dẹp & điều hướng (GON)
+
+- [ ] **GON-01**: Phiếu nhập, đơn đặt hàng và danh mục hàng hóa luôn hiện đủ mã hàng và tên hàng ở mọi dòng (sửa lỗi báo 28/09)
+- [ ] **GON-02**: Không còn trang, mục menu và tab "Lịch sử KiotViet" ở đâu trên giao diện; dữ liệu lưu trữ trong database giữ nguyên
+- [ ] **GON-03**: Không màn nào hiện hoặc cho nhập Giá bán; Giá vốn không hiện ở Danh mục hàng hóa; phiếu nhập vẫn nhập Đơn giá
+- [ ] **GON-04**: Menu chia nhóm: **Đơn hàng** (Đặt hàng, Hóa đơn), **Hàng hóa** (Danh sách hàng hóa, Kiểm kho), cùng Nhập kho, Đối tác, Phân tích, Cài đặt — trên cả máy tính và điện thoại
+- [ ] **GON-05**: Mục "Xuất kho" đổi thành "Hóa đơn" ở menu, tiêu đề, phiếu in; route mới `/hoa-don`, link và bookmark `/xuat-kho` cũ tự chuyển sang
+- [ ] **GON-06**: Trang `/ton-kho` và Nạp tồn tạm bị gỡ; link cũ chuyển về Danh sách hàng hóa
+- [ ] **GON-07**: Ma trận quyền route (`test-route-permissions.ts`) phủ đúng bộ route mới, mọi route cũ đã gỡ trả về chuyển hướng chứ không 404/crash
+
+### Nhân viên phụ trách & danh mục nền (NVPT)
+
+- [ ] **NVPT-01**: Quản lý thêm/sửa/ngừng dùng nhân viên phụ trách (tên viết tắt, tên đầy đủ) trong Cài đặt
+- [ ] **NVPT-02**: Khi đặt hàng, công tắc Nội bộ / Đối tác (mặc định Nội bộ) chọn đúng một loại người nhận; Nội bộ chọn từ nhân viên phụ trách, Đối tác chọn từ đối tác loại Khách hàng hoặc Cả hai; đổi công tắc thì xóa tên đã chọn
+- [ ] **NVPT-03**: Đơn đặt hàng, hóa đơn, danh sách và phiếu in hiện tên đầy đủ của nhân viên phụ trách; đơn nội bộ đã tạo trước đây được chuyển sang nhân viên tương ứng, không mất người nhận
+- [ ] **NVPT-04**: Nhóm hàng, Đơn vị tính, Công đoạn không còn ở Cài đặt; khi tạo/sửa mã hàng chọn giá trị có sẵn hoặc bấm "+ Thêm mới" để tạo ngay tại chỗ
+
+### Luồng đơn hàng → hóa đơn (DON)
+
+- [ ] **DON-01**: Bấm "Tạo đơn" mở ngay giao diện tạo đơn đầy đủ (người nhận + dòng hàng), lưu là Đơn tạm
+- [ ] **DON-02**: Xác nhận đơn tạm chuyển đơn sang Đã xác nhận và in được phiếu lấy hàng
+- [ ] **DON-03**: Hoàn thành đơn đã xác nhận tạo và ghi sổ một Hóa đơn trong một transaction — tồn giảm đúng, lỗi giữa chừng không để lại gì; xuất âm vẫn bắt buộc chọn lý do
+- [ ] **DON-04**: Mỗi đơn chỉ sinh tối đa một hóa đơn; bấm Hoàn thành hai lần hoặc hai người cùng bấm không trừ tồn hai lần (chặn ở database)
+- [ ] **DON-05**: Hủy được đơn chưa hoàn thành (Đơn tạm hoặc Đã xác nhận), đơn hủy không tạo hóa đơn và không đụng tồn
+- [ ] **DON-06**: Từ đơn mở được hóa đơn của nó và ngược lại; hóa đơn tạo không cần đơn vẫn làm được như phiếu xuất cũ
+
+### Phân tích tồn kho (PTICH)
+
+- [ ] **PTICH-01**: Hệ thống tính cho từng mã: bán TB/ngày (ADU) trong kỳ chọn 7/30/90 ngày (mặc định 30, chia ngày lịch, chỉ hóa đơn hoàn thành gửi đối tác, không tính đơn nội bộ), tồn khả dụng = tồn − khách đặt, số ngày còn hàng, ngày dự kiến hết hàng, đề nghị nhập ⌈ADU × Y − tồn khả dụng⌉ (âm thì 0)
+- [ ] **PTICH-02**: Trang `/phan-tich` hiện 4 thẻ KPI: cần nhập trong X ngày, hết hàng vẫn có khách mua, tổng số lượng tồn, tồn không có tín hiệu bán
+- [ ] **PTICH-03**: Biểu đồ Số ngày còn hàng (lọc theo loại hoàn thiện ÉP/SƠN/CARBON/XI MẠ/NANO/Khác) và biểu đồ Nhịp bán hàng (theo số hóa đơn hoặc số lượng, kèm % thay đổi nửa sau so với nửa đầu kỳ)
+- [ ] **PTICH-04**: Bảng Cần nhập hàng có 3 tab (Sắp hết ≤ X ngày, Đã hết có khách mua, Còn X+1–30 ngày), tìm kiếm, lọc loại hoàn thiện, xuất CSV đề nghị nhập
+- [ ] **PTICH-05**: Xem top 10 bán chạy, 15 nhóm bán nhiều nhất kèm số ngày tồn của nhóm, tồn chậm (Không bán: top 30 theo tồn; đủ bán ≥ 365 ngày: top 20); mã không bán hiện "Không bán" (còn tồn) hoặc "Ngừng bán?" (tồn 0), không có đề nghị nhập
+- [ ] **PTICH-06**: Ngưỡng đỏ (mặc định 7 ngày) và vàng (mặc định 14 ngày) cùng số ngày Y chỉnh được, lưu chung toàn hệ thống; màu trạng thái theo hai ngưỡng, hết hàng luôn đỏ đậm
+- [ ] **PTICH-07**: Chức năng duyệt định mức tồn tối thiểu (trước ở `/ton-kho/dinh-muc`) nằm trong trang Phân tích
+
+### Panel chi tiết (PANEL)
+
+- [ ] **PANEL-01**: Ở Danh sách hàng hóa, bấm vào dòng mở panel cạnh bảng gồm ảnh, mã hàng, tên hàng, tồn kho, khách đặt, dự kiến hết hàng (cùng số với trang Phân tích), không rời trang
+- [ ] **PANEL-02**: Bảng đối tác chỉ gồm Mã, Tên, Loại, Điện thoại, Tổng giao dịch
+- [ ] **PANEL-03**: Bấm dòng đối tác mở panel: tab Thông tin (Loại, Mã, Tên, Điện thoại, Địa chỉ, Ghi chú, sửa được) và tab Lịch sử giao dịch; trang `/doi-tac/[id]` cũ chuyển về danh sách mở sẵn panel
+
+### Import danh mục v2 (IMP)
+
+- [ ] **IMP-01**: File Excel mã hàng chỉ cần 4 cột: Mã hàng, Tên hàng, Tồn kho, Mô tả; có file mẫu tải về
+- [ ] **IMP-02**: Sau khi tải file lên, hiện bảng đủ cột theo thứ tự (Loại hàng, Nhóm hàng, Mã, Tên, Dòng xe, Tồn kho, ĐVT, Đang kinh doanh, Được bán trực tiếp, Vị trí, Mô tả); cột từ file điền sẵn, cột còn lại chọn bằng dropdown/bật tắt cho từng dòng hoặc áp cho nhiều dòng cùng lúc
+- [ ] **IMP-03**: Dòng lỗi (trùng mã, trùng tên — trong file hoặc với danh mục) bị bỏ qua, các dòng hợp lệ vẫn được nhập; người dùng tải về file chỉ chứa dòng lỗi kèm lý do để sửa và import lại
+- [ ] **IMP-04**: Tồn kho trong file được ghi bằng một chứng từ điều chỉnh (DIEU_CHINH), không ghi thẳng vào tồn; thẻ kho truy được về chứng từ đó
+- [ ] **IMP-05**: Mã hàng có thêm các trường Loại hàng, Dòng xe (danh mục chọn được, thêm mới tại chỗ) và Được bán trực tiếp; sửa được trong form mã hàng
+
+### Chức vụ & quyền (QUYEN)
+
+- [ ] **QUYEN-01**: Quản lý tạo/sửa chức vụ (mặc định có Quản lý, Thủ kho, Nhân viên) và bật/tắt 9 quyền cho từng chức vụ: Xem dashboard, Nhập đơn hàng, Tạo đơn đặt hàng, Xác nhận, Hoàn thành, Sửa hóa đơn, Tạo mã hàng, Tạo nhân viên, Kiểm kho
+- [ ] **QUYEN-02**: Mỗi người dùng được gán một chức vụ; người dùng hiện có được chuyển sang chức vụ tương ứng với vai trò cũ, không ai mất quyền đang có
+- [ ] **QUYEN-03**: Quyền được chặn ở database (RLS/RPC qua `co_quyen()` đọc DB), không chỉ ẩn nút; đổi quyền của chức vụ có hiệu lực ngay, không phải chờ token mới
+- [ ] **QUYEN-04**: Menu, nút và route ẩn/chặn đúng theo quyền của chức vụ; ma trận kiểm thử quyền route chạy theo chức vụ
+
 ## v2 Requirements
 
 ### Công nợ (CNO)
@@ -147,6 +208,7 @@
 ### Mở rộng (MRNG)
 
 - **MRNG-01**: Hỗ trợ nhiều chi nhánh
+- **MRNG-02**: Hàng thành phần (hàng combo/BOM) — cột thứ 12 của bảng import v2, hoãn từ v1.1 vì là nghiệp vụ riêng (xuất combo trừ tồn thành phần)
 
 ## Out of Scope
 
@@ -160,6 +222,7 @@
 | Nhiều chi nhánh | Hiện 1 chi nhánh, 2 kho. Bảng `kho` đã đủ để mở rộng khi cần |
 | Hóa đơn điện tử, kết nối thuế | Giá đang bằng 0 trên hệ cũ, chưa phát sinh nghiệp vụ hóa đơn |
 | App native (iOS/Android) | Web responsive + quét barcode qua camera trình duyệt là đủ. Không dự kiến làm |
+| "Hóa đơn" ở v1.1 là hóa đơn điện tử | Không. "Hóa đơn" chỉ là tên mới của phiếu xuất (chứng từ `XUAT`), không phát hành HĐĐT — vẫn thuộc TICH-02 |
 | Realtime đồng bộ nhiều thiết bị | Chưa có nhu cầu — mỗi phiếu do một người nhập. Supabase Realtime đã sẵn nếu v2 cần |
 
 ## Traceability
