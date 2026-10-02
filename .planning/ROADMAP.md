@@ -44,7 +44,7 @@ sau cần dùng ngay.
 
 ### v1.1 Phản hồi vận hành
 
-- [ ] **Phase 10: Dọn dẹp & điều hướng** - Sửa lỗi hiển thị mã/tên hàng, bỏ Lịch sử KiotViet và Giá bán, menu chia nhóm, Xuất kho → Hóa đơn (`/hoa-don`), gỡ `/ton-kho`
+- [x] **Phase 10: Dọn dẹp & điều hướng** - Sửa lỗi hiển thị mã/tên hàng, bỏ Lịch sử KiotViet và Giá bán, menu chia nhóm, Xuất kho → Hóa đơn (`/hoa-don`), gỡ `/ton-kho`
 - [ ] **Phase 11: Nhân viên phụ trách & danh mục nền** - Danh mục nhân viên phụ trách, đặt hàng chọn Nội bộ/Đối tác, thêm Nhóm hàng/ĐVT/Công đoạn ngay trong form mã hàng
 - [ ] **Phase 12: Luồng đơn hàng → hóa đơn** - Đơn tạm → Xác nhận (in phiếu lấy hàng) → Hoàn thành ghi sổ Hóa đơn atomic, 1 đơn = 1 hóa đơn, hủy đơn
 - [ ] **Phase 13: Phân tích tồn kho** - Trang `/phan-tich`: bán TB/ngày, dự kiến hết hàng, đề nghị nhập, tồn chậm, ngưỡng chỉnh được, duyệt định mức
@@ -419,7 +419,17 @@ nhau, chạy song song được. Migration kế tiếp là `0077`.
   4. Menu có nhóm Đơn hàng (Đặt hàng, Hóa đơn), Hàng hóa (Danh sách hàng hóa, Kiểm kho), cùng Nhập kho, Đối tác, Phân tích, Cài đặt — trên cả máy tính và thanh điện thoại
   5. Vào `/xuat-kho` hoặc `/ton-kho` (kể cả bookmark cũ) được chuyển sang `/hoa-don` / Danh sách hàng hóa; ma trận quyền route phủ đúng bộ route mới và không route cũ nào trả 404/crash
 
-**Plans**: TBD
+**Plans**: 4 task — làm theo quickplan (không qua `/gsd:execute-phase`), branch `feature/phase-10-don-dep`
+- [x] Gỡ Lịch sử KiotViet khỏi giao diện, giữ dữ liệu (`643550f`)
+- [x] Menu nhóm, Xuất kho → Hóa đơn, gỡ trang Tồn kho (`d43643f`)
+- [x] Bỏ giá bán và giá vốn khỏi giao diện, giữ đơn giá phiếu nhập (`514ddd4`)
+- [x] Hiện tên hàng dưới mã trên điện thoại (`a5b72ed`); ô mã ở hàng nhập liệu đã sửa ở `281dceb`
+
+> **Hoàn thành 02/10/2026.** Kiểm trên Supabase local: `npm run check`, test hàm thuần, test đọc Excel,
+> ma trận quyền route 165/165 đều xanh. Mục "Phân tích" trong menu (tiêu chí 4) chưa có — thêm ở
+> Phase 13 khi trang `/phan-tich` ra đời. `/ton-kho/dinh-muc` tạm giữ, vào bằng nút "Định mức" ở
+> Danh sách hàng hóa, chuyển vào Phân tích ở Phase 13.
+
 **UI hint**: yes
 
 ### Phase 11: Nhân viên phụ trách & danh mục nền
@@ -462,6 +472,8 @@ nhau, chạy song song được. Migration kế tiếp là `0077`.
 **Goal**: Quản lý biết mã nào sắp hết, mã nào đã hết mà vẫn có khách mua, cần nhập bao nhiêu, và hàng nào tồn chậm — thay cho trang Tồn kho.
 **Depends on**: Phase 12 (bán = hóa đơn hoàn thành, khách đặt tính từ đơn đã xác nhận)
 **Requirements**: PTICH-01, PTICH-02, PTICH-03, PTICH-04, PTICH-05, PTICH-06, PTICH-07
+> Mang theo từ Phase 10: thêm mục "Phân tích" vào menu (`NAV_ITEMS`, ma trận quyền route), chuyển
+> `/ton-kho/dinh-muc` vào trang này rồi gỡ nút tạm "Định mức" ở Danh sách hàng hóa.
 **Success Criteria** (what must be TRUE):
 
   1. Trang `/phan-tich` hiện 4 thẻ KPI (cần nhập trong X ngày, hết hàng vẫn có khách mua, tổng số lượng tồn, tồn không có tín hiệu bán); mỗi mã có bán TB/ngày theo kỳ 7/30/90 ngày, tồn khả dụng, số ngày còn hàng, ngày dự kiến hết và đề nghị nhập đúng công thức
@@ -538,7 +550,7 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 | 7. Trang tổng quan | 9/9 | Complete    | 2026-09-27 |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |
 | 9. Quản lý hình ảnh | 13/13 | Complete   | 2026-09-26 |
-| 10. Dọn dẹp & điều hướng | 0/TBD | Not started | - |
+| 10. Dọn dẹp & điều hướng | 4/4 | Complete | 2026-10-02 |
 | 11. Nhân viên phụ trách & danh mục nền | 0/TBD | Not started | - |
 | 12. Luồng đơn hàng → hóa đơn | 0/TBD | Not started | - |
 | 13. Phân tích tồn kho | 0/TBD | Not started | - |

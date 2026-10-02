@@ -131,13 +131,13 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 
 ### Dọn dẹp & điều hướng (GON)
 
-- [ ] **GON-01**: Phiếu nhập, đơn đặt hàng và danh mục hàng hóa luôn hiện đủ mã hàng và tên hàng ở mọi dòng (sửa lỗi báo 28/09)
-- [ ] **GON-02**: Không còn trang, mục menu và tab "Lịch sử KiotViet" ở đâu trên giao diện; dữ liệu lưu trữ trong database giữ nguyên
-- [ ] **GON-03**: Không màn nào hiện hoặc cho nhập Giá bán; Giá vốn không hiện ở Danh mục hàng hóa; phiếu nhập vẫn nhập Đơn giá
-- [ ] **GON-04**: Menu chia nhóm: **Đơn hàng** (Đặt hàng, Hóa đơn), **Hàng hóa** (Danh sách hàng hóa, Kiểm kho), cùng Nhập kho, Đối tác, Phân tích, Cài đặt — trên cả máy tính và điện thoại
-- [ ] **GON-05**: Mục "Xuất kho" đổi thành "Hóa đơn" ở menu, tiêu đề, phiếu in; route mới `/hoa-don`, link và bookmark `/xuat-kho` cũ tự chuyển sang
-- [ ] **GON-06**: Trang `/ton-kho` và Nạp tồn tạm bị gỡ; link cũ chuyển về Danh sách hàng hóa
-- [ ] **GON-07**: Ma trận quyền route (`test-route-permissions.ts`) phủ đúng bộ route mới, mọi route cũ đã gỡ trả về chuyển hướng chứ không 404/crash
+- [x] **GON-01**: Phiếu nhập, đơn đặt hàng và danh mục hàng hóa luôn hiện đủ mã hàng và tên hàng ở mọi dòng (sửa lỗi báo 28/09)
+- [x] **GON-02**: Không còn trang, mục menu và tab "Lịch sử KiotViet" ở đâu trên giao diện; dữ liệu lưu trữ trong database giữ nguyên
+- [x] **GON-03**: Không màn nào hiện hoặc cho nhập Giá bán; Giá vốn không hiện ở Danh mục hàng hóa; phiếu nhập vẫn nhập Đơn giá
+- [x] **GON-04**: Menu chia nhóm: **Đơn hàng** (Đặt hàng, Hóa đơn), **Hàng hóa** (Danh sách hàng hóa, Kiểm kho), cùng Nhập kho, Đối tác, Phân tích, Cài đặt — trên cả máy tính và điện thoại *(mục Phân tích thêm ở Phase 13 khi có trang)*
+- [x] **GON-05**: Mục "Xuất kho" đổi thành "Hóa đơn" ở menu, tiêu đề, phiếu in; route mới `/hoa-don`, link và bookmark `/xuat-kho` cũ tự chuyển sang
+- [x] **GON-06**: Trang `/ton-kho` và Nạp tồn tạm bị gỡ; link cũ chuyển về Danh sách hàng hóa
+- [x] **GON-07**: Ma trận quyền route (`test-route-permissions.ts`) phủ đúng bộ route mới, mọi route cũ đã gỡ trả về chuyển hướng chứ không 404/crash
 
 ### Nhân viên phụ trách & danh mục nền (NVPT)
 
@@ -310,13 +310,13 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 | ANH-04 | Phase 9 | Pending |
 | ANH-05 | Phase 9 | Pending |
 | ANH-06 | Phase 9 | Pending |
-| GON-01 | Phase 10 | Pending |
-| GON-02 | Phase 10 | Pending |
-| GON-03 | Phase 10 | Pending |
-| GON-04 | Phase 10 | Pending |
-| GON-05 | Phase 10 | Pending |
-| GON-06 | Phase 10 | Pending |
-| GON-07 | Phase 10 | Pending |
+| GON-01 | Phase 10 | Complete |
+| GON-02 | Phase 10 | Complete |
+| GON-03 | Phase 10 | Complete |
+| GON-04 | Phase 10 | Complete |
+| GON-05 | Phase 10 | Complete |
+| GON-06 | Phase 10 | Complete |
+| GON-07 | Phase 10 | Complete |
 | NVPT-01 | Phase 11 | Pending |
 | NVPT-02 | Phase 11 | Pending |
 | NVPT-03 | Phase 11 | Pending |
