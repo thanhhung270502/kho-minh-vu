@@ -59,10 +59,18 @@ export function buildProductColumns({
       fixed: "left",
       sorter: true,
       sortOrder: sortOrderFor(filter, "code"),
+      // Điện thoại: chọn + ảnh + mã (cố định trái) + "Sửa" (cố định phải) đã kín
+      // 375px, cột Tên bị đẩy vào vùng cuộn ngang — người dùng chỉ thấy mã (GON-01).
+      // Dưới md hiện tên ngay dưới mã; màn rộng vẫn dùng cột Tên riêng.
       render: (code: string, row) => (
-        <Link href={`/danh-muc/${row.id}`} className="font-mono">
-          {code}
-        </Link>
+        <>
+          <Link href={`/danh-muc/${row.id}`} className="font-mono">
+            {code}
+          </Link>
+          <span className="mt-0.5 line-clamp-2 text-xs text-chu-phu md:hidden">
+            {row.name}
+          </span>
+        </>
       ),
     },
     {
