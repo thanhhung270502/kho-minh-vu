@@ -12,7 +12,7 @@ type Props = {
   importOpen: ImportKind | null;
   onCloseImport: () => void;
   onViewRecentlyEdited: () => void;
-  drawer: { open: boolean; id: string | null };
+  drawer: { open: boolean; id: string | null; copyFromId?: string | null };
   onCloseDrawer: () => void;
 };
 
@@ -43,6 +43,7 @@ export function ProductModals({
 
       <ProductDrawer
         id={drawer.id}
+        copyFromId={drawer.copyFromId ?? null}
         open={drawer.open}
         onClose={onCloseDrawer}
       />

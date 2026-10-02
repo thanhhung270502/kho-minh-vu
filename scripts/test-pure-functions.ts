@@ -19,8 +19,10 @@ import { editUserFormSchema } from "../src/features/settings/schemas/user.schema
 import { duplicateProblemsInFile } from "../src/features/products/lib/new-product-file";
 import {
   copyProductDefaults,
+  expandedActions,
   forecastById,
   stockLimitLabel,
+  toProductFormValues,
 } from "../src/features/products/lib/product-expanded";
 import {
   CATALOG_REASONS,
@@ -1176,6 +1178,20 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.deepEqual(map.get("a"), { customerOrdered: 3, stockoutDate: "2026-10-06", daysOfCover: 4.2, selling: true });
   assert.equal(map.get("b")?.selling, false, "không bán trong kỳ: hiện 'Không bán', không có ngày");
   assert.equal(map.get("zzz"), undefined);
+
+  // Hàng nút: không có quyền Tạo mã hàng chỉ còn Xem chi tiết; mã ngừng KD có "Kinh doanh lại".
+  assert.deepEqual(expandedActions({ canEdit: false, isActive: true }), ["detail"]);
+  assert.deepEqual(expandedActions({ canEdit: true, isActive: true }), ["deactivate", "copy", "detail", "edit"]);
+  assert.deepEqual(expandedActions({ canEdit: true, isActive: false }), ["reactivate", "copy", "detail", "edit"]);
+
+  // Chi tiết mã → giá trị form: null thành giá trị rỗng form hiểu được.
+  const form = toProductFormValues({
+    code: "A", name: "B", categoryId: null, unitId: null, stageId: "s", conversion: 1,
+    defaultWarehouseId: null, minStock: 0, maxStock: null, barcode: null, note: null, isActive: true,
+    productTypeId: null, vehicleLineId: "v", directSale: true, shelfLocation: null,
+  });
+  assert.equal(form.unitId, "", "ĐVT null → chuỗi rỗng để Select hiện ô trống");
+  assert.equal(form.vehicleLineId, "v");
 }
 
 async function kiemTaiTheoTrang() {

@@ -9,6 +9,8 @@ type Props = {
   onClose: () => void;
   /** Nút cạnh tiêu đề — "Xem chi tiết", "Sửa"… */
   extra?: ReactNode;
+  /** Luôn là ngăn kéo, kể cả màn rộng (vd. mã đang chọn không có trên trang bảng). */
+  forceDrawer?: boolean;
   children: ReactNode;
 };
 
@@ -17,10 +19,10 @@ type Props = {
  * bảng vẫn bấm được dòng khác; dưới 1280px là ngăn kéo phủ kín màn hình
  * (điện thoại không đủ chỗ cho hai cột). Chỉ render khi có dòng đang chọn.
  */
-export function DetailPanel({ title, onClose, extra, children }: Props) {
+export function DetailPanel({ title, onClose, extra, forceDrawer = false, children }: Props) {
   const screens = Grid.useBreakpoint();
 
-  if (!screens.xl) {
+  if (forceDrawer || !screens.xl) {
     return (
       <Drawer open title={title} extra={extra} size="100%" onClose={onClose}>
         {children}

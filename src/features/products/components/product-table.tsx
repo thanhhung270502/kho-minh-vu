@@ -1,23 +1,20 @@
 "use client";
 
 import { Button, Grid } from "antd";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { DetailPanel } from "@/shared/components/detail-panel";
 import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
-import { readSelectedId, withSelectedId } from "@/shared/lib/selected-id";
 
 import { useAnalysisRows } from "@/features/analytics/hooks/useAnalytics";
 
 import { useLookups, useProducts } from "../hooks/useProducts";
+import { useProductTableUrl } from "../hooks/useProductTableUrl";
 import { forecastById } from "../lib/product-expanded";
 import {
   DEFAULT_PRODUCT_FILTER,
   countActiveFilters,
-  readFilterFromUrl,
-  writeFilterToUrl,
   type ProductFilter,
 } from "../schemas/filter.schema";
 import type { CatalogPermissions } from "../types";
@@ -26,7 +23,7 @@ import type { ImportKind } from "./excel-button";
 import { buildProductColumns } from "./product-columns";
 import { ProductFilterPanel } from "./product-filter-panel";
 import { ProductModals } from "./product-modals";
-import { ProductExpandedDetail } from "./product-expanded-detail";
+import { ProductRowDetail } from "./product-row-detail";
 import { ProductTableBody } from "./product-table-body";
 import { ProductToolbar } from "./product-toolbar";
 import { ReviewActions } from "./review-actions";
@@ -57,18 +54,13 @@ export function ProductTable({
   /** Quản lý + văn phòng (view-analysis): hai cột Khách đặt / Dự kiến hết hàng. */
   showForecast?: boolean;
 }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const filter = useMemo(() => readFilterFromUrl(searchParams), [searchParams]);
-  const selectedId = readSelectedId(searchParams);
+  const { filter, selectedId, navigate, selectProduct, toggleProduct } = useProductTableUrl();
   const products = useProducts(filter);
   const lookups = useLookups();
   // RPC phân tích chặn thủ kho / chỉ xem (0079) — không gọi khi không có quyền.
   const analysis = useAnalysisRows(30, { enabled: showForecast });
   const forecastMap = useMemo(() => forecastById(analysis.data ?? []), [analysis.data]);
-  const [drawer, setDrawer] = useState<{ open: boolean; id: string | null }>({
+  const [drawer, setDrawer] = useState<{ open: boolean; id: string | null; copyFromId?: string | null }>({
     open: false,
     id: null,
   });
@@ -84,35 +76,18 @@ export function ProductTable({
     pageSize: 10,
   });
 
-  const replaceUrl = useCallback(
-    (params: URLSearchParams) => {
-      const query = params.toString();
-      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
-    },
-    [router, pathname],
-  );
-
-  // Đổi bộ lọc/trang vẫn giữ panel đang mở.
-  const navigate = useCallback(
-    (next: ProductFilter) => replaceUrl(withSelectedId(writeFilterToUrl(next), selectedId)),
-    [replaceUrl, selectedId],
-  );
-
-  const selectProduct = useCallback(
-    (id: string | null) => replaceUrl(withSelectedId(searchParams, id)),
-    [replaceUrl, searchParams],
-  );
-  // Bấm lại đúng dòng đang mở thì đóng.
-  const toggleProduct = useCallback(
-    (id: string) => selectProduct(id === selectedId ? null : id),
-    [selectProduct, selectedId],
-  );
-
   // Từ 768px chi tiết mở ngay dưới dòng; điện thoại quá chật cho dòng mở rộng.
   const wide = Grid.useBreakpoint().md ?? false;
   const renderDetail = (id: string) => (
-    <ProductExpandedDetail productId={id} forecast={showForecast ? (forecastMap.get(id) ?? null) : undefined} />
+    <ProductRowDetail
+      productId={id}
+      forecast={showForecast ? (forecastMap.get(id) ?? null) : undefined}
+      canEdit={permissions.canEdit}
+      onEdit={(editId) => setDrawer({ open: true, id: editId })}
+      onCopy={(fromId) => setDrawer({ open: true, id: null, copyFromId: fromId })}
+    />
   );
+
 
   /**
    * Người dùng đổi bộ lọc thì tập đang chọn không còn nghĩa — bỏ chọn để không
@@ -129,6 +104,10 @@ export function ProductTable({
   );
 
   const rows = products.data?.rows ?? [];
+  // Mã đang chọn không nằm trên trang này (vừa ngừng kinh doanh nên bị lọc ẩn,
+  // hoặc mở bằng link) → không có dòng để mở rộng, dùng ngăn kéo thay.
+  const selectedOffPage =
+    selectedId !== null && !products.isPending && !rows.some((row) => row.id === selectedId);
   const total = products.data?.total ?? 0;
 
   // Trang cuối rỗng sau khi lọc lại — quay về trang 1 thay vì hiện "không có gì".
@@ -185,8 +164,8 @@ export function ProductTable({
         }
         activeFilterCount={countActiveFilters(filter)}
         detailPanel={
-          selectedId && !wide ? (
-            <DetailPanel title="Chi tiết mã hàng" onClose={() => selectProduct(null)}>
+          selectedId && (!wide || selectedOffPage) ? (
+            <DetailPanel title="Chi tiết mã hàng" forceDrawer onClose={() => selectProduct(null)}>
               {renderDetail(selectedId)}
             </DetailPanel>
           ) : null

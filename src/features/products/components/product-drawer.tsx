@@ -21,6 +21,7 @@ import { explainError, isPostgrestError } from "@/shared/lib/errors";
 import { useLookups, useProductDetail, useSaveProduct } from "../hooks/useProducts";
 import { productSchema, type ProductFormValues } from "../schemas/product.schema";
 import type { Lookups, ProductInput } from "../types";
+import { copyProductDefaults, toProductFormValues } from "../lib/product-expanded";
 import { LookupSelect } from "./lookup-select";
 import { ProductClassificationFields } from "./product-classification-fields";
 
@@ -28,6 +29,8 @@ type Props = {
   id: string | null;
   open: boolean;
   onClose: () => void;
+  /** Thêm mã mới điền sẵn từ mã này (nút "Sao chép" ở chi tiết dòng). Chỉ dùng khi `id` null. */
+  copyFromId?: string | null;
 };
 
 const EMPTY_FORM: ProductFormValues = {
@@ -58,10 +61,11 @@ function defaultsForNewProduct(lookups: Lookups | undefined): ProductFormValues 
   };
 }
 
-export function ProductDrawer({ id, open, onClose }: Props) {
+export function ProductDrawer({ id, open, onClose, copyFromId = null }: Props) {
   const { message } = App.useApp();
   const lookups = useLookups();
-  const detail = useProductDetail(id ?? "");
+  const sourceId = id ?? copyFromId;
+  const detail = useProductDetail(sourceId ?? "");
   const save = useSaveProduct();
   const [createAnother, setCreateAnother] = useState(false);
 
@@ -91,8 +95,16 @@ export function ProductDrawer({ id, open, onClose }: Props) {
       initializedFor.current = null;
       return;
     }
-    const key = id ?? "new";
+    const key = id ?? (copyFromId ? `copy:${copyFromId}` : "new");
     if (initializedFor.current === key) return;
+
+    if (!id && copyFromId) {
+      if (!detail.data) return;
+      reset(copyProductDefaults(toProductFormValues(detail.data)));
+      initializedFor.current = key;
+      setFocus("code");
+      return;
+    }
 
     if (!id) {
       // Chờ danh mục về để chọn sẵn ĐVT "CAI" + công đoạn "MUA_NGOAI".
@@ -104,26 +116,9 @@ export function ProductDrawer({ id, open, onClose }: Props) {
 
     if (product) {
       initializedFor.current = key;
-      reset({
-        code: product.code,
-        name: product.name,
-        categoryId: product.categoryId ?? null,
-        unitId: product.unitId ?? "",
-        stageId: product.stageId ?? "",
-        conversion: product.conversion,
-        defaultWarehouseId: product.defaultWarehouseId ?? null,
-        minStock: product.minStock,
-        maxStock: product.maxStock,
-        barcode: product.barcode ?? null,
-        note: product.note ?? null,
-        isActive: product.isActive,
-        productTypeId: product.productTypeId,
-        vehicleLineId: product.vehicleLineId,
-        directSale: product.directSale,
-        shelfLocation: product.shelfLocation,
-      });
+      reset(toProductFormValues(product));
     }
-  }, [open, id, product, lookups.data, reset]);
+  }, [open, id, copyFromId, product, detail.data, lookups.data, reset, setFocus]);
 
   const onSave = handleSubmit(async (values) => {
     const input: ProductInput = {
@@ -196,7 +191,13 @@ export function ProductDrawer({ id, open, onClose }: Props) {
   return (
     <FormDrawer
       open={open}
-      title={isNew ? "Thêm mã hàng" : "Sửa mã hàng"}
+      title={
+        isNew
+          ? copyFromId && detail.data
+            ? `Thêm mã hàng — sao chép từ ${detail.data.code}`
+            : "Thêm mã hàng"
+          : "Sửa mã hàng"
+      }
       saving={save.isPending}
       onClose={onClose}
       onSave={() => void onSave()}
@@ -211,7 +212,7 @@ export function ProductDrawer({ id, open, onClose }: Props) {
         ) : null
       }
     >
-      {id && detail.isPending ? (
+      {sourceId && detail.isPending ? (
         <Skeleton active paragraph={{ rows: 10 }} />
       ) : (
         <Form layout="vertical" onFinish={() => void onSave()}>
