@@ -310,12 +310,55 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 | ANH-04 | Phase 9 | Pending |
 | ANH-05 | Phase 9 | Pending |
 | ANH-06 | Phase 9 | Pending |
+| GON-01 | Phase 10 | Pending |
+| GON-02 | Phase 10 | Pending |
+| GON-03 | Phase 10 | Pending |
+| GON-04 | Phase 10 | Pending |
+| GON-05 | Phase 10 | Pending |
+| GON-06 | Phase 10 | Pending |
+| GON-07 | Phase 10 | Pending |
+| NVPT-01 | Phase 11 | Pending |
+| NVPT-02 | Phase 11 | Pending |
+| NVPT-03 | Phase 11 | Pending |
+| NVPT-04 | Phase 11 | Pending |
+| DON-01 | Phase 12 | Pending |
+| DON-02 | Phase 12 | Pending |
+| DON-03 | Phase 12 | Pending |
+| DON-04 | Phase 12 | Pending |
+| DON-05 | Phase 12 | Pending |
+| DON-06 | Phase 12 | Pending |
+| PTICH-01 | Phase 13 | Pending |
+| PTICH-02 | Phase 13 | Pending |
+| PTICH-03 | Phase 13 | Pending |
+| PTICH-04 | Phase 13 | Pending |
+| PTICH-05 | Phase 13 | Pending |
+| PTICH-06 | Phase 13 | Pending |
+| PTICH-07 | Phase 13 | Pending |
+| PANEL-01 | Phase 14 | Pending |
+| PANEL-02 | Phase 14 | Pending |
+| PANEL-03 | Phase 14 | Pending |
+| IMP-01 | Phase 15 | Pending |
+| IMP-02 | Phase 15 | Pending |
+| IMP-03 | Phase 15 | Pending |
+| IMP-04 | Phase 15 | Pending |
+| IMP-05 | Phase 15 | Pending |
+| QUYEN-01 | Phase 16 | Pending |
+| QUYEN-02 | Phase 16 | Pending |
+| QUYEN-03 | Phase 16 | Pending |
+| QUYEN-04 | Phase 16 | Pending |
 
 **Coverage:**
 - v1 requirements: 80 total
 - Mapped to phases: 80
 - Unmapped: 0 ✓
 
+**Coverage v1.1:**
+- v1.1 requirements: 36 total (GON 7, NVPT 4, DON 6, PTICH 7, PANEL 3, IMP 5, QUYEN 4)
+- Mapped to phases 10–16: 36
+- Unmapped: 0 ✓
+- MRNG-02 hoãn (v2), không thuộc phase nào
+
 ---
 *Requirements defined: 2026-09-12*
 *Last updated: 2026-09-26 — thêm ANH-01..06 cho Phase 9 (Quản lý hình ảnh), 9 phases, 100% coverage*
+*Traceability v1.1 added: 2026-10-02 — Phase 10–16, 36/36 mapped*

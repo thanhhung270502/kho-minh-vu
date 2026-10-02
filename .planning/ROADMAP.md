@@ -28,6 +28,8 @@ sau cần dùng ngay.
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
+### v1.0
+
 - [ ] **Phase 1: Nền dữ liệu** - Schema 13 bảng, sổ cái bất biến, trigger tồn kho + giá vốn, RLS bốn vai trò, chuyển danh mục thật — kiểm chứng bằng SQL, chưa có giao diện
 - [ ] **Phase 2: Khung ứng dụng, Danh mục, Đối tác, Cài đặt** - Đăng nhập, danh mục 3.266 mã, đối tác NCC/khách chung danh sách, cấu hình dữ liệu nền
 - [ ] **Phase 3: Phiếu nhập** - Luồng chứng từ hoàn chỉnh đầu tiên: tạo, thêm dòng, ghi sổ, hủy đảo, in — giá vốn bình quân chạy thật
@@ -35,9 +37,21 @@ sau cần dùng ngay.
 - [ ] **Phase 5: Tồn kho & Thẻ kho** - Tồn theo mã × kho, thẻ kho có tồn lũy kế, đề xuất định mức và cảnh báo sắp hết
 - [x] **Phase 6: Kiểm kê & Go-live** - Kiểm kê (đếm điện thoại/máy tính/Excel), đặt tồn đầu kỳ, tra cứu lịch sử KiotViet — hệ thống sẵn sàng thay KiotViet
  (completed 2026-09-25)
-- [x] **Phase 7: Trang tổng quan** - Nhịp bán hôm nay/hôm qua, báo cáo xuất âm, tồn theo nhóm/công đoạn (chỉ quản lý) (completed 2026-09-27)
+- [x] **Phase 7: Trang tổng quan** - Nhịp bán hôm nay/hôm qua, báo cáo xuất âm, tồn theo nhóm/công đoạn (chỉ quản lý)
+ (completed 2026-09-27)
 - [ ] **Phase 8: Mobile & Chuyển kho** - Màn xuất và màn tồn dùng trên điện thoại, thêm dòng bằng ô tìm, chuyển kho
-- [x] **Phase 9: Quản lý hình ảnh** - Upload và hiển thị ảnh mã hàng lưu trên Google Drive qua Apps Script, lớp lưu trữ trừu tượng để sau chuyển cloud không đổi giao diện (completed 2026-09-26)
+- [x] **Phase 9: Quản lý hình ảnh** - Upload và hiển thị ảnh mã hàng lưu trên Google Drive qua Apps Script, lớp lưu trữ trừu tượng để sau chuyển cloud không đổi giao diện
+
+### v1.1 Phản hồi vận hành
+
+- [ ] **Phase 10: Dọn dẹp & điều hướng** - Sửa lỗi hiển thị mã/tên hàng, bỏ Lịch sử KiotViet và Giá bán, menu chia nhóm, Xuất kho → Hóa đơn (`/hoa-don`), gỡ `/ton-kho`
+- [ ] **Phase 11: Nhân viên phụ trách & danh mục nền** - Danh mục nhân viên phụ trách, đặt hàng chọn Nội bộ/Đối tác, thêm Nhóm hàng/ĐVT/Công đoạn ngay trong form mã hàng
+- [ ] **Phase 12: Luồng đơn hàng → hóa đơn** - Đơn tạm → Xác nhận (in phiếu lấy hàng) → Hoàn thành ghi sổ Hóa đơn atomic, 1 đơn = 1 hóa đơn, hủy đơn
+- [ ] **Phase 13: Phân tích tồn kho** - Trang `/phan-tich`: bán TB/ngày, dự kiến hết hàng, đề nghị nhập, tồn chậm, ngưỡng chỉnh được, duyệt định mức
+- [ ] **Phase 14: Panel chi tiết** - Bấm dòng Danh sách hàng hóa và Đối tác mở panel cạnh bảng, không rời trang
+- [ ] **Phase 15: Import danh mục v2** - File 4 cột, bảng chọn trường từng dòng, bỏ qua dòng lỗi và tải file lỗi, tồn kho ghi bằng phiếu điều chỉnh
+- [ ] **Phase 16: Chức vụ & quyền** - Chức vụ động với 9 quyền, chặn ở database bằng `co_quyen()` đọc DB, có hiệu lực ngay (rủi ro cao nhất, đụng RLS)
+ (completed 2026-09-26)
 
 ## Phase Details
 
@@ -152,8 +166,10 @@ Plans:
 
 **Wave 10** *(blocked on Wave 9 completion)*
 
-- [ ] 04-12-PLAN.md — duyệt đơn theo vai trò, in phiếu đi lấy hàng, nút tạo phiếu xuất từ đơn
-- [ ] 04-13-PLAN.md — ghi sổ phiếu xuất: lý do xuất âm bắt buộc, tóm tắt hậu quả, gợi ý gộp mã
+> **Ghi chú v1.1 (02/10/2026):** plan 04-12 và 04-13 bị **Phase 12** (Luồng đơn hàng → hóa đơn) thay thế — luồng duyệt đơn, nút "Tạo phiếu xuất từ đơn" và ghi sổ phiếu xuất được dựng lại theo mô hình Đơn tạm → Xác nhận → Hoàn thành. Không xóa hai plan; không thực thi tiếp theo thiết kế cũ.
+
+- [ ] 04-12-PLAN.md — duyệt đơn theo vai trò, in phiếu đi lấy hàng, nút tạo phiếu xuất từ đơn *(bị Phase 12 thay thế — giữ nguyên, không xóa)*
+- [ ] 04-13-PLAN.md — ghi sổ phiếu xuất: lý do xuất âm bắt buộc, tóm tắt hậu quả, gợi ý gộp mã *(bị Phase 12 thay thế — giữ nguyên, không xóa)*
 
 **Wave 11** *(blocked on Wave 10 completion)*
 
@@ -322,6 +338,8 @@ Plans:
   2. Màn tồn kho dùng được trên điện thoại
   3. Chuyển hàng giữa hai kho bằng một chứng từ `CHUYEN_KHO`
 
+> **Ghi chú v1.1 (02/10/2026):** TON-05 / màn tồn kho trên điện thoại phải xét lại trước khi lập kế hoạch — `/ton-kho` bị gỡ ở Phase 10 (GON-06); tồn xem qua Danh sách hàng hóa (Phase 14) và trang Phân tích (Phase 13). XUAT-03/XUAT-08 cũng phải đổi tên theo "Hóa đơn" (`/hoa-don`).
+
 **Plans**: TBD
 **UI hint**: yes
 
@@ -382,10 +400,132 @@ Plans:
 
 **UI hint**: yes
 
+## Milestone v1.1 — Phản hồi vận hành
+
+Nguồn: phản hồi vận hành 28/09–02/10/2026 (Notion Task board). v1.0 vẫn mở song song
+(Phase 4 còn checkpoint, Phase 8 chưa bắt đầu). Bảy chặng 10–16; chặng 10 và 11 độc lập
+nhau, chạy song song được. Migration kế tiếp là `0077`.
+
+### Phase 10: Dọn dẹp & điều hướng
+
+**Goal**: Giao diện chỉ còn những thứ Minh Vũ thật sự dùng: mã/tên hàng luôn hiện đủ, không còn Lịch sử KiotViet, Giá bán và Tồn kho cũ; menu chia nhóm đúng cách vận hành; "Xuất kho" thành "Hóa đơn".
+**Depends on**: Nothing (v1.0 code)
+**Requirements**: GON-01, GON-02, GON-03, GON-04, GON-05, GON-06, GON-07
+**Success Criteria** (what must be TRUE):
+
+  1. Mở phiếu nhập, đơn đặt hàng và Danh mục hàng hóa, mọi dòng đều hiện đủ mã hàng và tên hàng, kể cả dòng vừa thêm
+  2. Không còn trang, mục menu hay tab "Lịch sử KiotViet" ở đâu trên giao diện; dữ liệu lưu trữ trong database vẫn nguyên
+  3. Không màn nào hiện hoặc cho nhập Giá bán; Danh mục không hiện Giá vốn; phiếu nhập vẫn nhập được Đơn giá
+  4. Menu có nhóm Đơn hàng (Đặt hàng, Hóa đơn), Hàng hóa (Danh sách hàng hóa, Kiểm kho), cùng Nhập kho, Đối tác, Phân tích, Cài đặt — trên cả máy tính và thanh điện thoại
+  5. Vào `/xuat-kho` hoặc `/ton-kho` (kể cả bookmark cũ) được chuyển sang `/hoa-don` / Danh sách hàng hóa; ma trận quyền route phủ đúng bộ route mới và không route cũ nào trả 404/crash
+
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 11: Nhân viên phụ trách & danh mục nền
+
+**Goal**: Người nhận nội bộ là nhân viên phụ trách có tên đầy đủ, đặt hàng chọn đúng Nội bộ hoặc Đối tác, và nhóm hàng/ĐVT/công đoạn tạo được ngay trong form mã hàng.
+**Depends on**: Nothing (chạy song song với Phase 10). Migration `0077` là số trống kế tiếp.
+**Requirements**: NVPT-01, NVPT-02, NVPT-03, NVPT-04
+**Success Criteria** (what must be TRUE):
+
+  1. Quản lý thêm, sửa, ngừng dùng nhân viên phụ trách (tên viết tắt, tên đầy đủ) trong Cài đặt
+  2. Khi đặt hàng, công tắc Nội bộ/Đối tác mặc định Nội bộ; Nội bộ chọn từ nhân viên phụ trách, Đối tác chọn từ khách hàng hoặc cả hai; đổi công tắc thì tên đã chọn bị xóa
+  3. Đơn đặt hàng, hóa đơn, danh sách và phiếu in hiện tên đầy đủ nhân viên phụ trách; đơn nội bộ tạo trước đây vẫn còn người nhận (đã chuyển sang nhân viên tương ứng)
+  4. Nhóm hàng, Đơn vị tính, Công đoạn không còn ở Cài đặt; trong form mã hàng chọn giá trị có sẵn hoặc bấm "+ Thêm mới" tạo ngay tại chỗ
+
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 12: Luồng đơn hàng → hóa đơn
+
+**Goal**: Đơn đặt hàng đi một mạch Đơn tạm → Đã xác nhận → Hoàn thành, và Hoàn thành tự ghi sổ một Hóa đơn atomic — thay thế thiết kế duyệt đơn/tạo phiếu xuất của plan 04-12 và 04-13.
+**Depends on**: Phase 10 (route `/hoa-don`), Phase 11 (người nhận nhân viên phụ trách)
+**Requirements**: DON-01, DON-02, DON-03, DON-04, DON-05, DON-06
+
+> Đặt tên khóa quyền (Xác nhận, Hoàn thành, Sửa hóa đơn, Tạo đơn đặt hàng...) ngay từ chặng này
+> để Phase 16 chỉ phải nối vào, không phải đổi RPC.
+
+**Success Criteria** (what must be TRUE):
+
+  1. Bấm "Tạo đơn" mở ngay giao diện tạo đơn đầy đủ (người nhận + dòng hàng), lưu thành Đơn tạm
+  2. Xác nhận đơn tạm chuyển sang Đã xác nhận và in được phiếu lấy hàng
+  3. Hoàn thành đơn đã xác nhận tạo và ghi sổ một Hóa đơn trong một transaction: tồn giảm đúng, lỗi giữa chừng không để lại gì, xuất âm vẫn bắt buộc chọn lý do
+  4. Bấm Hoàn thành hai lần hoặc hai người cùng bấm không trừ tồn hai lần (database chặn: một đơn tối đa một hóa đơn)
+  5. Hủy được đơn Tạm hoặc Đã xác nhận mà không sinh hóa đơn và không đụng tồn; từ đơn mở được hóa đơn và ngược lại; hóa đơn tạo không cần đơn vẫn làm được
+
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 13: Phân tích tồn kho
+
+**Goal**: Quản lý biết mã nào sắp hết, mã nào đã hết mà vẫn có khách mua, cần nhập bao nhiêu, và hàng nào tồn chậm — thay cho trang Tồn kho.
+**Depends on**: Phase 12 (bán = hóa đơn hoàn thành, khách đặt tính từ đơn đã xác nhận)
+**Requirements**: PTICH-01, PTICH-02, PTICH-03, PTICH-04, PTICH-05, PTICH-06, PTICH-07
+**Success Criteria** (what must be TRUE):
+
+  1. Trang `/phan-tich` hiện 4 thẻ KPI (cần nhập trong X ngày, hết hàng vẫn có khách mua, tổng số lượng tồn, tồn không có tín hiệu bán); mỗi mã có bán TB/ngày theo kỳ 7/30/90 ngày, tồn khả dụng, số ngày còn hàng, ngày dự kiến hết và đề nghị nhập đúng công thức
+  2. Có biểu đồ Số ngày còn hàng (lọc theo loại hoàn thiện) và Nhịp bán hàng kèm % thay đổi giữa nửa sau và nửa đầu kỳ
+  3. Bảng Cần nhập hàng có 3 tab, tìm kiếm, lọc loại hoàn thiện và xuất được CSV đề nghị nhập
+  4. Xem được top 10 bán chạy, 15 nhóm bán nhiều nhất kèm số ngày tồn, tồn chậm; mã không bán hiện "Không bán" hoặc "Ngừng bán?" và không có đề nghị nhập
+  5. Chỉnh được ngưỡng đỏ, ngưỡng vàng và số ngày Y, lưu chung toàn hệ thống, màu đổi theo; duyệt định mức tồn tối thiểu làm được ngay trong trang này
+
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 14: Panel chi tiết
+
+**Goal**: Xem nhanh một mã hàng hoặc một đối tác ngay cạnh bảng, không rời trang, với cùng con số dự kiến hết hàng của trang Phân tích.
+**Depends on**: Phase 13 (dự kiến hết hàng)
+**Requirements**: PANEL-01, PANEL-02, PANEL-03
+**Success Criteria** (what must be TRUE):
+
+  1. Ở Danh sách hàng hóa, bấm một dòng mở panel cạnh bảng có ảnh, mã, tên, tồn kho, khách đặt, dự kiến hết hàng — số khớp trang Phân tích — và không rời trang
+  2. Bảng đối tác chỉ có 5 cột: Mã, Tên, Loại, Điện thoại, Tổng giao dịch
+  3. Bấm dòng đối tác mở panel với tab Thông tin (sửa được) và tab Lịch sử giao dịch
+  4. Vào `/doi-tac/[id]` cũ được chuyển về danh sách với panel đối tác đó mở sẵn
+
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 15: Import danh mục v2
+
+**Goal**: Nhập mã hàng từ file Excel 4 cột, chọn các trường còn lại ngay trên màn hình, dòng lỗi không chặn cả file, tồn kho vào sổ bằng chứng từ.
+**Depends on**: Phase 11 (thêm mới giá trị danh mục tại chỗ)
+**Requirements**: IMP-01, IMP-02, IMP-03, IMP-04, IMP-05
+**Success Criteria** (what must be TRUE):
+
+  1. Tải được file mẫu 4 cột (Mã hàng, Tên hàng, Tồn kho, Mô tả); tải file lên hiện bảng đủ cột theo thứ tự, cột từ file điền sẵn, cột còn lại chọn bằng dropdown/bật tắt cho từng dòng hoặc nhiều dòng cùng lúc
+  2. Dòng lỗi (trùng mã, trùng tên trong file hoặc với danh mục) bị bỏ qua, các dòng hợp lệ vẫn nhập; tải được file chỉ chứa dòng lỗi kèm lý do để sửa và import lại
+  3. Tồn kho trong file được ghi bằng một chứng từ DIEU_CHINH; thẻ kho mở được về chứng từ đó, không có dòng nào ghi thẳng vào tồn
+  4. Mã hàng có Loại hàng, Dòng xe (chọn được, thêm mới tại chỗ) và Được bán trực tiếp, sửa được trong form mã hàng
+
+**Plans**: TBD
+**UI hint**: yes
+
+### Phase 16: Chức vụ & quyền
+
+**Goal**: Quản lý tự tạo chức vụ và bật/tắt từng quyền; quyền được chặn ở database và có hiệu lực ngay, không chờ token mới.
+**Depends on**: Phase 12 (quyền Xác nhận/Hoàn thành/Sửa hóa đơn gắn vào RPC luồng đơn)
+**Requirements**: QUYEN-01, QUYEN-02, QUYEN-03, QUYEN-04
+
+> **Rủi ro cao nhất của milestone** — đụng RLS và mọi RPC đang chạy thật. Khóa quyền phải được đặt tên
+> từ Phase 12; làm sau cùng, giữ vai trò cũ chạy song song cho tới khi ma trận quyền xanh.
+
+**Success Criteria** (what must be TRUE):
+
+  1. Quản lý tạo/sửa chức vụ (mặc định Quản lý, Thủ kho, Nhân viên) và bật/tắt 9 quyền cho từng chức vụ: Xem dashboard, Nhập đơn hàng, Tạo đơn đặt hàng, Xác nhận, Hoàn thành, Sửa hóa đơn, Tạo mã hàng, Tạo nhân viên, Kiểm kho
+  2. Mỗi người dùng được gán một chức vụ; người dùng hiện có được chuyển sang chức vụ tương ứng với vai trò cũ, không ai mất quyền đang có
+  3. Tắt một quyền của chức vụ thì người đó bị database từ chối ngay (kể cả gọi thẳng API), không phải đăng nhập lại
+  4. Menu, nút và route ẩn/chặn đúng theo quyền chức vụ; ma trận kiểm thử quyền route chạy theo chức vụ và xanh
+
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9
+Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song song) và 10 → 16 (v1.1; 10 và 11 song song, 12 sau cả hai, 13 → 14, 15 sau 11, 16 sau cùng)
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -398,3 +538,10 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. Trang tổng quan | 9/9 | Complete    | 2026-09-27 |
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |
 | 9. Quản lý hình ảnh | 13/13 | Complete   | 2026-09-26 |
+| 10. Dọn dẹp & điều hướng | 0/TBD | Not started | - |
+| 11. Nhân viên phụ trách & danh mục nền | 0/TBD | Not started | - |
+| 12. Luồng đơn hàng → hóa đơn | 0/TBD | Not started | - |
+| 13. Phân tích tồn kho | 0/TBD | Not started | - |
+| 14. Panel chi tiết | 0/TBD | Not started | - |
+| 15. Import danh mục v2 | 0/TBD | Not started | - |
+| 16. Chức vụ & quyền | 0/TBD | Not started | - |

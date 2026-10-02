@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Phản hồi vận hành
-status: defining_requirements
+status: ready_to_plan
 stopped_at: Phase 7 complete (9/9) — ready to discuss Phase 8
 last_updated: 2026-09-27T09:05:51.514Z
 last_activity: 2026-10-02
 progress:
-  total_phases: 9
+  total_phases: 16
   completed_phases: 4
   total_plans: 101
   completed_plans: 68
@@ -21,14 +21,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-02)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Milestone v1.1 Phản hồi vận hành — đang định nghĩa requirements
+**Current focus:** Milestone v1.1 Phản hồi vận hành — roadmap xong (Phase 10–16), sẵn sàng lập kế hoạch
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 10 (and 11 in parallel) — ready to plan
 Plan: —
-Status: Defining requirements
-Last activity: 2026-10-02 — Milestone v1.1 started
+Status: Ready to plan
+Last activity: 2026-10-02 — Roadmap v1.1 created (Phase 10–16)
 
 ### Việc v1.0 còn treo (giữ nguyên, chạy song song)
 
