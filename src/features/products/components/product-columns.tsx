@@ -2,7 +2,6 @@
 
 import { Button, Space, Tag, Tooltip, Typography } from "antd";
 import type { TableColumnsType } from "antd";
-import Link from "next/link";
 
 import type { ProductFilter, SortField } from "../schemas/filter.schema";
 import type { Lookups, ProductRow } from "../types";
@@ -64,9 +63,8 @@ export function buildProductColumns({
       // Dưới md hiện tên ngay dưới mã; màn rộng vẫn dùng cột Tên riêng.
       render: (code: string, row) => (
         <>
-          <Link href={`/danh-muc/${row.id}`} className="font-mono">
-            {code}
-          </Link>
+          {/* Bấm dòng mở panel (PANEL-01) — mã không còn là link. */}
+          <span className="font-mono text-brand-500">{code}</span>
           <span className="mt-0.5 line-clamp-2 text-xs text-chu-phu md:hidden">
             {row.name}
           </span>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
+import { ProductForecast } from "@/features/analytics/components/product-forecast";
 import { ProductTable } from "@/features/products/components/product-table";
 import { LookupManagerButton } from "@/features/settings/components/lookup-manager-button";
 import { requirePermission } from "@/features/auth/api/current-user.server";
@@ -27,6 +28,8 @@ export default async function ProductsPage() {
           }}
           // Quyền khớp RLS danh mục phụ (0015/0040): quản lý + văn phòng.
           extraActions={hasPermission(user.role, "manage-lookups") ? <LookupManagerButton /> : null}
+          // Thủ kho không thấy khách đặt / dự kiến hết hàng (PANEL-01).
+          forecastSection={hasPermission(user.role, "view-analysis") ? <ProductForecast /> : null}
         />
       </Suspense>
     </>

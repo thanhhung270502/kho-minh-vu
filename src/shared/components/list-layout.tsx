@@ -8,17 +8,21 @@ type Props = {
   filterPanel: ReactNode;
   toolbar: ReactNode;
   activeFilterCount: number;
+  /** `<DetailPanel>` của dòng đang chọn (`?chon=`), null khi chưa chọn. */
+  detailPanel?: ReactNode;
   children: ReactNode;
 };
 
 /**
  * Bố cục page danh sách kiểu KiotViet: panel lọc cố định trái (>=992px),
- * bảng bên phải trong card trắng. Dưới 992px panel sập vào ngăn kéo đáy.
+ * bảng ở giữa trong card trắng, panel chi tiết bên phải khi có dòng đang chọn.
+ * Dưới 992px panel lọc sập vào ngăn kéo đáy.
  */
 export function ListLayout({
   filterPanel,
   toolbar,
   activeFilterCount,
+  detailPanel,
   children,
 }: Props) {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -46,6 +50,8 @@ export function ListLayout({
           {/* Bảng cuộn ngang TRONG khung này, không để cả page tràn ngang. */}
           <div className="overflow-x-auto">{children}</div>
         </section>
+
+        {detailPanel}
       </div>
 
       <Drawer

@@ -1,6 +1,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
+  fetchAnalysisRow,
   fetchAnalysisRows,
   fetchAnalysisSettings,
   fetchSalesDays,
@@ -15,6 +16,14 @@ export function useAnalysisRows(period: Period) {
     queryFn: () => fetchAnalysisRows(period),
     // Đổi kỳ không nháy trắng cả trang.
     placeholderData: keepPreviousData,
+  });
+}
+
+export function useAnalysisRow(period: Period, productId: string) {
+  return useQuery({
+    queryKey: analyticsKeys.row(period, productId),
+    queryFn: () => fetchAnalysisRow(period, productId),
+    enabled: productId !== "",
   });
 }
 

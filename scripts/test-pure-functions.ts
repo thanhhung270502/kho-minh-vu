@@ -11,6 +11,7 @@ import { suggestCustomerName, extractPhoneNumber } from "../src/features/partner
 import { buildErrorCsv, errorFileName } from "../src/features/products/lib/error-file";
 import { buildCsv } from "../src/shared/lib/csv";
 import { fetchAllPages } from "../src/shared/lib/fetch-all-pages";
+import { isInteractiveTarget, readSelectedId, withSelectedId } from "../src/shared/lib/selected-id";
 import { toAnalysisRow, type AnalysisRow, type AnalysisSettings } from "../src/features/analytics/types";
 import {
   buildReorderCsv,
@@ -976,6 +977,28 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
     null,
     "nửa đầu không bán: không chia cho 0",
   );
+}
+
+// --- Phase 14: panel chi tiết — mã đang chọn trên URL `?chon=` (PANEL-01..03) --
+{
+  const id = "11111111-1111-4111-8111-111111111111";
+  assert.equal(readSelectedId(new URLSearchParams(`chon=${id}`)), id);
+  assert.equal(readSelectedId(new URLSearchParams("chon=abc")), null, "không phải uuid: bỏ");
+  assert.equal(readSelectedId(new URLSearchParams("")), null);
+
+  const base = new URLSearchParams("q=op&nhom=x&trang=2");
+  const opened = withSelectedId(base, id);
+  assert.equal(opened.get("chon"), id);
+  assert.equal(opened.get("q"), "op", "giữ nguyên bộ lọc đang có");
+  assert.equal(opened.get("trang"), "2");
+  assert.equal(base.get("chon"), null, "không sửa URLSearchParams gốc");
+  assert.equal(withSelectedId(opened, null).get("chon"), null, "đóng panel: bỏ chon");
+
+  // Bấm vào ô chọn, ô sửa nhanh, ảnh, nút, link… KHÔNG mở panel.
+  const el = (hit: boolean) => ({ closest: () => (hit ? {} : null) });
+  assert.equal(isInteractiveTarget(el(true)), true, "bấm vào phần tử tương tác");
+  assert.equal(isInteractiveTarget(el(false)), false, "bấm vào chữ thường của dòng");
+  assert.equal(isInteractiveTarget(null), false);
 }
 
 async function kiemTaiTheoTrang() {

@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react
 
 import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
+import { readSelectedId, withSelectedId } from "@/shared/lib/selected-id";
 
 import { useLookups, useProducts } from "../hooks/useProducts";
 import {
@@ -20,6 +21,7 @@ import { BulkAssignBar } from "./bulk-assign-bar";
 import { buildProductColumns } from "./product-columns";
 import { ProductFilterPanel } from "./product-filter-panel";
 import { ProductModals } from "./product-modals";
+import { ProductPanel } from "./product-panel";
 import { ProductTableBody } from "./product-table-body";
 import { ProductToolbar } from "./product-toolbar";
 import { ReviewActions } from "./review-actions";
@@ -42,16 +44,20 @@ function hasActiveFilter(filter: ProductFilter): boolean {
 export function ProductTable({
   permissions,
   extraActions,
+  forecastSection,
 }: {
   permissions: CatalogPermissions;
   /** Nút do route ghép vào thanh công cụ — xem `danh-muc/page.tsx`. */
   extraActions?: ReactNode;
+  /** Dự báo trong panel chi tiết — route chỉ ghép khi có quyền xem phân tích. */
+  forecastSection?: ReactNode;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const filter = useMemo(() => readFilterFromUrl(searchParams), [searchParams]);
+  const selectedId = readSelectedId(searchParams);
   const products = useProducts(filter);
   const lookups = useLookups();
   const [drawer, setDrawer] = useState<{ open: boolean; id: string | null }>({
@@ -70,12 +76,23 @@ export function ProductTable({
     pageSize: 10,
   });
 
-  const navigate = useCallback(
-    (next: ProductFilter) => {
-      const query = writeFilterToUrl(next).toString();
+  const replaceUrl = useCallback(
+    (params: URLSearchParams) => {
+      const query = params.toString();
       router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
     },
     [router, pathname],
+  );
+
+  // Đổi bộ lọc/trang vẫn giữ panel đang mở.
+  const navigate = useCallback(
+    (next: ProductFilter) => replaceUrl(withSelectedId(writeFilterToUrl(next), selectedId)),
+    [replaceUrl, selectedId],
+  );
+
+  const selectProduct = useCallback(
+    (id: string | null) => replaceUrl(withSelectedId(searchParams, id)),
+    [replaceUrl, searchParams],
   );
 
   /**
@@ -147,6 +164,15 @@ export function ProductTable({
           />
         }
         activeFilterCount={countActiveFilters(filter)}
+        detailPanel={
+          selectedId ? (
+            <ProductPanel
+              productId={selectedId}
+              onClose={() => selectProduct(null)}
+              forecastSection={forecastSection}
+            />
+          ) : null
+        }
       >
         <ReviewAlert
           visible={filter.needsReview}
@@ -191,6 +217,8 @@ export function ProductTable({
               onSelectionChange={setSelected}
               loading={products.isFetching && !products.isPending}
               onFilterChange={changeFilter}
+              selectedId={selectedId}
+              onRowClick={selectProduct}
             />
           )}
         </QueryState>

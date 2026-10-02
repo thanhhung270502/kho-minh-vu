@@ -5,6 +5,7 @@ import type { TableColumnsType } from "antd";
 import type { SorterResult } from "antd/es/table/interface";
 
 import { SummaryRow } from "@/shared/components/summary-row";
+import { isInteractiveTarget } from "@/shared/lib/selected-id";
 
 import {
   SORT_FIELDS,
@@ -24,6 +25,8 @@ type Props = {
   onSelectionChange: (keys: string[]) => void;
   loading: boolean;
   onFilterChange: (filter: ProductFilter) => void;
+  selectedId: string | null;
+  onRowClick: (id: string) => void;
 };
 
 /** Bảng chính của /danh-muc + hàng tổng cộng + ghi chú tồn 0 toàn trang. */
@@ -37,6 +40,8 @@ export function ProductTableBody({
   onSelectionChange,
   loading,
   onFilterChange,
+  selectedId,
+  onRowClick,
 }: Props) {
   const allStockIsZero =
     rows.length > 0 && rows.every((row) => Number(row.totalStock) === 0);
@@ -77,6 +82,14 @@ export function ProductTableBody({
             : undefined
         }
         dataSource={rows}
+        rowClassName={(row) =>
+          row.id === selectedId ? "cursor-pointer [&>td]:bg-brand-50" : "cursor-pointer"
+        }
+        onRow={(row) => ({
+          onClick: (event) => {
+            if (!isInteractiveTarget(event.target as Element)) onRowClick(row.id);
+          },
+        })}
         loading={loading}
         scroll={{ x: 1100 }}
         onChange={(pagination, _filters, sorter) =>
