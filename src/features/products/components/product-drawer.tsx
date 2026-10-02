@@ -12,16 +12,16 @@ import {
   Skeleton,
   Switch,
 } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { FormDrawer } from "@/shared/components/form-drawer";
 import { explainError, isPostgrestError } from "@/shared/lib/errors";
-import { filterByLabel } from "@/shared/lib/text";
 
 import { useLookups, useProductDetail, useSaveProduct } from "../hooks/useProducts";
 import { productSchema, type ProductFormValues } from "../schemas/product.schema";
 import type { Lookups, ProductInput } from "../types";
+import { LookupSelect } from "./lookup-select";
 
 type Props = {
   id: string | null;
@@ -76,15 +76,29 @@ export function ProductDrawer({ id, open, onClose }: Props) {
     defaultValues: EMPTY_FORM,
   });
 
+  // Nạp giá trị ban đầu MỘT lần mỗi lần mở. Danh mục (lookups.data) tải lại khi
+  // người dùng "+ Thêm mới" ĐVT/nhóm/công đoạn ngay trong form — reset theo nó
+  // sẽ xóa sạch mọi ô đang gõ dở và bỏ luôn giá trị vừa tạo.
+  const initializedFor = useRef<string | null>(null);
+
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      initializedFor.current = null;
+      return;
+    }
+    const key = id ?? "new";
+    if (initializedFor.current === key) return;
 
     if (!id) {
+      // Chờ danh mục về để chọn sẵn ĐVT "CAI" + công đoạn "MUA_NGOAI".
+      if (!lookups.data) return;
       reset(defaultsForNewProduct(lookups.data));
+      initializedFor.current = key;
       return;
     }
 
     if (product) {
+      initializedFor.current = key;
       reset({
         code: product.code,
         name: product.name,
@@ -218,17 +232,17 @@ export function ProductDrawer({ id, open, onClose }: Props) {
                 name="categoryId"
                 control={control}
                 render={({ field }) => (
-                  <Select
-                    {...field}
+                  <LookupSelect
+                    table="nhom_hang"
+                    label="nhóm hàng"
                     allowClear
-                    showSearch
-                    filterOption={filterByLabel}
                     placeholder="Chưa phân nhóm"
+                    value={field.value}
+                    onChange={field.onChange}
                     options={(data?.categories ?? []).map((category) => ({
                       value: category.id,
                       label: category.name,
                     }))}
-                    onChange={(value) => field.onChange(value ?? null)}
                   />
                 )}
               />
@@ -257,10 +271,11 @@ export function ProductDrawer({ id, open, onClose }: Props) {
                 name="unitId"
                 control={control}
                 render={({ field }) => (
-                  <Select
-                    {...field}
-                    showSearch
-                    filterOption={filterByLabel}
+                  <LookupSelect
+                    table="don_vi_tinh"
+                    label="đơn vị tính"
+                    value={field.value}
+                    onChange={(id) => field.onChange(id ?? "")}
                     options={(data?.units ?? []).map((unit) => ({
                       value: unit.id,
                       label: unit.name,
@@ -282,10 +297,11 @@ export function ProductDrawer({ id, open, onClose }: Props) {
                 name="stageId"
                 control={control}
                 render={({ field }) => (
-                  <Select
-                    {...field}
-                    showSearch
-                    filterOption={filterByLabel}
+                  <LookupSelect
+                    table="cong_doan"
+                    label="công đoạn"
+                    value={field.value}
+                    onChange={(id) => field.onChange(id ?? "")}
                     options={(data?.stages ?? []).map((stage) => ({
                       value: stage.id,
                       label: stage.name,

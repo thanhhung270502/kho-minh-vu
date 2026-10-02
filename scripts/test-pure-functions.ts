@@ -12,6 +12,11 @@ import { buildErrorCsv, errorFileName } from "../src/features/products/lib/error
 import { toProductInsert, type ProductInput } from "../src/features/products/types";
 import { TEMPLATE_COLUMNS } from "../src/features/products/lib/excel-template";
 import {
+  quickLookupSchema,
+  suggestLookupCode,
+  toQuickLookupInsert,
+} from "../src/features/products/schemas/quick-lookup.schema";
+import {
   DEFAULT_RECEIPT_FILTER,
   countActiveReceiptFilters,
   readReceiptFilterFromUrl,
@@ -181,6 +186,25 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
   }
   assert.equal(firstTabForRole("van_phong"), "/cai-dat/nhan-vien-phu-trach");
   assert.equal(firstTabForRole("quan_ly"), "/cai-dat/nguoi-dung");
+}
+
+// Phase 11 (NVPT-04): "+ Thêm mới" nhóm/ĐVT/công đoạn trong form mã hàng.
+// Mã gợi ý từ tên (không dấu, viết hoa, gạch dưới), đúng khuôn mã của 0040.
+{
+  assert.equal(suggestLookupCode("Xi mạ bóng"), "XI_MA_BONG");
+  assert.equal(suggestLookupCode("  Đèn / pha (LED) "), "DEN_PHA_LED");
+  assert.equal(suggestLookupCode("Phụ tùng thay thế chính hãng Honda"), "PHU_TUNG_THAY_THE_CH", "cắt còn 20 ký tự");
+  assert.equal(suggestLookupCode("!!!"), "");
+
+  const ok = quickLookupSchema.safeParse({ code: " ab-1 ", name: "  Cặp " });
+  assert.ok(ok.success);
+  assert.deepEqual(ok.success ? toQuickLookupInsert(ok.data) : null, { ma: "AB-1", ten: "Cặp" });
+  const bad = quickLookupSchema.safeParse({ code: "có dấu", name: "" });
+  assert.deepEqual(
+    bad.success ? [] : bad.error.issues.map((i) => i.path[0]).sort(),
+    ["code", "name"],
+    "mã sai khuôn và tên rỗng báo đúng ô",
+  );
 }
 
 // filterNavItems (06-16): menu "Kiểm kê" cho mọi vai trò.
