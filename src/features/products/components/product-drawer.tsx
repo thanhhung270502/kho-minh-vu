@@ -22,6 +22,7 @@ import { useLookups, useProductDetail, useSaveProduct } from "../hooks/useProduc
 import { productSchema, type ProductFormValues } from "../schemas/product.schema";
 import type { Lookups, ProductInput } from "../types";
 import { LookupSelect } from "./lookup-select";
+import { ProductClassificationFields } from "./product-classification-fields";
 
 type Props = {
   id: string | null;
@@ -42,6 +43,10 @@ const EMPTY_FORM: ProductFormValues = {
   barcode: null,
   note: null,
   isActive: true,
+  productTypeId: null,
+  vehicleLineId: null,
+  directSale: true,
+  shelfLocation: null,
 };
 
 /** Mã mới mặc định ĐVT "CAI" + công đoạn "MUA_NGOAI" — đúng đa số hàng thương mại. */
@@ -112,6 +117,10 @@ export function ProductDrawer({ id, open, onClose }: Props) {
         barcode: product.barcode ?? null,
         note: product.note ?? null,
         isActive: product.isActive,
+        productTypeId: product.productTypeId,
+        vehicleLineId: product.vehicleLineId,
+        directSale: product.directSale,
+        shelfLocation: product.shelfLocation,
       });
     }
   }, [open, id, product, lookups.data, reset]);
@@ -130,6 +139,10 @@ export function ProductDrawer({ id, open, onClose }: Props) {
       barcode: values.barcode,
       note: values.note,
       isActive: values.isActive,
+      productTypeId: values.productTypeId,
+      vehicleLineId: values.vehicleLineId,
+      directSale: values.directSale,
+      shelfLocation: values.shelfLocation,
     };
 
     try {
@@ -139,11 +152,13 @@ export function ProductDrawer({ id, open, onClose }: Props) {
       );
 
       if (isNew && createAnother) {
-        // Giữ nhóm / ĐVT / công đoạn / kho để nhập loạt mã cùng loại cho nhanh.
+        // Giữ nhóm / loại / dòng xe / ĐVT / công đoạn / kho để nhập loạt mã cùng loại cho nhanh.
         const kept = getValues();
         reset({
           ...EMPTY_FORM,
           categoryId: kept.categoryId,
+          productTypeId: kept.productTypeId,
+          vehicleLineId: kept.vehicleLineId,
           unitId: kept.unitId,
           stageId: kept.stageId,
           defaultWarehouseId: kept.defaultWarehouseId,
@@ -381,6 +396,8 @@ export function ProductDrawer({ id, open, onClose }: Props) {
               />
             </Form.Item>
           </div>
+
+          <ProductClassificationFields control={control} errors={errors} lookups={data} />
 
           <Form.Item label="Barcode">
             <Controller

@@ -3,7 +3,13 @@ import type { PostgrestError } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Database } from "@/types/database.types";
 
-export type LookupTableName = "kho" | "nhom_hang" | "don_vi_tinh" | "cong_doan";
+export type LookupTableName =
+  | "kho"
+  | "nhom_hang"
+  | "don_vi_tinh"
+  | "cong_doan"
+  | "loai_hang"
+  | "dong_xe";
 
 /**
  * Một dòng của bất kỳ bảng danh mục phụ nào. Các cột chỉ có ở một bảng để
@@ -74,6 +80,26 @@ export const LOOKUP_TABLE_CONFIG: Record<LookupTableName, LookupTableConfig> = {
     hasAddress: false,
     hasStatus: false,
   },
+  loai_hang: {
+    label: "loại hàng",
+    title: "Loại hàng",
+    cot: "id, ma, ten, updated_at",
+    deletable: true,
+    hasParent: false,
+    hasColor: false,
+    hasAddress: false,
+    hasStatus: false,
+  },
+  dong_xe: {
+    label: "dòng xe",
+    title: "Dòng xe",
+    cot: "id, ma, ten, updated_at",
+    deletable: true,
+    hasParent: false,
+    hasColor: false,
+    hasAddress: false,
+    hasStatus: false,
+  },
 };
 
 /**
@@ -86,6 +112,8 @@ export const SYSTEM_CODES: Record<LookupTableName, readonly string[]> = {
   nhom_hang: [],
   don_vi_tinh: ["CAI"],
   cong_doan: ["EP", "SON", "CARBON", "XI_MA", "NANO", "MUA_NGOAI"],
+  loai_hang: [],
+  dong_xe: [],
 };
 
 export function isSystemCode(table: LookupTableName, ma: string): boolean {
@@ -102,7 +130,7 @@ export type LookupValues = {
 };
 
 /**
- * Bốn bảng có shape khác nhau nên supabase-js không suy được kiểu chung cho
+ * Các bảng có shape khác nhau nên supabase-js không suy được kiểu chung cho
  * `.from(table)` — nó chốt vào bảng đầu của union và báo lỗi cột. Khai một mặt
  * cắt hẹp đúng bốn thao tác đang dùng, ép kiểu CHỈ ở đây. Cột đọc ra luôn liệt
  * kê tường minh trong `LOOKUP_TABLE_CONFIG.cot`, kết quả thu về

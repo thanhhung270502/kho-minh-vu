@@ -169,10 +169,18 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
     code: "ABC", name: "Tên", categoryId: null, unitId: "u", stageId: "s",
     conversion: 1, defaultWarehouseId: null, minStock: 0, maxStock: null,
     barcode: null, note: null, isActive: true,
-  } as ProductInput;
+    productTypeId: "11111111-1111-4111-8111-111111111111",
+    vehicleLineId: "22222222-2222-4222-8222-222222222222",
+    directSale: false, shelfLocation: "A-01",
+  } satisfies ProductInput;
   const payload = toProductInsert(input);
   assert.ok(!("gia_ban" in payload), "payload ghi mã hàng không có gia_ban");
   assert.ok(!("gia_von" in payload), "payload ghi mã hàng không có gia_von");
+  // Phase 15 (IMP-05): ba trường mới + vị trí kệ đi đúng cột.
+  assert.equal(payload.loai_hang_id, input.productTypeId);
+  assert.equal(payload.dong_xe_id, input.vehicleLineId);
+  assert.equal(payload.duoc_ban_truc_tiep, false);
+  assert.equal(payload.vi_tri_ke, "A-01");
   const keys = TEMPLATE_COLUMNS.map((c) => c.key as string);
   assert.ok(!keys.includes("gia_ban") && !keys.includes("gia_von"), "mẫu Excel không có cột giá");
 }

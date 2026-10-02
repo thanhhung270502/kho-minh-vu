@@ -30,7 +30,7 @@ export function suggestLookupCode(name: string): string {
     .replace(/_+$/, "");
 }
 
-/** Khóa jsonb/cột database của nhom_hang / don_vi_tinh / cong_doan. */
+/** Khóa jsonb/cột database của các bảng danh mục phụ (ma, ten). */
 export function toQuickLookupInsert(values: QuickLookupValues): { ma: string; ten: string } {
   return { ma: values.code, ten: values.name };
 }

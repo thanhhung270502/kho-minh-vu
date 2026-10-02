@@ -37,6 +37,15 @@ export const productSchema = z
       .nullable()
       .transform((value) => value || null),
     isActive: z.boolean(),
+    productTypeId: z.string().uuid().nullable(),
+    vehicleLineId: z.string().uuid().nullable(),
+    directSale: z.boolean(),
+    shelfLocation: z
+      .string()
+      .trim()
+      .max(50, "Vị trí tối đa 50 ký tự")
+      .nullable()
+      .transform((value) => value || null),
   })
   .refine((value) => value.maxStock === null || value.maxStock >= value.minStock, {
     path: ["maxStock"],

@@ -35,6 +35,10 @@ const FIELD_LABELS: Record<string, string> = {
   dang_kinh_doanh: "Đang kinh doanh",
   barcode: "Barcode",
   ghi_chu: "Ghi chú",
+  loai_hang_id: "Loại hàng",
+  dong_xe_id: "Dòng xe",
+  duoc_ban_truc_tiep: "Được bán trực tiếp",
+  vi_tri_ke: "Vị trí kệ",
   can_ra_dvt: "Cờ ĐVT mâu thuẫn",
   da_xac_nhan_ra: "Đã xác nhận rà",
 };
@@ -53,7 +57,11 @@ function buildRenderValue(lookups: Lookups | undefined) {
             ? lookups.stages
             : field === "kho_mac_dinh_id"
               ? lookups.warehouses
-              : null;
+              : field === "loai_hang_id"
+                ? lookups.productTypes
+                : field === "dong_xe_id"
+                  ? lookups.vehicleLines
+                  : null;
 
     return items?.find((item) => item.id === value)?.name;
   };
@@ -121,6 +129,8 @@ export function ProductDetailView({
                   label: "Nhóm hàng",
                   children: product.categoryName ?? "—",
                 },
+                { key: "type", label: "Loại hàng", children: product.productTypeName ?? "—" },
+                { key: "vehicle", label: "Dòng xe", children: product.vehicleLineName ?? "—" },
                 { key: "unit", label: "Đơn vị tính", children: product.unitName },
                 {
                   key: "stage",
@@ -150,6 +160,7 @@ export function ProductDetailView({
                       : formatNumber(product.maxStock)
                   }`,
                 },
+                { key: "shelf", label: "Vị trí kệ", children: product.shelfLocation ?? "—" },
                 { key: "barcode", label: "Barcode", children: product.barcode ?? "—" },
                 {
                   key: "status",
@@ -161,6 +172,7 @@ export function ProductDetailView({
                       ) : (
                         <Tag>Ngừng kinh doanh</Tag>
                       )}
+                      {product.directSale ? null : <Tag>Không bán trực tiếp</Tag>}
                       {product.needsReview ? <Tag color="orange">Cần rà</Tag> : null}
                     </span>
                   ),

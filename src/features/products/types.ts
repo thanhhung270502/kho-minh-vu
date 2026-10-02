@@ -49,6 +49,11 @@ export type ProductDetail = ProductRow & {
   shelfLocation: string | null;
   defaultWarehouseName: string | null;
   createdAt: string;
+  productTypeId: string | null;
+  productTypeName: string | null;
+  vehicleLineId: string | null;
+  vehicleLineName: string | null;
+  directSale: boolean;
 };
 
 export type StockCardRow = {
@@ -90,6 +95,8 @@ export type Lookups = {
   units: LookupItem[];
   stages: StageLookupItem[];
   warehouses: LookupItem[];
+  productTypes: LookupItem[];
+  vehicleLines: LookupItem[];
 };
 
 export type WarehouseStock = {
@@ -122,6 +129,10 @@ export type ProductInput = {
   barcode: string | null;
   note: string | null;
   isActive: boolean;
+  productTypeId: string | null;
+  vehicleLineId: string | null;
+  directSale: boolean;
+  shelfLocation: string | null;
 };
 
 /** Payload gửi thẳng vào `.insert()` / `.update()` của supabase-js. */
@@ -141,6 +152,10 @@ export function toProductInsert(input: ProductInput): ProductInsert {
     barcode: input.barcode,
     ghi_chu: input.note,
     dang_kinh_doanh: input.isActive,
+    loai_hang_id: input.productTypeId,
+    dong_xe_id: input.vehicleLineId,
+    duoc_ban_truc_tiep: input.directSale,
+    vi_tri_ke: input.shelfLocation,
   };
 }
 
@@ -206,6 +221,11 @@ export function toProductDetail(row: ProductDetailDb): ProductDetail {
     shelfLocation: row.vi_tri_ke,
     defaultWarehouseName: row.ten_kho_mac_dinh,
     createdAt: row.created_at,
+    productTypeId: row.loai_hang_id,
+    productTypeName: row.ten_loai_hang,
+    vehicleLineId: row.dong_xe_id,
+    vehicleLineName: row.ten_dong_xe,
+    directSale: row.duoc_ban_truc_tiep,
   };
 }
 
