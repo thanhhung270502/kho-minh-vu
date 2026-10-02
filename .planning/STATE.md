@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Phản hồi vận hành
 status: ready_to_plan
-stopped_at: Phase 7 complete (9/9) — ready to discuss Phase 8
-last_updated: 2026-09-27T09:05:51.514Z
+stopped_at: Phase 10 complete (quickplan, 4 commit) — Phase 11 kế tiếp
+last_updated: 2026-10-02T04:10:00.000Z
 last_activity: 2026-10-02
 progress:
   total_phases: 16
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 101
   completed_plans: 68
   percent: 50
@@ -21,14 +21,33 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-02)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Milestone v1.1 Phản hồi vận hành — roadmap xong (Phase 10–16), sẵn sàng lập kế hoạch
+**Current focus:** Milestone v1.1 Phản hồi vận hành — Phase 10 xong, kế tiếp Phase 11 (Nhân viên phụ trách & danh mục nền)
 
 ## Current Position
 
-Phase: 10 (and 11 in parallel) — ready to plan
+Phase: 11 — ready to plan (Phase 10 complete)
 Plan: —
 Status: Ready to plan
-Last activity: 2026-10-02 — Roadmap v1.1 created (Phase 10–16)
+Last activity: 2026-10-02 — Phase 10 Dọn dẹp & điều hướng hoàn thành
+
+### Phase 10 — đã xong (02/10/2026)
+
+Làm theo `/spartan:quickplan`, không qua `/gsd:execute-phase` nên **không có thư mục
+`.planning/phases/10-*` hay PLAN/SUMMARY**. Code nằm trên branch `feature/phase-10-don-dep`
+(chưa push, chưa merge vào `main`): `643550f`, `d43643f`, `514ddd4`, `a5b72ed`, `255080d`.
+GON-01..07 xong; kiểm trên Supabase local (`npm run check`, test hàm thuần, test đọc Excel,
+ma trận quyền route 165/165).
+
+Hệ quả cho các phase sau:
+- Route xuất đổi `/xuat-kho` → `/hoa-don` (redirect trong `next.config.ts`). Phase 12 dựng trên `/hoa-don`.
+- `/ton-kho` và `/ton-kho/nap-tam` đã gỡ; `/ton-kho/dinh-muc` tạm giữ, vào bằng nút "Định mức"
+  ở Danh sách hàng hóa → Phase 13 chuyển vào `/phan-tich`, thêm mục "Phân tích" vào menu.
+- Quyền UI `view-cost`, `edit-sale-price`, `load-provisional-stock` đã bỏ khỏi `permissions.ts`.
+- **Nạp tồn tạm từ KiotViet không còn giao diện** — ghi chú v1.0 bên dưới ("nạp tồn tạm là
+  việc vận hành bắt buộc trước go-live") phải chốt lại: tồn đầu kỳ đi bằng kiểm kê (KKE-04 /
+  DLIEU-06), hoặc chạy RPC `nap_ton_tam` bằng script nếu vẫn cần.
+
+Kế tiếp: `/gsd:discuss-phase 11` (hoặc `/gsd:plan-phase 11`). Migration kế tiếp là `0077`.
 
 ### Việc v1.0 còn treo (giữ nguyên, chạy song song)
 
@@ -693,7 +712,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-09-27T09:05:51.009Z
-Stopped at: Phase 7 verified - UAT 9 đạt, 1 bỏ qua
-Last activity: 2026-09-28 - Completed quick task 260928-t0j: seed, focus ô mã, ten_danh_muc
-Resume file: .planning/phases/07-trang-tong-quan/07-UAT.md
+Last session: 2026-10-02T04:10:00.000Z
+Stopped at: Phase 10 complete — branch feature/phase-10-don-dep chờ PR
+Last activity: 2026-10-02 - Phase 10 Dọn dẹp & điều hướng (quickplan, GON-01..07)
+Resume file: .planning/ROADMAP.md (Phase 11)
