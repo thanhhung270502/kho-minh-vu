@@ -139,6 +139,7 @@ export function OrderLineTable({ orderId, lines, editable }: Props) {
           codeInputRef={codeInput}
           quantityInputRef={quantityInput}
           quantity={draft.quantity}
+          selectedProduct={draft.product}
           pending={addLine.isPending}
           onSelectProduct={(product) => {
             setDraft((current) => ({ ...current, product }));

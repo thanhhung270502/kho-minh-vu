@@ -14,6 +14,7 @@ type Props = {
   codeInputRef: Ref<RefSelectProps>;
   quantityInputRef: Ref<InputNumberRef>;
   quantity: number | null;
+  selectedProduct: ProductSearchResult | null;
   pending: boolean;
   onSelectProduct: (product: ProductSearchResult) => void;
   onQuantityChange: (value: number | null) => void;
@@ -30,6 +31,7 @@ export function OrderLineEntryRow({
   codeInputRef,
   quantityInputRef,
   quantity,
+  selectedProduct,
   pending,
   onSelectProduct,
   onQuantityChange,
@@ -42,6 +44,7 @@ export function OrderLineEntryRow({
         <ProductSearchInput
           inputRef={codeInputRef}
           disabled={pending}
+          selected={selectedProduct}
           onSelect={onSelectProduct}
         />
       </div>

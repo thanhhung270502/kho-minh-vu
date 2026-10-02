@@ -16,6 +16,7 @@ type Props = {
   codeInputRef: Ref<RefSelectProps>;
   quantityInputRef: Ref<InputNumberRef>;
   quantity: number | null;
+  selectedProduct: ProductSearchResult | null;
   warehouseId: string | null;
   warehouses: Warehouse[];
   hasMultipleWarehouses: boolean;
@@ -36,6 +37,7 @@ export function IssueLineEntryRow({
   codeInputRef,
   quantityInputRef,
   quantity,
+  selectedProduct,
   warehouseId,
   warehouses,
   hasMultipleWarehouses,
@@ -52,6 +54,7 @@ export function IssueLineEntryRow({
         <ProductSearchInput
           inputRef={codeInputRef}
           disabled={pending}
+          selected={selectedProduct}
           onSelect={onSelectProduct}
         />
       </div>

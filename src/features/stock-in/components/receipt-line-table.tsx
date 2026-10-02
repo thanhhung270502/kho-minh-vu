@@ -270,6 +270,7 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
             <ProductSearchInput
               inputRef={codeInput}
               disabled={addLine.isPending}
+              selected={draft.product}
               onSelect={(product) => {
                 setDraft((current) => ({
                   ...current,

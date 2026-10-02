@@ -15,6 +15,12 @@ export type { ProductSearchResult };
 
 type Props = {
   onSelect: (product: ProductSearchResult) => void;
+  /**
+   * Mã vừa chọn, đang chờ nhập số lượng. Ô phải hiện nó ra — nếu không người
+   * nhập không biết Enter đã chọn mã nào (lỗi 02/10: ô trắng trơn sau Enter).
+   * Cha xóa về null sau khi lưu dòng, ô trống lại cho mã kế tiếp.
+   */
+  selected?: ProductSearchResult | null;
   inputRef?: Ref<RefSelectProps>;
   disabled?: boolean;
 };
@@ -23,7 +29,7 @@ type Props = {
  * Ô gõ mã hàng của bảng dòng. Chọn xong tự xóa ô để gõ mã kế tiếp — luồng nhập
  * liệu là gõ liên tục, không phải chọn từng cái rồi bấm chuột (D-07).
  */
-export function ProductSearchInput({ onSelect, inputRef, disabled }: Props) {
+export function ProductSearchInput({ onSelect, selected, inputRef, disabled }: Props) {
   const [query, setQuery] = useState("");
 
   const results = useQuery({
@@ -70,7 +76,14 @@ export function ProductSearchInput({ onSelect, inputRef, disabled }: Props) {
       <Select
         ref={inputRef}
         showSearch
-        value={null}
+        // labelInValue: hiện "mã — tên" của mã đã chọn mà không cần nó nằm
+        // trong `options` (kết quả tìm đã bị xóa cùng ô tìm).
+        labelInValue
+        value={
+          selected
+            ? { value: selected.id, label: `${selected.code} — ${selected.name}` }
+            : null
+        }
         // `searchValue` phải controlled thì mới xóa được ô sau khi TỰ chọn bằng
         // Enter (đường onChange của antd không chạy trong nhánh đó).
         searchValue={query}
@@ -105,8 +118,10 @@ export function ProductSearchInput({ onSelect, inputRef, disabled }: Props) {
             </div>
           );
         }}
-        onChange={(id) => {
-          const product = (results.data ?? []).find((item) => item.id === id);
+        onChange={(picked) => {
+          const product = (results.data ?? []).find(
+            (item) => item.id === picked?.value,
+          );
           if (product) onSelect(product);
           setQuery("");
         }}

@@ -171,6 +171,7 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
           codeInputRef={codeInput}
           quantityInputRef={quantityInput}
           quantity={draft.quantity}
+          selectedProduct={draft.product}
           warehouseId={draft.warehouseId}
           warehouses={warehouses}
           hasMultipleWarehouses={hasMultipleWarehouses}
