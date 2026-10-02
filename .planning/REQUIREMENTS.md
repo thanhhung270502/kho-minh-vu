@@ -148,12 +148,12 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 
 ### Luồng đơn hàng → hóa đơn (DON)
 
-- [ ] **DON-01**: Bấm "Tạo đơn" mở ngay giao diện tạo đơn đầy đủ (người nhận + dòng hàng), lưu là Đơn tạm
-- [ ] **DON-02**: Xác nhận đơn tạm chuyển đơn sang Đã xác nhận và in được phiếu lấy hàng
-- [ ] **DON-03**: Hoàn thành đơn đã xác nhận tạo và ghi sổ một Hóa đơn trong một transaction — tồn giảm đúng, lỗi giữa chừng không để lại gì; xuất âm vẫn bắt buộc chọn lý do
-- [ ] **DON-04**: Mỗi đơn chỉ sinh tối đa một hóa đơn; bấm Hoàn thành hai lần hoặc hai người cùng bấm không trừ tồn hai lần (chặn ở database)
-- [ ] **DON-05**: Hủy được đơn chưa hoàn thành (Đơn tạm hoặc Đã xác nhận), đơn hủy không tạo hóa đơn và không đụng tồn
-- [ ] **DON-06**: Từ đơn mở được hóa đơn của nó và ngược lại; hóa đơn tạo không cần đơn vẫn làm được như phiếu xuất cũ
+- [x] **DON-01**: Bấm "Tạo đơn" mở ngay giao diện tạo đơn đầy đủ (người nhận + dòng hàng), lưu là Đơn tạm *(làm bằng trang `/dat-hang/moi`: chọn người nhận là đơn tạm được tạo, sang gõ dòng ngay — đã chốt 02/10)*
+- [x] **DON-02**: Xác nhận đơn tạm chuyển đơn sang Đã xác nhận và in được phiếu lấy hàng
+- [x] **DON-03**: Hoàn thành đơn đã xác nhận tạo và ghi sổ một Hóa đơn trong một transaction — tồn giảm đúng, lỗi giữa chừng không để lại gì; xuất âm vẫn bắt buộc chọn lý do
+- [x] **DON-04**: Mỗi đơn chỉ sinh tối đa một hóa đơn; bấm Hoàn thành hai lần hoặc hai người cùng bấm không trừ tồn hai lần (chặn ở database)
+- [x] **DON-05**: Hủy được đơn chưa hoàn thành (Đơn tạm hoặc Đã xác nhận), đơn hủy không tạo hóa đơn và không đụng tồn
+- [x] **DON-06**: Từ đơn mở được hóa đơn của nó và ngược lại; hóa đơn tạo không cần đơn vẫn làm được như phiếu xuất cũ
 
 ### Phân tích tồn kho (PTICH)
 
@@ -321,12 +321,12 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 | NVPT-02 | Phase 11 | Complete |
 | NVPT-03 | Phase 11 | Complete |
 | NVPT-04 | Phase 11 | Complete |
-| DON-01 | Phase 12 | Pending |
-| DON-02 | Phase 12 | Pending |
-| DON-03 | Phase 12 | Pending |
-| DON-04 | Phase 12 | Pending |
-| DON-05 | Phase 12 | Pending |
-| DON-06 | Phase 12 | Pending |
+| DON-01 | Phase 12 | Complete |
+| DON-02 | Phase 12 | Complete |
+| DON-03 | Phase 12 | Complete |
+| DON-04 | Phase 12 | Complete |
+| DON-05 | Phase 12 | Complete |
+| DON-06 | Phase 12 | Complete |
 | PTICH-01 | Phase 13 | Pending |
 | PTICH-02 | Phase 13 | Pending |
 | PTICH-03 | Phase 13 | Pending |

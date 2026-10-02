@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Phản hồi vận hành
 status: ready_to_plan
-stopped_at: Phase 11 complete (quickplan, 4 commit) — Phase 12 kế tiếp
-last_updated: 2026-10-02T06:00:00.000Z
+stopped_at: Phase 12 complete (quickplan, 4 task) — Phase 13 hoặc 15 kế tiếp
+last_updated: 2026-10-02T08:00:00.000Z
 last_activity: 2026-10-02
 progress:
   total_phases: 16
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 101
   completed_plans: 68
   percent: 50
@@ -21,14 +21,37 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-02)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Milestone v1.1 Phản hồi vận hành — Phase 10, 11 xong, kế tiếp Phase 12 (Luồng đơn hàng → hóa đơn)
+**Current focus:** Milestone v1.1 Phản hồi vận hành — Phase 10, 11, 12 xong, kế tiếp Phase 13 (Phân tích tồn kho) hoặc 15 (Import v2)
 
 ## Current Position
 
-Phase: 12 — ready to plan (Phase 10, 11 complete; Phase 15 cũng đã đủ điều kiện)
+Phase: 13 — ready to plan (Phase 10, 11, 12 complete; Phase 15 cũng đã đủ điều kiện)
 Plan: —
 Status: Ready to plan
-Last activity: 2026-10-02 — Phase 11 Nhân viên phụ trách & danh mục nền hoàn thành
+Last activity: 2026-10-02 — Phase 12 Luồng đơn hàng → hóa đơn hoàn thành
+
+### Phase 12 — đã xong (02/10/2026)
+
+Làm theo `/spartan:quickplan`, không có thư mục `.planning/phases/12-*`. Branch
+`feature/phase-12-hoa-don` **tách từ `feature/phase-11-nhan-vien`** (chưa push, chưa merge — merge
+10 → 11 → 12 theo thứ tự): `e8c1457`, `a32f71d`, `b0e62b5`, `855592d` (+ `ea25386` CLAUDE.md bẫy 11).
+DON-01..06 xong; kiểm trên Supabase local (`npm run check`, pgTAP 43 file / 672 test, test hàm thuần,
+test đọc Excel, ma trận quyền route 185/185, `npm run test:concurrency` 3 phần) và chạy trọn luồng
+trên trình duyệt.
+
+Hệ quả cho các phase sau:
+- "Bán" = hóa đơn (XUAT) HOAN_THANH; đơn HOAN_THANH có đúng một hóa đơn chưa hủy (unique index
+  `uq_chung_tu_hoa_don_cua_don`). Phase 13 tính ADU / khách đặt dựa trên mô hình này: khách đặt
+  = dòng của đơn DA_XAC_NHAN (và TAM nếu muốn), không còn "đã xuất một phần".
+- Client không gọi thẳng `tao_phieu_xuat_tu_don` nữa — chỉ qua `hoan_thanh_don`.
+- Hàm quyền mỏng `hoan_thanh_duoc_don()` / `huy_duoc_don()` → Phase 16 thay ruột bằng quyền theo
+  chức vụ (Hoàn thành, Hủy). `xac_nhan_don` / `mo_khoa_don` / `dong_don_som` vẫn kiểm vai trò
+  trực tiếp — Phase 16 nên gói tương tự.
+- **`0078` mới áp ở local.** Đẩy lên cloud: xử lý lệch migration từ 0072 trước; 0078 dừng nếu dữ
+  liệu thật có đơn mang 2 hóa đơn chưa hủy (hủy hóa đơn thừa bằng tay). Phiếu nháp cũ gắn đơn bị
+  migration hủy.
+- Lỗ hổng memory "đơn → phiếu xuất" (01/10) đã đóng.
+- Còn treo: ghi chú Notion "Không hiện" dưới mục tạo đơn — chờ người dùng làm rõ.
 
 ### Phase 11 — đã xong (02/10/2026)
 
@@ -68,8 +91,8 @@ Hệ quả cho các phase sau:
   việc vận hành bắt buộc trước go-live") phải chốt lại: tồn đầu kỳ đi bằng kiểm kê (KKE-04 /
   DLIEU-06), hoặc chạy RPC `nap_ton_tam` bằng script nếu vẫn cần.
 
-Kế tiếp (sau Phase 11): Phase 12 — `/spartan:quickplan phase 12` hoặc `/gsd:discuss-phase 12`.
-Còn chờ làm rõ ghi chú "Không hiện" dưới mục tạo đơn (Notion). Migration kế tiếp là `0078`.
+Kế tiếp (sau Phase 12): Phase 13 (Phân tích tồn kho) hoặc Phase 15 (Import danh mục v2) —
+`/spartan:quickplan phase 13`. Migration kế tiếp là `0079`.
 
 ### Việc v1.0 còn treo (giữ nguyên, chạy song song)
 
@@ -734,7 +757,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-02T06:00:00.000Z
-Stopped at: Phase 11 complete — branch feature/phase-11-nhan-vien (xếp chồng trên phase-10) chờ PR
-Last activity: 2026-10-02 - Phase 11 Nhân viên phụ trách & danh mục nền (quickplan, NVPT-01..04)
-Resume file: .planning/ROADMAP.md (Phase 12)
+Last session: 2026-10-02T08:00:00.000Z
+Stopped at: Phase 12 complete — branch feature/phase-12-hoa-don (xếp chồng 10 → 11 → 12) chờ PR
+Last activity: 2026-10-02 - Phase 12 Luồng đơn hàng → hóa đơn (quickplan, DON-01..06)
+Resume file: .planning/ROADMAP.md (Phase 13)

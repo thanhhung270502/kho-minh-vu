@@ -46,7 +46,7 @@ sau cần dùng ngay.
 
 - [x] **Phase 10: Dọn dẹp & điều hướng** - Sửa lỗi hiển thị mã/tên hàng, bỏ Lịch sử KiotViet và Giá bán, menu chia nhóm, Xuất kho → Hóa đơn (`/hoa-don`), gỡ `/ton-kho`
 - [x] **Phase 11: Nhân viên phụ trách & danh mục nền** - Danh mục nhân viên phụ trách, đặt hàng chọn Nội bộ/Đối tác, thêm Nhóm hàng/ĐVT/Công đoạn ngay trong form mã hàng
-- [ ] **Phase 12: Luồng đơn hàng → hóa đơn** - Đơn tạm → Xác nhận (in phiếu lấy hàng) → Hoàn thành ghi sổ Hóa đơn atomic, 1 đơn = 1 hóa đơn, hủy đơn
+- [x] **Phase 12: Luồng đơn hàng → hóa đơn** - Đơn tạm → Xác nhận (in phiếu lấy hàng) → Hoàn thành ghi sổ Hóa đơn atomic, 1 đơn = 1 hóa đơn, hủy đơn
 - [ ] **Phase 13: Phân tích tồn kho** - Trang `/phan-tich`: bán TB/ngày, dự kiến hết hàng, đề nghị nhập, tồn chậm, ngưỡng chỉnh được, duyệt định mức
 - [ ] **Phase 14: Panel chi tiết** - Bấm dòng Danh sách hàng hóa và Đối tác mở panel cạnh bảng, không rời trang
 - [ ] **Phase 15: Import danh mục v2** - File 4 cột, bảng chọn trường từng dòng, bỏ qua dòng lỗi và tải file lỗi, tồn kho ghi bằng phiếu điều chỉnh
@@ -166,7 +166,7 @@ Plans:
 
 **Wave 10** *(blocked on Wave 9 completion)*
 
-> **Ghi chú v1.1 (02/10/2026):** plan 04-12 và 04-13 bị **Phase 12** (Luồng đơn hàng → hóa đơn) thay thế — luồng duyệt đơn, nút "Tạo phiếu xuất từ đơn" và ghi sổ phiếu xuất được dựng lại theo mô hình Đơn tạm → Xác nhận → Hoàn thành. Không xóa hai plan; không thực thi tiếp theo thiết kế cũ.
+> **Ghi chú v1.1 (02/10/2026):** plan 04-12 và 04-13 bị **Phase 12** (Luồng đơn hàng → hóa đơn, đã xong 02/10) thay thế — luồng duyệt đơn, nút "Tạo phiếu xuất từ đơn" và ghi sổ phiếu xuất được dựng lại theo mô hình Đơn tạm → Xác nhận → Hoàn thành. Không xóa hai plan; không thực thi tiếp theo thiết kế cũ.
 
 - [ ] 04-12-PLAN.md — duyệt đơn theo vai trò, in phiếu đi lấy hàng, nút tạo phiếu xuất từ đơn *(bị Phase 12 thay thế — giữ nguyên, không xóa)*
 - [ ] 04-13-PLAN.md — ghi sổ phiếu xuất: lý do xuất âm bắt buộc, tóm tắt hậu quả, gợi ý gộp mã *(bị Phase 12 thay thế — giữ nguyên, không xóa)*
@@ -473,7 +473,18 @@ nhau, chạy song song được. Migration kế tiếp là `0077`.
   4. Bấm Hoàn thành hai lần hoặc hai người cùng bấm không trừ tồn hai lần (database chặn: một đơn tối đa một hóa đơn)
   5. Hủy được đơn Tạm hoặc Đã xác nhận mà không sinh hóa đơn và không đụng tồn; từ đơn mở được hóa đơn và ngược lại; hóa đơn tạo không cần đơn vẫn làm được
 
-**Plans**: TBD
+**Plans**: 4 task — làm theo quickplan (không qua `/gsd:execute-phase`), branch `feature/phase-12-hoa-don` (tách từ `feature/phase-11-nhan-vien`)
+- [x] Migration `0078`: `hoan_thanh_don` tạo + ghi sổ hóa đơn một transaction, unique index một đơn một hóa đơn, `huy_don`, hủy hóa đơn đưa đơn về Đã xác nhận (`e8c1457`)
+- [x] Nút Hoàn thành (hỏi lý do khi xuất âm), Hủy đơn, link đơn ↔ hóa đơn, bỏ nút "Tạo hóa đơn" rời (`a32f71d`)
+- [x] Bấm Tạo đơn vào thẳng `/dat-hang/moi` (`b0e62b5`)
+- [x] `test-concurrency.sh` PHẦN 3: hai người cùng hoàn thành một đơn (`855592d`)
+
+> **Hoàn thành 02/10/2026.** Kiểm trên Supabase local: `npm run check`, pgTAP 43 file / 672 test, test hàm thuần,
+> test đọc Excel, ma trận quyền route 185/185, `npm run test:concurrency` (3 phần) đều xanh; chạy trọn luồng trên
+> trình duyệt. Quyết định khi làm: Hoàn thành = quản lý + văn phòng, Hủy đơn = chỉ quản lý (hàm quyền
+> `hoan_thanh_duoc_don` / `huy_duoc_don` chờ Phase 16 thay ruột); hủy hóa đơn → đơn về Đã xác nhận; tạo đơn
+> qua trang `/dat-hang/moi` (chọn người nhận là tạo đơn tạm). Ghi chú Notion "Không hiện" chưa làm — chờ làm rõ.
+> `0078` mới áp ở local; dừng nếu dữ liệu thật có đơn mang 2 hóa đơn chưa hủy.
 **UI hint**: yes
 
 ### Phase 13: Phân tích tồn kho
@@ -561,7 +572,7 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 | 9. Quản lý hình ảnh | 13/13 | Complete   | 2026-09-26 |
 | 10. Dọn dẹp & điều hướng | 4/4 | Complete | 2026-10-02 |
 | 11. Nhân viên phụ trách & danh mục nền | 4/4 | Complete | 2026-10-02 |
-| 12. Luồng đơn hàng → hóa đơn | 0/TBD | Not started | - |
+| 12. Luồng đơn hàng → hóa đơn | 4/4 | Complete | 2026-10-02 |
 | 13. Phân tích tồn kho | 0/TBD | Not started | - |
 | 14. Panel chi tiết | 0/TBD | Not started | - |
 | 15. Import danh mục v2 | 0/TBD | Not started | - |
