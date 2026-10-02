@@ -982,6 +982,69 @@ export type Database = {
         }
         Relationships: []
       }
+      ma_hoa: {
+        Row: {
+          created_at: string
+          id: string
+          loai: string
+          ma: string
+          ma_hang: string | null
+          ten: string
+          thu_tu: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          loai: string
+          ma: string
+          ma_hang?: string | null
+          ten?: string
+          thu_tu?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          loai?: string
+          ma?: string
+          ma_hang?: string | null
+          ten?: string
+          thu_tu?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ma_hoa_dong_bo: {
+        Row: {
+          bat_dau: string
+          id: string
+          loi: string | null
+          nguoi_chay_id: string | null
+          nguon: string
+          so_muc: Json
+          trang_thai: string
+        }
+        Insert: {
+          bat_dau?: string
+          id?: string
+          loi?: string | null
+          nguoi_chay_id?: string | null
+          nguon: string
+          so_muc?: Json
+          trang_thai: string
+        }
+        Update: {
+          bat_dau?: string
+          id?: string
+          loi?: string | null
+          nguoi_chay_id?: string | null
+          nguon?: string
+          so_muc?: Json
+          trang_thai?: string
+        }
+        Relationships: []
+      }
       nguoi_dung: {
         Row: {
           chuc_vu_id: string
@@ -1858,6 +1921,10 @@ export type Database = {
           ton_theo_bang: number
           ton_theo_so_cai: number
         }[]
+      }
+      dong_bo_ma_hoa: {
+        Args: { p_ban_ghi: Json; p_nguon: string }
+        Returns: Json
       }
       dong_chung_tu: {
         Args: { p_id: string }
