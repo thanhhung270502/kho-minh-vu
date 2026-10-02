@@ -25,6 +25,8 @@ const password = z
 export const userProfileSchema = z
   .object({
     fullName: z.string().trim().min(2, "Nhập họ tên"),
+    jobTitleId: z.string({ message: "Chọn chức vụ" }).uuid("Chọn chức vụ"),
+    /** Phạm vi của chức vụ đang chọn — form tự điền, chỉ dùng để kiểm luật kho. */
     role: z.enum(ROLES),
     warehouseIds: z.array(z.string().uuid()).default([]),
     /** Công tắc quyền theo người (D-13/D-14) — không thuộc PERMISSION_MATRIX. */

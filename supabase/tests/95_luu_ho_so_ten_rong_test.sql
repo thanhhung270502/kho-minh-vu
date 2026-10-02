@@ -1,5 +1,5 @@
 -- =============================================================================
--- 0072 — luu_ho_so_nguoi_dung với tài khoản chưa có tên đăng nhập.
+-- 0072 — luu_nguoi_dung với tài khoản chưa có tên đăng nhập.
 --
 -- Lỗi gốc (checklist 28/09, bước 9.6): Server Action gửi "" cho tài khoản có
 -- ten_dang_nhap NULL → vi phạm ck_ten_dang_nhap, không sửa được kho/vai trò.
@@ -44,8 +44,8 @@ update public.nguoi_dung set ten_dang_nhap = null where id = (select nd from t_n
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 
 select lives_ok(
-  $$ select public.luu_ho_so_nguoi_dung(
-       (select nd from t_ns), 'Thủ kho K1 + K2', '', 'thu_kho',
+  $$ select public.luu_nguoi_dung(
+       (select nd from t_ns), 'Thủ kho K1 + K2', '', (select id from public.chuc_vu where ma = 'THU_KHO'),
        array[(select k1 from t_ns)], false) $$,
   'Chuỗi rỗng cho tên đăng nhập không còn vi phạm ck_ten_dang_nhap'
 );
@@ -64,20 +64,20 @@ select is(
 
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 select lives_ok(
-  $$ select public.luu_ho_so_nguoi_dung(
-       (select nd from t_ns), 'Thủ kho K1 + K2', '   ', 'thu_kho',
+  $$ select public.luu_nguoi_dung(
+       (select nd from t_ns), 'Thủ kho K1 + K2', '   ', (select id from public.chuc_vu where ma = 'THU_KHO'),
        array[(select k1 from t_ns)], false) $$,
   'Toàn khoảng trắng cũng coi là chưa đặt'
 );
 select lives_ok(
-  $$ select public.luu_ho_so_nguoi_dung(
-       (select nd from t_ns), 'Thủ kho K1 + K2', 'thukho2', 'thu_kho',
+  $$ select public.luu_nguoi_dung(
+       (select nd from t_ns), 'Thủ kho K1 + K2', 'thukho2', (select id from public.chuc_vu where ma = 'THU_KHO'),
        array[(select k1 from t_ns)], false) $$,
   'Tên đăng nhập hợp lệ vẫn lưu như cũ'
 );
 select throws_ok(
-  $$ select public.luu_ho_so_nguoi_dung(
-       (select nd from t_ns), 'Thủ kho K1 + K2', '', 'thu_kho', array[]::uuid[], false) $$,
+  $$ select public.luu_nguoi_dung(
+       (select nd from t_ns), 'Thủ kho K1 + K2', '', (select id from public.chuc_vu where ma = 'THU_KHO'), array[]::uuid[], false) $$,
   '23514',
   'Thủ kho phải được gán ít nhất một kho',
   'Ràng buộc nghiệp vụ của RPC giữ nguyên câu tiếng Việt'

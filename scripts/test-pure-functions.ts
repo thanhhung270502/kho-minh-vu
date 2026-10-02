@@ -13,6 +13,9 @@ import { buildCsv } from "../src/shared/lib/csv";
 import { fetchAllPages } from "../src/shared/lib/fetch-all-pages";
 import { isInteractiveTarget, readSelectedId, withSelectedId } from "../src/shared/lib/selected-id";
 import { docTypeLabel, toPartnerRow } from "../src/features/partners/types";
+import { BUSINESS_PERMISSIONS, SCOPE_LABELS } from "../src/shared/lib/permissions";
+import { jobTitleSchema, titleCodeFromName } from "../src/features/settings/schemas/job-title.schema";
+import { editUserFormSchema } from "../src/features/settings/schemas/user.schema";
 import { duplicateProblemsInFile } from "../src/features/products/lib/new-product-file";
 import {
   CATALOG_REASONS,
@@ -1092,6 +1095,31 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
     dvt_id: cai, nhom_hang_id: null, loai_hang_id: null, dong_xe_id: lh,
     dang_kinh_doanh: true, duoc_ban_truc_tiep: true, vi_tri_ke: "K-1",
   });
+}
+
+// --- Phase 16: chức vụ & quyền (QUYEN-01/02) ------------------------------
+{
+  // Khóa = giá trị CHECK của chuc_vu_quyen.quyen (0082) — đúng 9, đúng thứ tự yêu cầu.
+  assert.deepEqual(
+    BUSINESS_PERMISSIONS.map((p) => p.key),
+    ["xem_dashboard", "nhap_kho", "tao_don", "xac_nhan_don", "hoan_thanh_don",
+     "sua_hoa_don", "tao_ma_hang", "tao_nhan_vien", "kiem_kho"],
+  );
+  assert.equal(BUSINESS_PERMISSIONS[1].label, "Nhập đơn hàng");
+  assert.equal(Object.keys(SCOPE_LABELS).length, 4, "4 phạm vi = 4 vai trò cũ");
+
+  assert.equal(titleCodeFromName("  Kế toán kho "), "KE_TOAN_KHO");
+  assert.equal(titleCodeFromName("Đội giao-hàng 2"), "DOI_GIAO_HANG_2");
+  const ok = jobTitleSchema.safeParse({ name: "  Kế toán ", scope: "van_phong" });
+  assert.ok(ok.success && ok.data.name === "Kế toán");
+  assert.ok(!jobTitleSchema.safeParse({ name: " ", scope: "van_phong" }).success, "tên bắt buộc");
+
+  // Form người dùng chọn CHỨC VỤ; phạm vi thủ kho vẫn bắt buộc có kho.
+  const title = "11111111-1111-4111-8111-111111111111";
+  assert.ok(!editUserFormSchema.safeParse({ fullName: "An", role: "van_phong", warehouseIds: [] }).success, "thiếu chức vụ");
+  assert.ok(editUserFormSchema.safeParse({ fullName: "An", jobTitleId: title, role: "van_phong", warehouseIds: [] }).success);
+  const noWarehouse = editUserFormSchema.safeParse({ fullName: "An", jobTitleId: title, role: "thu_kho", warehouseIds: [] });
+  assert.ok(!noWarehouse.success && noWarehouse.error.issues[0].path[0] === "warehouseIds");
 }
 
 async function kiemTaiTheoTrang() {

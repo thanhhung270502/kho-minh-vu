@@ -276,7 +276,7 @@ select ok(
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 select throws_ok(
   format(
-    $$select public.luu_ho_so_nguoi_dung(%L::uuid, 'Thủ kho K1', 'thukho1', 'thu_kho', '{}'::uuid[], false)$$,
+    $$select public.luu_nguoi_dung(%L::uuid, 'Thủ kho K1', 'thukho1', (select id from public.chuc_vu where ma = 'THU_KHO'), '{}'::uuid[], false)$$,
     (select thukho1 from t_id)
   ),
   '42501', null,
@@ -288,7 +288,7 @@ select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 select throws_ok(
   format(
-    $$select public.luu_ho_so_nguoi_dung(%L::uuid, 'Thủ kho K1', 'thukho1', 'thu_kho', '{}'::uuid[], false)$$,
+    $$select public.luu_nguoi_dung(%L::uuid, 'Thủ kho K1', 'thukho1', (select id from public.chuc_vu where ma = 'THU_KHO'), '{}'::uuid[], false)$$,
     (select thukho1 from t_id)
   ),
   '23514', null,

@@ -2158,6 +2158,7 @@ export type Database = {
         Returns: boolean
       }
       la_chung_tu_kiem_ke: { Args: { p_chung_tu_id: string }; Returns: boolean }
+      la_phieu_nhap: { Args: { p_chung_tu_id: string }; Returns: boolean }
       lay_khoa_anh: {
         Args: { p_id: string }
         Returns: {
@@ -2220,19 +2221,6 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
-      }
-      luu_ho_so_nguoi_dung: {
-        Args: {
-          p_duyet_kiem_ke?: boolean
-          p_ho_ten: string
-          p_id: string
-          p_kho_ids: string[]
-          p_phai_doi_mat_khau: boolean
-          p_ten_dang_nhap: string
-          p_vai_tro: Database["public"]["Enums"]["vai_tro"]
-          p_xem_lich_su_kiotviet?: boolean
-        }
-        Returns: undefined
       }
       luu_nguoi_dung: {
         Args: {

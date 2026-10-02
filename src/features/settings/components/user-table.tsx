@@ -79,10 +79,10 @@ export function UserTable({ currentUserId }: { currentUserId: string }) {
       render: (v: string | null) => <span className="font-mono">{v ?? "—"}</span>,
     },
     {
-      title: "Vai trò",
-      dataIndex: "vai_tro",
-      width: 120,
-      render: (v: UserRow["vai_tro"]) => ROLE_LABELS[v],
+      title: "Chức vụ",
+      key: "chuc_vu",
+      width: 140,
+      render: (_, d) => d.chuc_vu?.ten ?? ROLE_LABELS[d.vai_tro],
     },
     {
       title: "Quyền riêng",

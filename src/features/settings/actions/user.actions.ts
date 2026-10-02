@@ -76,7 +76,7 @@ async function readProfile(session: AdminSession, id: string) {
   const { data, error } = await session.supabase
     .from("nguoi_dung")
     .select(
-      "id, ho_ten, ten_dang_nhap, vai_tro, dang_hoat_dong, phai_doi_mat_khau, duyet_kiem_ke",
+      "id, ho_ten, ten_dang_nhap, vai_tro, chuc_vu_id, dang_hoat_dong, phai_doi_mat_khau, duyet_kiem_ke",
     )
     .eq("id", id)
     .maybeSingle();
@@ -103,8 +103,15 @@ function firstIssue(issues: { path: PropertyKey[]; message: string }[]): ActionR
   };
 }
 
+/** Phạm vi của chức vụ đọc từ DB — không tin `role` client gửi lên. */
+async function scopeOfJobTitle({ supabase }: AdminSession, jobTitleId: string) {
+  const { data, error } = await supabase.from("chuc_vu").select("pham_vi").eq("id", jobTitleId).maybeSingle();
+  if (error) throw error;
+  return data?.pham_vi ?? null;
+}
+
 /**
- * luu_ho_so_nguoi_dung soạn sẵn câu tiếng Việt cho ca nghiệp vụ 23514 ("Thủ kho
+ * luu_nguoi_dung soạn sẵn câu tiếng Việt cho ca nghiệp vụ 23514 ("Thủ kho
  * phải được gán ít nhất một kho") — hiện nguyên văn. explainError() dịch 23514
  * thành câu chung về mã hàng/số lượng, sai ngữ cảnh ở màn tài khoản.
  */
@@ -149,11 +156,11 @@ export async function createUser(input: CreateUserInput): Promise<ActionResult> 
     };
   }
 
-  const { error: profileError } = await session.supabase.rpc("luu_ho_so_nguoi_dung", {
+  const { error: profileError } = await session.supabase.rpc("luu_nguoi_dung", {
     p_id: created.user.id,
     p_ho_ten: values.fullName,
     p_ten_dang_nhap: values.username,
-    p_vai_tro: values.role,
+    p_chuc_vu_id: values.jobTitleId,
     p_kho_ids: values.warehouseIds,
     p_phai_doi_mat_khau: true,
     p_duyet_kiem_ke: values.approveStocktake,
@@ -182,21 +189,24 @@ export async function updateUser(
   const previous = await readProfile(session, values.id);
   if (!previous) return { ok: false, message: "Không tìm thấy tài khoản này." };
 
-  const losingManagerRole = previous.vai_tro === "quan_ly" && values.role !== "quan_ly";
+  const nextScope = await scopeOfJobTitle(session, values.jobTitleId);
+  if (!nextScope) return { ok: false, field: "jobTitleId", message: "Chức vụ không còn tồn tại. Chọn lại chức vụ." };
+
+  const losingManagerRole = previous.vai_tro === "quan_ly" && nextScope !== "quan_ly";
   if (losingManagerRole && !(await hasOtherManager(session, values.id))) {
     return {
       ok: false,
-      field: "role",
+      field: "jobTitleId",
       message: "Phải còn ít nhất một quản lý đang hoạt động.",
     };
   }
 
-  const { error } = await session.supabase.rpc("luu_ho_so_nguoi_dung", {
+  const { error } = await session.supabase.rpc("luu_nguoi_dung", {
     p_id: values.id,
     p_ho_ten: values.fullName,
     // "" = chưa đặt tên đăng nhập (tài khoản từ seed) — RPC ghi thành NULL (0072).
     p_ten_dang_nhap: previous.ten_dang_nhap ?? "",
-    p_vai_tro: values.role,
+    p_chuc_vu_id: values.jobTitleId,
     p_kho_ids: values.warehouseIds,
     p_phai_doi_mat_khau: previous.phai_doi_mat_khau,
     p_duyet_kiem_ke: values.approveStocktake,
@@ -208,7 +218,9 @@ export async function updateUser(
     previous.warehouseIds.length !== values.warehouseIds.length ||
     previous.warehouseIds.some((k) => !values.warehouseIds.includes(k));
 
-  if (previous.vai_tro !== values.role || warehousesChanged) await revokeSessions(values.id);
+  // Đổi chức vụ cùng phạm vi chỉ đổi 9 quyền — có hiệu lực ngay, không cần thu
+  // hồi phiên. Đổi phạm vi / kho thì claim JWT cũ lệch bảng: thu hồi để ép làm mới.
+  if (previous.vai_tro !== nextScope || warehousesChanged) await revokeSessions(values.id);
 
   revalidatePath("/cai-dat/nguoi-dung");
   return { ok: true };
@@ -270,11 +282,11 @@ export async function resetPassword(
   // Truyền lại giá trị CŨ của công tắc duyệt kiểm kê (không để null — RPC coi null
   // là "giữ nguyên", nhưng ghi rõ ý định ở đây rõ ràng hơn là dựa vào hành vi ngầm).
   // Cờ xem lịch sử KiotViet không truyền: màn đó đã gỡ (Phase 10), RPC giữ nguyên.
-  const { error } = await session.supabase.rpc("luu_ho_so_nguoi_dung", {
+  const { error } = await session.supabase.rpc("luu_nguoi_dung", {
     p_id: values.id,
     p_ho_ten: previous.ho_ten,
     p_ten_dang_nhap: previous.ten_dang_nhap ?? "",
-    p_vai_tro: previous.vai_tro,
+    p_chuc_vu_id: previous.chuc_vu_id,
     p_kho_ids: previous.warehouseIds,
     p_phai_doi_mat_khau: true,
     p_duyet_kiem_ke: previous.duyet_kiem_ke,

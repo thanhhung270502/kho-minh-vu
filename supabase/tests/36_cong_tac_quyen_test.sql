@@ -153,7 +153,7 @@ select is(
   'A5b: không có phiên → duyet_duoc_kiem_ke() = false'
 );
 
--- ─── A6 (14): quan_ly gọi luu_ho_so_nguoi_dung 8 tham số, bật p_xem_lich_su_kiotviet cho thukho1
+-- ─── A6 (14): quan_ly gọi luu_nguoi_dung 8 tham số, bật p_xem_lich_su_kiotviet cho thukho1
 create temp table t_thukho1 as
 select nd.id, nd.ho_ten, nd.ten_dang_nhap, nd.vai_tro, nd.phai_doi_mat_khau,
        coalesce((select array_agg(kho_id) from public.nguoi_dung_kho where nguoi_dung_id = nd.id), '{}'::uuid[]) as kho_ids
@@ -164,11 +164,11 @@ grant select on t_thukho1 to authenticated;
 
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 
-select public.luu_ho_so_nguoi_dung(
+select public.luu_nguoi_dung(
   p_id := (select id from t_thukho1),
   p_ho_ten := (select ho_ten from t_thukho1),
   p_ten_dang_nhap := (select ten_dang_nhap from t_thukho1),
-  p_vai_tro := (select vai_tro from t_thukho1),
+  p_chuc_vu_id := (select id from public.chuc_vu where ma = 'THU_KHO'),
   p_kho_ids := (select kho_ids from t_thukho1),
   p_phai_doi_mat_khau := (select phai_doi_mat_khau from t_thukho1),
   p_xem_lich_su_kiotviet := true
@@ -178,17 +178,17 @@ select pg_temp.dang_xuat();
 select is(
   (select xem_lich_su_kiotviet from public.nguoi_dung where id = (select id from t_thukho1)),
   true,
-  'A6: luu_ho_so_nguoi_dung(8 tham số đặt tên) bật p_xem_lich_su_kiotviet cho thukho1 → cột đổi thành true'
+  'A6: luu_nguoi_dung(8 tham số đặt tên) bật p_xem_lich_su_kiotviet cho thukho1 → cột đổi thành true'
 );
 
 -- ─── A7 (15-16): gọi 6 tham số cũ (app đang chạy) → hai cột GIỮ NGUYÊN, không reset về false
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 
-select public.luu_ho_so_nguoi_dung(
+select public.luu_nguoi_dung(
   p_id := (select id from t_thukho1),
   p_ho_ten := (select ho_ten from t_thukho1),
   p_ten_dang_nhap := (select ten_dang_nhap from t_thukho1),
-  p_vai_tro := (select vai_tro from t_thukho1),
+  p_chuc_vu_id := (select id from public.chuc_vu where ma = 'THU_KHO'),
   p_kho_ids := (select kho_ids from t_thukho1),
   p_phai_doi_mat_khau := (select phai_doi_mat_khau from t_thukho1)
 );
@@ -205,17 +205,17 @@ select is(
   'A7b: gọi 6 tham số đặt tên như app cũ KHÔNG reset duyet_kiem_ke về false (đã bật ở A3)'
 );
 
--- ─── A8 (17): van_phong gọi luu_ho_so_nguoi_dung → 42501 ────────────────────
+-- ─── A8 (17): van_phong gọi luu_nguoi_dung → 42501 ────────────────────
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 
 select throws_ok(
-  $$ select public.luu_ho_so_nguoi_dung(
+  $$ select public.luu_nguoi_dung(
        p_id := extensions.uuid_generate_v4(), p_ho_ten := 'Test', p_ten_dang_nhap := 'test_a8_zqx',
-       p_vai_tro := 'thu_kho'::public.vai_tro, p_kho_ids := '{}'::uuid[],
+       p_chuc_vu_id := (select id from public.chuc_vu where ma = 'THU_KHO'), p_kho_ids := '{}'::uuid[],
        p_phai_doi_mat_khau := false
      ) $$,
   '42501', null,
-  'A8: van_phong không được phép gọi luu_ho_so_nguoi_dung (chỉ quan_ly)'
+  'A8: van_phong không được phép gọi luu_nguoi_dung (chỉ quan_ly)'
 );
 
 -- ─── A9 (18-19): anon không có quyền execute cả hai helper ──────────────────

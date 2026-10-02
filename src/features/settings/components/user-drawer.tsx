@@ -1,14 +1,14 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Alert, App, Checkbox, Form, Input, Radio, Typography } from "antd";
+import { Alert, App, Checkbox, Form, Input, Typography } from "antd";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useTransition } from "react";
 import { Controller, useForm, useWatch, type Resolver } from "react-hook-form";
 
 import { FormDrawer } from "@/shared/components/form-drawer";
 import { normalizeUsername } from "@/shared/lib/text";
-import { ROLE_LABELS, type Role } from "@/shared/lib/permissions";
+import type { Role } from "@/shared/lib/permissions";
 
 import { updateUser, createUser } from "../actions/user.actions";
 import {
@@ -18,24 +18,16 @@ import {
   fetchActiveWarehouses,
   type UserRow,
 } from "../api/user.api";
-import {
-  editUserFormSchema,
-  createUserFormSchema,
-  ROLES,
-} from "../schemas/user.schema";
+import { editUserFormSchema, createUserFormSchema } from "../schemas/user.schema";
 import { TempPasswordField, generateTempPassword } from "./temp-password-field";
+import { UserJobTitleField } from "./user-job-title-field";
 import { UserSpecialPermissions } from "./user-special-permissions";
-
-const MO_TA_VAI_TRO: Record<Role, string> = {
-  quan_ly: "Toàn quyền, kể cả Cài đặt và người dùng",
-  van_phong: "Sửa danh mục, đối tác, lập chứng từ",
-  thu_kho: "Chỉ làm việc trên kho được gán",
-  chi_xem: "Xem, không tạo hay sửa gì",
-};
 
 type UserFormValues = {
   fullName: string;
   username: string;
+  jobTitleId: string;
+  /** Phạm vi của chức vụ đang chọn — UserJobTitleField tự điền. */
   role: Role;
   warehouseIds: string[];
   tempPassword: string;
@@ -57,6 +49,7 @@ export function UserDrawer({ open, user, onClose }: Props) {
     handleSubmit,
     reset,
     setError,
+    setValue,
     formState: { errors },
   } = useForm<UserFormValues>({
     // Hai schema khác nhau: tạo mới cần tên đăng nhập + mật khẩu tạm, sửa thì
@@ -67,7 +60,8 @@ export function UserDrawer({ open, user, onClose }: Props) {
     defaultValues: {
       fullName: "",
       username: "",
-      role: "thu_kho",
+      jobTitleId: "",
+      role: "chi_xem",
       warehouseIds: [],
       tempPassword: "",
       approveStocktake: false,
@@ -82,6 +76,7 @@ export function UserDrawer({ open, user, onClose }: Props) {
         ? {
             fullName: user.ho_ten,
             username: user.ten_dang_nhap ?? "",
+            jobTitleId: user.chuc_vu_id,
             role: user.vai_tro,
             warehouseIds: userWarehouses(user).map((k) => k.id),
             tempPassword: "",
@@ -90,7 +85,8 @@ export function UserDrawer({ open, user, onClose }: Props) {
         : {
             fullName: "",
             username: "",
-            role: "thu_kho",
+            jobTitleId: "",
+            role: "chi_xem",
             warehouseIds: [],
             tempPassword: generateTempPassword(),
             approveStocktake: false,
@@ -107,6 +103,7 @@ export function UserDrawer({ open, user, onClose }: Props) {
         ? await updateUser({
             id: user.id,
             fullName: v.fullName,
+            jobTitleId: v.jobTitleId,
             role: v.role,
             warehouseIds: v.role === "thu_kho" ? v.warehouseIds : [],
             approveStocktake: v.approveStocktake,
@@ -114,6 +111,7 @@ export function UserDrawer({ open, user, onClose }: Props) {
         : await createUser({
             fullName: v.fullName,
             username: v.username,
+            jobTitleId: v.jobTitleId,
             role: v.role,
             warehouseIds: v.role === "thu_kho" ? v.warehouseIds : [],
             tempPassword: v.tempPassword,
@@ -134,6 +132,7 @@ export function UserDrawer({ open, user, onClose }: Props) {
       if (isNew) {
         message.success(`Đã tạo tài khoản ${normalizeUsername(v.username)}`);
       } else {
+        // Đổi chức vụ cùng phạm vi chỉ đổi 9 quyền — có hiệu lực ngay (co_quyen đọc DB).
         const roleChanged = user.vai_tro !== v.role;
         const previousWarehouses = userWarehouses(user).map((k) => k.id);
         const warehousesChanged =
@@ -216,26 +215,7 @@ export function UserDrawer({ open, user, onClose }: Props) {
           </Form.Item>
         )}
 
-        <Form.Item
-          label="Vai trò"
-          validateStatus={errors.role ? "error" : undefined}
-          help={errors.role?.message}
-        >
-          <Controller
-            name="role"
-            control={control}
-            render={({ field }) => (
-              <Radio.Group {...field} className="flex flex-col gap-2">
-                {ROLES.map((v) => (
-                  <Radio key={v} value={v}>
-                    {ROLE_LABELS[v]}
-                    <div className="text-xs text-gray-500">{MO_TA_VAI_TRO[v]}</div>
-                  </Radio>
-                ))}
-              </Radio.Group>
-            )}
-          />
-        </Form.Item>
+        <UserJobTitleField control={control} errors={errors} setValue={setValue} />
 
         {role === "thu_kho" ? (
           <Form.Item
