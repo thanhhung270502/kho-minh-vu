@@ -1,40 +1,37 @@
 // File thuần, KHÔNG "use client" — các thẻ số của trang tổng quan (Server
 // Component) dựng link drill-down bằng hàm này trước khi giao cho client.
 import {
-  DEFAULT_INVENTORY_FILTER,
-  writeInventoryFilterToUrl,
+  DEFAULT_PRODUCT_FILTER,
+  writeFilterToUrl,
   type StockStatus,
-} from "@/features/inventory/schemas/inventory.schema";
+} from "@/features/products/schemas/filter.schema";
 
 export type StockGroupBy = "category" | "stage";
 
 /**
- * Dựng URL sang `/ton-kho` cho các thẻ drill-down của trang tổng quan.
- * Luôn đi qua `writeInventoryFilterToUrl` — KHÔNG tự ghép chuỗi — để bộ lọc
- * mở ra đúng khớp con số đã đếm (D-08). KHÔNG đặt `tradingStatus`: giữ mặc
- * định "đang kinh doanh" của `DEFAULT_INVENTORY_FILTER`, đúng phạm vi mà RPC
- * `ton_theo_nhom` đếm (D-08/D-17) — đặt tường minh ở đây sẽ dễ lệch nếu mặc
- * định đổi mà quên sửa cả hai chỗ.
+ * Dựng URL sang Danh sách hàng hóa cho các thẻ drill-down của trang tổng quan
+ * (trang `/ton-kho` đã gỡ ở Phase 10). Luôn đi qua `writeFilterToUrl` — KHÔNG
+ * tự ghép chuỗi. KHÔNG đặt `tradingStatus`: giữ mặc định "đang kinh doanh",
+ * đúng phạm vi RPC `ton_theo_nhom` đếm (D-08/D-17). Danh mục chưa có lọc theo
+ * kho, nên khi trang tổng quan đang chọn một kho thì danh sách mở ra là tồn
+ * mọi kho — đã chốt chấp nhận ở Phase 10.
  */
-export function buildInventoryDrilldownUrl({
+export function buildCatalogDrilldownUrl({
   groupBy,
   groupId,
-  warehouseId,
   stockStatus,
 }: {
   groupBy: StockGroupBy;
   groupId: string;
-  warehouseId: string | null;
   stockStatus: StockStatus | null;
 }): string {
-  const params = writeInventoryFilterToUrl({
-    ...DEFAULT_INVENTORY_FILTER,
+  const params = writeFilterToUrl({
+    ...DEFAULT_PRODUCT_FILTER,
     categoryId: groupBy === "category" ? groupId : null,
     stageId: groupBy === "stage" ? groupId : null,
-    warehouseId,
     stockStatus,
   });
 
   const query = params.toString();
-  return query ? `/ton-kho?${query}` : "/ton-kho";
+  return query ? `/danh-muc?${query}` : "/danh-muc";
 }

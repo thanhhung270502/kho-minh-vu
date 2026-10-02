@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge, Button } from "antd";
+import Link from "next/link";
 
 import type { ProductFilter } from "../schemas/filter.schema";
 import { ExcelButton } from "./excel-button";
@@ -37,6 +38,13 @@ export function ReviewActions({
           Cần rà
         </Button>
       </Badge>
+      {canEdit ? (
+        // Tạm ở đây tới khi duyệt định mức chuyển vào trang Phân tích (Phase 13) —
+        // trang Tồn kho chứa nút này đã gỡ ở Phase 10.
+        <Link href="/ton-kho/dinh-muc">
+          <Button>Định mức</Button>
+        </Link>
+      ) : null}
       <ExcelButton
         filter={filter}
         productCount={total}

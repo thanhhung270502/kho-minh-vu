@@ -5,8 +5,8 @@ import type { Role } from "@/shared/lib/permissions";
 /**
  * Trang chủ theo vai trò (D-11): chỉ quản lý có trang tổng quan thật (`/`),
  * ba vai trò còn lại về thẳng màn việc hằng ngày của họ — văn phòng lên đơn/
- * xuất hàng nhiều nhất nên về `/xuat-kho`, thủ kho và chỉ xem tra tồn nhiều
- * nhất nên về `/ton-kho`. `switch` không có nhánh `default`: TypeScript sẽ
+ * hóa đơn nhiều nhất nên về `/hoa-don`, thủ kho và chỉ xem tra tồn nhiều nhất
+ * nên về `/danh-muc` (trang Tồn kho đã gỡ ở Phase 10). `switch` không có nhánh `default`: TypeScript sẽ
  * báo thiếu case nếu sau này thêm vai trò mới vào enum `vai_tro`.
  */
 export function homePathForRole(role: Role): string {
@@ -14,10 +14,10 @@ export function homePathForRole(role: Role): string {
     case "quan_ly":
       return "/";
     case "van_phong":
-      return "/xuat-kho";
+      return "/hoa-don";
     case "thu_kho":
-      return "/ton-kho";
+      return "/danh-muc";
     case "chi_xem":
-      return "/ton-kho";
+      return "/danh-muc";
   }
 }

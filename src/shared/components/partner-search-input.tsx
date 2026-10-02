@@ -44,7 +44,7 @@ function emptyForm(name: string): PartnerFormValues {
 
 /**
  * Ô tìm người nhận trên server (D-03). Đặt ở `shared/` vì cả màn đơn
- * (`/dat-hang`) lẫn màn xuất không qua đơn (`/xuat-kho`, plan 04-10) đều cần
+ * (`/dat-hang`) lẫn màn xuất không qua đơn (`/hoa-don`, plan 04-10) đều cần
  * chọn người nhận — CLAUDE.md cấm feature import trực tiếp nội bộ feature khác.
  *
  * Dữ liệu thật (20/09): `doi_tac` chỉ có 1 khách ("Khách lẻ"). Ô tìm gần như

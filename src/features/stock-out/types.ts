@@ -19,7 +19,7 @@ export {
  *
  * `IssueRow` mở rộng thêm `orderId`/`orderNo`: `danh_sach_chung_tu` (RPC dùng
  * chung với `stock-in`/`returns`) không trả đơn gốc, nên cột "Đơn gốc" của
- * `/xuat-kho` được nối thêm ở tầng `api/issue.api.ts` bằng hai lượt đọc riêng
+ * `/hoa-don` được nối thêm ở tầng `api/issue.api.ts` bằng hai lượt đọc riêng
  * của chiều xuất, không sửa RPC chung chỉ để phục vụ một cột của một màn.
  */
 export type IssueRow = DocumentRow & {

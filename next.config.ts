@@ -6,6 +6,13 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: "/lich-su-kiotviet", destination: "/danh-muc", permanent: false },
+      // "Xuất kho" đổi tên "Hóa đơn" — giữ nguyên id và trang in phía sau.
+      { source: "/xuat-kho", destination: "/hoa-don", permanent: false },
+      { source: "/xuat-kho/:path*", destination: "/hoa-don/:path*", permanent: false },
+      // Trang Tồn kho gỡ — tra tồn ở Danh sách hàng hóa. KHÔNG dùng wildcard
+      // /ton-kho/:path*: /ton-kho/dinh-muc vẫn sống tới khi chuyển sang Phân tích.
+      { source: "/ton-kho", destination: "/danh-muc", permanent: false },
+      { source: "/ton-kho/nap-tam", destination: "/danh-muc", permanent: false },
     ];
   },
 };

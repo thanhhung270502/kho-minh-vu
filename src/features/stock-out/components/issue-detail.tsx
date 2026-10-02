@@ -42,8 +42,8 @@ export function IssueDetailView({
             Không tìm thấy phiếu này, hoặc phiếu không thuộc kho bạn được phân
             công.
           </span>
-          <Link href="/xuat-kho">
-            <Button size="small">Về danh sách phiếu xuất</Button>
+          <Link href="/hoa-don">
+            <Button size="small">Về danh sách hóa đơn</Button>
           </Link>
         </div>
       }
@@ -58,8 +58,8 @@ export function IssueDetailView({
 
         return (
           <>
-            <Link href="/xuat-kho" className="mb-2 inline-block text-sm">
-              ← Phiếu xuất
+            <Link href="/hoa-don" className="mb-2 inline-block text-sm">
+              ← Hóa đơn
             </Link>
 
             <PageHeader
@@ -79,7 +79,7 @@ export function IssueDetailView({
               }
               actions={
                 <Space wrap>
-                  <Link href={`/xuat-kho/${id}/in`} target="_blank">
+                  <Link href={`/hoa-don/${id}/in`} target="_blank">
                     <Button>In phiếu giao hàng</Button>
                   </Link>
                   <ReturnButton document={issue} canEdit={permissions.canEdit} />

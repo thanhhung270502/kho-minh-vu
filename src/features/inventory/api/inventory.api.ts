@@ -2,13 +2,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Page } from "@/shared/types";
 
 import {
-  toInventoryRpcArgs,
-  type InventoryFilter,
-} from "../schemas/inventory.schema";
-import {
-  toInventoryRow,
   toReorderSuggestion,
-  type InventoryRow,
   type ReorderSuggestion,
   type SuggestionBasis,
 } from "../types";
@@ -24,34 +18,6 @@ import {
 /** Một trang của màn duyệt đề xuất định mức — giao diện dùng để dựng phân trang. */
 export const REORDER_SUGGESTION_PAGE_SIZE = 200;
 
-export async function fetchInventory(
-  filter: InventoryFilter,
-): Promise<Page<InventoryRow>> {
-  const supabase = getSupabaseBrowserClient();
-  const args = toInventoryRpcArgs(filter);
-  const { data, error } = await supabase.rpc("danh_sach_ton_kho", args);
-  if (error) throw error;
-
-  const raw = data ?? [];
-  return {
-    rows: raw.map(toInventoryRow),
-    total: Number(raw[0]?.tong_so_dong ?? 0),
-  };
-}
-
-/**
- * Kho mà thủ kho được phân — cùng nguồn `kho_hien_tai()` mà `danh_sach_ton_kho` dùng
- * để siết phạm vi, nên cột kho trên màn luôn khớp đúng những kho RPC có trả số.
- * Quản lý/văn phòng không được phân kho nào nên hàm này trả rỗng — chỉ gọi cho thủ kho.
- */
-export async function fetchAssignedWarehouseIds(): Promise<string[]> {
-  const supabase = getSupabaseBrowserClient();
-  const { data, error } = await supabase.rpc("kho_hien_tai");
-  if (error) throw error;
-  return data ?? [];
-}
-
-/** `basis = null` là "mọi nguồn". Chỉ lấy mã có đề xuất khác định mức đang đặt. */
 export async function fetchReorderSuggestions(
   basis: SuggestionBasis | null,
   page: number,

@@ -35,9 +35,18 @@ const AI_CUNG_XEM: Record<VaiTroTest, KyVong> = {
   khach: "dangnhap",
 };
 
+/** Mọi vai trò, kể cả khách, đều nhận cùng một chuyển hướng (redirect ở next.config.ts). */
+const ALL = (k: KyVong): Record<VaiTroTest, KyVong> => ({
+  quanly: k,
+  vanphong: k,
+  thukho1: k,
+  chixem: k,
+  khach: k,
+});
+
 const MA_TRAN: Dong[] = [
   // Phase 7 (D-11): chỉ quản lý xem tổng quan, vai trò khác chuyển sang màn làm việc chính — không phải /khong-du-quyen.
-  { route: "/", ky_vong: { quanly: "200", vanphong: "→/xuat-kho", thukho1: "→/ton-kho", chixem: "→/ton-kho", khach: "dangnhap" } },
+  { route: "/", ky_vong: { quanly: "200", vanphong: "→/hoa-don", thukho1: "→/danh-muc", chixem: "→/danh-muc", khach: "dangnhap" } },
   // /cai-dat chỉ redirect sang tab đầu tiên theo quyền. UAT Phase 2 bắt được
   // lỗi page này crash vì gọi hàm client từ server — ma trận cũ thiếu đúng nó.
   { route: "/cai-dat", ky_vong: { quanly: "→/cai-dat/nguoi-dung", vanphong: "→/cai-dat/nhom-hang", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
@@ -45,15 +54,17 @@ const MA_TRAN: Dong[] = [
   // Cùng quyền xem với /nhap-kho — nút "Tạo đơn" ẩn/hiện là trang trí ở client
   // (canCreate), chặn thật nằm ở bốn policy ghi trên don_dat_hang (plan 04-02).
   { route: "/dat-hang", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
-  // Cùng quyền xem với /nhap-kho và /dat-hang — nút "Tạo phiếu xuất" ẩn/hiện
+  // Cùng quyền xem với /nhap-kho và /dat-hang — nút "Tạo hóa đơn" ẩn/hiện
   // là trang trí ở client (canCreate), chặn thật ở policy ghi trên chung_tu (0016).
-  { route: "/xuat-kho", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
-  // Phase 5: phạm vi kho của thủ kho siết trong RPC, không ở route — ai cũng mở được.
-  { route: "/ton-kho", ky_vong: AI_CUNG_XEM },
+  { route: "/hoa-don", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
+  // Phase 10 (GON-05/06): link cũ — redirect trong next.config.ts chạy TRƯỚC
+  // proxy nên cả khách cũng nhận chuyển hướng (rồi mới bị đẩy về đăng nhập).
+  { route: "/xuat-kho", ky_vong: ALL("→/hoa-don") },
+  { route: "/ton-kho", ky_vong: ALL("→/danh-muc") },
   // Duyệt định mức ghi ton_toi_thieu: cùng nhóm với sửa danh mục (quản lý + văn phòng).
   { route: "/ton-kho/dinh-muc", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
-  // Nạp tồn tạm đổi tồn của mọi mã — chỉ quản lý (khuôn /cai-dat/nguoi-dung).
-  { route: "/ton-kho/nap-tam", ky_vong: { quanly: "200", vanphong: "quyen", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
+  // Nạp tồn tạm gỡ ở Phase 10 — route cụ thể, KHÔNG wildcard để /ton-kho/dinh-muc sống.
+  { route: "/ton-kho/nap-tam", ky_vong: ALL("→/danh-muc") },
   { route: "/danh-muc", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/doi-tac", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/doi-tac/ra-ghi-chu", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
@@ -72,7 +83,7 @@ const MA_TRAN: Dong[] = [
   { route: "/kiem-ke/00000000-0000-4000-8000-000000000000", ky_vong: AI_CUNG_XEM },
   // Phase 10 (GON-02): màn đã gỡ — redirect trong next.config.ts chạy TRƯỚC
   // proxy nên cả khách cũng nhận →/danh-muc (rồi mới bị đẩy về đăng nhập).
-  { route: "/lich-su-kiotviet", ky_vong: { quanly: "→/danh-muc", vanphong: "→/danh-muc", thukho1: "→/danh-muc", chixem: "→/danh-muc", khach: "→/danh-muc" } },
+  { route: "/lich-su-kiotviet", ky_vong: ALL("→/danh-muc") },
 ];
 
 const TAI_KHOAN: Record<Exclude<VaiTroTest, "khach">, string> = {
@@ -192,7 +203,7 @@ async function doMot(route: string, cookie: string): Promise<KyVong | string> {
   return `HTTP ${res.status}`;
 }
 
-/** Lấy một id phiếu xuất có thật để kiểm route chi tiết `/xuat-kho/[id]`. */
+/** Lấy một id hóa đơn (chứng từ XUAT) có thật để kiểm route chi tiết `/hoa-don/[id]`. */
 async function layIdPhieuXuat(): Promise<string | null> {
   const kho = new Map<string, string>();
   const sb = createServerClient(
@@ -281,44 +292,11 @@ async function layIdPhienKiemKe(): Promise<string | null> {
 }
 
 /**
- * `/api/ton-kho/nap-tam` chỉ có POST — ma trận gửi GET nên sẽ nhận 405 cho mọi vai trò,
- * không nói gì về quyền. Gửi POST với FormData RỖNG: quản lý qua được cửa quyền và
- * dừng ở "Chưa chọn file" (400) — không bao giờ chạm tới RPC, không ghi gì.
- */
-const NAP_TAM_POST: Record<VaiTroTest, string> = {
-  quanly: "400",
-  vanphong: "403",
-  thukho1: "403",
-  chixem: "403",
-  khach: "401",
-};
-
-async function kiemNapTamPost(
-  cookie: Record<VaiTroTest, string>,
-): Promise<{ tong: number; lech: string[] }> {
-  const lech: string[] = [];
-  const role = Object.keys(NAP_TAM_POST) as VaiTroTest[];
-  for (const vt of role) {
-    const res = await fetch(`${BASE_URL}/api/ton-kho/nap-tam`, {
-      method: "POST",
-      headers: cookie[vt] ? { cookie: cookie[vt] } : {},
-      body: new FormData(),
-      redirect: "manual",
-    });
-    const thuc = String(res.status);
-    if (thuc !== NAP_TAM_POST[vt]) {
-      lech.push(`${"POST /api/ton-kho/nap-tam".padEnd(34)} ${vt.padEnd(9)} mong ${NAP_TAM_POST[vt]}, thực ${thuc}`);
-    }
-  }
-  return { tong: role.length, lech };
-}
-
-/**
  * Hai endpoint Excel của kiểm kê chỉ có GET (mẫu) / POST (nạp) — ma trận
  * thường (`doMot`, dùng GET) không nói được gì về quyền của route POST, và
  * GET không tham số của route mẫu không khớp kiểu `KyVong` hiện có ("200"
  * hay "quyen"/"dangnhap" đều sai — route trả JSON lỗi, không redirect).
- * Theo khuôn `kiemNapTamPost`: gọi trực tiếp bằng `fetch`, so mã trạng thái.
+ * Gọi trực tiếp bằng `fetch`, so mã trạng thái.
  */
 async function kiemKiemKeExcel(
   cookie: Record<VaiTroTest, string>,
@@ -548,11 +526,14 @@ async function main() {
   if (idPhieuXuat) {
     // /in cùng quyền xem với trang chi tiết — bẫy 12, plan 04-14.
     MA_TRAN.push(
-      { route: `/xuat-kho/${idPhieuXuat}`, ky_vong: AI_CUNG_XEM },
-      { route: `/xuat-kho/${idPhieuXuat}/in`, ky_vong: AI_CUNG_XEM },
+      { route: `/hoa-don/${idPhieuXuat}`, ky_vong: AI_CUNG_XEM },
+      { route: `/hoa-don/${idPhieuXuat}/in`, ky_vong: AI_CUNG_XEM },
+      // Bookmark cũ /xuat-kho/[id] và trang in giữ nguyên id khi chuyển sang /hoa-don.
+      { route: `/xuat-kho/${idPhieuXuat}`, ky_vong: ALL(`→/hoa-don/${idPhieuXuat}`) },
+      { route: `/xuat-kho/${idPhieuXuat}/in`, ky_vong: ALL(`→/hoa-don/${idPhieuXuat}/in`) },
     );
   } else {
-    console.warn("⚠ chưa có phiếu xuất nào — bỏ qua route /xuat-kho/[id] và /in");
+    console.warn("⚠ chưa có hóa đơn nào — bỏ qua route /hoa-don/[id] và /in");
   }
 
   const idPhieuTra = await layIdPhieuTra();
@@ -585,10 +566,6 @@ async function main() {
       }
     }
   }
-
-  const napTam = await kiemNapTamPost(cookie);
-  tong += napTam.tong;
-  lech.push(...napTam.lech);
 
   const kiemKe = await kiemKiemKeExcel(cookie);
   tong += kiemKe.tong;

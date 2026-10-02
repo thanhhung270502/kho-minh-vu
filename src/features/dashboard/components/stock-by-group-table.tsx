@@ -4,21 +4,20 @@ import { Table, theme } from "antd";
 import type { TableColumnsType } from "antd";
 import Link from "next/link";
 
-import type { StockStatus } from "@/features/inventory/schemas/inventory.schema";
+import type { StockStatus } from "@/features/products/schemas/filter.schema";
 
-import { buildInventoryDrilldownUrl, type StockGroupBy } from "../lib/stock-drilldown";
+import { buildCatalogDrilldownUrl, type StockGroupBy } from "../lib/stock-drilldown";
 import type { StockByGroupRow } from "../types";
 
 type Props = {
   rows: StockByGroupRow[];
   groupBy: StockGroupBy;
-  warehouseId: string | null;
 };
 
 type CountKey = "total" | "inStock" | "outOfStock" | "negative" | "belowMinimum";
 
 // stockStatus: null = "Tổng mã" (không lọc trạng thái tồn) — hợp đồng của
-// buildInventoryDrilldownUrl/StockStatus (database), không phải tên cột tiếng Việt.
+// buildCatalogDrilldownUrl/StockStatus (database), không phải tên cột tiếng Việt.
 const COUNT_COLUMNS: Array<{
   key: CountKey;
   title: string;
@@ -37,9 +36,9 @@ function sumBy(rows: readonly StockByGroupRow[], key: CountKey): number {
 
 /**
  * Bảng số mã theo nhóm/công đoạn — mỗi ô số khác 0 (trừ dòng "Chưa phân
- * nhóm") là link mở `/ton-kho` lọc sẵn đúng nhóm + trạng thái + kho (D-08).
+ * nhóm") là link mở Danh sách hàng hóa lọc sẵn đúng nhóm + trạng thái (D-08).
  */
-export function StockByGroupTable({ rows, groupBy, warehouseId }: Props) {
+export function StockByGroupTable({ rows, groupBy }: Props) {
   const { token } = theme.useToken();
 
   const groupTitle = groupBy === "category" ? "Nhóm hàng" : "Công đoạn";
@@ -75,13 +74,12 @@ export function StockByGroupTable({ rows, groupBy, warehouseId }: Props) {
 
         return (
           <Link
-            href={buildInventoryDrilldownUrl({
+            href={buildCatalogDrilldownUrl({
               groupBy,
               groupId: row.groupId,
-              warehouseId,
               stockStatus,
             })}
-            title="Mở danh sách tồn kho đã lọc"
+            title="Mở danh sách hàng hóa đã lọc"
             style={{ color }}
           >
             {value.toLocaleString("vi-VN")}

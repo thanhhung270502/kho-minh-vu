@@ -12,11 +12,15 @@ export type NavIconId =
   | "stock-in"
   | "sales-order"
   | "stock-out"
-  | "inventory"
   | "catalog"
   | "partners"
   | "settings"
-  | "stocktake";
+  | "stocktake"
+  | "orders"
+  | "goods";
+
+/** Nhóm menu cấp 1 (Phase 10, GON-04) — chỉ là lớp hiển thị trên danh sách phẳng. */
+export type NavGroupId = "orders" | "goods";
 
 export type NavItem = {
   /** Đường dẫn giữ tiếng Việt: URL là bề mặt người dùng nhìn thấy. */
@@ -28,19 +32,21 @@ export type NavItem = {
   permission: Permission;
   /** null = không vào thanh tab đáy, nằm trong mục "Khác". */
   mobilePriority: number | null;
+  /** Thuộc nhóm nào trên menu máy tính; thanh tab đáy vẫn dùng danh sách phẳng. */
+  group?: NavGroupId;
 };
 
-// mobilePriority (Phase 4, plan 04-15): thanh tab đáy chỉ có 4 ô chính, và
-// đây là chỗ thủ kho cầm điện thoại dùng nhiều nhất. Chọn theo nhịp vận hành
-// thật: ~92 phiếu xuất/ngày so với ~8 phiếu nhập/ngày (xem CLAUDE.md), nên
-// "Xuất kho" đứng trước "Nhập kho". "Danh mục hàng" và "Đối tác" là màn tra
-// cứu thỉnh thoảng, chuyển vào "Khác" (mobilePriority: null) để nhường chỗ
-// cho "Đặt hàng" — băn khoăn hằng ngày của văn phòng khi lên đơn cho khách.
+export const NAV_GROUPS: Record<NavGroupId, { label: string; icon: NavIconId }> = {
+  orders: { label: "Đơn hàng", icon: "orders" },
+  goods: { label: "Hàng hóa", icon: "goods" },
+};
+
+// mobilePriority: thanh tab đáy chỉ có 4 ô chính — chỗ thủ kho cầm điện thoại
+// dùng nhiều nhất. ~92 hóa đơn/ngày so với ~8 phiếu nhập/ngày (CLAUDE.md) nên
+// "Hóa đơn" đứng trước "Nhập kho". Phase 10 gỡ trang Tồn kho: tra tồn nay ở
+// Danh sách hàng hóa, nên mục đó lấy ô thứ 4 mà "Tồn kho" để lại.
 //
-// Phase 5 (plan 05-11): "Tồn kho" lấy ô thứ 4 của "Đặt hàng". Thủ kho cầm điện
-// thoại tra tồn nhiều lần mỗi ngày; văn phòng lên đơn chủ yếu trên máy tính
-// (CLAUDE.md: văn phòng = máy tính, bảng dày), nên "Đặt hàng" rơi vào "Khác".
-// Xuất (2) và Nhập (3) giữ nguyên vị trí người dùng đã quen từ UAT Phase 4.
+// Thứ tự mảng là thứ tự menu máy tính; nhóm đứng ở vị trí mục con đầu tiên.
 export const NAV_ITEMS: NavItem[] = [
   {
     // Quyền "view-dashboard" (D-11) — CHỈ quản lý, khác mọi mục còn lại của
@@ -54,7 +60,25 @@ export const NAV_ITEMS: NavItem[] = [
     mobilePriority: 1,
   },
   {
-    // Nghiệp vụ hằng ngày đứng trước dữ liệu nền.
+    href: "/dat-hang",
+    label: "Đặt hàng",
+    shortLabel: "Đặt hàng",
+    icon: "sales-order",
+    permission: "view-catalog",
+    mobilePriority: 5,
+    group: "orders",
+  },
+  {
+    // "Xuất kho" đổi tên thành "Hóa đơn" (Phase 10, GON-05) — vẫn là chứng từ XUAT.
+    href: "/hoa-don",
+    label: "Hóa đơn",
+    shortLabel: "Hóa đơn",
+    icon: "stock-out",
+    permission: "view-catalog",
+    mobilePriority: 2,
+    group: "orders",
+  },
+  {
     href: "/nhap-kho",
     label: "Nhập kho",
     shortLabel: "Nhập",
@@ -63,50 +87,24 @@ export const NAV_ITEMS: NavItem[] = [
     mobilePriority: 3,
   },
   {
-    href: "/dat-hang",
-    label: "Đặt hàng",
-    shortLabel: "Đặt hàng",
-    icon: "sales-order",
-    permission: "view-catalog",
-    mobilePriority: 5,
-  },
-  {
-    href: "/xuat-kho",
-    label: "Xuất kho",
-    shortLabel: "Xuất",
-    icon: "stock-out",
-    permission: "view-catalog",
-    mobilePriority: 2,
-  },
-  {
-    // Sau luồng Nhập → Đặt → Xuất, trước dữ liệu nền. /ton-kho/dinh-muc và
-    // /ton-kho/nap-tam không có mục riêng (việc định kỳ / một lần) — vào bằng
-    // link trong trang; findActiveHref khớp tiền tố nên mục này vẫn sáng.
-    href: "/ton-kho",
-    label: "Tồn kho",
-    shortLabel: "Tồn",
-    icon: "inventory",
-    permission: "view-catalog",
-    mobilePriority: 4,
-  },
-  {
-    // Phase 6: kiểm kê định kỳ, không phải việc hằng giờ như xuất/nhập nên
-    // không chiếm ô nào của thanh tab đáy — vào bằng "Khác" (D-04, màn đếm
-    // vẫn dùng tốt trên điện thoại một khi đã mở từ đó).
-    href: "/kiem-ke",
-    label: "Kiểm kê",
-    shortLabel: "Kiểm kê",
-    icon: "stocktake",
-    permission: "view-catalog",
-    mobilePriority: null,
-  },
-  {
     href: "/danh-muc",
-    label: "Danh mục hàng",
+    label: "Danh sách hàng hóa",
     shortLabel: "Hàng",
     icon: "catalog",
     permission: "view-catalog",
+    mobilePriority: 4,
+    group: "goods",
+  },
+  {
+    // Kiểm kê định kỳ, không phải việc hằng giờ như xuất/nhập nên không chiếm
+    // ô nào của thanh tab đáy — vào bằng "Khác" (D-04).
+    href: "/kiem-ke",
+    label: "Kiểm kho",
+    shortLabel: "Kiểm kho",
+    icon: "stocktake",
+    permission: "view-catalog",
     mobilePriority: null,
+    group: "goods",
   },
   {
     href: "/doi-tac",
@@ -126,6 +124,32 @@ export const NAV_ITEMS: NavItem[] = [
     mobilePriority: null,
   },
 ];
+
+export type NavEntry =
+  | { kind: "item"; key: string; label: string; item: NavItem }
+  | { kind: "group"; key: NavGroupId; label: string; icon: NavIconId; items: NavItem[] };
+
+/**
+ * Gộp các mục cùng `group` thành một mục cấp 1 cho menu máy tính. Nhận danh
+ * sách ĐÃ lọc quyền nên nhóm chỉ chứa mục người đó được thấy; nhóm rỗng tự biến mất.
+ */
+export function buildNavEntries(items: NavItem[]): NavEntry[] {
+  const entries: NavEntry[] = [];
+  for (const item of items) {
+    if (!item.group) {
+      entries.push({ kind: "item", key: item.href, label: item.label, item });
+      continue;
+    }
+    const existing = entries.find((e) => e.kind === "group" && e.key === item.group);
+    if (existing?.kind === "group") {
+      existing.items.push(item);
+    } else {
+      const { label, icon } = NAV_GROUPS[item.group];
+      entries.push({ kind: "group", key: item.group, label, icon, items: [item] });
+    }
+  }
+  return entries;
+}
 
 /** "/" chỉ khớp chính nó; các mục khác khớp cả route con. */
 export function findActiveHref(pathname: string, items: NavItem[]): string {

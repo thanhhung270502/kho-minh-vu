@@ -1,59 +1,35 @@
 "use client";
 
-import { DownOutlined } from "@ant-design/icons";
-import { Dropdown } from "antd";
 import Link from "next/link";
-import { useState } from "react";
 
 import { AccountMenu } from "@/shared/components/account-menu";
-import type { NavItem } from "@/shared/lib/navigation";
+import type { NavEntry } from "@/shared/lib/navigation";
 import type { Role } from "@/shared/lib/permissions";
 
 import { cn } from "../utils/cn";
-import { NAV_ICONS } from "./nav-icons";
+import {
+  DropdownLabel,
+  DropdownPill,
+  entryIcon,
+  entryIsActive,
+  linkItems,
+  PILL_CLASS,
+  PillLabel,
+} from "./nav-pill";
 import { useNavOverflow } from "./use-nav-overflow";
 
 type TopNavProps = {
   user: { fullName: string; role: Role };
-  items: NavItem[];
+  /** Mục cấp 1 — mục lẻ hoặc nhóm (Đơn hàng, Hàng hóa) mở dropdown. */
+  entries: NavEntry[];
   activeHref: string;
 };
 
-/**
- * Thanh điều hướng ngang dạng pill — dựng bằng thẻ HTML thường + next/link,
- * không dùng antd Menu (pill nền xanh không ép được qua token antd). Vì
- * không phải component antd nên Tailwind ở đây là đúng chỗ, không cần `!`.
- */
-const PILL_CLASS =
-  "flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-2 py-2.5 text-sm font-semibold text-white transition-all duration-200 ease-in-out hover:bg-white/25";
-
-function PillLabel({ label, active }: { label: string; active: boolean }) {
-  return (
-    <span className="relative">
-      {label}
-      {active ? (
-        <span className="absolute left-1/2 top-6 h-0.75 w-10 -translate-x-1/2 rounded-full bg-white" />
-      ) : null}
-    </span>
-  );
-}
-
-function MoreLabel({ active }: { active: boolean }) {
-  return (
-    <>
-      <PillLabel label="Khác" active={active} />
-      <DownOutlined className="text-xs" />
-    </>
-  );
-}
-
-export function TopNav({ user, items, activeHref }: TopNavProps) {
-  const { containerRef, measureRef, visibleCount } = useNavOverflow(items.length);
-  const visible = items.slice(0, visibleCount);
-  const overflow = items.slice(visibleCount);
-  const activeIsInOverflow = overflow.some((item) => item.href === activeHref);
-  // TopNav không unmount khi chuyển trang — tự đóng, kẻo menu lơ lửng trên trang mới.
-  const [moreOpen, setMoreOpen] = useState(false);
+export function TopNav({ user, entries, activeHref }: TopNavProps) {
+  const { containerRef, measureRef, visibleCount } = useNavOverflow(entries.length);
+  const visible = entries.slice(0, visibleCount);
+  const overflow = entries.slice(visibleCount);
+  const activeIsInOverflow = overflow.some((entry) => entryIsActive(entry, activeHref));
 
   return (
     <header
@@ -85,47 +61,48 @@ export function TopNav({ user, items, activeHref }: TopNavProps) {
               boxShadow: "0 0 4px 0 rgba(0,112,244,.15)",
             }}
           >
-            {visible.map((item) => {
-              const active = item.href === activeHref;
+            {visible.map((entry) => {
+              const active = entryIsActive(entry, activeHref);
+              if (entry.kind === "group") {
+                return (
+                  <DropdownPill
+                    key={entry.key}
+                    label={entry.label}
+                    icon={entryIcon(entry)}
+                    active={active}
+                    items={linkItems(entry)}
+                    activeHref={activeHref}
+                  />
+                );
+              }
               return (
                 <Link
-                  key={item.href}
-                  href={item.href}
+                  key={entry.key}
+                  href={entry.item.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(PILL_CLASS, active ? "bg-white/25" : "")}
                 >
-                  {NAV_ICONS[item.icon]}
-                  <PillLabel label={item.label} active={active} />
+                  {entryIcon(entry)}
+                  <PillLabel label={entry.label} active={active} />
                 </Link>
               );
             })}
 
             {overflow.length > 0 ? (
-              <Dropdown
-                placement="bottomLeft"
-                open={moreOpen}
-                onOpenChange={setMoreOpen}
-                menu={{
-                  onClick: () => setMoreOpen(false),
-                  selectedKeys: [activeHref],
-                  items: overflow.map((item) => ({
-                    key: item.href,
-                    icon: NAV_ICONS[item.icon],
-                    label: <Link href={item.href}>{item.label}</Link>,
-                  })),
-                }}
-              >
-                <button
-                  type="button"
-                  className={cn(
-                    PILL_CLASS,
-                    "cursor-pointer border-0 bg-transparent",
-                    activeIsInOverflow ? "bg-white/25" : "",
-                  )}
-                >
-                  <MoreLabel active={activeIsInOverflow} />
-                </button>
-              </Dropdown>
+              <DropdownPill
+                label="Khác"
+                active={activeIsInOverflow}
+                activeHref={activeHref}
+                items={overflow.map((entry) =>
+                  entry.kind === "group"
+                    ? { type: "group" as const, key: entry.key, label: entry.label, children: linkItems(entry) }
+                    : {
+                        key: entry.item.href,
+                        icon: entryIcon(entry),
+                        label: <Link href={entry.item.href}>{entry.label}</Link>,
+                      },
+                )}
+              />
             ) : null}
           </nav>
 
@@ -135,14 +112,18 @@ export function TopNav({ user, items, activeHref }: TopNavProps) {
             aria-hidden
             className="pointer-events-none invisible absolute top-0 left-0 flex w-max"
           >
-            {items.map((item) => (
-              <span key={item.href} className={PILL_CLASS}>
-                {NAV_ICONS[item.icon]}
-                <PillLabel label={item.label} active={false} />
+            {entries.map((entry) => (
+              <span key={entry.key} className={PILL_CLASS}>
+                {entryIcon(entry)}
+                {entry.kind === "group" ? (
+                  <DropdownLabel label={entry.label} active={false} />
+                ) : (
+                  <PillLabel label={entry.label} active={false} />
+                )}
               </span>
             ))}
             <span className={PILL_CLASS}>
-              <MoreLabel active={false} />
+              <DropdownLabel label="Khác" active={false} />
             </span>
           </div>
         </div>

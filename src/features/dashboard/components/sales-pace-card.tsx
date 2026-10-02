@@ -48,7 +48,7 @@ function StatBlock({ item }: { item: StatItem }) {
 function SalesPaceContent({ data }: { data: SalesPace }) {
   const items: StatItem[] = [
     {
-      title: "Phiếu xuất",
+      title: "Hóa đơn",
       today: data.today.documentCount,
       yesterday: data.yesterday.documentCount,
     },
@@ -75,7 +75,7 @@ function SalesPaceContent({ data }: { data: SalesPace }) {
         ))}
       </div>
       <Typography.Text type="secondary" className="mt-4 block text-[13px]">
-        Chỉ tính phiếu xuất đã ghi sổ, không tính phiếu hủy và đơn chưa xuất.
+        Chỉ tính hóa đơn đã ghi sổ, không tính phiếu hủy và đơn chưa xuất.
       </Typography.Text>
     </>
   );

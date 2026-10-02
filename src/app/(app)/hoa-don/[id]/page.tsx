@@ -5,7 +5,7 @@ import { IssueDetailView } from "@/features/stock-out/components/issue-detail";
 import { requirePermission } from "@/features/auth/api/current-user.server";
 import { hasPermission } from "@/shared/lib/permissions";
 
-export const metadata: Metadata = { title: "Phiếu xuất" };
+export const metadata: Metadata = { title: "Hóa đơn" };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

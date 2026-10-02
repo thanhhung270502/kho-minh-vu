@@ -20,7 +20,7 @@ const TABS: Array<{ key: StockGroupBy; label: string }> = [
 
 /**
  * Khối "Tồn theo nhóm hàng / công đoạn" (TQAN-01) — hai tab dùng chung một
- * khuôn bảng, lọc kho, mỗi con số khác 0 mở `/ton-kho` lọc sẵn (D-05..D-08).
+ * khuôn bảng, lọc kho, mỗi con số khác 0 mở Danh sách hàng hóa lọc sẵn (D-05..D-08).
  */
 export function StockByGroupSection() {
   const [groupBy, setGroupBy] = useState<StockGroupBy>("category");
@@ -58,7 +58,7 @@ export function StockByGroupSection() {
         emptyDescription="Chưa có mã đang kinh doanh nào để thống kê."
       >
         {(rows) => (
-          <StockByGroupTable rows={rows} groupBy={groupBy} warehouseId={warehouseId || null} />
+          <StockByGroupTable rows={rows} groupBy={groupBy} />
         )}
       </QueryState>
       <Typography.Text type="secondary" className="mt-3 block">

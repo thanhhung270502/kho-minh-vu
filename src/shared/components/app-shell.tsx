@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import {
+  buildNavEntries,
   filterNavItems,
   findActiveHref,
   splitMobileItems,
@@ -31,7 +32,7 @@ export function AppShell({ user, children }: AppShellProps) {
 
   return (
     <Layout className="min-h-screen">
-      <TopNav user={user} items={items} activeHref={activeHref} />
+      <TopNav user={user} entries={buildNavEntries(items)} activeHref={activeHref} />
       {/* pb-24 chừa chỗ cho thanh tab đáy — thiếu là hàng cuối bảng bị che. */}
       <Content className="px-4 pt-4 pb-24 lg:px-6 lg:pt-6 lg:pb-6">{children}</Content>
       <BottomTabBar primary={primary} overflow={overflow} activeHref={activeHref} />

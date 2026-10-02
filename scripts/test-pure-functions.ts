@@ -26,14 +26,6 @@ import {
   type ProductFilter,
 } from "../src/features/products/schemas/filter.schema";
 import {
-  DEFAULT_INVENTORY_FILTER,
-  countActiveInventoryFilters,
-  readInventoryFilterFromUrl,
-  writeInventoryFilterToUrl,
-  toInventoryRpcArgs,
-  type InventoryFilter,
-} from "../src/features/inventory/schemas/inventory.schema";
-import {
   groupLinesByWarehouse,
   UNASSIGNED_WAREHOUSE_LABEL,
 } from "../src/features/sales-order/lib/group-lines-by-warehouse";
@@ -68,11 +60,12 @@ import { imageUrl } from "../src/features/images/lib/image-url";
 import {
   filterNavItems,
   splitMobileItems,
+  buildNavEntries,
   NAV_ITEMS,
 } from "../src/shared/lib/navigation";
 import { homePathForRole } from "../src/features/dashboard/lib/home-path";
 import {
-  buildInventoryDrilldownUrl,
+  buildCatalogDrilldownUrl,
   type StockGroupBy,
 } from "../src/features/dashboard/lib/stock-drilldown";
 import {
@@ -114,9 +107,10 @@ assert.equal(hasPermission("chi_xem", "view-cost"), false);
 
 // --- Trang chủ theo vai trò + quyền "view-dashboard" (Phase 7, 07-04) -----
 assert.equal(homePathForRole("quan_ly"), "/");
-assert.equal(homePathForRole("van_phong"), "/xuat-kho");
-assert.equal(homePathForRole("thu_kho"), "/ton-kho");
-assert.equal(homePathForRole("chi_xem"), "/ton-kho");
+// Phase 10: Xuất kho thành Hóa đơn, trang Tồn kho gỡ — tra tồn ở Danh sách hàng hóa.
+assert.equal(homePathForRole("van_phong"), "/hoa-don");
+assert.equal(homePathForRole("thu_kho"), "/danh-muc");
+assert.equal(homePathForRole("chi_xem"), "/danh-muc");
 
 assert.equal(hasPermission("quan_ly", "view-dashboard"), true);
 assert.equal(hasPermission("van_phong", "view-dashboard"), false);
@@ -193,8 +187,37 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
   );
   assert.deepEqual(
     primary.map((i) => i.href),
-    ["/xuat-kho", "/nhap-kho", "/ton-kho", "/dat-hang"],
-    "mất ô Tổng quan thì mục ưu tiên 5 (Đặt hàng) đôn lên lấp đủ 4 ô",
+    ["/hoa-don", "/nhap-kho", "/danh-muc", "/dat-hang"],
+    "mất ô Tổng quan thì mục ưu tiên 5 (Đặt hàng) đôn lên lấp đủ 4 ô; Danh sách hàng hóa thay ô Tồn kho",
+  );
+}
+
+// Phase 10 (GON-04/06): menu nhóm Đơn hàng / Hàng hóa — dựng trên danh sách
+// phẳng đã lọc quyền, nhóm đứng ở vị trí mục con đầu tiên.
+{
+  assert.ok(!NAV_ITEMS.some((i) => i.href === "/ton-kho"), "không còn mục /ton-kho");
+  assert.ok(!NAV_ITEMS.some((i) => i.href === "/xuat-kho"), "không còn mục /xuat-kho");
+
+  const entries = buildNavEntries(filterNavItems({ role: "quan_ly" }, NAV_ITEMS));
+  assert.deepEqual(
+    entries.map((e) => e.label),
+    ["Tổng quan", "Đơn hàng", "Nhập kho", "Hàng hóa", "Đối tác", "Cài đặt"],
+    "thứ tự menu cấp 1 của quản lý",
+  );
+  const groupHrefs = (label: string) => {
+    const entry = entries.find((e) => e.label === label);
+    return entry?.kind === "group" ? entry.items.map((i) => i.href) : null;
+  };
+  assert.deepEqual(groupHrefs("Đơn hàng"), ["/dat-hang", "/hoa-don"]);
+  assert.deepEqual(groupHrefs("Hàng hóa"), ["/danh-muc", "/kiem-ke"]);
+  const goods = entries.find((e) => e.label === "Hàng hóa");
+  assert.equal(goods?.kind === "group" ? goods.items[0]?.label : null, "Danh sách hàng hóa");
+
+  const chiXem = buildNavEntries(filterNavItems({ role: "chi_xem" }, NAV_ITEMS));
+  assert.deepEqual(
+    chiXem.map((e) => e.label),
+    ["Đơn hàng", "Nhập kho", "Hàng hóa", "Đối tác"],
+    "chỉ xem không có Tổng quan, Cài đặt",
   );
 }
 
@@ -264,101 +287,32 @@ assert.equal(
   "ô Hình ảnh tính vào số điều kiện đang bật",
 );
 
-// --- Bộ lọc màn tồn kho (Phase 5, 05-06) -----------------------------------
-const warehouseUuid = "33333333-3333-4333-8333-333333333333";
-const sampleInventoryFilter: InventoryFilter = {
-  q: "nhong xich",
-  categoryId: "11111111-1111-4111-8111-111111111111",
-  stageId: "22222222-2222-4222-8222-222222222222",
-  warehouseId: warehouseUuid,
-  stockStatus: "duoi_dinh_muc",
-  tradingStatus: "all",
-  sortBy: "totalStock",
-  sortDir: "desc",
-  page: 4,
-  pageSize: 100,
-};
-
-assert.deepEqual(readInventoryFilterFromUrl(new URLSearchParams("")), DEFAULT_INVENTORY_FILTER, "URL rỗng ra bộ lọc mặc định");
-assert.equal(writeInventoryFilterToUrl(DEFAULT_INVENTORY_FILTER).toString(), "", "bộ lọc tồn kho mặc định không ghi gì vào URL");
-{
-  const parsed = readInventoryFilterFromUrl(new URLSearchParams(`ton=duoi_dinh_muc&kho=${warehouseUuid}`));
-  assert.equal(parsed.stockStatus, "duoi_dinh_muc", "đọc được ?ton=duoi_dinh_muc");
-  assert.equal(parsed.warehouseId, warehouseUuid, "đọc được ?kho=<uuid>");
-}
-assert.equal(readInventoryFilterFromUrl(new URLSearchParams("kho=kho-1")).warehouseId, null, "kho không phải uuid bị bỏ");
-assert.equal(readInventoryFilterFromUrl(new URLSearchParams("ton=bay")).stockStatus, null, "trạng thái tồn lạ bị bỏ");
-assert.equal(readInventoryFilterFromUrl(new URLSearchParams("trang=-5")).page, 1, "page âm về 1");
-assert.equal(readInventoryFilterFromUrl(new URLSearchParams("sap_xep=updated_at")).sortBy, null, "màn tồn không sắp theo updated_at");
-assert.deepEqual(
-  readInventoryFilterFromUrl(writeInventoryFilterToUrl(sampleInventoryFilter)),
-  sampleInventoryFilter,
-  "bộ lọc tồn kho quay vòng qua URL không mất giá trị",
-);
-assert.equal(
-  writeInventoryFilterToUrl(sampleInventoryFilter).get("kinh_doanh"),
-  "tat_ca",
-  "tham số URL giữ tiếng Việt không dấu",
-);
-{
-  const args = toInventoryRpcArgs({ ...DEFAULT_INVENTORY_FILTER, tradingStatus: "all" });
-  assert.ok("p_dang_kinh_doanh" in args, "lọc tất cả phải có khóa p_dang_kinh_doanh");
-  assert.equal(args.p_dang_kinh_doanh, null, "lọc tất cả gửi null tường minh, không phải undefined");
-}
-assert.equal(toInventoryRpcArgs(DEFAULT_INVENTORY_FILTER).p_dang_kinh_doanh, true);
-assert.equal(toInventoryRpcArgs(sampleInventoryFilter).p_kho_id, warehouseUuid);
-assert.equal(toInventoryRpcArgs(sampleInventoryFilter).p_sap_xep, "tong_ton", "sortBy map sang tên cột database");
-assert.equal(toInventoryRpcArgs(DEFAULT_INVENTORY_FILTER).p_tu_khoa, undefined, "ô tìm rỗng không gửi từ khóa");
-assert.equal(countActiveInventoryFilters(DEFAULT_INVENTORY_FILTER), 0);
-assert.equal(countActiveInventoryFilters(sampleInventoryFilter), 5, "nhóm + công đoạn + kho + tồn + kinh doanh");
-assert.equal(
-  countActiveInventoryFilters({ ...DEFAULT_INVENTORY_FILTER, q: "tìm gì đó" }),
-  0,
-  "ô tìm KHÔNG tính vào số điều kiện của panel lọc",
-);
-
-// --- Drill-down từ trang tổng quan sang /ton-kho (Phase 7, 07-04) ----------
+// --- Drill-down từ trang tổng quan sang Danh sách hàng hóa (Phase 10) -------
+// Trang /ton-kho đã gỡ; danh mục chưa có lọc theo kho nên kho bị bỏ (đã chốt).
 {
   const groupId = "44444444-4444-4444-8444-444444444444";
   assert.equal(
-    buildInventoryDrilldownUrl({
-      groupBy: "category" as StockGroupBy,
-      groupId,
-      warehouseId: null,
-      stockStatus: "am",
-    }),
-    `/ton-kho?nhom=${groupId}&ton=am`,
+    buildCatalogDrilldownUrl({ groupBy: "category" as StockGroupBy, groupId, stockStatus: "am" }),
+    `/danh-muc?nhom=${groupId}&ton=am`,
     "drill-down theo nhóm hàng + trạng thái âm",
   );
 
-  const stageUrl = buildInventoryDrilldownUrl({
-    groupBy: "stage",
-    groupId,
-    warehouseId: warehouseUuid,
-    stockStatus: "duoi_dinh_muc",
-  });
+  const stageUrl = buildCatalogDrilldownUrl({ groupBy: "stage", groupId, stockStatus: "duoi_dinh_muc" });
   const stageParams = new URLSearchParams(stageUrl.split("?")[1]);
+  assert.ok(stageUrl.startsWith("/danh-muc?"));
   assert.equal(stageParams.get("cong_doan"), groupId);
-  assert.equal(stageParams.get("kho"), warehouseUuid);
   assert.equal(stageParams.get("ton"), "duoi_dinh_muc");
   assert.equal(stageParams.get("kinh_doanh"), null, "không đặt kinh_doanh, dùng mặc định 'đang kinh doanh'");
   assert.equal(stageParams.get("nhom"), null, "groupBy=stage không được kèm nhom");
-  assert.equal(stageParams.get("trang"), null, "không mang theo trang từ lần lọc trước");
 
   assert.equal(
-    buildInventoryDrilldownUrl({
-      groupBy: "category",
-      groupId,
-      warehouseId: null,
-      stockStatus: null,
-    }),
-    `/ton-kho?nhom=${groupId}`,
+    buildCatalogDrilldownUrl({ groupBy: "category", groupId, stockStatus: null }),
+    `/danh-muc?nhom=${groupId}`,
     "cột 'Tổng mã' không có stockStatus thì không có ?ton=",
   );
 
-  const roundTrip = readInventoryFilterFromUrl(new URLSearchParams(stageUrl.split("?")[1]));
+  const roundTrip = readFilterFromUrl(new URLSearchParams(stageUrl.split("?")[1]));
   assert.equal(roundTrip.stageId, groupId);
-  assert.equal(roundTrip.warehouseId, warehouseUuid);
   assert.equal(roundTrip.stockStatus, "duoi_dinh_muc");
   assert.equal(roundTrip.tradingStatus, "active", "URL drill-down luôn quay vòng về 'đang kinh doanh'");
 }

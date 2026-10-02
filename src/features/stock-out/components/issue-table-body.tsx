@@ -19,7 +19,7 @@ const COLUMNS: TableColumnsType<IssueRow> = [
     width: 150,
     fixed: "left",
     render: (docNo: string, row) => (
-      <Link href={`/xuat-kho/${row.id}`} className="font-mono">
+      <Link href={`/hoa-don/${row.id}`} className="font-mono">
         {docNo}
       </Link>
     ),

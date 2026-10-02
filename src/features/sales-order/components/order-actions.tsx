@@ -43,7 +43,7 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
       onOk: async () => {
         try {
           await approve.mutateAsync();
-          message.success("Đã xác nhận. In phiếu đi lấy hàng hoặc tạo phiếu xuất.");
+          message.success("Đã xác nhận. In phiếu đi lấy hàng hoặc tạo hóa đơn.");
         } catch (error) {
           if (isPostgrestError(error) && error.code === "23514") {
             message.error(error.message);
@@ -62,21 +62,21 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
 
   function confirmCreateIssue() {
     modal.confirm({
-      title: `Tạo phiếu xuất từ đơn ${order.orderNo}?`,
+      title: `Tạo hóa đơn từ đơn ${order.orderNo}?`,
       width: 560,
-      content: `Sinh phiếu xuất từ đơn ${order.orderNo}: ${lines.length} dòng, mọi dòng điền sẵn số lượng bằng số đặt. Kho từng dòng lấy theo kho mặc định của mã hàng. Sửa lại dòng nào kho lấy thiếu rồi ghi sổ.`,
-      okText: "Tạo phiếu xuất",
+      content: `Sinh hóa đơn từ đơn ${order.orderNo}: ${lines.length} dòng, mọi dòng điền sẵn số lượng bằng số đặt. Kho từng dòng lấy theo kho mặc định của mã hàng. Sửa lại dòng nào kho lấy thiếu rồi ghi sổ.`,
+      okText: "Tạo hóa đơn",
       cancelText: "Thôi",
       onOk: async () => {
         try {
           const issueId = await createIssue.mutateAsync();
-          router.push(`/xuat-kho/${issueId}`);
+          router.push(`/hoa-don/${issueId}`);
         } catch (error) {
           // 23514 hay gặp nhất: mã thiếu kho mặc định (liệt kê đúng mã) hoặc
           // đơn vừa bị mở khóa — hiện nguyên văn message RPC (bẫy 8).
           if (isPostgrestError(error) && error.code === "23514") {
             modal.error({
-              title: "Không tạo được phiếu xuất",
+              title: "Không tạo được hóa đơn",
               content: (
                 <Space direction="vertical">
                   <span>{error.message}</span>
@@ -91,7 +91,7 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
             return;
           }
           if (errorCode(error) === "42501") {
-            message.error("Tài khoản không có quyền tạo phiếu xuất.");
+            message.error("Tài khoản không có quyền tạo hóa đơn.");
             return;
           }
           const explained = explainError(error);
@@ -125,7 +125,7 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
 
         {order.status === "DA_XAC_NHAN" && permissions.canEdit ? (
           <Button loading={createIssue.isPending} onClick={confirmCreateIssue}>
-            Tạo phiếu xuất
+            Tạo hóa đơn
           </Button>
         ) : null}
 

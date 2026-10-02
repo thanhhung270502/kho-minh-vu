@@ -144,7 +144,7 @@ export function useCloseOrderEarly(id: string) {
 }
 
 /**
- * Phiếu xuất mới phải hiện ngay ở màn `/xuat-kho` — làm mới thêm
+ * Phiếu xuất mới phải hiện ngay ở màn `/hoa-don` — làm mới thêm
  * `documentKeys.all`. Không đụng cache danh mục sản phẩm ở đây: tạo phiếu
  * (chưa ghi sổ) không đổi tồn hay giá vốn, khác `usePostReceipt`/`useVoidReceipt`.
  */

@@ -6,7 +6,7 @@ import { requirePermission } from "@/features/auth/api/current-user.server";
 import { PageHeader } from "@/shared/components/page-header";
 import { hasPermission } from "@/shared/lib/permissions";
 
-export const metadata: Metadata = { title: "Danh mục hàng" };
+export const metadata: Metadata = { title: "Danh sách hàng hóa" };
 
 export default async function ProductsPage() {
   const user = await requirePermission("view-catalog");
@@ -14,7 +14,7 @@ export default async function ProductsPage() {
   return (
     <>
       <PageHeader
-        title="Danh mục hàng"
+        title="Danh sách hàng hóa"
         description="Tìm theo mã hoặc tên, gõ không dấu cũng được."
       />
 

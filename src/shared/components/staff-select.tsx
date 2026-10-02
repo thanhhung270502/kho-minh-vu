@@ -15,7 +15,7 @@ type Props = {
 
 /**
  * Chọn nhân viên nhận hàng cho đơn/phiếu xuất nội bộ. Đặt ở `shared/` vì cả
- * `/dat-hang` lẫn `/xuat-kho` đều dùng (CLAUDE.md: chỉ nâng lên khi ≥ 2 feature).
+ * `/dat-hang` lẫn `/hoa-don` đều dùng (CLAUDE.md: chỉ nâng lên khi ≥ 2 feature).
  */
 export function StaffSelect({ value, onChange, disabled, autoFocus }: Props) {
   const staff = useInternalRecipients();

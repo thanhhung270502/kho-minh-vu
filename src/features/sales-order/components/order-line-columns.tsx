@@ -108,7 +108,7 @@ export function buildOrderLineColumns({
             // so_luong_da_xuat treo không tham chiếu (T-04-46).
             render: (_: unknown, line: OrderLine) =>
               line.shippedQuantity > 0 ? (
-                <Tooltip title="Dòng đã có phiếu xuất, không xóa được">
+                <Tooltip title="Dòng đã có hóa đơn, không xóa được">
                   <Button type="link" size="small" danger disabled className="px-0">
                     Xóa
                   </Button>

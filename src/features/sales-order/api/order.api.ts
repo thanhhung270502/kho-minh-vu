@@ -197,7 +197,7 @@ export async function createIssueFromOrder(orderId: string): Promise<string> {
   );
   if (error) throw error;
   if (!data) {
-    throw new Error("Không tạo được phiếu xuất từ đơn này.");
+    throw new Error("Không tạo được hóa đơn từ đơn này.");
   }
   return data.id;
 }

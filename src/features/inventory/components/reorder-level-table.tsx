@@ -152,7 +152,7 @@ export function ReorderLevelTable() {
             options={BASIS_OPTIONS}
           />
         </div>
-        <Link href="/ton-kho?ton=duoi_dinh_muc" className="ms-auto">
+        <Link href="/danh-muc?ton=duoi_dinh_muc" className="ms-auto">
           Xem mã dưới định mức
         </Link>
         <Button

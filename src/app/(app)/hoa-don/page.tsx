@@ -6,7 +6,7 @@ import { requirePermission } from "@/features/auth/api/current-user.server";
 import { PageHeader } from "@/shared/components/page-header";
 import { hasPermission } from "@/shared/lib/permissions";
 
-export const metadata: Metadata = { title: "Phiếu xuất" };
+export const metadata: Metadata = { title: "Hóa đơn" };
 
 export default async function StockOutPage() {
   const user = await requirePermission("view-catalog");
@@ -14,7 +14,7 @@ export default async function StockOutPage() {
   return (
     <>
       <PageHeader
-        title="Phiếu xuất"
+        title="Hóa đơn"
         description="Hàng ra kho — ghi sổ xong là tồn giảm."
       />
 

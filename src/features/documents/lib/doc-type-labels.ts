@@ -5,7 +5,7 @@ type DocType = Database["public"]["Enums"]["loai_ct"];
 /** Nhãn tiếng Việt của bảy loại chứng từ — dùng trong hộp xác nhận ghi sổ/hủy. */
 export const DOC_TYPE_ACTION_LABEL: Record<DocType, string> = {
   NHAP: "phiếu nhập",
-  XUAT: "phiếu xuất",
+  XUAT: "hóa đơn",
   TRA_KHACH: "phiếu trả hàng khách",
   TRA_NCC: "phiếu trả hàng NCC",
   CHUYEN_KHO: "phiếu chuyển kho",

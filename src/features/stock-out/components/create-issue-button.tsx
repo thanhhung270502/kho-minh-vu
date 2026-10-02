@@ -16,7 +16,7 @@ type Props = {
   label?: string;
 };
 
-export function CreateIssueButton({ label = "Tạo phiếu xuất" }: Props) {
+export function CreateIssueButton({ label = "Tạo hóa đơn" }: Props) {
   const router = useRouter();
   const createIssue = useCreateIssue();
   const lookups = useLookups();
@@ -70,10 +70,10 @@ export function CreateIssueButton({ label = "Tạo phiếu xuất" }: Props) {
       reset();
       // Tạo phiếu là sinh ngay một phiếu có số trên server — không giữ phiếu
       // nháp ở client, giống khuôn createReceipt của Phase 3.
-      router.push(`/xuat-kho/${id}`);
+      router.push(`/hoa-don/${id}`);
     } catch (caught) {
       if (errorCode(caught) === "42501") {
-        setError("Tài khoản không có quyền tạo phiếu xuất.");
+        setError("Tài khoản không có quyền tạo hóa đơn.");
         return;
       }
       // RPC/ràng buộc database đã soạn sẵn câu tiếng Việt — hiện nguyên văn.
@@ -94,7 +94,7 @@ export function CreateIssueButton({ label = "Tạo phiếu xuất" }: Props) {
 
       <Modal
         open={open}
-        title="Tạo phiếu xuất"
+        title="Tạo hóa đơn"
         okText="Tạo phiếu"
         cancelText="Hủy"
         confirmLoading={createIssue.isPending}
@@ -158,7 +158,7 @@ export function CreateIssueButton({ label = "Tạo phiếu xuất" }: Props) {
 
         <Typography.Text type="secondary" className="block">
           Đây là đường tạo phiếu không qua đơn — dùng cho xuất kho lẻ, xuất nội bộ.
-          Xuất theo đơn đã xác nhận thì bấm “Tạo phiếu xuất” ngay trên trang chi tiết đơn.
+          Xuất theo đơn đã xác nhận thì bấm “Tạo hóa đơn” ngay trên trang chi tiết đơn.
         </Typography.Text>
       </Modal>
     </>

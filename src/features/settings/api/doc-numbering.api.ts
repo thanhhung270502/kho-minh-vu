@@ -18,7 +18,7 @@ export type DocNumberingRow = {
 
 export const DOC_TYPE_LABELS: Record<DocType, string> = {
   NHAP: "Phiếu nhập",
-  XUAT: "Phiếu xuất",
+  XUAT: "Hóa đơn",
   TRA_NCC: "Trả hàng NCC",
   TRA_KHACH: "Khách trả hàng",
   CHUYEN_KHO: "Chuyển kho",
