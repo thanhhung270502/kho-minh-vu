@@ -167,9 +167,9 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 
 ### Panel chi tiết (PANEL)
 
-- [ ] **PANEL-01**: Ở Danh sách hàng hóa, bấm vào dòng mở panel cạnh bảng gồm ảnh, mã hàng, tên hàng, tồn kho, khách đặt, dự kiến hết hàng (cùng số với trang Phân tích), không rời trang
-- [ ] **PANEL-02**: Bảng đối tác chỉ gồm Mã, Tên, Loại, Điện thoại, Tổng giao dịch
-- [ ] **PANEL-03**: Bấm dòng đối tác mở panel: tab Thông tin (Loại, Mã, Tên, Điện thoại, Địa chỉ, Ghi chú, sửa được) và tab Lịch sử giao dịch; trang `/doi-tac/[id]` cũ chuyển về danh sách mở sẵn panel
+- [x] **PANEL-01**: Ở Danh sách hàng hóa, bấm vào dòng mở panel cạnh bảng gồm ảnh, mã hàng, tên hàng, tồn kho, khách đặt, dự kiến hết hàng (cùng số với trang Phân tích), không rời trang
+- [x] **PANEL-02**: Bảng đối tác chỉ gồm Mã, Tên, Loại, Điện thoại, Tổng giao dịch
+- [x] **PANEL-03**: Bấm dòng đối tác mở panel: tab Thông tin (Loại, Mã, Tên, Điện thoại, Địa chỉ, Ghi chú, sửa được) và tab Lịch sử giao dịch; trang `/doi-tac/[id]` cũ chuyển về danh sách mở sẵn panel
 
 ### Import danh mục v2 (IMP)
 
@@ -334,9 +334,9 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 | PTICH-05 | Phase 13 | Complete |
 | PTICH-06 | Phase 13 | Complete |
 | PTICH-07 | Phase 13 | Complete |
-| PANEL-01 | Phase 14 | Pending |
-| PANEL-02 | Phase 14 | Pending |
-| PANEL-03 | Phase 14 | Pending |
+| PANEL-01 | Phase 14 | Complete |
+| PANEL-02 | Phase 14 | Complete |
+| PANEL-03 | Phase 14 | Complete |
 | IMP-01 | Phase 15 | Pending |
 | IMP-02 | Phase 15 | Pending |
 | IMP-03 | Phase 15 | Pending |

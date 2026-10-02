@@ -48,7 +48,7 @@ sau cần dùng ngay.
 - [x] **Phase 11: Nhân viên phụ trách & danh mục nền** - Danh mục nhân viên phụ trách, đặt hàng chọn Nội bộ/Đối tác, thêm Nhóm hàng/ĐVT/Công đoạn ngay trong form mã hàng
 - [x] **Phase 12: Luồng đơn hàng → hóa đơn** - Đơn tạm → Xác nhận (in phiếu lấy hàng) → Hoàn thành ghi sổ Hóa đơn atomic, 1 đơn = 1 hóa đơn, hủy đơn
 - [x] **Phase 13: Phân tích tồn kho** - Trang `/phan-tich`: bán TB/ngày, dự kiến hết hàng, đề nghị nhập, tồn chậm, ngưỡng chỉnh được, duyệt định mức
-- [ ] **Phase 14: Panel chi tiết** - Bấm dòng Danh sách hàng hóa và Đối tác mở panel cạnh bảng, không rời trang
+- [x] **Phase 14: Panel chi tiết** - Bấm dòng Danh sách hàng hóa và Đối tác mở panel cạnh bảng, không rời trang
 - [ ] **Phase 15: Import danh mục v2** - File 4 cột, bảng chọn trường từng dòng, bỏ qua dòng lỗi và tải file lỗi, tồn kho ghi bằng phiếu điều chỉnh
 - [ ] **Phase 16: Chức vụ & quyền** - Chức vụ động với 9 quyền, chặn ở database bằng `co_quyen()` đọc DB, có hiệu lực ngay (rủi ro cao nhất, đụng RLS)
  (completed 2026-09-26)
@@ -528,7 +528,18 @@ nhau, chạy song song được. Migration kế tiếp là `0077`.
   3. Bấm dòng đối tác mở panel với tab Thông tin (sửa được) và tab Lịch sử giao dịch
   4. Vào `/doi-tac/[id]` cũ được chuyển về danh sách với panel đối tác đó mở sẵn
 
-**Plans**: TBD
+**Plans**: 4 task — làm theo quickplan (không qua `/gsd:execute-phase`), branch `feature/phase-14-panel` (tách từ `feature/phase-13-phan-tich`)
+- [x] Migration `0080`: `danh_sach_doi_tac` thêm `tong_giao_dich` (số chứng từ đã ghi sổ); `lich_su_giao_dich_doi_tac` chỉ còn phiếu hệ thống đã ghi sổ (`37efacc`)
+- [x] Khung panel dùng chung (`DetailPanel`, slot `detailPanel` của `ListLayout`, `?chon=<uuid>`) + panel mã hàng (`7af573b`)
+- [x] Bảng đối tác 5 cột + panel đối tác (Thông tin / Lịch sử giao dịch / Lịch sử sửa), gỡ `/doi-tac/[id]` thay bằng redirect (`df98528`)
+- [x] Kiểm toàn bộ: `npm run check`, pgTAP, test hàm thuần, test đọc Excel, ma trận quyền route, trình duyệt desktop + điện thoại
+
+> **Hoàn thành 02/10/2026.** Kiểm trên Supabase local: `npm run check`, pgTAP 45 file / 702 test, test hàm thuần,
+> test đọc Excel, ma trận quyền route 195/195; xem trên trình duyệt 1440px và 375px (vai trò quản lý). Quyết định khi làm:
+> khách đặt + dự kiến hết hàng chỉ hiện cho quản lý + văn phòng (thủ kho/chỉ xem ẩn hẳn, không nới quyền RPC), tính theo
+> nhịp bán 30 ngày cố định; Tổng giao dịch = số chứng từ `HOAN_THANH`; giữ `/danh-muc/[id]` + link "Xem chi tiết";
+> panel đối tác xem chỉ đọc, nút Sửa mở form có sẵn; bỏ dòng "Tên trong ô Ghi chú KiotViet". Panel là cột phải từ
+> 1280px, ngăn kéo toàn màn dưới đó; đổi trang/bộ lọc không đóng panel. `0080` mới áp ở local.
 **UI hint**: yes
 
 ### Phase 15: Import danh mục v2
@@ -585,6 +596,6 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 | 11. Nhân viên phụ trách & danh mục nền | 4/4 | Complete | 2026-10-02 |
 | 12. Luồng đơn hàng → hóa đơn | 4/4 | Complete | 2026-10-02 |
 | 13. Phân tích tồn kho | 4/4 | Complete | 2026-10-02 |
-| 14. Panel chi tiết | 0/TBD | Not started | - |
+| 14. Panel chi tiết | 4/4 | Complete | 2026-10-02 |
 | 15. Import danh mục v2 | 0/TBD | Not started | - |
 | 16. Chức vụ & quyền | 0/TBD | Not started | - |

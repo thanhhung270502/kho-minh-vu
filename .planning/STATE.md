@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Phản hồi vận hành
 status: ready_to_plan
-stopped_at: Phase 13 complete (quickplan, 4 task) — Phase 14 hoặc 15 kế tiếp
-last_updated: 2026-10-02T10:00:00.000Z
+stopped_at: Phase 14 complete (quickplan, 4 task) — Phase 15 kế tiếp
+last_updated: 2026-10-02T14:00:00.000Z
 last_activity: 2026-10-02
 progress:
   total_phases: 16
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 101
-  completed_plans: 68
-  percent: 50
+  completed_plans: 72
+  percent: 56
 ---
 
 # Project State
@@ -21,14 +21,32 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-02)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Milestone v1.1 Phản hồi vận hành — Phase 10–13 xong, kế tiếp Phase 14 (Panel chi tiết) hoặc 15 (Import v2)
+**Current focus:** Milestone v1.1 Phản hồi vận hành — Phase 10–14 xong, kế tiếp Phase 15 (Import danh mục v2)
 
 ## Current Position
 
-Phase: 14 — ready to plan (Phase 10–13 complete; Phase 15 cũng đã đủ điều kiện)
+Phase: 15 — ready to plan (Phase 10–14 complete)
 Plan: —
 Status: Ready to plan
-Last activity: 2026-10-02 — Phase 13 Phân tích tồn kho hoàn thành
+Last activity: 2026-10-02 — Phase 14 Panel chi tiết hoàn thành
+
+### Phase 14 — đã xong (02/10/2026)
+
+Làm theo `/spartan:quickplan`, không có thư mục `.planning/phases/14-*`. Branch
+`feature/phase-14-panel` **tách từ `feature/phase-13-phan-tich`** (chưa push, chưa merge — merge
+10 → 11 → 12 → 13 → 14 theo thứ tự): `37efacc`, `7af573b`, `df98528`. PANEL-01..03 xong; kiểm trên
+Supabase local (`npm run check`, pgTAP 45 file / 702 test, test hàm thuần, test đọc Excel, ma trận
+quyền route 195/195) và xem trên trình duyệt 1440px + 375px.
+
+Hệ quả cho các phase sau:
+- Panel chi tiết dùng chung: `src/shared/components/detail-panel.tsx` + slot `detailPanel` của
+  `ListLayout`; mã đang chọn ở `?chon=<uuid>` (`src/shared/lib/selected-id.ts`, bấm vào phần tử
+  tương tác hoặc `data-no-row-click` không mở panel). Bảng khác muốn panel thì dùng lại y vậy.
+- Thủ kho / chỉ xem KHÔNG thấy khách đặt + dự kiến hết hàng (route chỉ ghép `ProductForecast`
+  khi có `view-analysis`). Phase 16 đổi quyền thì nhớ chỗ này.
+- `/doi-tac/[id]` đã gỡ, redirect sang `/doi-tac?chon=<id>` trong `next.config.ts`.
+- Lịch sử giao dịch đối tác chỉ còn phiếu hệ thống đã ghi sổ — bỏ hẳn nhánh KiotViet.
+- **`0080` mới áp ở local.** Kế tiếp: `/spartan:quickplan phase 15`, migration kế tiếp là `0081`.
 
 ### Phase 13 — đã xong (02/10/2026)
 
@@ -112,8 +130,8 @@ Hệ quả cho các phase sau:
   việc vận hành bắt buộc trước go-live") phải chốt lại: tồn đầu kỳ đi bằng kiểm kê (KKE-04 /
   DLIEU-06), hoặc chạy RPC `nap_ton_tam` bằng script nếu vẫn cần.
 
-Kế tiếp (sau Phase 13): Phase 14 (Panel chi tiết) hoặc Phase 15 (Import danh mục v2) —
-`/spartan:quickplan phase 14`. Migration kế tiếp là `0080`.
+Kế tiếp (sau Phase 14): Phase 15 (Import danh mục v2) — `/spartan:quickplan phase 15`.
+Migration kế tiếp là `0081`.
 
 ### Việc v1.0 còn treo (giữ nguyên, chạy song song)
 
