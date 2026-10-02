@@ -201,7 +201,7 @@ export type Database = {
             foreignKeyName: "chung_tu_nguoi_nhan_id_fkey"
             columns: ["nguoi_nhan_id"]
             isOneToOne: false
-            referencedRelation: "nguoi_dung"
+            referencedRelation: "nhan_vien_phu_trach"
             referencedColumns: ["id"]
           },
           {
@@ -518,7 +518,7 @@ export type Database = {
             foreignKeyName: "don_dat_hang_nguoi_nhan_id_fkey"
             columns: ["nguoi_nhan_id"]
             isOneToOne: false
-            referencedRelation: "nguoi_dung"
+            referencedRelation: "nhan_vien_phu_trach"
             referencedColumns: ["id"]
           },
           {
@@ -939,6 +939,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      nhan_vien_phu_trach: {
+        Row: {
+          created_at: string
+          dang_dung: boolean
+          id: string
+          ten_day_du: string
+          ten_viet_tat: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          dang_dung?: boolean
+          id?: string
+          ten_day_du: string
+          ten_viet_tat: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          dang_dung?: boolean
+          id?: string
+          ten_day_du?: string
+          ten_viet_tat?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       nhat_ky_doi_chieu: {
         Row: {
@@ -1519,8 +1546,9 @@ export type Database = {
       danh_sach_nguoi_nhan_noi_bo: {
         Args: never
         Returns: {
-          ho_ten: string
           id: string
+          ten_day_du: string
+          ten_viet_tat: string
         }[]
       }
       danh_sach_phien_kiem_ke: {

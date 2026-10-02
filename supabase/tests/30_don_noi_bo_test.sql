@@ -1,9 +1,11 @@
 -- =============================================================================
--- 0076 — Đơn đặt hàng / phiếu xuất có người nhận nội bộ (nguoi_nhan_id)
+-- 0076 + 0077 — Đơn đặt hàng / phiếu xuất có người nhận nội bộ (nguoi_nhan_id)
+-- 0077 đổi đích: người nhận nội bộ là NHÂN VIÊN PHỤ TRÁCH (bảng riêng, có tên
+-- viết tắt + tên đầy đủ), không còn là tài khoản đăng nhập nguoi_dung.
 -- Khuôn: supabase/tests/29_phieu_xuat_tu_don_test.sql
 -- =============================================================================
 begin;
-select plan(18);
+select plan(26);
 
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
@@ -30,18 +32,19 @@ begin
   perform set_config('role', 'postgres', true);
 end $helper$;
 
--- ─── Dữ liệu: người nhận = tài khoản quản lý, thukho2 bị ngưng hoạt động ────
+-- ─── Dữ liệu: một nhân viên đang dùng, một nhân viên đã ngừng ──────────────
+insert into public.nhan_vien_phu_trach (ten_viet_tat, ten_day_du)
+values ('ZQX-A', 'Nhân viên ZQX An');
+insert into public.nhan_vien_phu_trach (ten_viet_tat, ten_day_du, dang_dung)
+values ('ZQX-N', 'Nhân viên ZQX Nghỉ', false);
+
 create temp table t_nb as
-select (select id from auth.users where email = 'quanly@khominhvu.local') as nguoi_nhan,
-       (select nd.ho_ten from public.nguoi_dung nd
-          join auth.users u on u.id = nd.id
-         where u.email = 'quanly@khominhvu.local') as ten_nguoi_nhan,
-       (select id from auth.users where email = 'thukho2@khominhvu.local') as nguoi_nghi,
+select (select id from public.nhan_vien_phu_trach where ten_viet_tat = 'ZQX-A') as nguoi_nhan,
+       'Nhân viên ZQX An'::text as ten_nguoi_nhan,
+       (select id from public.nhan_vien_phu_trach where ten_viet_tat = 'ZQX-N') as nguoi_nghi,
        (select id from public.doi_tac limit 1) as doi_tac_id,
        (select id from public.kho where ma = 'K1') as k1;
 grant select on t_nb to authenticated;
-
-update public.nguoi_dung set dang_hoat_dong = false where id = (select nguoi_nghi from t_nb);
 
 insert into public.san_pham (ma_hang, ten_hang, dvt_id, cong_doan_id, kho_mac_dinh_id)
 values ('NB-ZQX-A', 'Hàng test nội bộ',
@@ -50,12 +53,22 @@ values ('NB-ZQX-A', 'Hàng test nội bộ',
         (select k1 from t_nb))
 on conflict (ma_hang) do update set kho_mac_dinh_id = excluded.kho_mac_dinh_id;
 
--- ─── 1–3: cột ───────────────────────────────────────────────────────────────
+-- ─── 1–7: cột và bảng ───────────────────────────────────────────────────────
 select has_column('public', 'don_dat_hang', 'nguoi_nhan_id', 'don_dat_hang có nguoi_nhan_id');
 select has_column('public', 'chung_tu', 'nguoi_nhan_id', 'chung_tu có nguoi_nhan_id');
 select col_is_null('public', 'don_dat_hang', 'doi_tac_id', 'doi_tac_id được để null (đơn nội bộ)');
+select has_table('public', 'nhan_vien_phu_trach', 'có bảng nhan_vien_phu_trach');
+select col_not_null('public', 'nhan_vien_phu_trach', 'ten_viet_tat', 'tên viết tắt bắt buộc');
+select col_not_null('public', 'nhan_vien_phu_trach', 'ten_day_du', 'tên đầy đủ bắt buộc');
+select col_not_null('public', 'nhan_vien_phu_trach', 'dang_dung', 'cờ đang dùng bắt buộc');
 
--- ─── 4–6: đúng một người nhận ───────────────────────────────────────────────
+-- ─── 8–9: người nhận nội bộ trỏ vào nhân viên phụ trách, không vào tài khoản ─
+select fk_ok('public', 'don_dat_hang', 'nguoi_nhan_id', 'public', 'nhan_vien_phu_trach', 'id',
+  'don_dat_hang.nguoi_nhan_id → nhan_vien_phu_trach');
+select fk_ok('public', 'chung_tu', 'nguoi_nhan_id', 'public', 'nhan_vien_phu_trach', 'id',
+  'chung_tu.nguoi_nhan_id → nhan_vien_phu_trach');
+
+-- ─── 10–12: đúng một người nhận ─────────────────────────────────────────────
 select throws_ok(
   $$ insert into public.don_dat_hang (so_dh, doi_tac_id, nguoi_nhan_id)
      select 'ZQX-NB-HAI', doi_tac_id, nguoi_nhan from t_nb $$,
@@ -71,7 +84,7 @@ select throws_ok(
   '23514', null, 'Phiếu có cả đối tác lẫn người nhận nội bộ bị từ chối'
 );
 
--- ─── 7–10: danh sách nhân viên ──────────────────────────────────────────────
+-- ─── 13–18: danh sách nhân viên và quyền ghi ────────────────────────────────
 select has_function('public', 'danh_sach_nguoi_nhan_noi_bo', array[]::text[],
   'danh_sach_nguoi_nhan_noi_bo() tồn tại');
 select ok(
@@ -82,23 +95,35 @@ select ok(
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select ok(
   exists (select 1 from public.danh_sach_nguoi_nhan_noi_bo() n, t_nb
-          where n.id = t_nb.nguoi_nhan and n.ho_ten = t_nb.ten_nguoi_nhan),
-  'Văn phòng thấy tài khoản khác (dù RLS nguoi_dung chỉ cho đọc chính mình)'
+          where n.id = t_nb.nguoi_nhan and n.ten_day_du = t_nb.ten_nguoi_nhan
+            and n.ten_viet_tat = 'ZQX-A'),
+  'Danh sách trả nhân viên đang dùng kèm tên viết tắt và tên đầy đủ'
 );
 select ok(
   not exists (select 1 from public.danh_sach_nguoi_nhan_noi_bo() n, t_nb
               where n.id = t_nb.nguoi_nghi),
-  'Tài khoản ngưng hoạt động không nằm trong danh sách'
+  'Nhân viên đã ngừng dùng không nằm trong danh sách'
+);
+select lives_ok(
+  $$ insert into public.nhan_vien_phu_trach (ten_viet_tat, ten_day_du) values ('ZQX-VP', 'Văn phòng thêm') $$,
+  'Văn phòng thêm được nhân viên phụ trách'
+);
+select pg_temp.dang_xuat();
+select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
+select throws_ok(
+  $$ insert into public.nhan_vien_phu_trach (ten_viet_tat, ten_day_du) values ('ZQX-TK', 'Thủ kho thêm') $$,
+  '42501', null, 'Thủ kho không thêm được nhân viên phụ trách'
 );
 
--- ─── 11: văn phòng tạo đơn nội bộ qua RLS ───────────────────────────────────
+-- ─── 19: văn phòng tạo đơn nội bộ qua RLS ───────────────────────────────────
+select pg_temp.dang_xuat();
+select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select lives_ok(
   $$ insert into public.don_dat_hang (so_dh, nguoi_nhan_id)
      select 'ZQX-NB-01', nguoi_nhan from t_nb $$,
   'Văn phòng tạo được đơn nội bộ'
 );
 select pg_temp.dang_xuat();
-
 create temp table t_don as
 select id from public.don_dat_hang where so_dh = 'ZQX-NB-01';
 grant select on t_don to authenticated;
@@ -106,7 +131,7 @@ grant select on t_don to authenticated;
 insert into public.don_dat_hang_dong (don_dat_hang_id, san_pham_id, so_luong_dat)
 select (select id from t_don), (select id from public.san_pham where ma_hang = 'NB-ZQX-A'), 3;
 
--- ─── 12–14: RPC đọc đơn ─────────────────────────────────────────────────────
+-- ─── 20–22: RPC đọc đơn ─────────────────────────────────────────────────────
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 select is(
   (select ten_nguoi_nhan from public.chi_tiet_don((select id from t_don))),
@@ -125,7 +150,7 @@ select ok(
 );
 select pg_temp.dang_xuat();
 
--- ─── 15–18: phiếu xuất sinh từ đơn mang người nhận, hiện trên thẻ kho ──────
+-- ─── 23–26: phiếu xuất sinh từ đơn mang người nhận, hiện trên thẻ kho ──────
 select public.xac_nhan_don((select id from t_don));
 create temp table t_px as
 select (public.tao_phieu_xuat_tu_don((select id from t_don))).id as id;
