@@ -156,7 +156,7 @@ export function NoteReview() {
                   {DECISION_LABELS[row.kind] ?? row.kind}
                 </Tag>
                 {row.partnerId ? (
-                  <Link href={`/doi-tac/${row.partnerId}`}>{row.partnerName}</Link>
+                  <Link href={`/doi-tac?chon=${row.partnerId}`}>{row.partnerName}</Link>
                 ) : null}
                 {row.salesName ? (
                   <span className="text-gray-500">Sale: {row.salesName}</span>

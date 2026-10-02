@@ -72,6 +72,9 @@ const MA_TRAN: Dong[] = [
   // Phase 13: phân tích tồn mọi kho — quản lý + văn phòng (xem_duoc_phan_tich, 0079).
   { route: "/phan-tich", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/doi-tac", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
+  // Phase 14 (PANEL-03): trang chi tiết đối tác thành panel — link cũ chuyển
+  // sang ?chon=<id>. Uuid giả vẫn đủ: redirect ở next.config.ts, không đọc DB.
+  { route: "/doi-tac/00000000-0000-4000-8000-000000000001", ky_vong: ALL("→/doi-tac") },
   { route: "/doi-tac/ra-ghi-chu", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/cai-dat/nguoi-dung", ky_vong: { quanly: "200", vanphong: "quyen", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   // Nhân viên phụ trách (0077): cùng nhóm quyền ghi với danh mục — quản lý + văn phòng.

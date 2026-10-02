@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
       { source: "/ton-kho", destination: "/danh-muc", permanent: false },
       { source: "/ton-kho/nap-tam", destination: "/danh-muc", permanent: false },
       { source: "/ton-kho/dinh-muc", destination: "/phan-tich?tab=dinh-muc", permanent: false },
+      // Trang chi tiết đối tác thành panel trên danh sách (PANEL-03) — link cũ vẫn mở đúng đối tác.
+      { source: "/doi-tac/:id([0-9a-fA-F-]{36})", destination: "/doi-tac?chon=:id", permanent: false },
       // Nhóm hàng / ĐVT / Công đoạn rời Cài đặt (Phase 11) — quản lý bằng nút
       // "Danh mục phụ" ở Danh sách hàng hóa.
       { source: "/cai-dat/nhom-hang", destination: "/danh-muc", permanent: false },

@@ -22,6 +22,8 @@ export type PartnerRow = {
   note: string | null;
   isActive: boolean;
   updatedAt: string;
+  /** Số chứng từ đã ghi sổ (HOAN_THANH) của đối tác — 0080. */
+  transactionCount: number;
   totalRows: number;
 };
 
@@ -66,6 +68,18 @@ export const PARTNER_KIND_COLORS: Record<PartnerKind, string> = {
   CA_HAI: "purple",
 };
 
+/** Khóa là giá trị enum `loai_ct` trong database. */
+const DOC_TYPE_LABELS: Record<string, string> = {
+  NHAP: "Nhập kho",
+  XUAT: "Hóa đơn",
+  TRA_NCC: "Trả NCC",
+  TRA_KHACH: "Khách trả",
+};
+
+export function docTypeLabel(docType: string): string {
+  return DOC_TYPE_LABELS[docType] ?? docType;
+}
+
 export type ActiveStatus = "active" | "inactive" | "all";
 
 export type PartnerFilter = {
@@ -104,6 +118,7 @@ export function toPartnerRow(row: PartnerRowDb): PartnerRow {
     note: row.ghi_chu,
     isActive: row.dang_hoat_dong,
     updatedAt: row.updated_at,
+    transactionCount: Number(row.tong_giao_dich),
     totalRows: Number(row.tong_so_dong),
   };
 }

@@ -12,6 +12,7 @@ import { buildErrorCsv, errorFileName } from "../src/features/products/lib/error
 import { buildCsv } from "../src/shared/lib/csv";
 import { fetchAllPages } from "../src/shared/lib/fetch-all-pages";
 import { isInteractiveTarget, readSelectedId, withSelectedId } from "../src/shared/lib/selected-id";
+import { docTypeLabel, toPartnerRow } from "../src/features/partners/types";
 import { toAnalysisRow, type AnalysisRow, type AnalysisSettings } from "../src/features/analytics/types";
 import {
   buildReorderCsv,
@@ -999,6 +1000,20 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.equal(isInteractiveTarget(el(true)), true, "bấm vào phần tử tương tác");
   assert.equal(isInteractiveTarget(el(false)), false, "bấm vào chữ thường của dòng");
   assert.equal(isInteractiveTarget(null), false);
+}
+
+// --- Phase 14: bảng đối tác 5 cột + lịch sử giao dịch (PANEL-02/03) --------
+{
+  const row = toPartnerRow({
+    id: "p1", ma: "NCC01", ten: "Vũ Trụ", loai: "NCC", dien_thoai: "", dia_chi: "",
+    khu_vuc: "", email: "", ma_so_thue: "", ghi_chu: "", dang_hoat_dong: true,
+    updated_at: "2026-10-02", tong_so_dong: 1, tong_giao_dich: "12" as unknown as number,
+  });
+  assert.equal(row.transactionCount, 12, "tong_giao_dich (bigint có thể về string) → số");
+  assert.equal(docTypeLabel("TRA_NCC"), "Trả NCC");
+  assert.equal(docTypeLabel("TRA_KHACH"), "Khách trả");
+  assert.equal(docTypeLabel("XUAT"), "Hóa đơn");
+  assert.equal(docTypeLabel("LA"), "LA", "loại lạ hiện nguyên giá trị");
 }
 
 async function kiemTaiTheoTrang() {

@@ -2,13 +2,13 @@
 
 import { Button, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
 import { SummaryRow } from "@/shared/components/summary-row";
+import { isInteractiveTarget, readSelectedId, withSelectedId } from "@/shared/lib/selected-id";
 
 import { readPartnerFilterFromUrl, writePartnerFilterToUrl } from "../api/partner.api";
 import { usePartners } from "../hooks/usePartners";
@@ -22,6 +22,7 @@ import {
 } from "../types";
 import { PartnerDrawer } from "./partner-drawer";
 import { PartnerFilterPanel } from "./partner-filter-panel";
+import { PartnerPanel } from "./partner-panel";
 import { PartnerToolbar } from "./partner-toolbar";
 
 const PAGE_SIZE = 50;
@@ -40,18 +41,28 @@ export function PartnerTable({ canEdit }: { canEdit: boolean }) {
   const searchParams = useSearchParams();
 
   const filter = readPartnerFilterFromUrl(searchParams);
+  const selectedId = readSelectedId(searchParams);
   const partners = usePartners(filter);
-  const [drawer, setDrawer] = useState<{ open: boolean; id: string | null }>({
-    open: false,
-    id: null,
-  });
+  // Sửa đối tác nằm trong panel chi tiết — ngăn kéo ở đây chỉ còn để thêm mới.
+  const [addOpen, setAddOpen] = useState(false);
 
-  const navigate = useCallback(
-    (next: PartnerFilter) => {
-      const query = writePartnerFilterToUrl(next).toString();
+  const replaceUrl = useCallback(
+    (params: URLSearchParams) => {
+      const query = params.toString();
       router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
     },
     [router, pathname],
+  );
+
+  // Đổi bộ lọc/trang vẫn giữ panel đang mở.
+  const navigate = useCallback(
+    (next: PartnerFilter) => replaceUrl(withSelectedId(writePartnerFilterToUrl(next), selectedId)),
+    [replaceUrl, selectedId],
+  );
+
+  const selectPartner = useCallback(
+    (id: string | null) => replaceUrl(withSelectedId(searchParams, id)),
+    [replaceUrl, searchParams],
   );
 
   // Đổi bất kỳ điều kiện nào cũng về trang 1: giữ nguyên trang cũ thì rất dễ
@@ -70,51 +81,36 @@ export function PartnerTable({ canEdit }: { canEdit: boolean }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partners.isPending, partners.isFetching, rows.length, filter.page]);
 
+  // Năm cột (PANEL-02) — địa chỉ, ghi chú, nút Sửa nằm trong panel chi tiết.
   const columns: ColumnsType<PartnerRow> = [
     {
       title: "Mã",
       dataIndex: "code",
       width: 130,
       fixed: "left",
-      render: (code: string, row) => <Link href={`/doi-tac/${row.id}`}>{code}</Link>,
+      render: (code: string) => <span className="font-mono text-brand-500">{code}</span>,
     },
     { title: "Tên đối tác", dataIndex: "name", width: 260, ellipsis: true },
     {
       title: "Loại",
       dataIndex: "kind",
       width: 130,
-      render: (kind: PartnerRow["kind"]) => (
-        <Tag color={PARTNER_KIND_COLORS[kind]}>{PARTNER_KIND_LABELS[kind]}</Tag>
+      render: (kind: PartnerRow["kind"], row) => (
+        <>
+          <Tag color={PARTNER_KIND_COLORS[kind]}>{PARTNER_KIND_LABELS[kind]}</Tag>
+          {row.isActive ? null : <Tag>Ngừng</Tag>}
+        </>
       ),
     },
     { title: "Điện thoại", dataIndex: "phone", width: 130 },
-    { title: "Địa chỉ", dataIndex: "address", width: 240, ellipsis: true },
     {
-      title: "Trạng thái",
-      dataIndex: "isActive",
-      width: 110,
-      render: (isActive: boolean) => <Tag>{isActive ? "Đang dùng" : "Ngừng"}</Tag>,
+      title: "Tổng giao dịch",
+      dataIndex: "transactionCount",
+      width: 120,
+      align: "right",
+      className: "tabular-nums",
+      render: (count: number) => count.toLocaleString("vi-VN"),
     },
-    ...(canEdit
-      ? [
-          {
-            title: "",
-            key: "actions",
-            width: 70,
-            fixed: "right" as const,
-            render: (_: unknown, row: PartnerRow) => (
-              <Button
-                type="link"
-                size="small"
-                className="px-0"
-                onClick={() => setDrawer({ open: true, id: row.id })}
-              >
-                Sửa
-              </Button>
-            ),
-          },
-        ]
-      : []),
   ];
 
   return (
@@ -128,10 +124,19 @@ export function PartnerTable({ canEdit }: { canEdit: boolean }) {
             filter={filter}
             canEdit={canEdit}
             onChange={changeFilter}
-            onAdd={() => setDrawer({ open: true, id: null })}
+            onAdd={() => setAddOpen(true)}
           />
         }
         activeFilterCount={countActivePartnerFilters(filter)}
+        detailPanel={
+          selectedId ? (
+            <PartnerPanel
+              partnerId={selectedId}
+              permissions={{ canEdit, canViewHistory: canEdit }}
+              onClose={() => selectPartner(null)}
+            />
+          ) : null
+        }
       >
         <QueryState
           query={partners}
@@ -156,7 +161,15 @@ export function PartnerTable({ canEdit }: { canEdit: boolean }) {
               columns={columns}
               dataSource={page.rows}
               loading={partners.isFetching}
-              scroll={{ x: 900 }}
+              scroll={{ x: 700 }}
+              rowClassName={(row) =>
+                row.id === selectedId ? "cursor-pointer [&>td]:bg-brand-50" : "cursor-pointer"
+              }
+              onRow={(row) => ({
+                onClick: (event) => {
+                  if (!isInteractiveTarget(event.target as Element)) selectPartner(row.id);
+                },
+              })}
               summary={() => (
                 <SummaryRow
                   columns={columns}
@@ -177,11 +190,7 @@ export function PartnerTable({ canEdit }: { canEdit: boolean }) {
         </QueryState>
       </ListLayout>
 
-      <PartnerDrawer
-        id={drawer.id}
-        open={drawer.open}
-        onClose={() => setDrawer((state) => ({ ...state, open: false }))}
-      />
+      <PartnerDrawer id={null} open={addOpen} onClose={() => setAddOpen(false)} />
     </>
   );
 }
