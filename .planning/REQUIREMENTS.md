@@ -141,10 +141,10 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 
 ### Nhân viên phụ trách & danh mục nền (NVPT)
 
-- [ ] **NVPT-01**: Quản lý thêm/sửa/ngừng dùng nhân viên phụ trách (tên viết tắt, tên đầy đủ) trong Cài đặt
-- [ ] **NVPT-02**: Khi đặt hàng, công tắc Nội bộ / Đối tác (mặc định Nội bộ) chọn đúng một loại người nhận; Nội bộ chọn từ nhân viên phụ trách, Đối tác chọn từ đối tác loại Khách hàng hoặc Cả hai; đổi công tắc thì xóa tên đã chọn
-- [ ] **NVPT-03**: Đơn đặt hàng, hóa đơn, danh sách và phiếu in hiện tên đầy đủ của nhân viên phụ trách; đơn nội bộ đã tạo trước đây được chuyển sang nhân viên tương ứng, không mất người nhận
-- [ ] **NVPT-04**: Nhóm hàng, Đơn vị tính, Công đoạn không còn ở Cài đặt; khi tạo/sửa mã hàng chọn giá trị có sẵn hoặc bấm "+ Thêm mới" để tạo ngay tại chỗ
+- [x] **NVPT-01**: Quản lý thêm/sửa/ngừng dùng nhân viên phụ trách (tên viết tắt, tên đầy đủ) trong Cài đặt
+- [x] **NVPT-02**: Khi đặt hàng, công tắc Nội bộ / Đối tác (mặc định Nội bộ) chọn đúng một loại người nhận; Nội bộ chọn từ nhân viên phụ trách, Đối tác chọn từ đối tác loại Khách hàng hoặc Cả hai; đổi công tắc thì xóa tên đã chọn
+- [x] **NVPT-03**: Đơn đặt hàng, hóa đơn, danh sách và phiếu in hiện tên đầy đủ của nhân viên phụ trách; đơn nội bộ đã tạo trước đây được chuyển sang nhân viên tương ứng, không mất người nhận
+- [x] **NVPT-04**: Nhóm hàng, Đơn vị tính, Công đoạn không còn ở Cài đặt; khi tạo/sửa mã hàng chọn giá trị có sẵn hoặc bấm "+ Thêm mới" để tạo ngay tại chỗ *(sửa/xóa/màu/nhóm cha chuyển sang nút "Danh mục phụ" ở Danh sách hàng hóa)*
 
 ### Luồng đơn hàng → hóa đơn (DON)
 
@@ -317,10 +317,10 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 | GON-05 | Phase 10 | Complete |
 | GON-06 | Phase 10 | Complete |
 | GON-07 | Phase 10 | Complete |
-| NVPT-01 | Phase 11 | Pending |
-| NVPT-02 | Phase 11 | Pending |
-| NVPT-03 | Phase 11 | Pending |
-| NVPT-04 | Phase 11 | Pending |
+| NVPT-01 | Phase 11 | Complete |
+| NVPT-02 | Phase 11 | Complete |
+| NVPT-03 | Phase 11 | Complete |
+| NVPT-04 | Phase 11 | Complete |
 | DON-01 | Phase 12 | Pending |
 | DON-02 | Phase 12 | Pending |
 | DON-03 | Phase 12 | Pending |

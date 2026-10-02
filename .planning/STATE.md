@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Phản hồi vận hành
 status: ready_to_plan
-stopped_at: Phase 10 complete (quickplan, 4 commit) — Phase 11 kế tiếp
-last_updated: 2026-10-02T04:10:00.000Z
+stopped_at: Phase 11 complete (quickplan, 4 commit) — Phase 12 kế tiếp
+last_updated: 2026-10-02T06:00:00.000Z
 last_activity: 2026-10-02
 progress:
   total_phases: 16
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 101
   completed_plans: 68
   percent: 50
@@ -21,14 +21,35 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-02)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Milestone v1.1 Phản hồi vận hành — Phase 10 xong, kế tiếp Phase 11 (Nhân viên phụ trách & danh mục nền)
+**Current focus:** Milestone v1.1 Phản hồi vận hành — Phase 10, 11 xong, kế tiếp Phase 12 (Luồng đơn hàng → hóa đơn)
 
 ## Current Position
 
-Phase: 11 — ready to plan (Phase 10 complete)
+Phase: 12 — ready to plan (Phase 10, 11 complete; Phase 15 cũng đã đủ điều kiện)
 Plan: —
 Status: Ready to plan
-Last activity: 2026-10-02 — Phase 10 Dọn dẹp & điều hướng hoàn thành
+Last activity: 2026-10-02 — Phase 11 Nhân viên phụ trách & danh mục nền hoàn thành
+
+### Phase 11 — đã xong (02/10/2026)
+
+Làm theo `/spartan:quickplan`, không có thư mục `.planning/phases/11-*`. Branch
+`feature/phase-11-nhan-vien` **tách từ `feature/phase-10-don-dep`** (chưa push, chưa merge —
+merge Phase 10 trước): `c15464c`, `4382a70`, `112f849`, `f2f53e2`. NVPT-01..04 xong; kiểm trên
+Supabase local (`npm run check`, pgTAP 42 file / 647 test, test hàm thuần, test đọc Excel, ma
+trận quyền route 180/180).
+
+Hệ quả cho các phase sau:
+- Người nhận nội bộ = `nhan_vien_phu_trach` (migration `0077`, giữ tên cột `nguoi_nhan_id`).
+  `danh_sach_nguoi_nhan_noi_bo()` trả `id, ten_viet_tat, ten_day_du`. Phase 12 dựng trên đây.
+- **`0077` mới áp ở local.** Cloud còn lệch lịch sử migration từ 0072 và nhiều khả năng chưa
+  có 0076 — phải xử lý chỗ lệch rồi mới `db:push`, hỏi người dùng trước.
+- Nhóm hàng / ĐVT / Công đoạn rời Cài đặt → modal "Danh mục phụ" ở Danh sách hàng hóa (route
+  ghép qua prop `extraActions`); URL cũ chuyển về `/danh-muc`. Phase 15 (import v2) dùng lại
+  `LookupSelect` / `QuickLookupModal` trong `features/products` cho dropdown từng dòng.
+- Văn phòng vào `/cai-dat` mở tab Nhân viên phụ trách (tab duy nhất của vai trò này).
+- `product-drawer.tsx` ~420 dòng (vượt ~200 từ trước) — nên tách khi đụng lại.
+- Sinh type từ local: `npm run db:types:local` hỏng ở máy này; dùng
+  `npx supabase gen types typescript --db-url postgresql://postgres:postgres@127.0.0.1:54322/postgres --schema public`.
 
 ### Phase 10 — đã xong (02/10/2026)
 
@@ -47,7 +68,8 @@ Hệ quả cho các phase sau:
   việc vận hành bắt buộc trước go-live") phải chốt lại: tồn đầu kỳ đi bằng kiểm kê (KKE-04 /
   DLIEU-06), hoặc chạy RPC `nap_ton_tam` bằng script nếu vẫn cần.
 
-Kế tiếp: `/gsd:discuss-phase 11` (hoặc `/gsd:plan-phase 11`). Migration kế tiếp là `0077`.
+Kế tiếp (sau Phase 11): Phase 12 — `/spartan:quickplan phase 12` hoặc `/gsd:discuss-phase 12`.
+Còn chờ làm rõ ghi chú "Không hiện" dưới mục tạo đơn (Notion). Migration kế tiếp là `0078`.
 
 ### Việc v1.0 còn treo (giữ nguyên, chạy song song)
 
@@ -712,7 +734,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-02T04:10:00.000Z
-Stopped at: Phase 10 complete — branch feature/phase-10-don-dep chờ PR
-Last activity: 2026-10-02 - Phase 10 Dọn dẹp & điều hướng (quickplan, GON-01..07)
-Resume file: .planning/ROADMAP.md (Phase 11)
+Last session: 2026-10-02T06:00:00.000Z
+Stopped at: Phase 11 complete — branch feature/phase-11-nhan-vien (xếp chồng trên phase-10) chờ PR
+Last activity: 2026-10-02 - Phase 11 Nhân viên phụ trách & danh mục nền (quickplan, NVPT-01..04)
+Resume file: .planning/ROADMAP.md (Phase 12)

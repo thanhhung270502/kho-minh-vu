@@ -45,7 +45,7 @@ sau cần dùng ngay.
 ### v1.1 Phản hồi vận hành
 
 - [x] **Phase 10: Dọn dẹp & điều hướng** - Sửa lỗi hiển thị mã/tên hàng, bỏ Lịch sử KiotViet và Giá bán, menu chia nhóm, Xuất kho → Hóa đơn (`/hoa-don`), gỡ `/ton-kho`
-- [ ] **Phase 11: Nhân viên phụ trách & danh mục nền** - Danh mục nhân viên phụ trách, đặt hàng chọn Nội bộ/Đối tác, thêm Nhóm hàng/ĐVT/Công đoạn ngay trong form mã hàng
+- [x] **Phase 11: Nhân viên phụ trách & danh mục nền** - Danh mục nhân viên phụ trách, đặt hàng chọn Nội bộ/Đối tác, thêm Nhóm hàng/ĐVT/Công đoạn ngay trong form mã hàng
 - [ ] **Phase 12: Luồng đơn hàng → hóa đơn** - Đơn tạm → Xác nhận (in phiếu lấy hàng) → Hoàn thành ghi sổ Hóa đơn atomic, 1 đơn = 1 hóa đơn, hủy đơn
 - [ ] **Phase 13: Phân tích tồn kho** - Trang `/phan-tich`: bán TB/ngày, dự kiến hết hàng, đề nghị nhập, tồn chậm, ngưỡng chỉnh được, duyệt định mức
 - [ ] **Phase 14: Panel chi tiết** - Bấm dòng Danh sách hàng hóa và Đối tác mở panel cạnh bảng, không rời trang
@@ -444,7 +444,16 @@ nhau, chạy song song được. Migration kế tiếp là `0077`.
   3. Đơn đặt hàng, hóa đơn, danh sách và phiếu in hiện tên đầy đủ nhân viên phụ trách; đơn nội bộ tạo trước đây vẫn còn người nhận (đã chuyển sang nhân viên tương ứng)
   4. Nhóm hàng, Đơn vị tính, Công đoạn không còn ở Cài đặt; trong form mã hàng chọn giá trị có sẵn hoặc bấm "+ Thêm mới" tạo ngay tại chỗ
 
-**Plans**: TBD
+**Plans**: 4 task — làm theo quickplan (không qua `/gsd:execute-phase`), branch `feature/phase-11-nhan-vien` (tách từ `feature/phase-10-don-dep`)
+- [x] Migration `0077`: bảng `nhan_vien_phu_trach`, đổi FK người nhận nội bộ, chuyển dữ liệu giữ nguyên id (`c15464c`)
+- [x] Tab Cài đặt → Nhân viên phụ trách, tạo đơn mặc định Nội bộ (`4382a70`)
+- [x] Quản lý nhóm hàng/ĐVT/công đoạn chuyển sang nút "Danh mục phụ" ở Danh sách hàng hóa (`112f849`)
+- [x] "+ Thêm mới" nhóm/ĐVT/công đoạn ngay trong form mã hàng (`f2f53e2`)
+
+> **Hoàn thành 02/10/2026.** Kiểm trên Supabase local: `npm run check`, pgTAP 42 file / 647 test, test hàm thuần,
+> test đọc Excel, ma trận quyền route 180/180 đều xanh. Quyết định khi làm: quyền ghi nhân viên phụ trách là
+> quản lý + văn phòng (khuôn danh mục, RLS 0077); nhóm hàng/ĐVT/công đoạn KHÔNG mất chức năng sửa/xóa/màu/nhóm
+> cha — chuyển vào modal "Danh mục phụ". `0077` mới áp ở local; cloud còn lệch từ 0072 (chưa có 0076).
 **UI hint**: yes
 
 ### Phase 12: Luồng đơn hàng → hóa đơn
@@ -551,7 +560,7 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 | 8. Mobile & Chuyển kho | 0/TBD | Not started | - |
 | 9. Quản lý hình ảnh | 13/13 | Complete   | 2026-09-26 |
 | 10. Dọn dẹp & điều hướng | 4/4 | Complete | 2026-10-02 |
-| 11. Nhân viên phụ trách & danh mục nền | 0/TBD | Not started | - |
+| 11. Nhân viên phụ trách & danh mục nền | 4/4 | Complete | 2026-10-02 |
 | 12. Luồng đơn hàng → hóa đơn | 0/TBD | Not started | - |
 | 13. Phân tích tồn kho | 0/TBD | Not started | - |
 | 14. Panel chi tiết | 0/TBD | Not started | - |
