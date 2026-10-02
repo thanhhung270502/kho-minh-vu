@@ -9,6 +9,21 @@ import { hasPermission } from "../src/shared/lib/permissions";
 import { safeRedirectPath } from "../src/shared/lib/redirect-path";
 import { suggestCustomerName, extractPhoneNumber } from "../src/features/partners/lib/notes";
 import { buildErrorCsv, errorFileName } from "../src/features/products/lib/error-file";
+import { buildCsv } from "../src/shared/lib/csv";
+import { toAnalysisRow, type AnalysisRow, type AnalysisSettings } from "../src/features/analytics/types";
+import {
+  buildReorderCsv,
+  coverBucket,
+  finishOf,
+  kpisOf,
+  reorderTabs,
+  salesPaceChange,
+  slowMoving,
+  stockStatus,
+  suggestedOrder,
+  topGroups,
+  topSellers,
+} from "../src/features/analytics/lib/analysis";
 import { toProductInsert, type ProductInput } from "../src/features/products/types";
 import { TEMPLATE_COLUMNS } from "../src/features/products/lib/excel-template";
 import {
@@ -847,6 +862,122 @@ async function kiemCsvLoi() {
   );
 }
 
-void kiemCsvLoi().then(() => {
+
+// --- Phase 13: phân tích tồn kho (PTICH-01..05) -----------------------------
+// Hàm thuần — RPC phan_tich_ton_kho trả số theo mã (pgTAP 98 kiểm), mọi phép
+// gom/xếp hạng/màu tính ở đây.
+const ANALYSIS_SETTINGS: AnalysisSettings = { redDays: 7, yellowDays: 14, coverDays: 30 };
+function arow(over: Partial<AnalysisRow>): AnalysisRow {
+  return {
+    productId: "p", code: "A", name: "Hàng A", categoryId: "g1", categoryName: "Nhóm 1",
+    finish: "SON", unitName: "Cái", stock: 10, customerOrdered: 0, available: 10,
+    soldInPeriod: 0, soldFirstHalf: 0, soldSecondHalf: 0, effectiveDays: 30,
+    avgDailySales: null, daysOfCover: null, stockoutDate: null, minStock: 0, lastSaleDate: null,
+    ...over,
+  };
+}
+{
+  // Mapper: numeric PostgREST về dạng chuỗi/số, null giữ null; mã công đoạn lạ -> Khác.
+  const mapped = toAnalysisRow({
+    san_pham_id: "p1", ma_hang: "RWT", ten_hang: "Hàng RWT", nhom_hang_id: null as unknown as string,
+    ten_nhom_hang: null as unknown as string, cong_doan_ma: "MUA_NGOAI", ten_dvt: "Cái",
+    ton: 1, khach_dat: 0, ton_kha_dung: 1, ban_trong_ky: 59, ban_nua_dau: 20, ban_nua_sau: 39,
+    so_ngay_thuc: 27, ban_tb_ngay: 2.1852, so_ngay_con: 0.46, ngay_het_du_kien: "2026-10-02",
+    ton_toi_thieu: 0, ngay_ban_cuoi: "2026-09-29",
+  });
+  assert.equal(mapped.finish, "KHAC", "MUA_NGOAI gộp vào Khác");
+  assert.equal(mapped.avgDailySales, 2.1852);
+  assert.equal(mapped.categoryName, null);
+
+  // Ví dụ kiểm chứng trong spec Notion: tồn 1, bán 59 trong 27 ngày -> ⌈2,19 × 30 − 1⌉ = 65.
+  assert.equal(suggestedOrder(arow({ available: 1, avgDailySales: 59 / 27 }), 30), 65, "đề nghị nhập ví dụ RWT = 65");
+  assert.equal(suggestedOrder(arow({ available: 500, avgDailySales: 1 }), 30), 0, "đủ hàng: đề nghị 0, không âm");
+  assert.equal(suggestedOrder(arow({ available: 0, avgDailySales: null }), 30), 0, "không bán: không đề nghị nhập");
+
+  const st = (o: Partial<AnalysisRow>) => stockStatus(arow(o), ANALYSIS_SETTINGS);
+  assert.equal(st({ stock: 0, avgDailySales: 2, daysOfCover: 0 }), "out", "tồn <= 0 luôn Hết hàng");
+  assert.equal(st({ stock: 5, avgDailySales: 1, daysOfCover: 7 }), "urgent", "<= ngưỡng đỏ");
+  assert.equal(st({ stock: 5, avgDailySales: 1, daysOfCover: 14 }), "soon", "<= ngưỡng vàng");
+  assert.equal(st({ stock: 5, avgDailySales: 1, daysOfCover: 15 }), "ok", "trên ngưỡng vàng");
+  assert.equal(st({ stock: 5, avgDailySales: null }), "no-sales", "còn tồn, không bán: Không bán");
+  assert.equal(st({ stock: 0, avgDailySales: null }), "stopped", "hết tồn, không bán: Ngừng bán?");
+
+  const b = (o: Partial<AnalysisRow>) => coverBucket(arow(o), ANALYSIS_SETTINGS);
+  assert.equal(b({ avgDailySales: null }), "no-data");
+  assert.equal(b({ stock: 0, avgDailySales: 1, daysOfCover: 0 }), "out");
+  assert.equal(b({ avgDailySales: 1, daysOfCover: 14 }), "le-x", "<= X (ngưỡng vàng)");
+  assert.equal(b({ avgDailySales: 1, daysOfCover: 30 }), "x-30");
+  assert.equal(b({ avgDailySales: 1, daysOfCover: 90 }), "31-90");
+  assert.equal(b({ avgDailySales: 1, daysOfCover: 364 }), "91-364");
+  assert.equal(b({ avgDailySales: 1, daysOfCover: 365 }), "ge-365");
+
+  assert.equal(finishOf("XI_MA"), "XI_MA");
+  assert.equal(finishOf(null), "KHAC");
+
+  const rows = [
+    arow({ code: "S1", stock: 5, avgDailySales: 1, daysOfCover: 5, soldInPeriod: 30, categoryId: "g1" }),
+    arow({ code: "S2", stock: 10, avgDailySales: 1, daysOfCover: 10, soldInPeriod: 30, categoryId: "g1" }),
+    arow({ code: "L1", stock: 20, avgDailySales: 1, daysOfCover: 20, soldInPeriod: 30, categoryId: "g2", categoryName: "Nhóm 2" }),
+    arow({ code: "O1", stock: 0, avgDailySales: 2, daysOfCover: 0, soldInPeriod: 60, categoryId: "g2", categoryName: "Nhóm 2" }),
+    arow({ code: "O2", stock: -3, avgDailySales: null, soldInPeriod: 0 }),
+    arow({ code: "N1", stock: 40, avgDailySales: null, soldInPeriod: 0 }),
+    arow({ code: "N2", stock: 70, avgDailySales: null, soldInPeriod: 0 }),
+    arow({ code: "B1", stock: 400, avgDailySales: 1, daysOfCover: 400, soldInPeriod: 30, categoryId: "g3", categoryName: "Nhóm 3" }),
+  ];
+
+  const k = kpisOf(rows, ANALYSIS_SETTINGS);
+  assert.deepEqual(k.needSoon, { count: 2, total: 8 }, "cần nhập trong X ngày: S1, S2 (còn hàng, <= 14 ngày)");
+  assert.deepEqual(k.outWithDemand, { count: 1, outTotal: 2 }, "hết hàng vẫn có khách mua: O1 / 2 mã hết");
+  assert.deepEqual(k.totalStock, { quantity: 545, productsInStock: 6 }, "Σ tồn của mã còn hàng");
+  assert.deepEqual(k.noSalesStock, { quantity: 110, products: 2, share: 110 / 545 }, "tồn không có tín hiệu bán: N1 + N2");
+
+  const tabs = reorderTabs(rows, ANALYSIS_SETTINGS);
+  assert.deepEqual(tabs.soon.map((r) => r.code), ["S1", "S2"], "sắp hết, ít ngày nhất lên đầu");
+  assert.deepEqual(tabs.outWithDemand.map((r) => r.code), ["O1"]);
+  assert.deepEqual(tabs.later.map((r) => r.code), ["L1"], "còn X+1..30 ngày");
+
+  assert.deepEqual(topSellers(rows, 2).map((r) => r.code), ["O1", "B1"], "bán chạy: bán nhiều nhất, hòa thì theo mã");
+  const groups = topGroups(rows, 15);
+  assert.equal(groups[0]?.categoryId, "g2", "nhóm bán nhiều nhất trước (90)");
+  assert.equal(groups[0]?.daysOfCover, 20 / (90 / 30), "số ngày tồn nhóm = Σ tồn / (Σ bán / số ngày)");
+
+  const slow = slowMoving(rows);
+  assert.deepEqual(slow.noSales.map((r) => r.code), ["N2", "N1"], "không bán: tồn nhiều nhất trước, chỉ mã còn tồn");
+  assert.deepEqual(slow.overstock.map((r) => r.code), ["B1"], "đủ bán >= 365 ngày");
+
+  // Nhịp bán: TB theo NGÀY CÓ BÁN, nửa sau so với nửa đầu.
+  const days = [
+    { date: "d1", invoiceCount: 2, quantity: 10 },
+    { date: "d2", invoiceCount: 0, quantity: 0 },
+    { date: "d3", invoiceCount: 4, quantity: 30 },
+    { date: "d4", invoiceCount: 0, quantity: 0 },
+  ];
+  assert.equal(salesPaceChange(days, "invoices"), 1, "nửa đầu TB 2, nửa sau TB 4 -> +100%");
+  assert.equal(salesPaceChange(days, "quantity"), 2, "theo số lượng: 10 -> 30");
+  assert.equal(
+    salesPaceChange([{ date: "d1", invoiceCount: 0, quantity: 0 }, { date: "d2", invoiceCount: 3, quantity: 5 }], "invoices"),
+    null,
+    "nửa đầu không bán: không chia cho 0",
+  );
+}
+
+async function kiemCsvPhanTich() {
+  const blob = buildCsv(["Mã", "Ghi chú"], [["A1", 'có "nháy", dấu phẩy'], ["B2", 3]]);
+  const byte = new Uint8Array(await blob.arrayBuffer());
+  assert.deepEqual([...byte.slice(0, 3)], [0xef, 0xbb, 0xbf], "CSV chung có BOM");
+  const text = await blob.text();
+  assert.ok(text.includes('"có ""nháy"", dấu phẩy"'), "bọc nháy + nhân đôi nháy");
+
+  const csv = await buildReorderCsv(
+    [arow({ code: "RWT", name: "Hàng RWT", available: 1, stock: 1, avgDailySales: 59 / 27, daysOfCover: 0.46 })],
+    ANALYSIS_SETTINGS,
+  ).text();
+  const header = csv.split("\r\n")[0] ?? "";
+  assert.ok(header.includes("Đề nghị nhập") && header.includes("Mã hàng"), "CSV đề nghị nhập có tiêu đề tiếng Việt");
+  assert.ok(!/giá|vốn/i.test(header), "CSV đề nghị nhập không có cột giá");
+  assert.ok(csv.includes("RWT") && csv.includes(",65"), "dòng RWT đề nghị 65");
+}
+
+void Promise.all([kiemCsvLoi(), kiemCsvPhanTich()]).then(() => {
   console.log("✓ hàm thuần: tất cả assert đạt");
 });
