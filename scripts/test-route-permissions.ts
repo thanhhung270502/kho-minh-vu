@@ -64,9 +64,9 @@ const MA_TRAN: Dong[] = [
   // proxy nên cả khách cũng nhận chuyển hướng (rồi mới bị đẩy về đăng nhập).
   { route: "/xuat-kho", ky_vong: ALL("→/hoa-don") },
   { route: "/ton-kho", ky_vong: ALL("→/danh-muc") },
-  // Duyệt định mức ghi ton_toi_thieu: cùng nhóm với sửa danh mục (quản lý + văn phòng).
-  { route: "/ton-kho/dinh-muc", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
-  // Nạp tồn tạm gỡ ở Phase 10 — route cụ thể, KHÔNG wildcard để /ton-kho/dinh-muc sống.
+  // Phase 13 (PTICH-07): duyệt định mức thành tab của trang Phân tích.
+  { route: "/ton-kho/dinh-muc", ky_vong: ALL("→/phan-tich") },
+  // Nạp tồn tạm gỡ ở Phase 10.
   { route: "/ton-kho/nap-tam", ky_vong: ALL("→/danh-muc") },
   { route: "/danh-muc", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   // Phase 13: phân tích tồn mọi kho — quản lý + văn phòng (xem_duoc_phan_tich, 0079).

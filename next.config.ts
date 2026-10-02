@@ -9,10 +9,11 @@ const nextConfig: NextConfig = {
       // "Xuất kho" đổi tên "Hóa đơn" — giữ nguyên id và trang in phía sau.
       { source: "/xuat-kho", destination: "/hoa-don", permanent: false },
       { source: "/xuat-kho/:path*", destination: "/hoa-don/:path*", permanent: false },
-      // Trang Tồn kho gỡ — tra tồn ở Danh sách hàng hóa. KHÔNG dùng wildcard
-      // /ton-kho/:path*: /ton-kho/dinh-muc vẫn sống tới khi chuyển sang Phân tích.
+      // Trang Tồn kho gỡ (Phase 10) — tra tồn ở Danh sách hàng hóa; duyệt định
+      // mức thành tab của trang Phân tích (Phase 13).
       { source: "/ton-kho", destination: "/danh-muc", permanent: false },
       { source: "/ton-kho/nap-tam", destination: "/danh-muc", permanent: false },
+      { source: "/ton-kho/dinh-muc", destination: "/phan-tich?tab=dinh-muc", permanent: false },
       // Nhóm hàng / ĐVT / Công đoạn rời Cài đặt (Phase 11) — quản lý bằng nút
       // "Danh mục phụ" ở Danh sách hàng hóa.
       { source: "/cai-dat/nhom-hang", destination: "/danh-muc", permanent: false },

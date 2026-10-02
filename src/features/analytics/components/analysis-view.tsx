@@ -1,7 +1,8 @@
 "use client";
 
-import { Alert, Segmented } from "antd";
-import { useState } from "react";
+import { Alert, Segmented, Tabs } from "antd";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState, type ReactNode } from "react";
 
 import { QueryState } from "@/shared/components/query-state";
 
@@ -14,8 +15,38 @@ import { ReorderTable } from "./reorder-table";
 import { SalesPaceChart } from "./sales-pace-chart";
 import { SettingsDialog } from "./settings-dialog";
 
-/** Trang Phân tích tồn kho (Phase 13) — số theo mã từ RPC, gom ở lib/analysis. */
-export function AnalysisView({ canEditSettings }: { canEditSettings: boolean }) {
+type Props = {
+  canEditSettings: boolean;
+  /**
+   * Tab "Duyệt định mức" (PTICH-07) — route ghép sẵn từ feature inventory, KHÔNG
+   * import feature đó ở đây. null khi vai trò không duyệt được định mức.
+   */
+  reorderSection: ReactNode | null;
+};
+
+/** Trang Phân tích tồn kho (Phase 13). Tab nằm trên URL `?tab=dinh-muc` để link cũ mở đúng tab. */
+export function AnalysisView({ canEditSettings, reorderSection }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const tab = reorderSection && searchParams.get("tab") === "dinh-muc" ? "dinh-muc" : "phan-tich";
+
+  const overview = <AnalysisOverview canEditSettings={canEditSettings} />;
+  if (!reorderSection) return overview;
+
+  return (
+    <Tabs
+      activeKey={tab}
+      onChange={(key) => router.replace(key === "dinh-muc" ? `${pathname}?tab=dinh-muc` : pathname)}
+      items={[
+        { key: "phan-tich", label: "Phân tích", children: overview },
+        { key: "dinh-muc", label: "Duyệt định mức", children: reorderSection },
+      ]}
+    />
+  );
+}
+
+function AnalysisOverview({ canEditSettings }: { canEditSettings: boolean }) {
   const [period, setPeriod] = useState<Period>(30);
   const rows = useAnalysisRows(period);
   const settings = useAnalysisSettings();
