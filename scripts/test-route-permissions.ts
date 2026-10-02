@@ -85,6 +85,8 @@ const MA_TRAN: Dong[] = [
   { route: "/cai-dat/cong-doan", ky_vong: ALL("→/danh-muc") },
   { route: "/cai-dat/so-chung-tu", ky_vong: { quanly: "200", vanphong: "quyen", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/api/danh-muc/mau-excel", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "401" } },
+  // Phase 15 (IMP-01): file mẫu 4 cột — ai đăng nhập cũng tải được, như mẫu cũ.
+  { route: "/api/danh-muc/mau-nhap-moi", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "401" } },
   // Mở /dang-nhap khi đã đăng nhập phải quay về page gốc, và `tiep_tuc` trỏ ra
   // ngoài miền thì bị vứt (safeRedirectPath) chứ không được chuyển hướng theo.
   { route: "/dang-nhap?tiep_tuc=//evil.com", ky_vong: { quanly: "goc", vanphong: "goc", thukho1: "goc", chixem: "goc", khach: "200" } },
@@ -356,6 +358,29 @@ async function kiemKiemKeExcel(
     const thuc = String(res.status);
     if (thuc !== mongPost[vt]) {
       lech.push(`${"POST /api/kiem-ke/nhap-excel".padEnd(34)} ${vt.padEnd(9)} mong ${mongPost[vt]}, thực ${thuc}`);
+    }
+  }
+
+  // POST /api/danh-muc/doc-file-nhap-moi với FormData rỗng (Phase 15): chỉ quản lý
+  // + văn phòng qua cửa quyền rồi dừng ở 400 (thiếu file); thủ kho, chỉ xem 403.
+  const mongDocFile: Record<VaiTroTest, string> = {
+    quanly: "400",
+    vanphong: "400",
+    thukho1: "403",
+    chixem: "403",
+    khach: "401",
+  };
+  for (const vt of role) {
+    tong++;
+    const res = await fetch(`${BASE_URL}/api/danh-muc/doc-file-nhap-moi`, {
+      method: "POST",
+      headers: cookie[vt] ? { cookie: cookie[vt] } : {},
+      body: new FormData(),
+      redirect: "manual",
+    });
+    const thuc = String(res.status);
+    if (thuc !== mongDocFile[vt]) {
+      lech.push(`${"POST /api/danh-muc/doc-file-nhap-moi".padEnd(34)} ${vt.padEnd(9)} mong ${mongDocFile[vt]}, thực ${thuc}`);
     }
   }
 

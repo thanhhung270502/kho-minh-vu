@@ -22,6 +22,67 @@ import {
   STOCKTAKE_TEMPLATE_COLUMNS,
 } from "../src/features/stocktake/lib/count-template.server";
 import { readCountFile } from "../src/features/stocktake/lib/read-count-file.server";
+import {
+  buildNewProductWorkbook,
+  readNewProductFile,
+} from "../src/features/products/lib/read-new-product-file.server";
+import { NEW_PRODUCT_COLUMNS } from "../src/features/products/lib/new-product-file";
+
+/** Phase 15 (IMP-01/03): file 4 cột — mẫu, đọc, file lỗi đọc lại được. */
+async function kiemFileNhapMaMoi() {
+  const mau = new ExcelJS.Workbook();
+  const bufMau = await buildNewProductWorkbook([]);
+  await mau.xlsx.load(bufMau as unknown as Parameters<typeof mau.xlsx.load>[0]);
+  assert.deepEqual(
+    (mau.worksheets[0].getRow(1).values as unknown[]).slice(1),
+    ["Mã hàng", "Tên hàng", "Tồn kho", "Mô tả"],
+    "file mẫu đúng 4 cột theo thứ tự",
+  );
+  assert.equal(NEW_PRODUCT_COLUMNS.length, 4);
+
+  // Tiêu đề KHÔNG dấu, thứ tự đảo — vẫn đọc đúng; ô tồn định dạng Text vẫn là số (bẫy KiotViet 1).
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet("Sheet1");
+  ws.addRow(["Ten hang", "Ma hang", "Ton kho", "Mo ta"]);
+  ws.addRow(["Bố thắng", " BT-01 ", " 12 ", "Hàng mới"]);
+  ws.addRow(["Nhông", "NH-01", null, null]);
+  ws.addRow(["Xích", "X-01", "abc", null]);
+  ws.addRow(["Căm", "C-01", -2, null]);
+  ws.addRow([null, null, null, null]);
+  const doc = await readNewProductFile(Buffer.from(await wb.xlsx.writeBuffer()));
+  assert.equal(doc.length, 4, "bỏ dòng trống");
+  assert.deepEqual(
+    { row: doc[0].row, code: doc[0].code, name: doc[0].name, stock: doc[0].stock, description: doc[0].description },
+    { row: 2, code: "BT-01", name: "Bố thắng", stock: 12, description: "Hàng mới" },
+  );
+  assert.equal(doc[1].stock, 0, "tồn bỏ trống = 0");
+  assert.deepEqual(doc[2].problems, ["Tồn kho không phải là số"]);
+  assert.deepEqual(doc[3].problems, ["Tồn kho không được âm"]);
+
+  // File lỗi = 4 cột mẫu + Lý do; đọc lại đúng như file mẫu (cột Lý do bị bỏ qua).
+  const loi = await buildNewProductWorkbook(
+    [{ code: "X-01", name: "Xích", stock: 3, description: "", reason: "Tên hàng đã có trong danh mục" }],
+  );
+  const loiWb = new ExcelJS.Workbook();
+  await loiWb.xlsx.load(loi as unknown as Parameters<typeof loiWb.xlsx.load>[0]);
+  assert.deepEqual(
+    (loiWb.worksheets[0].getRow(1).values as unknown[]).slice(1),
+    ["Mã hàng", "Tên hàng", "Tồn kho", "Mô tả", "Lý do"],
+  );
+  const doLai = await readNewProductFile(loi);
+  assert.equal(doLai.length, 1);
+  assert.equal(doLai[0].code, "X-01");
+  assert.equal(doLai[0].stock, 3);
+
+  // Thiếu cột Mã hàng / Tên hàng → báo rõ, không đọc bừa.
+  const sai = new ExcelJS.Workbook();
+  sai.addWorksheet("S").addRow(["Mã hàng", "Giá"]);
+  await assert.rejects(
+    readNewProductFile(Buffer.from(await sai.xlsx.writeBuffer())),
+    /Tên hàng/,
+  );
+  console.log("✓ file nhập mã mới: mẫu 4 cột, đọc không dấu, tồn kiểu chữ, file lỗi đọc lại được");
+}
 
 async function main() {
   const THU_MUC = "data/kiotviet";
@@ -175,6 +236,8 @@ async function main() {
   console.log(
     "✓ mẫu đếm kiểm kê: xuất/đọc quay vòng, không lộ số liệu hệ thống, ô trống = chưa đếm",
   );
+
+  await kiemFileNhapMaMoi();
 }
 
 main().catch((e) => {
