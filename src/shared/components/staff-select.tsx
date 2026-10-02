@@ -4,7 +4,7 @@ import { Button, Select } from "antd";
 
 import { useInternalRecipients } from "@/shared/hooks/use-internal-recipients";
 import { explainError } from "@/shared/lib/errors";
-import { filterByLabel } from "@/shared/lib/text";
+import { labelMatches } from "@/shared/lib/text";
 
 type Props = {
   value: string | undefined;
@@ -20,9 +20,11 @@ type Props = {
 export function StaffSelect({ value, onChange, disabled, autoFocus }: Props) {
   const staff = useInternalRecipients();
 
+  // Hiển thị tên đầy đủ (đã chốt 02/10), nhưng gõ tên viết tắt cũng phải ra.
   const options = (staff.data ?? []).map((person) => ({
     value: person.id,
     label: person.name,
+    search: `${person.shortName} ${person.name}`,
   }));
 
   return (
@@ -35,7 +37,7 @@ export function StaffSelect({ value, onChange, disabled, autoFocus }: Props) {
       placeholder="Gõ tên nhân viên nhận hàng"
       value={value}
       // Bẫy 21: gõ không dấu vẫn phải ra tên có dấu.
-      filterOption={filterByLabel}
+      filterOption={(input, option) => labelMatches(input, option?.search ?? "")}
       loading={staff.isLoading}
       onChange={(selected) => onChange(selected ?? undefined)}
       options={options}
@@ -53,7 +55,7 @@ export function StaffSelect({ value, onChange, disabled, autoFocus }: Props) {
           "Đang tải danh sách nhân viên…"
         ) : (
           <span className="text-xs text-chu-phu">
-            Không có nhân viên nào khớp. Tài khoản bị ngưng hoạt động không hiện ở đây.
+            Không có nhân viên nào khớp. Thêm hoặc bật lại nhân viên ở Cài đặt → Nhân viên phụ trách.
           </span>
         )
       }

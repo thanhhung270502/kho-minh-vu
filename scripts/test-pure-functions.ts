@@ -40,7 +40,14 @@ import {
   toOrderUpdate,
   writeOrderFilterToUrl,
 } from "../src/features/sales-order/schemas/order.schema";
-import { formatRecipient, toRecipient } from "../src/shared/lib/recipient";
+import {
+  DEFAULT_RECIPIENT_KIND,
+  RECIPIENT_KIND_ORDER,
+  formatRecipient,
+  toRecipient,
+} from "../src/shared/lib/recipient";
+import { tabsForRole } from "../src/features/settings/lib/settings-tabs";
+import { staffSchema } from "../src/features/settings/schemas/staff.schema";
 import { toDocumentDetail } from "../src/features/documents/types";
 import { toDocumentUpdate } from "../src/features/documents/schemas/document.schema";
 import {
@@ -142,6 +149,28 @@ assert.equal(hasPermission("chi_xem", "view-dashboard"), false);
   assert.ok(!("gia_von" in payload), "payload ghi mã hàng không có gia_von");
   const keys = TEMPLATE_COLUMNS.map((c) => c.key as string);
   assert.ok(!keys.includes("gia_ban") && !keys.includes("gia_von"), "mẫu Excel không có cột giá");
+}
+
+// Phase 11 (NVPT-01/02): đặt hàng mặc định Nội bộ, Nội bộ đứng trước; tab
+// Nhân viên phụ trách cho quản lý + văn phòng; tên viết tắt + đầy đủ bắt buộc.
+{
+  assert.equal(DEFAULT_RECIPIENT_KIND, "internal", "tạo đơn mặc định chế độ Nội bộ");
+  assert.deepEqual(RECIPIENT_KIND_ORDER, ["internal", "partner"], "Nội bộ đứng trước Đối tác");
+
+  const nvpt = "/cai-dat/nhan-vien-phu-trach";
+  assert.ok(tabsForRole("van_phong").some((t) => t.duongDan === nvpt), "văn phòng có tab Nhân viên phụ trách");
+  assert.ok(tabsForRole("quan_ly").some((t) => t.duongDan === nvpt), "quản lý có tab Nhân viên phụ trách");
+  assert.ok(!tabsForRole("thu_kho").some((t) => t.duongDan === nvpt), "thủ kho không có tab này");
+
+  const ok = staffSchema.safeParse({ shortName: "  An ", fullName: " Nguyễn Văn An ", isActive: true });
+  assert.ok(ok.success && ok.data.shortName === "An" && ok.data.fullName === "Nguyễn Văn An", "cắt khoảng trắng hai đầu");
+  const bad = staffSchema.safeParse({ shortName: " ", fullName: "", isActive: true });
+  assert.ok(!bad.success, "tên viết tắt và tên đầy đủ bắt buộc");
+  assert.deepEqual(
+    bad.success ? [] : bad.error.issues.map((i) => i.path[0]).sort(),
+    ["fullName", "shortName"],
+    "lỗi gắn đúng từng ô",
+  );
 }
 
 // filterNavItems (06-16): menu "Kiểm kê" cho mọi vai trò.

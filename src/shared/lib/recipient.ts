@@ -18,9 +18,15 @@ export type Recipient =
 export type RecipientChoice = { kind: RecipientKind; id: string };
 
 export const RECIPIENT_KIND_LABELS: Record<RecipientKind, string> = {
-  partner: "Đối tác",
   internal: "Nội bộ",
+  partner: "Đối tác",
 };
+
+/** Thứ tự trên công tắc chọn chế độ — Nội bộ trước (yêu cầu 02/10/2026). */
+export const RECIPIENT_KIND_ORDER: RecipientKind[] = ["internal", "partner"];
+
+/** Tạo đơn mới mặc định Nội bộ (NVPT-02). */
+export const DEFAULT_RECIPIENT_KIND: RecipientKind = "internal";
 
 /**
  * RPC trả `null` cho cột không dùng dù type sinh tự động khai `string` — nên

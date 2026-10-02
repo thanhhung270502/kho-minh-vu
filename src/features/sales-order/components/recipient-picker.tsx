@@ -4,7 +4,11 @@ import { Segmented } from "antd";
 
 import { PartnerSearchInput } from "@/shared/components/partner-search-input";
 import { StaffSelect } from "@/shared/components/staff-select";
-import { RECIPIENT_KIND_LABELS, type RecipientKind } from "@/shared/lib/recipient";
+import {
+  RECIPIENT_KIND_LABELS,
+  RECIPIENT_KIND_ORDER,
+  type RecipientKind,
+} from "@/shared/lib/recipient";
 
 type Props = {
   kind: RecipientKind;
@@ -14,9 +18,10 @@ type Props = {
   autoFocus?: boolean;
 };
 
-const KIND_OPTIONS = (Object.keys(RECIPIENT_KIND_LABELS) as RecipientKind[]).map(
-  (kind) => ({ value: kind, label: RECIPIENT_KIND_LABELS[kind] }),
-);
+const KIND_OPTIONS = RECIPIENT_KIND_ORDER.map((kind) => ({
+  value: kind,
+  label: RECIPIENT_KIND_LABELS[kind],
+}));
 
 /**
  * Chọn chế độ người nhận rồi chọn người. Đổi chế độ là đổi hẳn ô chọn bên

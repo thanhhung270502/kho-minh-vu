@@ -3,7 +3,12 @@
 import { Typography } from "antd";
 import { useState } from "react";
 
-import type { Recipient, RecipientChoice, RecipientKind } from "@/shared/lib/recipient";
+import {
+  DEFAULT_RECIPIENT_KIND,
+  type Recipient,
+  type RecipientChoice,
+  type RecipientKind,
+} from "@/shared/lib/recipient";
 
 import { RecipientPicker } from "./recipient-picker";
 
@@ -18,7 +23,7 @@ type Props = {
  * database cấm đơn không có người nhận. Đơn giữ người nhận cũ tới lúc chọn.
  */
 export function OrderRecipientField({ recipient, onSave }: Props) {
-  const savedKind: RecipientKind = recipient?.kind ?? "partner";
+  const savedKind: RecipientKind = recipient?.kind ?? DEFAULT_RECIPIENT_KIND;
   const [pendingKind, setPendingKind] = useState<RecipientKind | null>(null);
   const kind = pendingKind ?? savedKind;
   const switching = pendingKind !== null && pendingKind !== savedKind;

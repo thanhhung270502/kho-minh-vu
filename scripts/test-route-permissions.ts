@@ -49,7 +49,7 @@ const MA_TRAN: Dong[] = [
   { route: "/", ky_vong: { quanly: "200", vanphong: "→/hoa-don", thukho1: "→/danh-muc", chixem: "→/danh-muc", khach: "dangnhap" } },
   // /cai-dat chỉ redirect sang tab đầu tiên theo quyền. UAT Phase 2 bắt được
   // lỗi page này crash vì gọi hàm client từ server — ma trận cũ thiếu đúng nó.
-  { route: "/cai-dat", ky_vong: { quanly: "→/cai-dat/nguoi-dung", vanphong: "→/cai-dat/nhom-hang", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
+  { route: "/cai-dat", ky_vong: { quanly: "→/cai-dat/nguoi-dung", vanphong: "→/cai-dat/nhan-vien-phu-trach", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/nhap-kho", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   // Cùng quyền xem với /nhap-kho — nút "Tạo đơn" ẩn/hiện là trang trí ở client
   // (canCreate), chặn thật nằm ở bốn policy ghi trên don_dat_hang (plan 04-02).
@@ -69,6 +69,8 @@ const MA_TRAN: Dong[] = [
   { route: "/doi-tac", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   { route: "/doi-tac/ra-ghi-chu", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/cai-dat/nguoi-dung", ky_vong: { quanly: "200", vanphong: "quyen", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
+  // Nhân viên phụ trách (0077): cùng nhóm quyền ghi với danh mục — quản lý + văn phòng.
+  { route: "/cai-dat/nhan-vien-phu-trach", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/cai-dat/nhom-hang", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/cai-dat/so-chung-tu", ky_vong: { quanly: "200", vanphong: "quyen", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/api/danh-muc/mau-excel", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "401" } },

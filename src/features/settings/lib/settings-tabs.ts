@@ -13,6 +13,7 @@ export type SettingsTab = { duongDan: string; label: string; quyen: Permission }
 export const SETTINGS_TABS: SettingsTab[] = [
   { duongDan: "/cai-dat/nguoi-dung", label: "Người dùng", quyen: "manage-users" },
   { duongDan: "/cai-dat/kho", label: "Kho", quyen: "manage-warehouses" },
+  { duongDan: "/cai-dat/nhan-vien-phu-trach", label: "Nhân viên phụ trách", quyen: "manage-lookups" },
   { duongDan: "/cai-dat/nhom-hang", label: "Nhóm hàng", quyen: "manage-lookups" },
   { duongDan: "/cai-dat/don-vi-tinh", label: "Đơn vị tính", quyen: "manage-lookups" },
   { duongDan: "/cai-dat/cong-doan", label: "Công đoạn", quyen: "manage-lookups" },

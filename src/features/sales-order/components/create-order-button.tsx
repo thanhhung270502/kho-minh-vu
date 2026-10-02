@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
-import type { RecipientKind } from "@/shared/lib/recipient";
+import { DEFAULT_RECIPIENT_KIND, type RecipientKind } from "@/shared/lib/recipient";
 
 import { useCreateOrder } from "../hooks/useOrders";
 import { RecipientPicker } from "./recipient-picker";
@@ -21,14 +21,14 @@ export function CreateOrderButton({ label = "Tạo đơn" }: Props) {
   const createOrder = useCreateOrder();
 
   const [open, setOpen] = useState(false);
-  const [recipientKind, setRecipientKind] = useState<RecipientKind>("partner");
+  const [recipientKind, setRecipientKind] = useState<RecipientKind>(DEFAULT_RECIPIENT_KIND);
   const [recipientId, setRecipientId] = useState<string | undefined>();
   const [deliveryDate, setDeliveryDate] = useState<string | null>(null);
   const [recipientError, setRecipientError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function reset() {
-    setRecipientKind("partner");
+    setRecipientKind(DEFAULT_RECIPIENT_KIND);
     setRecipientId(undefined);
     setDeliveryDate(null);
     setRecipientError(null);
