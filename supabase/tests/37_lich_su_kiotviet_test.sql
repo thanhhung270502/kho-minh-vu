@@ -237,8 +237,8 @@ select ok(
 
 select is(
   (select count(*) from public.lich_su_giao_dich_doi_tac((select dt_id from t_dt)) where nguon = 'KIOTVIET_NHAP'),
-  1::bigint,
-  'B8c: cửa 3 (lich_su_giao_dich_doi_tac) — bật lại công tắc, thấy đúng 1 dòng KIOTVIET_NHAP'
+  0::bigint,
+  'B8c: cửa 3 đã đóng hẳn (0080) — lịch sử đối tác không còn dòng KiotViet kể cả khi bật công tắc'
 );
 
 -- =============================================================================

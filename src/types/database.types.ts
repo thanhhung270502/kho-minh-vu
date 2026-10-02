@@ -1514,6 +1514,7 @@ export type Database = {
           ma: string
           ma_so_thue: string
           ten: string
+          tong_giao_dich: number
           tong_so_dong: number
           updated_at: string
         }[]

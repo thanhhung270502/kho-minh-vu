@@ -136,15 +136,15 @@ select is(
 select is(
   (select count(*) from public.lich_su_giao_dich_doi_tac(
       (select id from public.doi_tac where ten = 'Zqx Tiến Mới')) where nguon = 'KIOTVIET_BAN'),
-  2::bigint,
-  'lịch sử khách gom hóa đơn KiotViet cũ theo mã hóa đơn'
+  0::bigint,
+  'lịch sử đối tác không còn hóa đơn KiotViet cũ (0080 — Phase 10 gỡ lịch sử KiotViet khỏi giao diện)'
 );
 
 select is(
   (select count(*) from public.lich_su_giao_dich_doi_tac(
       (select id from public.doi_tac where ma = 'DT-ZQX-2')) where nguon = 'KIOTVIET_NHAP'),
-  1::bigint,
-  'NCC khớp tiền tố mã kèm khoảng trắng, không khớp mã dài hơn'
+  0::bigint,
+  'lịch sử NCC không còn phiếu nhập KiotViet cũ (0080)'
 );
 
 select lives_ok(
