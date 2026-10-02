@@ -44,6 +44,9 @@ next-env.d.ts
 # dữ liệu export thật từ KiotViet — dữ liệu kinh doanh, không đẩy lên git
 /data/kiotviet/*
 !/data/kiotviet/README.md
+# Quy chuẩn mã (file đối chiếu + bản chụp sheet) — dữ liệu thật, không commit.
+/data/quy-chuan/*
+!/data/quy-chuan/README.md
 
 # dữ liệu mẫu sinh tự động cho script import
 /scripts/import-kiotviet/du-lieu-mau/
