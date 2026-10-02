@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Phản hồi vận hành
 status: ready_to_plan
-stopped_at: Phase 12 complete (quickplan, 4 task) — Phase 13 hoặc 15 kế tiếp
-last_updated: 2026-10-02T08:00:00.000Z
+stopped_at: Phase 13 complete (quickplan, 4 task) — Phase 14 hoặc 15 kế tiếp
+last_updated: 2026-10-02T10:00:00.000Z
 last_activity: 2026-10-02
 progress:
   total_phases: 16
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 101
   completed_plans: 68
   percent: 50
@@ -21,14 +21,35 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-02)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Milestone v1.1 Phản hồi vận hành — Phase 10, 11, 12 xong, kế tiếp Phase 13 (Phân tích tồn kho) hoặc 15 (Import v2)
+**Current focus:** Milestone v1.1 Phản hồi vận hành — Phase 10–13 xong, kế tiếp Phase 14 (Panel chi tiết) hoặc 15 (Import v2)
 
 ## Current Position
 
-Phase: 13 — ready to plan (Phase 10, 11, 12 complete; Phase 15 cũng đã đủ điều kiện)
+Phase: 14 — ready to plan (Phase 10–13 complete; Phase 15 cũng đã đủ điều kiện)
 Plan: —
 Status: Ready to plan
-Last activity: 2026-10-02 — Phase 12 Luồng đơn hàng → hóa đơn hoàn thành
+Last activity: 2026-10-02 — Phase 13 Phân tích tồn kho hoàn thành
+
+### Phase 13 — đã xong (02/10/2026)
+
+Làm theo `/spartan:quickplan`, không có thư mục `.planning/phases/13-*`. Branch
+`feature/phase-13-phan-tich` **tách từ `feature/phase-12-hoa-don`** (chưa push, chưa merge — merge
+10 → 11 → 12 → 13 theo thứ tự): `e8c8462`, `2956ef1`, `223de74`, `30f9515`. PTICH-01..07 xong;
+kiểm trên Supabase local (`npm run check`, pgTAP 44 file / 696 test, test hàm thuần, test đọc Excel,
+ma trận quyền route 190/190, `npm run test:concurrency`) và xem trang với dữ liệu thử `DEMO-PT`
+(đã xóa, DB về đúng trạng thái trước).
+
+Hệ quả cho các phase sau:
+- **Phase 14 (panel mã hàng)** dùng lại `phan_tich_ton_kho(p_so_ngay, p_ngay, p_san_pham_id)` cho
+  "Khách đặt" + "Dự kiến hết hàng" — cùng con số với trang Phân tích. Lưu ý quyền: RPC chỉ cho
+  quản lý + văn phòng (`xem_duoc_phan_tich`); thủ kho / chỉ xem mở panel sẽ nhận 42501 — Phase 14
+  phải quyết ẩn trường đó hay nới quyền riêng cho trường hợp một mã.
+- **PostgREST cắt mọi request ở 1.000 dòng** (`max_rows`, supabase/config.toml). Màn cần toàn danh
+  mục dùng `src/shared/lib/fetch-all-pages.ts`. Nghi nút xuất Excel danh mục đang bị cắt ở 1.000 mã
+  — đã tạo việc riêng "Sửa xuất Excel danh mục bị cắt ở 1.000 mã", chưa làm.
+- CSV có BOM dùng chung ở `src/shared/lib/csv.ts`.
+- Hàm quyền mỏng `xem_duoc_phan_tich()` chờ Phase 16. Đổi ngưỡng: RLS chỉ quản lý.
+- `0079` mới áp ở local.
 
 ### Phase 12 — đã xong (02/10/2026)
 
@@ -91,8 +112,8 @@ Hệ quả cho các phase sau:
   việc vận hành bắt buộc trước go-live") phải chốt lại: tồn đầu kỳ đi bằng kiểm kê (KKE-04 /
   DLIEU-06), hoặc chạy RPC `nap_ton_tam` bằng script nếu vẫn cần.
 
-Kế tiếp (sau Phase 12): Phase 13 (Phân tích tồn kho) hoặc Phase 15 (Import danh mục v2) —
-`/spartan:quickplan phase 13`. Migration kế tiếp là `0079`.
+Kế tiếp (sau Phase 13): Phase 14 (Panel chi tiết) hoặc Phase 15 (Import danh mục v2) —
+`/spartan:quickplan phase 14`. Migration kế tiếp là `0080`.
 
 ### Việc v1.0 còn treo (giữ nguyên, chạy song song)
 
@@ -757,7 +778,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-02T08:00:00.000Z
-Stopped at: Phase 12 complete — branch feature/phase-12-hoa-don (xếp chồng 10 → 11 → 12) chờ PR
-Last activity: 2026-10-02 - Phase 12 Luồng đơn hàng → hóa đơn (quickplan, DON-01..06)
-Resume file: .planning/ROADMAP.md (Phase 13)
+Last session: 2026-10-02T10:00:00.000Z
+Stopped at: Phase 13 complete — branch feature/phase-13-phan-tich (xếp chồng 10 → 11 → 12 → 13) chờ PR
+Last activity: 2026-10-02 - Phase 13 Phân tích tồn kho (quickplan, PTICH-01..07)
+Resume file: .planning/ROADMAP.md (Phase 14)

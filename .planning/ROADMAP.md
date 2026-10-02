@@ -47,7 +47,7 @@ sau cần dùng ngay.
 - [x] **Phase 10: Dọn dẹp & điều hướng** - Sửa lỗi hiển thị mã/tên hàng, bỏ Lịch sử KiotViet và Giá bán, menu chia nhóm, Xuất kho → Hóa đơn (`/hoa-don`), gỡ `/ton-kho`
 - [x] **Phase 11: Nhân viên phụ trách & danh mục nền** - Danh mục nhân viên phụ trách, đặt hàng chọn Nội bộ/Đối tác, thêm Nhóm hàng/ĐVT/Công đoạn ngay trong form mã hàng
 - [x] **Phase 12: Luồng đơn hàng → hóa đơn** - Đơn tạm → Xác nhận (in phiếu lấy hàng) → Hoàn thành ghi sổ Hóa đơn atomic, 1 đơn = 1 hóa đơn, hủy đơn
-- [ ] **Phase 13: Phân tích tồn kho** - Trang `/phan-tich`: bán TB/ngày, dự kiến hết hàng, đề nghị nhập, tồn chậm, ngưỡng chỉnh được, duyệt định mức
+- [x] **Phase 13: Phân tích tồn kho** - Trang `/phan-tich`: bán TB/ngày, dự kiến hết hàng, đề nghị nhập, tồn chậm, ngưỡng chỉnh được, duyệt định mức
 - [ ] **Phase 14: Panel chi tiết** - Bấm dòng Danh sách hàng hóa và Đối tác mở panel cạnh bảng, không rời trang
 - [ ] **Phase 15: Import danh mục v2** - File 4 cột, bảng chọn trường từng dòng, bỏ qua dòng lỗi và tải file lỗi, tồn kho ghi bằng phiếu điều chỉnh
 - [ ] **Phase 16: Chức vụ & quyền** - Chức vụ động với 9 quyền, chặn ở database bằng `co_quyen()` đọc DB, có hiệu lực ngay (rủi ro cao nhất, đụng RLS)
@@ -502,7 +502,18 @@ nhau, chạy song song được. Migration kế tiếp là `0077`.
   4. Xem được top 10 bán chạy, 15 nhóm bán nhiều nhất kèm số ngày tồn, tồn chậm; mã không bán hiện "Không bán" hoặc "Ngừng bán?" và không có đề nghị nhập
   5. Chỉnh được ngưỡng đỏ, ngưỡng vàng và số ngày Y, lưu chung toàn hệ thống, màu đổi theo; duyệt định mức tồn tối thiểu làm được ngay trong trang này
 
-**Plans**: TBD
+**Plans**: 4 task — làm theo quickplan (không qua `/gsd:execute-phase`), branch `feature/phase-13-phan-tich` (tách từ `feature/phase-12-hoa-don`)
+- [x] Migration `0079`: `phan_tich_ton_kho` (một dòng mỗi mã), `nhip_ban_theo_ngay`, bảng `cau_hinh_phan_tich` (`e8c8462`)
+- [x] Lớp dữ liệu + hàm tính thuần (đề nghị nhập, màu, KPI, tab, xếp hạng, tồn chậm, CSV) (`2956ef1`)
+- [x] Trang `/phan-tich`, mục menu Phân tích, quyền `view-analysis` (`223de74`)
+- [x] Duyệt định mức thành tab `?tab=dinh-muc`, gỡ `/ton-kho/dinh-muc` và nút tạm (`30f9515`)
+
+> **Hoàn thành 02/10/2026.** Kiểm trên Supabase local: `npm run check`, pgTAP 44 file / 696 test, test hàm thuần,
+> test đọc Excel, ma trận quyền route 190/190, `npm run test:concurrency`; xem trang trên trình duyệt với dữ liệu thử
+> `DEMO-PT` (đã xóa). Quyết định khi làm: xem = quản lý + văn phòng, đổi ngưỡng = quản lý; khách đặt = đơn tạm +
+> đã xác nhận (bỏ nội bộ); bán trừ khách trả; X ("Sắp hết ≤ X ngày", KPI "Cần nhập trong X ngày") = ngưỡng vàng,
+> ngưỡng đỏ chỉ tô màu; biểu đồ bỏ mã không tồn không bán. Tải toàn danh mục theo trang 1.000 dòng (max_rows của
+> PostgREST). `0079` mới áp ở local. Việc mang theo từ Phase 10 (menu Phân tích, chuyển định mức, gỡ nút tạm) đã xong.
 **UI hint**: yes
 
 ### Phase 14: Panel chi tiết
@@ -573,7 +584,7 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 | 10. Dọn dẹp & điều hướng | 4/4 | Complete | 2026-10-02 |
 | 11. Nhân viên phụ trách & danh mục nền | 4/4 | Complete | 2026-10-02 |
 | 12. Luồng đơn hàng → hóa đơn | 4/4 | Complete | 2026-10-02 |
-| 13. Phân tích tồn kho | 0/TBD | Not started | - |
+| 13. Phân tích tồn kho | 4/4 | Complete | 2026-10-02 |
 | 14. Panel chi tiết | 0/TBD | Not started | - |
 | 15. Import danh mục v2 | 0/TBD | Not started | - |
 | 16. Chức vụ & quyền | 0/TBD | Not started | - |

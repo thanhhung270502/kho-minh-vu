@@ -134,7 +134,7 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 - [x] **GON-01**: Phiếu nhập, đơn đặt hàng và danh mục hàng hóa luôn hiện đủ mã hàng và tên hàng ở mọi dòng (sửa lỗi báo 28/09)
 - [x] **GON-02**: Không còn trang, mục menu và tab "Lịch sử KiotViet" ở đâu trên giao diện; dữ liệu lưu trữ trong database giữ nguyên
 - [x] **GON-03**: Không màn nào hiện hoặc cho nhập Giá bán; Giá vốn không hiện ở Danh mục hàng hóa; phiếu nhập vẫn nhập Đơn giá
-- [x] **GON-04**: Menu chia nhóm: **Đơn hàng** (Đặt hàng, Hóa đơn), **Hàng hóa** (Danh sách hàng hóa, Kiểm kho), cùng Nhập kho, Đối tác, Phân tích, Cài đặt — trên cả máy tính và điện thoại *(mục Phân tích thêm ở Phase 13 khi có trang)*
+- [x] **GON-04**: Menu chia nhóm: **Đơn hàng** (Đặt hàng, Hóa đơn), **Hàng hóa** (Danh sách hàng hóa, Kiểm kho), cùng Nhập kho, Đối tác, Phân tích, Cài đặt — trên cả máy tính và điện thoại *(mục Phân tích đã thêm ở Phase 13)*
 - [x] **GON-05**: Mục "Xuất kho" đổi thành "Hóa đơn" ở menu, tiêu đề, phiếu in; route mới `/hoa-don`, link và bookmark `/xuat-kho` cũ tự chuyển sang
 - [x] **GON-06**: Trang `/ton-kho` và Nạp tồn tạm bị gỡ; link cũ chuyển về Danh sách hàng hóa
 - [x] **GON-07**: Ma trận quyền route (`test-route-permissions.ts`) phủ đúng bộ route mới, mọi route cũ đã gỡ trả về chuyển hướng chứ không 404/crash
@@ -157,13 +157,13 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 
 ### Phân tích tồn kho (PTICH)
 
-- [ ] **PTICH-01**: Hệ thống tính cho từng mã: bán TB/ngày (ADU) trong kỳ chọn 7/30/90 ngày (mặc định 30, chia ngày lịch, chỉ hóa đơn hoàn thành gửi đối tác, không tính đơn nội bộ), tồn khả dụng = tồn − khách đặt, số ngày còn hàng, ngày dự kiến hết hàng, đề nghị nhập ⌈ADU × Y − tồn khả dụng⌉ (âm thì 0)
-- [ ] **PTICH-02**: Trang `/phan-tich` hiện 4 thẻ KPI: cần nhập trong X ngày, hết hàng vẫn có khách mua, tổng số lượng tồn, tồn không có tín hiệu bán
-- [ ] **PTICH-03**: Biểu đồ Số ngày còn hàng (lọc theo loại hoàn thiện ÉP/SƠN/CARBON/XI MẠ/NANO/Khác) và biểu đồ Nhịp bán hàng (theo số hóa đơn hoặc số lượng, kèm % thay đổi nửa sau so với nửa đầu kỳ)
-- [ ] **PTICH-04**: Bảng Cần nhập hàng có 3 tab (Sắp hết ≤ X ngày, Đã hết có khách mua, Còn X+1–30 ngày), tìm kiếm, lọc loại hoàn thiện, xuất CSV đề nghị nhập
-- [ ] **PTICH-05**: Xem top 10 bán chạy, 15 nhóm bán nhiều nhất kèm số ngày tồn của nhóm, tồn chậm (Không bán: top 30 theo tồn; đủ bán ≥ 365 ngày: top 20); mã không bán hiện "Không bán" (còn tồn) hoặc "Ngừng bán?" (tồn 0), không có đề nghị nhập
-- [ ] **PTICH-06**: Ngưỡng đỏ (mặc định 7 ngày) và vàng (mặc định 14 ngày) cùng số ngày Y chỉnh được, lưu chung toàn hệ thống; màu trạng thái theo hai ngưỡng, hết hàng luôn đỏ đậm
-- [ ] **PTICH-07**: Chức năng duyệt định mức tồn tối thiểu (trước ở `/ton-kho/dinh-muc`) nằm trong trang Phân tích
+- [x] **PTICH-01**: Hệ thống tính cho từng mã: bán TB/ngày (ADU) trong kỳ chọn 7/30/90 ngày (mặc định 30, chia ngày lịch, chỉ hóa đơn hoàn thành gửi đối tác, không tính đơn nội bộ), tồn khả dụng = tồn − khách đặt, số ngày còn hàng, ngày dự kiến hết hàng, đề nghị nhập ⌈ADU × Y − tồn khả dụng⌉ (âm thì 0)
+- [x] **PTICH-02**: Trang `/phan-tich` hiện 4 thẻ KPI: cần nhập trong X ngày, hết hàng vẫn có khách mua, tổng số lượng tồn, tồn không có tín hiệu bán
+- [x] **PTICH-03**: Biểu đồ Số ngày còn hàng (lọc theo loại hoàn thiện ÉP/SƠN/CARBON/XI MẠ/NANO/Khác) và biểu đồ Nhịp bán hàng (theo số hóa đơn hoặc số lượng, kèm % thay đổi nửa sau so với nửa đầu kỳ)
+- [x] **PTICH-04**: Bảng Cần nhập hàng có 3 tab (Sắp hết ≤ X ngày, Đã hết có khách mua, Còn X+1–30 ngày), tìm kiếm, lọc loại hoàn thiện, xuất CSV đề nghị nhập *(X = ngưỡng vàng; ngưỡng vàng ≥ 30 thì ẩn tab thứ ba)*
+- [x] **PTICH-05**: Xem top 10 bán chạy, 15 nhóm bán nhiều nhất kèm số ngày tồn của nhóm, tồn chậm (Không bán: top 30 theo tồn; đủ bán ≥ 365 ngày: top 20); mã không bán hiện "Không bán" (còn tồn) hoặc "Ngừng bán?" (tồn 0), không có đề nghị nhập
+- [x] **PTICH-06**: Ngưỡng đỏ (mặc định 7 ngày) và vàng (mặc định 14 ngày) cùng số ngày Y chỉnh được, lưu chung toàn hệ thống; màu trạng thái theo hai ngưỡng, hết hàng luôn đỏ đậm
+- [x] **PTICH-07**: Chức năng duyệt định mức tồn tối thiểu (trước ở `/ton-kho/dinh-muc`) nằm trong trang Phân tích
 
 ### Panel chi tiết (PANEL)
 
@@ -327,13 +327,13 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 | DON-04 | Phase 12 | Complete |
 | DON-05 | Phase 12 | Complete |
 | DON-06 | Phase 12 | Complete |
-| PTICH-01 | Phase 13 | Pending |
-| PTICH-02 | Phase 13 | Pending |
-| PTICH-03 | Phase 13 | Pending |
-| PTICH-04 | Phase 13 | Pending |
-| PTICH-05 | Phase 13 | Pending |
-| PTICH-06 | Phase 13 | Pending |
-| PTICH-07 | Phase 13 | Pending |
+| PTICH-01 | Phase 13 | Complete |
+| PTICH-02 | Phase 13 | Complete |
+| PTICH-03 | Phase 13 | Complete |
+| PTICH-04 | Phase 13 | Complete |
+| PTICH-05 | Phase 13 | Complete |
+| PTICH-06 | Phase 13 | Complete |
+| PTICH-07 | Phase 13 | Complete |
 | PANEL-01 | Phase 14 | Pending |
 | PANEL-02 | Phase 14 | Pending |
 | PANEL-03 | Phase 14 | Pending |
