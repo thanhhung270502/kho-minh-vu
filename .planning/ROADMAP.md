@@ -664,7 +664,7 @@ Plans:
 - [x] 18-04-PLAN.md — UI tạo đơn + đầu đơn chọn nhiều người nhận (StaffMultiSelect)
 - [x] 18-05-PLAN.md — Lưới dòng: cột/ô người nhận theo dòng, giữ luồng bàn phím
 - [x] 18-06-PLAN.md — Danh sách + lọc ?nhan_vien= + phiếu lấy hàng có cột Người nhận
-- [ ] 18-07-PLAN.md — Duyệt đơn: hóa đơn hiện người nhận đơn + dòng
+- [x] 18-07-PLAN.md — Duyệt đơn: hóa đơn hiện người nhận đơn + dòng
 - [ ] 18-08-PLAN.md — Cổng cuối: bộ kiểm toàn phần + UAT trình duyệt
 **UI hint**: yes
 
