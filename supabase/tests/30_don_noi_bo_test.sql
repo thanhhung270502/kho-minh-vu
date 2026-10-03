@@ -4,6 +4,7 @@
 -- viết tắt + tên đầy đủ), không còn là tài khoản đăng nhập nguoi_dung.
 -- Khuôn: supabase/tests/29_phieu_xuat_tu_don_test.sql
 -- 0090: CHECK một-người-nhận của đơn đã bỏ (xem 108)
+-- 0091: RPC đọc/chép người nhận qua bảng nối (xem 109); phần dưới tạo đơn bằng tao_don
 -- =============================================================================
 begin;
 select plan(26);
@@ -119,13 +120,15 @@ select throws_ok(
 select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select lives_ok(
-  $$ insert into public.don_dat_hang (so_dh, nguoi_nhan_id)
-     select 'ZQX-NB-01', nguoi_nhan from t_nb $$,
-  'Văn phòng tạo được đơn nội bộ'
+  $$ select public.tao_don(null, array[(select nguoi_nhan from t_nb)]) $$,
+  'Văn phòng tạo được đơn nội bộ (tao_don)'
 );
 select pg_temp.dang_xuat();
 create temp table t_don as
-select id from public.don_dat_hang where so_dh = 'ZQX-NB-01';
+select d.id from public.don_dat_hang d
+join public.don_dat_hang_nguoi_nhan ddn on ddn.don_dat_hang_id = d.id
+where ddn.nguoi_nhan_id = (select nguoi_nhan from t_nb) and d.doi_tac_id is null
+order by d.created_at desc limit 1;
 grant select on t_don to authenticated;
 
 insert into public.don_dat_hang_dong (don_dat_hang_id, san_pham_id, so_luong_dat)
@@ -135,7 +138,7 @@ select (select id from t_don), (select id from public.san_pham where ma_hang = '
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 select is(
   (select ten_nguoi_nhan from public.chi_tiet_don((select id from t_don))),
-  (select ten_nguoi_nhan from t_nb),
+  array[(select ten_nguoi_nhan from t_nb)],
   'chi_tiet_don trả tên người nhận nội bộ'
 );
 select ok(
@@ -145,7 +148,7 @@ select ok(
 );
 select ok(
   not exists (select 1 from public.danh_sach_don(p_loai_nhan => 'NOI_BO', p_kich_thuoc => 200)
-              where nguoi_nhan_id is null),
+              where doi_tac_id is not null),
   'Lọc NOI_BO chỉ trả đơn nội bộ'
 );
 select pg_temp.dang_xuat();
@@ -157,9 +160,10 @@ select (public.tao_phieu_xuat_tu_don((select id from t_don))).id as id;
 grant select on t_px to authenticated;
 
 select is(
-  (select nguoi_nhan_id from public.chung_tu where id = (select id from t_px)),
-  (select nguoi_nhan from t_nb),
-  'tao_phieu_xuat_tu_don chép người nhận nội bộ sang phiếu xuất'
+  (select array_agg(ctn.nguoi_nhan_id order by ctn.thu_tu) from public.chung_tu_nguoi_nhan ctn
+   where ctn.chung_tu_id = (select id from t_px)),
+  array[(select nguoi_nhan from t_nb)],
+  'tao_phieu_xuat_tu_don chép người nhận nội bộ sang phiếu xuất (bảng nối)'
 );
 
 update public.chung_tu set ly_do_xuat_am = 'LECH_TON_CHO_KIEM_KE' where id = (select id from t_px);
@@ -168,7 +172,7 @@ select public.ghi_so_chung_tu((select id from t_px));
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 select is(
   (select ten_nguoi_nhan from public.chi_tiet_chung_tu((select id from t_px))),
-  (select ten_nguoi_nhan from t_nb),
+  array[(select ten_nguoi_nhan from t_nb)],
   'chi_tiet_chung_tu trả tên người nhận nội bộ'
 );
 select is(
