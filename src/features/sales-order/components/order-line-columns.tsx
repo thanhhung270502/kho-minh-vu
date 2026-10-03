@@ -3,6 +3,13 @@
 import { Button, InputNumber, Tag, Tooltip } from "antd";
 import type { TableColumnsType } from "antd";
 
+import { StaffSelect } from "@/shared/components/staff-select";
+import {
+  COMMON_GOODS_LABEL,
+  lineRecipientLabel,
+  type StaffRef,
+} from "@/shared/lib/recipient";
+
 import type { OrderLine } from "../types";
 
 function formatNumber(value: number | string | null): string {
@@ -13,6 +20,16 @@ type Params = {
   editable: boolean;
   /** Chỉ hiện hai cột Đã xuất/Còn lại khi đơn đã có phiếu xuất. */
   showProgress: boolean;
+  /** Chỉ hiện cột Người nhận khi đơn đa người nhận hoặc đã có dòng được gán. */
+  showRecipient: boolean;
+  staffCount: number;
+  /** Nhân viên của đơn + người nhận ở các dòng, để người ngừng dùng vẫn hiện tên. */
+  extraStaff: StaffRef[];
+  onEditRecipient: (
+    id: string,
+    recipientId: string | null,
+    name: string | undefined,
+  ) => void;
   onEditQuantity: (id: string, quantity: number) => void;
   onDelete: (id: string) => void;
 };
@@ -24,6 +41,10 @@ type Params = {
 export function buildOrderLineColumns({
   editable,
   showProgress,
+  showRecipient,
+  staffCount,
+  extraStaff,
+  onEditRecipient,
   onEditQuantity,
   onDelete,
 }: Params): TableColumnsType<OrderLine> {
@@ -42,6 +63,27 @@ export function buildOrderLineColumns({
       ellipsis: true,
     },
     { title: "ĐVT", dataIndex: "unitName", key: "unitName", width: 90 },
+    ...(showRecipient
+      ? [
+          {
+            title: "Người nhận",
+            key: "recipient",
+            width: 190,
+            render: (_: unknown, line: OrderLine) =>
+              editable ? (
+                <StaffSelect
+                  size="small"
+                  placeholder={COMMON_GOODS_LABEL}
+                  value={line.recipientId ?? undefined}
+                  extraOptions={extraStaff}
+                  onChange={(id, name) => onEditRecipient(line.id, id ?? null, name)}
+                />
+              ) : (
+                lineRecipientLabel(line.recipientName, staffCount)
+              ),
+          },
+        ]
+      : []),
     {
       title: "Số lượng đặt",
       dataIndex: "orderedQuantity",

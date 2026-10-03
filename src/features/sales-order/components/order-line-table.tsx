@@ -8,13 +8,9 @@ import { useRef, useState } from "react";
 import type { ProductSearchResult } from "@/shared/components/product-search-input";
 import { SummaryRow } from "@/shared/components/summary-row";
 import { useFocusOnOpen } from "@/shared/hooks/use-focus-on-open";
-import { explainError } from "@/shared/lib/errors";
+import { isMultiRecipientOrder, type StaffRef } from "@/shared/lib/recipient";
 
-import {
-  useAddOrderLine,
-  useDeleteOrderLine,
-  useUpdateOrderLine,
-} from "../hooks/useOrders";
+import { useOrderLineActions } from "../hooks/use-order-line-actions";
 import type { OrderLine } from "../types";
 import { buildOrderLineColumns } from "./order-line-columns";
 import { OrderLineEntryRow } from "./order-line-entry-row";
@@ -23,6 +19,7 @@ type Props = {
   orderId: string;
   lines: OrderLine[];
   editable: boolean;
+  staff: StaffRef[];
 };
 
 type DraftLine = {
@@ -43,13 +40,13 @@ const EMPTY_DRAFT: DraftLine = { product: null, quantity: null };
  * `remainingQuantity` hiển thị ở `order-line-columns.tsx`, tính sẵn trong
  * `toOrderLine` của plan 04-06 — không lưu lại ở state của file này.
  */
-export function OrderLineTable({ orderId, lines, editable }: Props) {
+export function OrderLineTable({ orderId, lines, editable, staff }: Props) {
   const { message } = App.useApp();
-  const addLine = useAddOrderLine(orderId);
-  const updateLine = useUpdateOrderLine(orderId);
-  const deleteLine = useDeleteOrderLine(orderId);
+  const actions = useOrderLineActions(orderId, staff);
 
   const [draft, setDraft] = useState<DraftLine>(EMPTY_DRAFT);
+  // Người nhận dính qua các lần thêm dòng; không reset khi lưu dòng.
+  const [draftRecipientId, setDraftRecipientId] = useState<string | null>(null);
 
   const codeInput = useRef<RefSelectProps>(null);
   useFocusOnOpen(codeInput, editable);
@@ -59,50 +56,50 @@ export function OrderLineTable({ orderId, lines, editable }: Props) {
   // đều bằng số đặt, thêm hai cột chỉ gây rối mắt.
   const showProgress = lines.some((line) => line.shippedQuantity > 0);
 
+  const showRecipient = isMultiRecipientOrder(
+    staff.length,
+    lines.some((line) => line.recipientId !== null),
+  );
+  // Người bị bỏ khỏi đơn thì tự rơi về "Chung".
+  const effectiveRecipientId =
+    draftRecipientId !== null && staff.some((p) => p.id === draftRecipientId)
+      ? draftRecipientId
+      : null;
+  const extraStaff = [...staff];
+  for (const line of lines) {
+    if (line.recipientId && !extraStaff.some((p) => p.id === line.recipientId)) {
+      extraStaff.push({ id: line.recipientId, name: line.recipientName ?? "?" });
+    }
+  }
+
   async function saveDraftLine() {
     if (!draft.product || !draft.quantity || draft.quantity <= 0) {
       message.warning("Nhập mã hàng và số lượng lớn hơn 0.");
       return;
     }
 
-    try {
-      await addLine.mutateAsync({
-        productId: draft.product.id,
-        quantity: draft.quantity,
-      });
-      setDraft(EMPTY_DRAFT);
-      // Hẹn sang lượt sau: focus ngay lúc này bị chính vòng render dọn bảng
-      // xoá đi, con trỏ rơi sai chỗ (bẫy 14b).
-      setTimeout(() => codeInput.current?.focus(), 0);
-    } catch (error) {
-      const explained = explainError(error);
-      message.error(`${explained.title}. ${explained.action}`);
-    }
-  }
-
-  async function editQuantity(id: string, quantity: number) {
-    try {
-      await updateLine.mutateAsync({ id, values: { quantity } });
-    } catch (error) {
-      const explained = explainError(error);
-      message.error(`${explained.title}. ${explained.action}`);
-    }
-  }
-
-  async function removeLine(id: string) {
-    try {
-      await deleteLine.mutateAsync(id);
-    } catch (error) {
-      const explained = explainError(error);
-      message.error(`${explained.title}. ${explained.action}`);
-    }
+    const saved = await actions.addLine({
+      productId: draft.product.id,
+      quantity: draft.quantity,
+      recipientId: showRecipient ? effectiveRecipientId : null,
+    });
+    if (!saved) return;
+    setDraft(EMPTY_DRAFT);
+    // Hẹn sang lượt sau: focus ngay lúc này bị chính vòng render dọn bảng
+    // xoá đi, con trỏ rơi sai chỗ (bẫy 14b).
+    setTimeout(() => codeInput.current?.focus(), 0);
   }
 
   const columns = buildOrderLineColumns({
     editable,
     showProgress,
-    onEditQuantity: (id, quantity) => void editQuantity(id, quantity),
-    onDelete: (id) => void removeLine(id),
+    showRecipient,
+    staffCount: staff.length,
+    extraStaff,
+    onEditRecipient: (id, recipientId, name) =>
+      void actions.editRecipient(id, recipientId, name),
+    onEditQuantity: (id, quantity) => void actions.editQuantity(id, quantity),
+    onDelete: (id) => void actions.removeLine(id),
   });
 
   const totalQuantity = lines.reduce(
@@ -140,7 +137,11 @@ export function OrderLineTable({ orderId, lines, editable }: Props) {
           quantityInputRef={quantityInput}
           quantity={draft.quantity}
           selectedProduct={draft.product}
-          pending={addLine.isPending}
+          pending={actions.adding}
+          staff={staff}
+          showRecipient={showRecipient}
+          recipientId={effectiveRecipientId}
+          onRecipientChange={setDraftRecipientId}
           onSelectProduct={(product) => {
             setDraft((current) => ({ ...current, product }));
             setTimeout(() => quantityInput.current?.focus(), 0);

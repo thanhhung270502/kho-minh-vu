@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
-import { formatRecipient } from "@/shared/lib/recipient";
+import { formatOrderRecipients } from "@/shared/lib/recipient";
 
 import { useOrderDetail, useOrderLines } from "../hooks/useOrders";
 import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from "../lib/order-status";
@@ -60,7 +60,7 @@ export function OrderDetailView({
                   <Tag color={ORDER_STATUS_COLORS[order.status]}>
                     {ORDER_STATUS_LABELS[order.status]}
                   </Tag>
-                  {formatRecipient(order.recipient)}
+                  {formatOrderRecipients(order.recipients)}
                 </span>
               }
               actions={
@@ -119,9 +119,11 @@ export function OrderDetailView({
               <QueryState query={lines} isEmpty={() => false} emptyDescription="">
                 {(loadedLines) => (
                   <OrderLineTable
+                    key={id}
                     orderId={id}
                     lines={loadedLines}
                     editable={editable}
+                    staff={order.recipients.staff}
                   />
                 )}
               </QueryState>

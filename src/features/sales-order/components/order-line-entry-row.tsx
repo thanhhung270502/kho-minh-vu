@@ -1,7 +1,7 @@
 "use client";
 
 import type { InputNumberRef } from "@rc-component/input-number";
-import { Button, InputNumber, Typography } from "antd";
+import { Button, InputNumber, Select, Typography } from "antd";
 import type { RefSelectProps } from "antd/es/select";
 import type { Ref } from "react";
 
@@ -9,6 +9,8 @@ import {
   ProductSearchInput,
   type ProductSearchResult,
 } from "@/shared/components/product-search-input";
+import { COMMON_GOODS_LABEL, type StaffRef } from "@/shared/lib/recipient";
+import { filterByLabel } from "@/shared/lib/text";
 
 type Props = {
   codeInputRef: Ref<RefSelectProps>;
@@ -16,6 +18,10 @@ type Props = {
   quantity: number | null;
   selectedProduct: ProductSearchResult | null;
   pending: boolean;
+  staff: StaffRef[];
+  showRecipient: boolean;
+  recipientId: string | null;
+  onRecipientChange: (id: string | null) => void;
   onSelectProduct: (product: ProductSearchResult) => void;
   onQuantityChange: (value: number | null) => void;
   onSubmit: () => void;
@@ -33,6 +39,10 @@ export function OrderLineEntryRow({
   quantity,
   selectedProduct,
   pending,
+  staff,
+  showRecipient,
+  recipientId,
+  onRecipientChange,
   onSelectProduct,
   onQuantityChange,
   onSubmit,
@@ -64,6 +74,22 @@ export function OrderLineEntryRow({
         />
       </div>
 
+      {showRecipient ? (
+        <div className="w-48">
+          <label className="mb-1 block text-[13px] text-chu-phu">Người nhận</label>
+          <Select
+            allowClear
+            showSearch
+            className="w-full"
+            placeholder={COMMON_GOODS_LABEL}
+            value={recipientId ?? undefined}
+            options={staff.map((person) => ({ value: person.id, label: person.name }))}
+            filterOption={filterByLabel}
+            onChange={(value) => onRecipientChange(value ?? null)}
+          />
+        </div>
+      ) : null}
+
       <Button type="primary" loading={pending} onClick={onSubmit}>
         Thêm dòng
       </Button>
@@ -71,6 +97,9 @@ export function OrderLineEntryRow({
       <Typography.Text type="secondary" className="w-full text-xs">
         Gõ mã → Enter → số lượng → Enter là xong một dòng, con trỏ quay về ô
         mã.
+        {showRecipient
+          ? " Ô Người nhận giữ nguyên cho các dòng tiếp theo; để trống = hàng chung."
+          : ""}
       </Typography.Text>
     </div>
   );
