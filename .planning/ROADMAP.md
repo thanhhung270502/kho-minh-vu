@@ -52,7 +52,7 @@ sau cần dùng ngay.
 - [x] **Phase 15: Import danh mục v2** - File 4 cột, bảng chọn trường từng dòng, bỏ qua dòng lỗi và tải file lỗi, tồn kho ghi bằng phiếu điều chỉnh
 - [x] **Phase 16: Chức vụ & quyền** - Chức vụ động với 9 quyền, chặn ở database bằng `co_quyen()` đọc DB, có hiệu lực ngay (rủi ro cao nhất, đụng RLS)
 
-### v1.2 Phản hồi vận hành đợt 2
+**v1.2 Phản hồi vận hành đợt 2** (chi tiết ở "## Milestone v1.2")
 
 - [ ] **Phase 17: Đổi tên & gọn đơn đặt** - Menu Đơn đặt / Duyệt đơn (`/don-dat`, `/duyet-don`), "Khách đặt" → "Đơn đặt", "Mua ngoài" → "Hàng ngoài", bỏ "Cần rà" và Ngày giao dự kiến, phiếu lấy hàng ghi tên đầy đủ + giờ in + người đặt
 - [ ] **Phase 18: Đơn nhiều người nhận** - Đơn chọn nhiều người nhận, từng dòng gán người nhận riêng, lọc/in/hóa đơn mang theo cả hai cấp
