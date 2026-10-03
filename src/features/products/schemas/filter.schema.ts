@@ -57,7 +57,6 @@ export type ProductFilter = {
   unitId: string | null;
   stockStatus: StockStatus | null;
   tradingStatus: TradingStatus;
-  needsReview: boolean;
   hasImage: ImageFilter | null;
   sortBy: SortField | null;
   sortDir: "asc" | "desc";
@@ -72,7 +71,6 @@ export const DEFAULT_PRODUCT_FILTER: ProductFilter = {
   unitId: null,
   stockStatus: null,
   tradingStatus: "active",
-  needsReview: false,
   hasImage: null,
   sortBy: null,
   sortDir: "asc",
@@ -89,7 +87,6 @@ export function countActiveFilters(filter: ProductFilter): number {
   if (filter.stageId !== null) count++;
   if (filter.unitId !== null) count++;
   if (filter.stockStatus !== null) count++;
-  if (filter.needsReview) count++;
   if (filter.hasImage !== null) count++;
   if (filter.tradingStatus !== DEFAULT_PRODUCT_FILTER.tradingStatus) count++;
   return count;
@@ -134,7 +131,6 @@ export function readFilterFromUrl(
     tradingStatus:
       (trading ? URL_TO_TRADING_STATUS[trading] : undefined) ??
       DEFAULT_PRODUCT_FILTER.tradingStatus,
-    needsReview: params.get("can_ra") === "1",
     hasImage: (image ? URL_TO_IMAGE_FILTER[image] : undefined) ?? null,
     sortBy: (sort ? COLUMN_TO_SORT_FIELD[sort] : undefined) ?? null,
     sortDir: direction === "desc" ? "desc" : "asc",
@@ -154,7 +150,6 @@ export function writeFilterToUrl(filter: ProductFilter): URLSearchParams {
   if (filter.tradingStatus !== DEFAULT_PRODUCT_FILTER.tradingStatus) {
     params.set("kinh_doanh", TRADING_STATUS_TO_URL[filter.tradingStatus]);
   }
-  if (filter.needsReview) params.set("can_ra", "1");
   if (filter.hasImage) params.set("anh", IMAGE_FILTER_TO_URL[filter.hasImage]);
   if (filter.sortBy) params.set("sap_xep", SORT_FIELD_TO_COLUMN[filter.sortBy]);
   if (filter.sortDir !== DEFAULT_PRODUCT_FILTER.sortDir) {
@@ -179,7 +174,6 @@ export function toListRpcArgs(filter: ProductFilter): ListArgs {
     p_dvt_id: filter.unitId ?? undefined,
     p_trang_thai_ton: filter.stockStatus ?? undefined,
     p_dang_kinh_doanh: filter.tradingStatus === "active",
-    p_can_ra: filter.needsReview ? true : undefined,
     p_co_anh: filter.hasImage === null ? undefined : filter.hasImage === "with",
     p_sap_xep: filter.sortBy ? SORT_FIELD_TO_COLUMN[filter.sortBy] : undefined,
     p_huong: filter.sortDir,

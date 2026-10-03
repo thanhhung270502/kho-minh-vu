@@ -389,7 +389,6 @@ const sampleFilter: ProductFilter = {
   unitId: null,
   stockStatus: "duoi_dinh_muc",
   tradingStatus: "inactive",
-  needsReview: true,
   hasImage: "without",
   sortBy: "totalStock",
   sortDir: "desc",
@@ -410,7 +409,10 @@ assert.equal(
   "lọc tất cả gửi null tường minh, không bỏ trống",
 );
 assert.equal(toListRpcArgs(DEFAULT_PRODUCT_FILTER).p_dang_kinh_doanh, true);
-assert.equal(toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, needsReview: false }).p_can_ra, undefined);
+// Phase 17 (TEN-05): bỏ "Cần rà" — bookmark cũ ?can_ra=1 bị bỏ qua, RPC không nhận p_can_ra.
+assert.deepEqual(readFilterFromUrl(new URLSearchParams("can_ra=1")), DEFAULT_PRODUCT_FILTER, "?can_ra=1 cũ bị bỏ qua");
+assert.ok(!("p_can_ra" in toListRpcArgs(DEFAULT_PRODUCT_FILTER)), "không gửi p_can_ra");
+assert.ok(!("p_can_ra" in toListRpcArgs(sampleFilter)), "không gửi p_can_ra kể cả khi có lọc khác");
 
 // --- Bộ lọc "Hình ảnh" (Phase 9, 09-08, D-18, ANH-04) ----------------------
 assert.equal(readFilterFromUrl(new URLSearchParams("anh=co")).hasImage, "with", "?anh=co đọc thành with");
