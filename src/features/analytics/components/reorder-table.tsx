@@ -41,7 +41,7 @@ export function ReorderTable({ rows, settings }: { rows: AnalysisRow[]; settings
     { title: "Tên hàng", dataIndex: "name", width: 260, ellipsis: true },
     { title: "Loại", dataIndex: "finish", width: 80, render: (f: FinishType) => FINISH_LABELS[f] },
     { title: "Tồn", dataIndex: "stock", width: 80, align: "right", render: (n: number) => formatQty(n) },
-    { title: "KH đặt", dataIndex: "customerOrdered", width: 80, align: "right", render: (n: number) => formatQty(n) },
+    { title: "Đơn đặt", dataIndex: "customerOrdered", width: 90, align: "right", render: (n: number) => formatQty(n) },
     { title: "Bán TB/ngày", dataIndex: "avgDailySales", width: 100, align: "right", render: (n: number | null) => formatQty(n, 2) },
     { title: "Còn (ngày)", dataIndex: "daysOfCover", width: 90, align: "right", render: (n: number | null) => formatQty(n, 1) },
     {

@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
-import { formatRecipient } from "@/shared/lib/recipient";
+import { formatOrderRecipients } from "@/shared/lib/recipient";
 
 import { useOrderDetail, useOrderLines } from "../hooks/useOrders";
 import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from "../lib/order-status";
@@ -34,7 +34,7 @@ export function OrderDetailView({
           <span>
             Không tìm thấy đơn này, hoặc đơn không thuộc quyền xem của bạn.
           </span>
-          <Link href="/dat-hang">
+          <Link href="/don-dat">
             <Button size="small">Về danh sách đơn</Button>
           </Link>
         </div>
@@ -49,8 +49,8 @@ export function OrderDetailView({
 
         return (
           <>
-            <Link href="/dat-hang" className="mb-2 inline-block text-sm">
-              ← Đơn đặt hàng
+            <Link href="/don-dat" className="mb-2 inline-block text-sm">
+              ← Đơn đặt
             </Link>
 
             <PageHeader
@@ -60,7 +60,7 @@ export function OrderDetailView({
                   <Tag color={ORDER_STATUS_COLORS[order.status]}>
                     {ORDER_STATUS_LABELS[order.status]}
                   </Tag>
-                  {formatRecipient(order.recipient)}
+                  {formatOrderRecipients(order.recipients)}
                 </span>
               }
               actions={
@@ -92,7 +92,7 @@ export function OrderDetailView({
                   order.invoice ? (
                     <>
                       Hóa đơn{" "}
-                      <Link href={`/hoa-don/${order.invoice.id}`} className="font-mono">
+                      <Link href={`/duyet-don/${order.invoice.id}`} className="font-mono">
                         {order.invoice.number}
                       </Link>{" "}
                       đã ghi sổ. Giao sai thì quản lý hủy hóa đơn đó — đơn quay về Đã xác nhận.
@@ -119,9 +119,11 @@ export function OrderDetailView({
               <QueryState query={lines} isEmpty={() => false} emptyDescription="">
                 {(loadedLines) => (
                   <OrderLineTable
+                    key={id}
                     orderId={id}
                     lines={loadedLines}
                     editable={editable}
+                    staff={order.recipients.staff}
                   />
                 )}
               </QueryState>

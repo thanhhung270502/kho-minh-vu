@@ -220,7 +220,7 @@ export function buildReorderCsv(rows: AnalysisRow[], settings: AnalysisSettings)
     .sort((a, b) => byCover(a.r, b.r));
   const fmt = (n: number | null, digits: number) => (n === null ? "" : Number(n.toFixed(digits)));
   return buildCsv(
-    ["Mã hàng", "Tên hàng", "Nhóm hàng", "Loại hoàn thiện", "Tồn", "Khách đặt", "Khả dụng", "Bán TB/ngày", "Còn (ngày)", "Đề nghị nhập"],
+    ["Mã hàng", "Tên hàng", "Nhóm hàng", "Loại hoàn thiện", "Tồn", "Đơn đặt", "Khả dụng", "Bán TB/ngày", "Còn (ngày)", "Đề nghị nhập"],
     picked.map(({ r, qty }) => [
       r.code,
       r.name,

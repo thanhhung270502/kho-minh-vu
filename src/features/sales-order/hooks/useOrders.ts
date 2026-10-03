@@ -9,7 +9,6 @@ import {
 
 import { documentKeys } from "@/features/documents/api/document.keys";
 import { productKeys } from "@/features/products/api/product.keys";
-import type { RecipientChoice } from "@/shared/lib/recipient";
 
 import {
   addOrderLine,
@@ -22,6 +21,7 @@ import {
   fetchOrderDetail,
   fetchOrderLines,
   fetchOrders,
+  setOrderRecipients,
   unlockOrder,
   updateOrderHeader,
   updateOrderLine,
@@ -31,6 +31,7 @@ import type {
   OrderFilter,
   OrderHeaderInput,
   OrderLineInput,
+  OrderRecipientsInput,
 } from "../schemas/order.schema";
 
 // --- Đọc ---------------------------------------------------------------------
@@ -78,11 +79,15 @@ function useRefreshOrder(id?: string) {
 export function useCreateOrder() {
   const refresh = useRefreshOrder();
   return useMutation({
-    mutationFn: (input: {
-      recipient: RecipientChoice;
-      deliveryDate?: string | null;
-    }) =>
-      createOrder(input),
+    mutationFn: (input: OrderRecipientsInput) => createOrder(input),
+    onSuccess: refresh,
+  });
+}
+
+export function useSetOrderRecipients(id: string) {
+  const refresh = useRefreshOrder(id);
+  return useMutation({
+    mutationFn: (input: OrderRecipientsInput) => setOrderRecipients(id, input),
     onSuccess: refresh,
   });
 }
@@ -146,7 +151,7 @@ export function useCloseOrderEarly(id: string) {
 }
 
 /**
- * Hoàn thành = hóa đơn mới ĐÃ GHI SỔ: hiện ngay ở `/hoa-don` và tồn đổi — làm
+ * Hoàn thành = hóa đơn mới ĐÃ GHI SỔ: hiện ngay ở `/duyet-don` và tồn đổi — làm
  * mới cả chứng từ lẫn danh mục/thẻ kho, khuôn `usePostDocument`.
  */
 export function useCompleteOrder(id: string) {

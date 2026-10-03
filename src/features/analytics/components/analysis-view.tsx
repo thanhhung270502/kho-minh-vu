@@ -75,7 +75,7 @@ function AnalysisOverview({ canEditSettings }: { canEditSettings: boolean }) {
               return (
                 <>
                   {days === 0 ? (
-                    <Alert type="info" showIcon title="Chưa có hóa đơn nào — chưa đủ dữ liệu tính tốc độ bán. Tồn và khách đặt vẫn đúng." />
+                    <Alert type="info" showIcon title="Chưa có hóa đơn nào — chưa đủ dữ liệu tính tốc độ bán. Tồn và đơn đặt vẫn đúng." />
                   ) : days < period ? (
                     <Alert type="info" showIcon title={`Hệ mới có ${days} ngày dữ liệu — bán TB/ngày tính theo ${days} ngày thay vì ${period}.`} />
                   ) : null}

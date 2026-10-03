@@ -2,10 +2,11 @@
 
 import { Alert, App, Button } from "antd";
 
+import type { DocumentLine } from "@/features/documents/types";
 import { errorCode, explainError } from "@/shared/lib/errors";
 
 import { useProposeMerge, useSimilarCodes } from "../hooks/useIssues";
-import { exceedsStock, type IssueLine } from "../types";
+import { exceedsStock } from "../types";
 
 function formatNumber(value: number): string {
   return Number(value).toLocaleString("vi-VN");
@@ -21,7 +22,7 @@ function millisecondsSince(iso: string): number {
   return Date.now() - new Date(iso).getTime();
 }
 
-type Props = { issueId: string; line: IssueLine };
+type Props = { issueId: string; line: DocumentLine };
 
 /**
  * D-14: nút "Đề nghị gộp hai mã" ở đây tuyệt đối không làm ba việc sau:

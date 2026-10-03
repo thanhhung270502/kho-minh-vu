@@ -3,18 +3,23 @@
 import { Segmented } from "antd";
 
 import { PartnerSearchInput } from "@/shared/components/partner-search-input";
-import { StaffSelect } from "@/shared/components/staff-select";
+import { StaffMultiSelect } from "@/shared/components/staff-multi-select";
 import {
   RECIPIENT_KIND_LABELS,
   RECIPIENT_KIND_ORDER,
   type RecipientKind,
+  type StaffRef,
 } from "@/shared/lib/recipient";
 
 type Props = {
   kind: RecipientKind;
-  id: string | undefined;
+  partnerId: string | undefined;
+  staffIds: string[];
+  extraStaff?: StaffRef[];
   onKindChange: (kind: RecipientKind) => void;
-  onIdChange: (id: string | undefined) => void;
+  onPartnerChange: (id: string | undefined) => void;
+  onStaffChange: (ids: string[]) => void;
+  onEnterWhenEmpty?: () => void;
   autoFocus?: boolean;
 };
 
@@ -24,11 +29,22 @@ const KIND_OPTIONS = RECIPIENT_KIND_ORDER.map((kind) => ({
 }));
 
 /**
- * Chọn chế độ người nhận rồi chọn người. Đổi chế độ là đổi hẳn ô chọn bên
- * dưới — id của chế độ cũ không còn nghĩa, cha phải tự xóa nó trong
- * `onKindChange`.
+ * Chọn chế độ rồi chọn người (D3). Nội bộ: một hoặc nhiều nhân viên. Đối tác:
+ * một đối tác + nhân viên phụ trách không bắt buộc. Đổi chế độ không xóa
+ * `staffIds` — nhân viên nội bộ thành nhân viên phụ trách; chỉ cha xóa
+ * `partnerId` khi về nội bộ.
  */
-export function RecipientPicker({ kind, id, onKindChange, onIdChange, autoFocus }: Props) {
+export function RecipientPicker({
+  kind,
+  partnerId,
+  staffIds,
+  extraStaff,
+  onKindChange,
+  onPartnerChange,
+  onStaffChange,
+  onEnterWhenEmpty,
+  autoFocus,
+}: Props) {
   return (
     <div className="flex flex-col gap-2">
       <Segmented
@@ -38,9 +54,27 @@ export function RecipientPicker({ kind, id, onKindChange, onIdChange, autoFocus 
         onChange={(value) => onKindChange(value as RecipientKind)}
       />
       {kind === "partner" ? (
-        <PartnerSearchInput value={id} onChange={onIdChange} autoFocus={autoFocus} />
+        <>
+          <PartnerSearchInput value={partnerId} onChange={onPartnerChange} autoFocus={autoFocus} />
+          <label className="mt-1 block text-[13px] text-chu-phu">
+            Nhân viên phụ trách (không bắt buộc)
+          </label>
+          <StaffMultiSelect
+            value={staffIds}
+            onChange={onStaffChange}
+            extraOptions={extraStaff}
+            placeholder="Chọn nhân viên phụ trách"
+            onEnterWhenEmpty={onEnterWhenEmpty}
+          />
+        </>
       ) : (
-        <StaffSelect value={id} onChange={onIdChange} autoFocus={autoFocus} />
+        <StaffMultiSelect
+          autoFocus={autoFocus}
+          value={staffIds}
+          onChange={onStaffChange}
+          extraOptions={extraStaff}
+          onEnterWhenEmpty={onEnterWhenEmpty}
+        />
       )}
     </div>
   );

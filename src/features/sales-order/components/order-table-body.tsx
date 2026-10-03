@@ -5,7 +5,7 @@ import type { TableColumnsType } from "antd";
 import dayjs from "dayjs";
 import Link from "next/link";
 
-import { formatRecipient } from "@/shared/lib/recipient";
+import { partnerLabel } from "@/shared/lib/recipient";
 
 import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from "../lib/order-status";
 import { ORDER_PAGE_SIZE, type OrderFilter } from "../schemas/order.schema";
@@ -22,7 +22,7 @@ const COLUMNS: TableColumnsType<OrderRow> = [
     width: 150,
     fixed: "left",
     render: (orderNo: string, row) => (
-      <Link href={`/dat-hang/${row.id}`} className="font-mono">
+      <Link href={`/don-dat/${row.id}`} className="font-mono">
         {orderNo}
       </Link>
     ),
@@ -35,24 +35,22 @@ const COLUMNS: TableColumnsType<OrderRow> = [
   },
   {
     title: "Người nhận",
-    dataIndex: "recipient",
-    width: 220,
-    ellipsis: true,
-    render: (recipient: OrderRow["recipient"]) =>
-      recipient?.kind === "internal" ? (
-        <span>
+    dataIndex: "recipients",
+    width: 260,
+    render: (recipients: OrderRow["recipients"]) => (
+      <span className="flex flex-wrap items-center gap-1">
+        {recipients.partner ? (
+          <span>{partnerLabel(recipients.partner)}</span>
+        ) : (
           <Tag>Nội bộ</Tag>
-          {recipient.name ?? "—"}
-        </span>
-      ) : (
-        formatRecipient(recipient)
-      ),
-  },
-  {
-    title: "Ngày giao dự kiến",
-    dataIndex: "deliveryDate",
-    width: 140,
-    render: (date: string | null) => (date ? dayjs(date).format("DD/MM/YYYY") : "—"),
+        )}
+        {recipients.staff.map((person) => (
+          <Tag key={person.id} className="m-0">
+            {person.name}
+          </Tag>
+        ))}
+      </span>
+    ),
   },
   {
     title: "Tiến độ",
@@ -91,7 +89,7 @@ export function OrderTableBody({ rows, total, filter, loading, onFilterChange }:
       columns={COLUMNS}
       dataSource={rows}
       loading={loading}
-      scroll={{ x: 1000 }}
+      scroll={{ x: 1060 }}
       pagination={{
         current: filter.page,
         pageSize: ORDER_PAGE_SIZE,

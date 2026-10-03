@@ -14,7 +14,32 @@ Ngày đầu go-live, **toàn bộ 923 phiếu xuất/tuần và 78 phiếu nh�
 mà không ai phải mở KiotViet để đối chiếu.** Đó là tiêu chí thành công duy nhất — không
 phải số lượng tính năng.
 
-## Current Milestone: v1.1 Phản hồi vận hành
+## Current Milestone: v1.2 Phản hồi vận hành đợt 2
+
+**Goal:** Áp phản hồi vận hành 03/10/2026 (Notion Task board): đổi tên theo cách gọi
+của Minh Vũ, gọn đơn đặt và phiếu lấy hàng, một đơn giao cho nhiều người nhận, một mã
+hàng dùng cho nhiều dòng xe.
+
+**Target features:**
+- Đổi tên: "Đặt hàng" → "Đơn đặt" (`/don-dat`), "Hóa đơn" → "Duyệt đơn" (`/duyet-don`), link cũ chuyển hướng; cột "Khách đặt" → "Đơn đặt"; công đoạn "Mua ngoài" → "Hàng ngoài"
+- Đơn đặt bỏ Ngày giao dự kiến; phiếu lấy hàng chỉ hiện tên người nhận, thêm giờ in và người đặt
+- Bỏ "Cần rà" ở Danh mục hàng hóa
+- Đơn hàng nhiều người nhận — ở cấp đơn và từng dòng hàng
+- Một mã hàng dùng chung nhiều dòng xe
+
+**Quyết định đã chốt (03/10/2026):**
+- Đổi cả URL, không chỉ nhãn: `/dat-hang` → `/don-dat`, `/hoa-don` → `/duyet-don`; `/xuat-kho` chuyển thẳng tới `/duyet-don`, không qua bước trung gian
+- Không xóa cột DB: `ngay_giao_du_kien`, `can_ra` thôi dùng; mã `MUA_NGOAI` giữ nguyên, chỉ đổi tên hiển thị
+- Hàng dùng chung nhiều dòng xe làm SAU khi Quy chuẩn mã hàng (`feature/quy-chuan-ma-b`) đã merge — cùng chạm cột `dong_xe_id`
+- Bỏ khỏi milestone (task Notion vẫn mở): Đối tác chỉ còn NCC, kiểm tra chịu tải 50 người, Phân tích theo tuần/tháng/quý/năm
+- v1.1 chưa đóng milestone (chờ deploy cloud); v1.2 chạy song song, đánh số phase nối tiếp từ 17
+
+**Tiến độ v1.2:**
+- ✓ Phase 17 Đổi tên & gọn đơn đặt (03/10/2026) — TEN-01..05, DDAT-01..03 validated; "Duyệt đơn" chỉ là tên màn, chứng từ vẫn gọi "hóa đơn"; migration 0089 mới ở local
+- ✓ Phase 18 Đơn nhiều người nhận (03/10/2026) — NNHAN-01..06 validated; bảng nối người nhận đơn/hóa đơn + người nhận theo dòng, áp cho cả Nội bộ và Đối tác; migration 0090–0091 mới ở local
+- Phase 19 Dòng xe dùng chung — chờ merge quy chuẩn; phạm vi phải xem lại vì 0086 bỏ bảng `dong_xe`
+
+## Previous Milestone: v1.1 Phản hồi vận hành (Phase 10–16 xong, chưa đóng)
 
 **Goal:** Đưa hệ thống khớp cách Minh Vũ vận hành thật theo phản hồi 28/09–02/10/2026
 (Notion Task board): luồng Đặt hàng → Hóa đơn, menu gọn, panel thay trang chi tiết,
@@ -191,4 +216,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-02 — bắt đầu milestone v1.1 Phản hồi vận hành*
+*Last updated: 2026-10-03 — Phase 18 hoàn thành (milestone v1.2)*

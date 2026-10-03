@@ -6,9 +6,15 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: "/lich-su-kiotviet", destination: "/danh-muc", permanent: false },
-      // "Xuất kho" đổi tên "Hóa đơn" — giữ nguyên id và trang in phía sau.
-      { source: "/xuat-kho", destination: "/hoa-don", permanent: false },
-      { source: "/xuat-kho/:path*", destination: "/hoa-don/:path*", permanent: false },
+      // Phase 17 (TEN-02): "Đặt hàng" → "Đơn đặt", "Hóa đơn" → "Duyệt đơn". Link cũ
+      // giữ nguyên id, trang in và query (Next tự chuyển query sang đích).
+      { source: "/dat-hang", destination: "/don-dat", permanent: false },
+      { source: "/dat-hang/:path*", destination: "/don-dat/:path*", permanent: false },
+      { source: "/hoa-don", destination: "/duyet-don", permanent: false },
+      { source: "/hoa-don/:path*", destination: "/duyet-don/:path*", permanent: false },
+      // "Xuất kho" (Phase 10) → thẳng Duyệt đơn; KHÔNG trỏ qua /hoa-don (tránh chuỗi 2 bước).
+      { source: "/xuat-kho", destination: "/duyet-don", permanent: false },
+      { source: "/xuat-kho/:path*", destination: "/duyet-don/:path*", permanent: false },
       // Trang Tồn kho gỡ (Phase 10) — tra tồn ở Danh sách hàng hóa; duyệt định
       // mức thành tab của trang Phân tích (Phase 13).
       { source: "/ton-kho", destination: "/danh-muc", permanent: false },

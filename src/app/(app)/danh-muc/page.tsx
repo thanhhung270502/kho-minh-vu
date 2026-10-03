@@ -28,7 +28,7 @@ export default async function ProductsPage() {
           // Quyền khớp RLS danh mục phụ (0015/0040): quản lý + văn phòng.
           // Danh mục phụ đi cùng quyền Tạo mã hàng (RLS 0083).
           extraActions={can(user, "tao_ma_hang") ? <LookupManagerButton /> : null}
-          // Thủ kho không thấy khách đặt / dự kiến hết hàng (PANEL-01).
+          // Thủ kho không thấy đơn đặt / dự kiến hết hàng (PANEL-01).
           showForecast={hasPermission(user.role, "view-analysis")}
         />
       </Suspense>

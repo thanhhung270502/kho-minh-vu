@@ -34,7 +34,7 @@ export type AnalysisRow = {
   unitName: string | null;
   stock: number;
   customerOrdered: number;
-  /** Tồn − khách đặt — có thể âm. */
+  /** Tồn − đơn đặt — có thể âm. */
   available: number;
   soldInPeriod: number;
   soldFirstHalf: number;

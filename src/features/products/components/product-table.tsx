@@ -26,8 +26,7 @@ import { ProductModals } from "./product-modals";
 import { ProductRowDetail } from "./product-row-detail";
 import { ProductTableBody } from "./product-table-body";
 import { ProductToolbar } from "./product-toolbar";
-import { ReviewActions } from "./review-actions";
-import { ReviewAlert } from "./review-alert";
+import { ProductSecondaryActions } from "./product-secondary-actions";
 
 export type { CatalogPermissions };
 
@@ -38,7 +37,6 @@ function hasActiveFilter(filter: ProductFilter): boolean {
     filter.unitId !== null ||
     filter.stockStatus !== null ||
     filter.hasImage !== null ||
-    filter.needsReview ||
     filter.tradingStatus !== DEFAULT_PRODUCT_FILTER.tradingStatus
   );
 }
@@ -51,7 +49,7 @@ export function ProductTable({
   permissions: CatalogPermissions;
   /** Nút do route ghép vào thanh công cụ — xem `danh-muc/page.tsx`. */
   extraActions?: ReactNode;
-  /** Quản lý + văn phòng (view-analysis): hai cột Khách đặt / Dự kiến hết hàng. */
+  /** Quản lý + văn phòng (view-analysis): hai cột Đơn đặt / Dự kiến hết hàng. */
   showForecast?: boolean;
 }) {
   const { filter, selectedId, navigate, selectProduct, toggleProduct } = useProductTableUrl();
@@ -65,16 +63,7 @@ export function ProductTable({
     id: null,
   });
   const [selected, setSelected] = useState<string[]>([]);
-  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [importOpen, setImportOpen] = useState<ImportKind | null>(null);
-
-  // Badge "Cần rà": lấy tổng từ chính RPC danh sách, không thêm RPC mới.
-  const reviewCount = useProducts({
-    ...DEFAULT_PRODUCT_FILTER,
-    needsReview: true,
-    tradingStatus: "all",
-    pageSize: 10,
-  });
 
   // Từ 768px chi tiết mở ngay dưới dòng; điện thoại quá chật cho dòng mở rộng.
   const wide = Grid.useBreakpoint().md ?? false;
@@ -140,13 +129,11 @@ export function ProductTable({
             filter={filter}
             onChange={changeFilter}
             secondaryActions={
-              <ReviewActions
+              <ProductSecondaryActions
                 filter={filter}
                 total={total}
-                reviewCount={reviewCount.data?.total ?? 0}
                 canEdit={permissions.canEdit}
                 extraActions={extraActions}
-                onFilterChange={changeFilter}
                 onOpenImport={setImportOpen}
               />
             }
@@ -171,12 +158,6 @@ export function ProductTable({
           ) : null
         }
       >
-        <ReviewAlert
-          visible={filter.needsReview}
-          canEdit={permissions.canEdit}
-          onSuggest={() => setSuggestionsOpen(true)}
-        />
-
         {permissions.canEdit ? (
           <BulkAssignBar
             ids={selected}
@@ -223,8 +204,6 @@ export function ProductTable({
       </ListLayout>
 
       <ProductModals
-        suggestionsOpen={suggestionsOpen}
-        onCloseSuggestions={() => setSuggestionsOpen(false)}
         importOpen={importOpen}
         onCloseImport={() => setImportOpen(null)}
         onViewRecentlyEdited={() => {

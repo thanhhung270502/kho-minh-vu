@@ -6,7 +6,7 @@ import { OrderTable } from "@/features/sales-order/components/order-table";
 import { PageHeader } from "@/shared/components/page-header";
 import { can } from "@/shared/lib/permissions";
 
-export const metadata: Metadata = { title: "Đơn đặt hàng" };
+export const metadata: Metadata = { title: "Đơn đặt" };
 
 export default async function SalesOrderPage() {
   const user = await requirePermission("view-catalog");
@@ -14,7 +14,7 @@ export default async function SalesOrderPage() {
   return (
     <>
       <PageHeader
-        title="Đơn đặt hàng"
+        title="Đơn đặt"
         description="Đơn tạm cho tới khi quản lý xác nhận — xác nhận xong mới in phiếu đi lấy hàng."
       />
 

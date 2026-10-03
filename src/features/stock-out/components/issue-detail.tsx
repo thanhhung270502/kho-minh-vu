@@ -10,11 +10,11 @@ import { negativeReasonLabel } from "@/features/documents/lib/negative-reasons";
 import { ReturnButton } from "@/features/returns/components/return-button";
 import { orderKeys } from "@/features/sales-order/api/order.keys";
 import { PageHeader } from "@/shared/components/page-header";
-import { formatRecipient } from "@/shared/lib/recipient";
+import { formatOrderRecipients } from "@/shared/lib/recipient";
 import { QueryState } from "@/shared/components/query-state";
 
 import { useIssueDetail, useIssueLines } from "../hooks/useIssues";
-import { DOC_STATUS_COLORS, DOC_STATUS_LABELS } from "../types";
+import { DOC_STATUS_COLORS, DOC_STATUS_LABELS, issueRecipients } from "../types";
 import type { IssuePermissions } from "../types";
 import { IssueHeader } from "./issue-header";
 import { IssueLineTable } from "./issue-line-table";
@@ -42,8 +42,8 @@ export function IssueDetailView({
             Không tìm thấy phiếu này, hoặc phiếu không thuộc kho bạn được phân
             công.
           </span>
-          <Link href="/hoa-don">
-            <Button size="small">Về danh sách hóa đơn</Button>
+          <Link href="/duyet-don">
+            <Button size="small">Về Duyệt đơn</Button>
           </Link>
         </div>
       }
@@ -53,13 +53,14 @@ export function IssueDetailView({
 
         // D-04/D-06: phiếu còn nhập liệu mới sửa được ở giao diện; đã ghi sổ
         // thì khóa. Chặn thật ở policy "chi sua chung tu dang nhap lieu" (0016).
+        const recipientText = formatOrderRecipients(issueRecipients(issue));
         const editable = permissions.canEdit && issue.status === "NHAP_LIEU";
         const issueLines = lines.data ?? [];
 
         return (
           <>
-            <Link href="/hoa-don" className="mb-2 inline-block text-sm">
-              ← Hóa đơn
+            <Link href="/duyet-don" className="mb-2 inline-block text-sm">
+              ← Duyệt đơn
             </Link>
 
             <PageHeader
@@ -69,9 +70,9 @@ export function IssueDetailView({
                   <Tag color={DOC_STATUS_COLORS[issue.status]}>
                     {DOC_STATUS_LABELS[issue.status]}
                   </Tag>
-                  {issue.recipient ? formatRecipient(issue.recipient) : "Chưa chọn người nhận"}
+                  {recipientText === "—" ? "Chưa chọn người nhận" : recipientText}
                   {issue.orderId ? (
-                    <Link href={`/dat-hang/${issue.orderId}`} className="text-sm">
+                    <Link href={`/don-dat/${issue.orderId}`} className="text-sm">
                       Từ đơn {issue.orderNo}
                     </Link>
                   ) : null}
@@ -79,7 +80,7 @@ export function IssueDetailView({
               }
               actions={
                 <Space wrap>
-                  <Link href={`/hoa-don/${id}/in`} target="_blank">
+                  <Link href={`/duyet-don/${id}/in`} target="_blank">
                     <Button>In phiếu giao hàng</Button>
                   </Link>
                   <ReturnButton document={issue} canEdit={permissions.canEdit} />

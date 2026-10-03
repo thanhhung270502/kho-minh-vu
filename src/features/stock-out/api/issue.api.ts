@@ -1,16 +1,19 @@
-import { fetchDocuments } from "@/features/documents/api/document.api";
+import {
+  fetchDocumentLineRecipients,
+  fetchDocumentLines,
+  fetchDocuments,
+} from "@/features/documents/api/document.api";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Page } from "@/shared/types";
-import type { DocumentRow } from "@/features/documents/types";
+import { withLineRecipients, type DocumentRow } from "@/features/documents/types";
 
 import { toIssueListRpcArgs, type IssueFilter } from "../schemas/issue.schema";
-import { toSimilarCode, type IssueRow, type SimilarCode } from "../types";
+import { toSimilarCode, type IssueLine, type IssueRow, type SimilarCode } from "../types";
 
 export {
   addDocumentLine as addIssueLine,
   deleteDocumentLine as deleteIssueLine,
   fetchDocumentDetail as fetchIssueDetail,
-  fetchDocumentLines as fetchIssueLines,
   updateDocumentHeader as updateIssueHeader,
   updateDocumentLine as updateIssueLine,
   saveNegativeReason,
@@ -23,6 +26,15 @@ export {
 
 // Hàm thuần — nhận tham số, trả dữ liệu đã có kiểu. Không JSX, không hook.
 // Mọi lượt gọi Supabase đều kiểm `error`: supabase-js không tự ném lỗi.
+
+/** `dong_chung_tu` dùng chung với nhập/trả nên không trả người nhận — nối bằng RPC riêng của chiều xuất. */
+export async function fetchIssueLines(id: string): Promise<IssueLine[]> {
+  const [lines, recipients] = await Promise.all([
+    fetchDocumentLines(id),
+    fetchDocumentLineRecipients(id),
+  ]);
+  return withLineRecipients(lines, recipients);
+}
 
 export async function fetchIssues(filter: IssueFilter): Promise<Page<IssueRow>> {
   const page = await fetchDocuments(toIssueListRpcArgs(filter));

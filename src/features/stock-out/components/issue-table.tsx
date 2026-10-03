@@ -75,7 +75,7 @@ export function IssueTable({ canCreate }: { canCreate: boolean }) {
             </div>
           ) : (
             <div className="flex flex-col items-center gap-3">
-              <span>Chưa có hóa đơn nào.</span>
+              <span>Chưa có đơn nào để duyệt.</span>
               {canCreate ? <CreateIssueButton label="Tạo phiếu đầu tiên" /> : null}
             </div>
           )

@@ -51,6 +51,12 @@ sau cần dùng ngay.
 - [x] **Phase 14: Panel chi tiết** - Bấm dòng Danh sách hàng hóa và Đối tác mở panel cạnh bảng, không rời trang
 - [x] **Phase 15: Import danh mục v2** - File 4 cột, bảng chọn trường từng dòng, bỏ qua dòng lỗi và tải file lỗi, tồn kho ghi bằng phiếu điều chỉnh
 - [x] **Phase 16: Chức vụ & quyền** - Chức vụ động với 9 quyền, chặn ở database bằng `co_quyen()` đọc DB, có hiệu lực ngay (rủi ro cao nhất, đụng RLS)
+
+**v1.2 Phản hồi vận hành đợt 2** (chi tiết ở "## Milestone v1.2")
+
+- [x] **Phase 17: Đổi tên & gọn đơn đặt** - Menu Đơn đặt / Duyệt đơn (`/don-dat`, `/duyet-don`), "Khách đặt" → "Đơn đặt", "Mua ngoài" → "Hàng ngoài", bỏ "Cần rà" và Ngày giao dự kiến, phiếu lấy hàng ghi tên đầy đủ + giờ in + người đặt (completed 2026-10-03)
+- [x] **Phase 18: Đơn nhiều người nhận** - Đơn chọn nhiều người nhận, từng dòng gán người nhận riêng, lọc/in/hóa đơn mang theo cả hai cấp (completed 2026-10-03)
+- [ ] **Phase 19: Dòng xe dùng chung** - Một mã hàng thuộc nhiều dòng xe: chọn trong form, lọc theo dòng xe, import/xuất Excel nhiều dòng xe một ô
  (completed 2026-09-26)
 
 ## Phase Details
@@ -599,10 +605,88 @@ nhau, chạy song song được. Migration kế tiếp là `0077`.
 > `coalesce(vai_tro, 'quan_ly')` ở các RPC ngoài 9 quyền — đã tách việc riêng. `0082`–`0084` mới áp ở local.
 **UI hint**: yes
 
+## Milestone v1.2 — Phản hồi vận hành đợt 2
+
+Nguồn: phản hồi vận hành 03/10/2026 (Notion Task board). Ba chặng 17–19, đi tuần tự: 18 và 19 cùng dựa
+trên chặng 17 (đường `/don-dat` mới, phiếu lấy hàng). Chặng 19 còn phải chờ branch `feature/quy-chuan-ma-b`
+(ngoài GSD, migration tới 0086) merge vào `main`, vì quy chuẩn mã tự điền `dong_xe_id` mà chặng này thay bằng
+bảng nhiều-nhiều. Ba task Notion bỏ khỏi milestone (FUT-01..03). Migration kế tiếp: kiểm lại sau khi merge quy chuẩn mã.
+
+### Phase 17: Đổi tên & gọn đơn đặt
+
+**Goal**: Giao diện nói đúng ngôn ngữ vận hành của Minh Vũ: "Đơn đặt" và "Duyệt đơn" thay "Đặt hàng" và "Hóa đơn", "Hàng ngoài" thay "Mua ngoài", bỏ những thứ không dùng (Cần rà, Ngày giao dự kiến), phiếu lấy hàng đủ thông tin người in.
+**Depends on**: Phase 16 (v1.1 xong; dựng trên `/dat-hang`, `/hoa-don` hiện có)
+**Requirements**: TEN-01, TEN-02, TEN-03, TEN-04, TEN-05, DDAT-01, DDAT-02, DDAT-03
+**Success Criteria** (what must be TRUE):
+
+  1. Menu nhóm Đơn hàng hiện "Đơn đặt" và "Duyệt đơn" trên cả máy tính và điện thoại; tiêu đề trang và nút liên quan dùng tên mới
+  2. Đơn nằm ở `/don-dat` (kèm tạo mới, chi tiết, in), hóa đơn ở `/duyet-don`; bookmark cũ `/dat-hang/*`, `/hoa-don/*`, `/xuat-kho/*` tự chuyển sang đường mới, giữ đường con và tham số; chưa đăng nhập thì đăng nhập xong quay về đúng đường mới
+  3. Mọi chỗ hiện số lượng đang được đặt ghi "Đơn đặt" thay "Khách đặt" (bảng Danh sách hàng hóa, chi tiết mã, file xuất Excel); công đoạn "Mua ngoài" hiện là "Hàng ngoài" ở mọi màn và file xuất, import Excel nhận cả tên cũ lẫn tên mới
+  4. Danh mục hàng hóa không còn bộ lọc, cảnh báo, nút rà hàng loạt hay nhãn "Cần rà"
+  5. Tạo/sửa đơn không còn ô Ngày giao dự kiến (danh sách, chi tiết, bản in cũng bỏ); phiếu lấy hàng ghi người nhận bằng tên đầy đủ không kèm mã nhân viên, kèm thời gian in (giờ:phút ngày) và người đặt
+
+**Plans:** 6/6 plans complete
+
+Plans:
+- [x] 17-01-PLAN.md — Dời route /don-dat, /duyet-don + redirect thẳng, menu Đơn đặt/Duyệt đơn, ma trận route (W1)
+- [x] 17-02-PLAN.md — Trỏ mọi link trong features sang đường mới, tên màn ở back-link/empty state (W1)
+- [x] 17-03-PLAN.md — Migration 0089 "Hàng ngoài" + pgTAP 107, nhãn Đơn đặt ở Phân tích/CSV (W1)
+- [x] 17-04-PLAN.md — Danh sách hàng hóa: bỏ Cần rà + ĐVT mâu thuẫn, nhãn Đơn đặt / Hàng ngoài (W2)
+- [x] 17-05-PLAN.md — Bỏ Ngày giao dự kiến, phiếu lấy hàng in tên người nhận + người đặt + giờ in (W3)
+- [x] 17-06-PLAN.md — Cổng cuối: full suite + kiểm trên trình duyệt (checkpoint) (W4)
+
+**UI hint**: yes
+
+### Phase 18: Đơn nhiều người nhận
+
+**Goal**: Một đơn nội bộ có thể giao cho nhiều người, và từng dòng hàng gán được người nhận riêng — thông tin này đi xuyên từ danh sách, phiếu lấy hàng tới hóa đơn.
+**Depends on**: Phase 17 (cùng đụng phiếu lấy hàng và các đường `/don-dat` đã đổi tên)
+**Requirements**: NNHAN-01, NNHAN-02, NNHAN-03, NNHAN-04, NNHAN-05, NNHAN-06
+
+> Câu hỏi mở — **chốt ở discuss-phase**, không giả định trước: người nhận của dòng có bắt buộc nằm trong người nhận của đơn
+> không; dòng để trống người nhận có kế thừa người nhận đơn không; đơn chế độ Đối tác có áp dụng nhiều người nhận không;
+> phiếu lấy hàng in một tờ chung hay một tờ mỗi người nhận.
+
+**Success Criteria** (what must be TRUE):
+
+  1. Tạo/sửa đơn (Nội bộ hoặc Đối tác) chọn được một hoặc nhiều người nhận (nhân viên phụ trách) cho cả đơn, và gán được người nhận riêng cho từng dòng hàng; gán ở dòng tự thêm người đó vào danh sách của đơn, dòng trống = hàng chung (18-CONTEXT D1–D3)
+  2. Danh sách đơn hiện đủ người nhận; lọc theo một người nhận ra mọi đơn có người đó ở cấp đơn hoặc cấp dòng
+  3. Phiếu lấy hàng một tờ chung: đầu phiếu liệt kê người nhận của đơn, bảng có cột "Người nhận" theo dòng (18-CONTEXT D4)
+  4. Hoàn thành đơn sinh hóa đơn mang theo người nhận của đơn và của từng dòng, xem lại được ở Duyệt đơn
+  5. Đơn cũ đang có một người nhận vẫn hiện đúng người đó sau khi chuyển sang cấu trúc mới, không mất người nhận nào
+
+**Plans**: 8 plans
+
+Plans:
+- [x] 18-01-PLAN.md — Migration 0090: bảng nối người nhận, cột dòng, backfill, trigger D1/D3, RPC tao_don/dat_nguoi_nhan_don + pgTAP 108
+- [x] 18-02-PLAN.md — Migration 0091: RPC đọc đổi sang bảng nối, hóa đơn chép người nhận, nguoi_nhan_dong_chung_tu + pgTAP 109, sửa 30/98
+- [x] 18-03-PLAN.md — Nền TS: regen types, kiểu + hàm thuần người nhận, mapper/schema/api/hook sales-order + documents (TDD)
+- [x] 18-04-PLAN.md — UI tạo đơn + đầu đơn chọn nhiều người nhận (StaffMultiSelect)
+- [x] 18-05-PLAN.md — Lưới dòng: cột/ô người nhận theo dòng, giữ luồng bàn phím
+- [x] 18-06-PLAN.md — Danh sách + lọc ?nhan_vien= + phiếu lấy hàng có cột Người nhận
+- [x] 18-07-PLAN.md — Duyệt đơn: hóa đơn hiện người nhận đơn + dòng
+- [x] 18-08-PLAN.md — Cổng cuối: bộ kiểm toàn phần + UAT trình duyệt
+**UI hint**: yes
+
+### Phase 19: Dòng xe dùng chung
+
+**Goal**: Một mã hàng dùng được cho nhiều dòng xe — chọn, xem, lọc và nhập/xuất Excel đều theo nhiều dòng xe thay vì một.
+**Depends on**: Phase 17; branch `feature/quy-chuan-ma-b` (quy chuẩn mã, ngoài GSD) phải merge vào `main` trước, vì quy chuẩn mã tự điền `dong_xe_id` mà phase này thay bằng bảng nhiều-nhiều
+**Requirements**: DXE-01, DXE-02, DXE-03, DXE-04, DXE-05
+**Success Criteria** (what must be TRUE):
+
+  1. Form mã hàng chọn được nhiều dòng xe cho một mã; chi tiết mã hiện đủ mọi dòng xe của mã
+  2. Lọc Danh sách hàng hóa theo một dòng xe ra mọi mã dùng cho dòng xe đó, kể cả mã còn dùng cho dòng xe khác
+  3. Import Excel (nhập mã mới và cập nhật) nhận nhiều dòng xe trong một ô, cách nhau bằng dấu phẩy; xuất Excel ghi cùng định dạng, nạp lại file vừa xuất không đổi gì
+  4. Mã hiện có vẫn giữ đúng dòng xe cũ sau khi chuyển cấu trúc; tự điền dòng xe từ quy chuẩn mã vẫn chạy
+
+**Plans**: TBD
+**UI hint**: yes
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song song) và 10 → 16 (v1.1; 10 và 11 song song, 12 sau cả hai, 13 → 14, 15 sau 11, 16 sau cùng)
+Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song song) và 10 → 16 (v1.1; 10 và 11 song song, 12 sau cả hai, 13 → 14, 15 sau 11, 16 sau cùng), 17 → 19 (v1.2; tuần tự, 19 chờ merge `feature/quy-chuan-ma-b`)
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -622,3 +706,6 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 | 14. Panel chi tiết | 4/4 | Complete | 2026-10-02 |
 | 15. Import danh mục v2 | 4/4 | Complete | 2026-10-02 |
 | 16. Chức vụ & quyền | 4/4 | Complete | 2026-10-02 |
+| 17. Đổi tên & gọn đơn đặt | 6/6 | Complete    | 2026-10-03 |
+| 18. Đơn nhiều người nhận | 8/8 | Complete    | 2026-10-03 |
+| 19. Dòng xe dùng chung | 0/TBD | Not started | - |

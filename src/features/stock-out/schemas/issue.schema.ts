@@ -16,7 +16,7 @@ export {
   type NegativeReasonInput,
 } from "@/features/documents/schemas/document.schema";
 
-// --- Bộ lọc trên URL (`/hoa-don`) -------------------------------------------
+// --- Bộ lọc trên URL (`/duyet-don`) -------------------------------------------
 
 export type IssueFilter = {
   q: string;

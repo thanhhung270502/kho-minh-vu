@@ -30,7 +30,7 @@ export function CreateOrderButton({ label = "Tạo đơn" }: Props) {
         {label}
       </Button>
       <Modal
-        title="Tạo đơn đặt hàng"
+        title="Tạo đơn đặt"
         open={open}
         onCancel={close}
         footer={null}

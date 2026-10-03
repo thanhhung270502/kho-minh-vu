@@ -74,26 +74,38 @@ import {
   groupLinesByWarehouse,
   UNASSIGNED_WAREHOUSE_LABEL,
 } from "../src/features/sales-order/lib/group-lines-by-warehouse";
-import { toOrderDetail, toOrderRow, type OrderLine } from "../src/features/sales-order/types";
+import { toOrderDetail, toOrderLine, toOrderRow, type OrderLine } from "../src/features/sales-order/types";
 import { orderActionsFor } from "../src/features/sales-order/lib/order-actions";
 import { needsNegativeReason } from "../src/features/sales-order/lib/complete-order";
 import {
   DEFAULT_ORDER_FILTER,
   countActiveOrderFilters,
+  orderRecipientsSchema,
   readOrderFilterFromUrl,
+  toCreateOrderRpcArgs,
+  toOrderLineInsert,
+  toOrderLineUpdate,
   toOrderListRpcArgs,
   toOrderUpdate,
+  toSetOrderRecipientsRpcArgs,
   writeOrderFilterToUrl,
 } from "../src/features/sales-order/schemas/order.schema";
 import {
+  COMMON_GOODS_LABEL,
   DEFAULT_RECIPIENT_KIND,
   RECIPIENT_KIND_ORDER,
-  formatRecipient,
-  toRecipient,
+  formatOrderRecipients,
+  isMultiRecipientOrder,
+  lineRecipientLabel,
+  partnerLabel,
+  recipientDisplayName,
+  recipientKindOf,
+  staffNames,
+  toStaffRefs,
 } from "../src/shared/lib/recipient";
 import { SETTINGS_TABS, firstTabFor, tabsFor } from "../src/features/settings/lib/settings-tabs";
 import { staffSchema } from "../src/features/settings/schemas/staff.schema";
-import { toDocumentDetail } from "../src/features/documents/types";
+import { toDocumentDetail, toDocumentLineRecipient, withLineRecipients } from "../src/features/documents/types";
 import { toDocumentUpdate } from "../src/features/documents/schemas/document.schema";
 import {
   discrepancyOf,
@@ -169,13 +181,13 @@ assert.equal(hasPermission("van_phong", "manage-users"), false);
 
 // --- Trang chủ theo vai trò + quyền "view-dashboard" (Phase 7, 07-04) -----
 assert.equal(homePathFor(as("quan_ly")), "/");
-// Phase 10: Xuất kho thành Hóa đơn, trang Tồn kho gỡ — tra tồn ở Danh sách hàng hóa.
-assert.equal(homePathFor(as("van_phong")), "/hoa-don");
+// Phase 10: Xuất kho thành Hóa đơn, Phase 17: Hóa đơn → Duyệt đơn (/duyet-don), trang Tồn kho gỡ — tra tồn ở Danh sách hàng hóa.
+assert.equal(homePathFor(as("van_phong")), "/duyet-don");
 assert.equal(homePathFor(as("thu_kho")), "/danh-muc");
 assert.equal(homePathFor(as("chi_xem")), "/danh-muc");
 // Phase 16: trang chủ theo quyền "Xem dashboard" — tắt cho quản lý không được
 // chuyển hướng về chính "/" (vòng lặp vô hạn); bật cho thủ kho thì về "/".
-assert.equal(homePathFor({ role: "quan_ly", permissions: [] }), "/hoa-don");
+assert.equal(homePathFor({ role: "quan_ly", permissions: [] }), "/duyet-don");
 assert.equal(homePathFor(as("thu_kho", ["xem_dashboard"])), "/");
 
 // Phase 16: Tổng quan theo quyền chức vụ "Xem dashboard", không theo vai trò.
@@ -330,8 +342,8 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
   );
   assert.deepEqual(
     primary.map((i) => i.href),
-    ["/hoa-don", "/nhap-kho", "/danh-muc", "/dat-hang"],
-    "mất ô Tổng quan thì mục ưu tiên 5 (Đặt hàng) đôn lên lấp đủ 4 ô; Danh sách hàng hóa thay ô Tồn kho",
+    ["/duyet-don", "/nhap-kho", "/danh-muc", "/don-dat"],
+    "mất ô Tổng quan thì mục ưu tiên 5 (Đơn đặt) đôn lên lấp đủ 4 ô; Danh sách hàng hóa thay ô Tồn kho",
   );
 }
 
@@ -340,6 +352,7 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
 {
   assert.ok(!NAV_ITEMS.some((i) => i.href === "/ton-kho"), "không còn mục /ton-kho");
   assert.ok(!NAV_ITEMS.some((i) => i.href === "/xuat-kho"), "không còn mục /xuat-kho");
+  assert.ok(!NAV_ITEMS.some((i) => i.href === "/dat-hang" || i.href === "/hoa-don"), "Phase 17: không còn mục /dat-hang, /hoa-don");
 
   const entries = buildNavEntries(filterNavItems(as("quan_ly"), NAV_ITEMS));
   assert.deepEqual(
@@ -351,7 +364,16 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
     const entry = entries.find((e) => e.label === label);
     return entry?.kind === "group" ? entry.items.map((i) => i.href) : null;
   };
-  assert.deepEqual(groupHrefs("Đơn hàng"), ["/dat-hang", "/hoa-don"]);
+  assert.deepEqual(groupHrefs("Đơn hàng"), ["/don-dat", "/duyet-don"]);
+  const orders = entries.find((e) => e.label === "Đơn hàng");
+  assert.deepEqual(
+    orders?.kind === "group" ? orders.items.map((i) => [i.label, i.shortLabel]) : null,
+    [
+      ["Đơn đặt", "Đơn đặt"],
+      ["Duyệt đơn", "Duyệt đơn"],
+    ],
+    "TEN-01: menu và thanh tab đáy dùng tên mới",
+  );
   assert.deepEqual(groupHrefs("Hàng hóa"), ["/danh-muc", "/kiem-ke"]);
   const goods = entries.find((e) => e.label === "Hàng hóa");
   assert.equal(goods?.kind === "group" ? goods.items[0]?.label : null, "Danh sách hàng hóa");
@@ -379,7 +401,6 @@ const sampleFilter: ProductFilter = {
   unitId: null,
   stockStatus: "duoi_dinh_muc",
   tradingStatus: "inactive",
-  needsReview: true,
   hasImage: "without",
   sortBy: "totalStock",
   sortDir: "desc",
@@ -400,7 +421,10 @@ assert.equal(
   "lọc tất cả gửi null tường minh, không bỏ trống",
 );
 assert.equal(toListRpcArgs(DEFAULT_PRODUCT_FILTER).p_dang_kinh_doanh, true);
-assert.equal(toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, needsReview: false }).p_can_ra, undefined);
+// Phase 17 (TEN-05): bỏ "Cần rà" — bookmark cũ ?can_ra=1 bị bỏ qua, RPC không nhận p_can_ra.
+assert.deepEqual(readFilterFromUrl(new URLSearchParams("can_ra=1")), DEFAULT_PRODUCT_FILTER, "?can_ra=1 cũ bị bỏ qua");
+assert.ok(!("p_can_ra" in toListRpcArgs(DEFAULT_PRODUCT_FILTER)), "không gửi p_can_ra");
+assert.ok(!("p_can_ra" in toListRpcArgs(sampleFilter)), "không gửi p_can_ra kể cả khi có lọc khác");
 
 // --- Bộ lọc "Hình ảnh" (Phase 9, 09-08, D-18, ANH-04) ----------------------
 assert.equal(readFilterFromUrl(new URLSearchParams("anh=co")).hasImage, "with", "?anh=co đọc thành with");
@@ -565,6 +589,8 @@ function sampleOrderLine(overrides: Partial<OrderLine>): OrderLine {
     orderedQuantity: 1,
     shippedQuantity: 0,
     remainingQuantity: 1,
+    recipientId: null,
+    recipientName: null,
     defaultWarehouseId: "kho-1",
     defaultWarehouseName: "Kho 1",
     createdAt: "2026-09-20T00:00:00Z",
@@ -592,31 +618,43 @@ assert.deepEqual(
   "STT liên tục trong cả tờ, không đánh lại từ 1 ở mỗi kho",
 );
 
-// --- Người nhận: đối tác hoặc nội bộ (0076) ---------------------------------
-assert.deepEqual(
-  toRecipient({ partnerId: "dt-1", partnerCode: "KH01", partnerName: "Liên Hoa", internalId: null, internalName: null }),
-  { kind: "partner", id: "dt-1", code: "KH01", name: "Liên Hoa" },
-  "có doi_tac_id → người nhận đối tác",
-);
-assert.deepEqual(
-  toRecipient({ partnerId: null, partnerCode: null, partnerName: null, internalId: "nd-1", internalName: "Nguyễn Văn A" }),
-  { kind: "internal", id: "nd-1", name: "Nguyễn Văn A" },
-  "có nguoi_nhan_id → người nhận nội bộ",
-);
-assert.equal(
-  toRecipient({ partnerId: null, partnerCode: null, partnerName: null, internalId: null, internalName: null }),
-  null,
-  "không có cả hai (phiếu nhập, kiểm kê…) → null",
-);
-assert.equal(formatRecipient({ kind: "partner", id: "dt-1", code: "KH01", name: "Liên Hoa" }), "KH01 Liên Hoa");
-assert.equal(formatRecipient({ kind: "partner", id: "dt-1", code: null, name: "Liên Hoa" }), "Liên Hoa");
-assert.equal(formatRecipient({ kind: "internal", id: "nd-1", name: "Nguyễn Văn A" }), "Nội bộ — Nguyễn Văn A");
-assert.equal(formatRecipient(null), "—");
+// --- Người nhận: một đối tác tùy chọn + nhiều nhân viên (0090) ---------------
+// Phase 18 (NNHAN, D2/D4): hàm thuần ở shared/lib/recipient.ts.
+const staffAn = { id: "a", name: "An" };
+const staffBinh = { id: "b", name: "Bình" };
+const partnerLienHoa = { id: "d", code: "KH01", name: "Liên Hoa" };
+assert.deepEqual(toStaffRefs(["a", "b"], ["An", "Bình"]), [staffAn, staffBinh]);
+assert.deepEqual(toStaffRefs(null, null), []);
+assert.deepEqual(toStaffRefs(["a"], []), [{ id: "a", name: "?" }], "thiếu tên → '?'");
+assert.equal(staffNames([staffAn, { id: "b", name: " Bình " }]), "An, Bình");
+assert.equal(staffNames([]), "—");
+assert.equal(partnerLabel(partnerLienHoa), "KH01 Liên Hoa");
+assert.equal(partnerLabel({ ...partnerLienHoa, code: null }), "Liên Hoa");
+assert.equal(partnerLabel({ id: "d", code: null, name: null }), "—");
+assert.equal(formatOrderRecipients({ partner: null, staff: [staffAn, staffBinh] }), "Nội bộ — An, Bình");
+assert.equal(formatOrderRecipients({ partner: null, staff: [] }), "—");
+assert.equal(formatOrderRecipients({ partner: partnerLienHoa, staff: [] }), "KH01 Liên Hoa");
+assert.equal(formatOrderRecipients({ partner: partnerLienHoa, staff: [staffAn] }), "KH01 Liên Hoa · An");
+assert.equal(recipientKindOf({ partner: null, staff: [staffAn] }), "internal");
+assert.equal(recipientKindOf({ partner: partnerLienHoa, staff: [] }), "partner");
+// Phase 17 (DDAT-02, A3): phiếu đi lấy hàng chỉ in TÊN người nhận — không "Nội bộ —", không mã đối tác.
+assert.equal(recipientDisplayName("Nguyễn Văn A"), "Nguyễn Văn A");
+assert.equal(recipientDisplayName("  "), "—");
+assert.equal(recipientDisplayName(null), "—");
+assert.equal(lineRecipientLabel("An", 1), "An");
+assert.equal(lineRecipientLabel(null, 2), "Chung", "hàng chung khi đơn có ≥ 2 người");
+assert.equal(lineRecipientLabel(null, 1), "");
+assert.equal(lineRecipientLabel("  ", 3), "Chung");
+assert.equal(COMMON_GOODS_LABEL, "Chung");
+assert.equal(isMultiRecipientOrder(1, false), false);
+assert.equal(isMultiRecipientOrder(2, false), true);
+assert.equal(isMultiRecipientOrder(1, true), true);
+assert.equal(isMultiRecipientOrder(0, false), false);
 
 const internalOrderDetail = toOrderDetail({
   id: "dh-1", so_dh: "DH26-000001", ngay_dh: "2026-10-01", trang_thai: "TAM",
   ngay_giao_du_kien: null as unknown as string, doi_tac_id: null as unknown as string, ma_doi_tac: null as unknown as string,
-  ten_doi_tac: null as unknown as string, nguoi_nhan_id: "nd-1", ten_nguoi_nhan: "Nguyễn Văn A",
+  ten_doi_tac: null as unknown as string, nguoi_nhan_ids: ["nv-1", "nv-2"], ten_nguoi_nhan: ["An", "Bình"],
   ghi_chu: null as unknown as string, tong_so_luong_dat: 0, tong_so_luong_da_xuat: 0,
   ho_ten_nguoi_tao: "Văn phòng", created_at: "2026-10-01T00:00:00Z",
   hoa_don_id: null as unknown as string, so_hoa_don: null as unknown as string,
@@ -627,7 +665,7 @@ assert.deepEqual(
   toOrderDetail({
     id: "dh-2", so_dh: "DH26-000002", ngay_dh: "2026-10-01", trang_thai: "HOAN_THANH",
     ngay_giao_du_kien: null as unknown as string, doi_tac_id: "dt-1", ma_doi_tac: "KH01",
-    ten_doi_tac: "Liên Hoa", nguoi_nhan_id: null as unknown as string, ten_nguoi_nhan: null as unknown as string,
+    ten_doi_tac: "Liên Hoa", nguoi_nhan_ids: [], ten_nguoi_nhan: [],
     ghi_chu: null as unknown as string, tong_so_luong_dat: 3, tong_so_luong_da_xuat: 3,
     ho_ten_nguoi_tao: "Văn phòng", created_at: "2026-10-01T00:00:00Z",
     hoa_don_id: "ct-9", so_hoa_don: "PX26-000009",
@@ -663,33 +701,82 @@ assert.deepEqual(
 }
 
 assert.deepEqual(
-  internalOrderDetail.recipient,
-  { kind: "internal", id: "nd-1", name: "Nguyễn Văn A" },
-  "chi_tiet_don của đơn nội bộ map ra recipient nội bộ (RPC trả doi_tac_id null dù type khai string)",
+  internalOrderDetail.recipients,
+  { partner: null, staff: [{ id: "nv-1", name: "An" }, { id: "nv-2", name: "Bình" }] },
+  "chi_tiet_don của đơn nội bộ map ra danh sách nhân viên (RPC trả doi_tac_id null dù type khai string)",
 );
 const partnerOrderRow = toOrderRow({
   id: "dh-2", so_dh: "DH26-000002", ngay_dh: "2026-10-01", trang_thai: "TAM",
   ngay_giao_du_kien: null as unknown as string, doi_tac_id: "dt-1", ten_doi_tac: "Liên Hoa",
-  nguoi_nhan_id: null as unknown as string, ten_nguoi_nhan: null as unknown as string, so_dong: 0,
+  nguoi_nhan_ids: [], ten_nguoi_nhan: [], so_dong: 0,
   tong_so_luong_dat: 0, tong_so_luong_da_xuat: 0, ho_ten_nguoi_tao: "Văn phòng",
   ghi_chu: null as unknown as string, created_at: "2026-10-01T00:00:00Z", tong_so_dong: 1,
 });
 assert.deepEqual(
-  partnerOrderRow.recipient,
-  { kind: "partner", id: "dt-1", code: null, name: "Liên Hoa" },
+  partnerOrderRow.recipients,
+  { partner: { id: "dt-1", code: null, name: "Liên Hoa" }, staff: [] },
   "danh_sach_don không trả mã đối tác → code null",
 );
 
-assert.deepEqual(
-  toOrderUpdate({ recipient: { kind: "internal", id: "nd-1" } }),
-  { doi_tac_id: null, nguoi_nhan_id: "nd-1" },
-  "chuyển sang nội bộ phải xóa doi_tac_id, không thì vướng ck_ddh_mot_nguoi_nhan",
+assert.equal(
+  toOrderDetail({
+    id: "dh-3", so_dh: "DH26-000003", ngay_dh: "2026-10-01", trang_thai: "TAM",
+    ngay_giao_du_kien: null as unknown as string, doi_tac_id: "dt-1", ma_doi_tac: "KH01",
+    ten_doi_tac: "Liên Hoa", nguoi_nhan_ids: [], ten_nguoi_nhan: [],
+    ghi_chu: null as unknown as string, tong_so_luong_dat: 0, tong_so_luong_da_xuat: 0,
+    ho_ten_nguoi_tao: "Văn phòng", created_at: "2026-10-01T00:00:00Z",
+    hoa_don_id: null as unknown as string, so_hoa_don: null as unknown as string,
+  }).recipients.partner?.code,
+  "KH01",
 );
-assert.deepEqual(
-  toOrderUpdate({ recipient: { kind: "partner", id: "dt-1" } }),
-  { doi_tac_id: "dt-1", nguoi_nhan_id: null },
-  "chuyển về đối tác phải xóa nguoi_nhan_id",
-);
+const orderLineRow = {
+  id: "l1", san_pham_id: "p1", ma_hang: "A1", ten_hang: "Hàng", ten_dvt: null as unknown as string,
+  so_luong_dat: 2, so_luong_da_xuat: 0, kho_mac_dinh_id: null as unknown as string,
+  ten_kho_mac_dinh: null as unknown as string, created_at: "2026-10-01T00:00:00Z",
+};
+{
+  const assigned = toOrderLine({ ...orderLineRow, nguoi_nhan_id: "nv-1", ten_nguoi_nhan: "An" });
+  assert.equal(assigned.recipientId, "nv-1");
+  assert.equal(assigned.recipientName, "An");
+  const common = toOrderLine({
+    ...orderLineRow, nguoi_nhan_id: null as unknown as string, ten_nguoi_nhan: null as unknown as string,
+  });
+  assert.equal(common.recipientId, null);
+  assert.equal(common.recipientName, null);
+}
+{
+  const uuid1 = "11111111-1111-4111-8111-111111111111";
+  const uuid2 = "22222222-2222-4222-8222-222222222222";
+  const noOne = orderRecipientsSchema.safeParse({ partnerId: null, staffIds: [] });
+  assert.equal(noOne.success, false);
+  if (!noOne.success) {
+    assert.deepEqual(noOne.error.issues[0].path, ["staffIds"]);
+    assert.equal(noOne.error.issues[0].message, "Đơn nội bộ phải có ít nhất một người nhận");
+  }
+  assert.equal(orderRecipientsSchema.safeParse({ partnerId: uuid1, staffIds: [] }).success, true);
+  assert.equal(orderRecipientsSchema.safeParse({ partnerId: null, staffIds: [uuid2] }).success, true);
+  assert.deepEqual(toCreateOrderRpcArgs({ partnerId: null, staffIds: ["u1"] }), {
+    p_doi_tac_id: undefined, p_nguoi_nhan_ids: ["u1"],
+  });
+  assert.deepEqual(toSetOrderRecipientsRpcArgs("o1", { partnerId: "d1", staffIds: [] }), {
+    p_don_id: "o1", p_doi_tac_id: "d1", p_nguoi_nhan_ids: [],
+  });
+  assert.deepEqual(toOrderLineUpdate({ recipientId: null }), { nguoi_nhan_id: null });
+  assert.deepEqual(toOrderLineUpdate({ recipientId: "nv-1" }), { nguoi_nhan_id: "nv-1" });
+  assert.deepEqual(toOrderLineUpdate({ quantity: 3 }), { so_luong_dat: 3 }, "không đụng người nhận");
+  assert.deepEqual(
+    toOrderLineInsert("o1", { productId: "p1", quantity: 2, recipientId: "nv-1" }),
+    { don_dat_hang_id: "o1", san_pham_id: "p1", so_luong_dat: 2, nguoi_nhan_id: "nv-1" },
+  );
+  assert.equal("nguoi_nhan_id" in toOrderLineInsert("o1", { productId: "p1", quantity: 2 }), false);
+  const staffFilter = readOrderFilterFromUrl(new URLSearchParams(`nhan_vien=${uuid1}`));
+  assert.equal(staffFilter.staffId, uuid1);
+  assert.equal(readOrderFilterFromUrl(new URLSearchParams("nhan_vien=abc")).staffId, null);
+  assert.equal(writeOrderFilterToUrl(staffFilter).get("nhan_vien"), uuid1);
+  assert.equal(toOrderListRpcArgs(staffFilter).p_nguoi_nhan_id, uuid1);
+  assert.equal(toOrderListRpcArgs(DEFAULT_ORDER_FILTER).p_nguoi_nhan_id, undefined);
+  assert.equal(countActiveOrderFilters({ ...DEFAULT_ORDER_FILTER, staffId: uuid1 }), 1);
+}
 assert.deepEqual(toOrderUpdate({ note: "x" }), { ghi_chu: "x" }, "không đụng người nhận khi không đổi");
 
 // Bộ lọc chế độ người nhận trên URL — giá trị URL tiếng Việt không dấu, giá trị
@@ -715,13 +802,23 @@ const internalIssue = toDocumentDetail({
   don_dat_hang_id: "dh-1", so_dh: "DH26-000002", chung_tu_goc_id: null as unknown as string,
   so_ct_goc: null as unknown as string, ly_do_xuat_am: null as unknown as string,
   ghi_chu_ly_do: null as unknown as string, nguoi_duyet_id: null as unknown as string,
-  nguoi_nhan_id: "nd-1", ten_nguoi_nhan: "Thủ kho K1",
+  nguoi_nhan_ids: ["nd-1"], ten_nguoi_nhan: ["Thủ kho K1"],
 });
-assert.deepEqual(internalIssue.recipient, { kind: "internal", id: "nd-1", name: "Thủ kho K1" });
+assert.deepEqual(internalIssue.staffRecipients, [{ id: "nd-1", name: "Thủ kho K1" }]);
+assert.deepEqual(toDocumentUpdate({ note: "x" }), { ghi_chu: "x" });
 assert.deepEqual(
-  toDocumentUpdate({ internalRecipientId: "nd-2" }),
-  { nguoi_nhan_id: "nd-2" },
-  "đổi nhân viên nhận trên phiếu xuất nội bộ",
+  toDocumentLineRecipient({ chung_tu_dong_id: "l1", nguoi_nhan_id: "nv-1", ten_nguoi_nhan: "An" }),
+  { lineId: "l1", recipientId: "nv-1", recipientName: "An" },
+);
+assert.deepEqual(
+  withLineRecipients(
+    [{ id: "l1", x: 1 }, { id: "l2", x: 2 }],
+    [{ lineId: "l1", recipientId: "nv-1", recipientName: "An" }],
+  ),
+  [
+    { id: "l1", x: 1, recipientId: "nv-1", recipientName: "An" },
+    { id: "l2", x: 2, recipientId: null, recipientName: null },
+  ],
 );
 
 // --- Kiểm kê: ngưỡng lệch và nhãn trạng thái phiên (06-09) ------------------
@@ -1221,6 +1318,7 @@ async function kiemCsvPhanTich() {
   const header = csv.split("\r\n")[0] ?? "";
   assert.ok(header.includes("Đề nghị nhập") && header.includes("Mã hàng"), "CSV đề nghị nhập có tiêu đề tiếng Việt");
   assert.ok(!/giá|vốn/i.test(header), "CSV đề nghị nhập không có cột giá");
+  assert.ok(header.includes("Đơn đặt") && !header.includes("Khách đặt"), "TEN-03: CSV ghi Đơn đặt thay Khách đặt");
   assert.ok(csv.includes("RWT") && csv.includes(",65"), "dòng RWT đề nghị 65");
 }
 

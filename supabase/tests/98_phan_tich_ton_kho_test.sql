@@ -73,12 +73,16 @@ create or replace function pg_temp.hoa_don(p_so text, p_ngay date, p_ma text, p_
 returns uuid language plpgsql as $helper$
 declare v_id uuid;
 begin
-  insert into public.chung_tu (so_ct, loai_ct, ngay_ct, kho_id, doi_tac_id, nguoi_nhan_id, ly_do_xuat_am)
+  insert into public.chung_tu (so_ct, loai_ct, ngay_ct, kho_id, doi_tac_id, ly_do_xuat_am)
   values (p_so, 'XUAT', p_ngay, (select id from public.kho where ma = 'K1'),
           case when p_noi_bo then null else (select id from public.doi_tac order by ma limit 1) end,
-          case when p_noi_bo then (select id from public.nhan_vien_phu_trach order by ten_day_du limit 1) end,
           'LECH_TON_CHO_KIEM_KE')
   returning id into v_id;
+  -- 0090: người nhận nội bộ nằm ở bảng nối, không còn ở cột chung_tu.nguoi_nhan_id.
+  if p_noi_bo then
+    insert into public.chung_tu_nguoi_nhan (chung_tu_id, nguoi_nhan_id, thu_tu)
+    values (v_id, (select id from public.nhan_vien_phu_trach order by ten_day_du limit 1), 1);
+  end if;
   insert into public.chung_tu_dong (chung_tu_id, san_pham_id, so_luong, don_gia, thanh_tien, kho_id)
   values (v_id, pg_temp.sp(p_ma), p_sl, 0, 0, (select id from public.kho where ma = 'K1'));
   perform public.ghi_so_chung_tu(v_id);
@@ -115,10 +119,13 @@ values ((select id from public.chung_tu where so_ct = 'ZQX-PT-TRA'), pg_temp.sp(
 select public.ghi_so_chung_tu((select id from public.chung_tu where so_ct = 'ZQX-PT-TRA'));
 
 -- Đơn mở: tạm 4 + đã xác nhận 3 (đối tác), tạm nội bộ 6 (không tính).
-insert into public.don_dat_hang (so_dh, doi_tac_id, nguoi_nhan_id, trang_thai)
-values ('DH-PT-TAM', (select id from public.doi_tac order by ma limit 1), null, 'TAM'),
-       ('DH-PT-XN',  (select id from public.doi_tac order by ma limit 1), null, 'DA_XAC_NHAN'),
-       ('DH-PT-NB',  null, (select id from public.nhan_vien_phu_trach where ten_viet_tat = 'ZQX-PT'), 'TAM');
+insert into public.don_dat_hang (so_dh, doi_tac_id, trang_thai)
+values ('DH-PT-TAM', (select id from public.doi_tac order by ma limit 1), 'TAM'),
+       ('DH-PT-XN',  (select id from public.doi_tac order by ma limit 1), 'DA_XAC_NHAN'),
+       ('DH-PT-NB',  null, 'TAM');
+insert into public.don_dat_hang_nguoi_nhan (don_dat_hang_id, nguoi_nhan_id, thu_tu)
+select id, (select id from public.nhan_vien_phu_trach where ten_viet_tat = 'ZQX-PT'), 1
+from public.don_dat_hang where so_dh = 'DH-PT-NB';
 insert into public.don_dat_hang_dong (don_dat_hang_id, san_pham_id, so_luong_dat)
 select d.id, pg_temp.sp('PT-ZQX-A'), q
 from (values ('DH-PT-TAM', 4), ('DH-PT-XN', 3), ('DH-PT-NB', 6)) v(so, q)

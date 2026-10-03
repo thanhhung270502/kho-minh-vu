@@ -64,7 +64,7 @@ export function CompleteOrderDialog({ open, onClose, orderId, orderNo, lineCount
       );
       message.success(`Đã hoàn thành đơn ${orderNo} — hóa đơn đã ghi sổ.`);
       close();
-      router.push(`/hoa-don/${invoiceId}`);
+      router.push(`/duyet-don/${invoiceId}`);
     } catch (caught) {
       if (needsNegativeReason(caught)) {
         // Nguyên văn câu của ghi_so_chung_tu: nêu mã, tồn và số xuất.

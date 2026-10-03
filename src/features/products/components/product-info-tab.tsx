@@ -56,7 +56,6 @@ export function ProductInfoTab({ product, forecast }: Props) {
             {product.productTypeName ? <Tag className="m-0">{product.productTypeName}</Tag> : null}
             <Tag className="m-0">{product.directSale ? "Bán trực tiếp" : "Không bán trực tiếp"}</Tag>
             {product.isActive ? null : <Tag className="m-0" color="orange">Ngừng kinh doanh</Tag>}
-            {product.needsReview ? <Tag className="m-0" color="orange">Cần rà</Tag> : null}
           </div>
         </div>
       </div>
@@ -76,7 +75,7 @@ export function ProductInfoTab({ product, forecast }: Props) {
         </Field>
         {forecast !== undefined ? (
           <>
-            <Field label="Khách đặt">{forecast ? formatNumber(forecast.customerOrdered) : "—"}</Field>
+            <Field label="Đơn đặt">{forecast ? formatNumber(forecast.customerOrdered) : "—"}</Field>
             <Field label="Dự kiến hết hàng">{stockoutText(forecast)}</Field>
           </>
         ) : null}

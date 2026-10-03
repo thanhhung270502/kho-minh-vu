@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import type { ReactNode } from "react";
 
 import { PartnerSearchInput } from "@/shared/components/partner-search-input";
+import { StaffSelect } from "@/shared/components/staff-select";
 import { RECIPIENT_KIND_LABELS, type RecipientKind } from "@/shared/lib/recipient";
 
 import { ORDER_STATUSES, ORDER_STATUS_LABELS, type OrderStatus } from "../lib/order-status";
@@ -93,6 +94,13 @@ export function OrderFilterPanel({
           />
         </FilterGroup>
       ) : null}
+
+      <FilterGroup label="Người nhận">
+        <StaffSelect
+          value={filter.staffId ?? undefined}
+          onChange={(id) => change({ staffId: id ?? null })}
+        />
+      </FilterGroup>
 
       <FilterGroup label="Khoảng ngày">
         <DatePicker.RangePicker

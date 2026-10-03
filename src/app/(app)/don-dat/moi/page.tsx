@@ -5,7 +5,7 @@ import { requirePermission } from "@/features/auth/api/current-user.server";
 import { NewOrderCard } from "@/features/sales-order/components/new-order-card";
 import { PageHeader } from "@/shared/components/page-header";
 
-export const metadata: Metadata = { title: "Tạo đơn đặt hàng" };
+export const metadata: Metadata = { title: "Tạo đơn đặt" };
 
 // Danh sách đã tạo đơn bằng dialog; route này giữ lại cho link/bookmark cũ.
 export default async function Page() {
@@ -14,9 +14,9 @@ export default async function Page() {
 
   return (
     <>
-      <PageHeader title="Tạo đơn đặt hàng" description="Mặc định nhận Nội bộ — đổi sang Đối tác nếu giao cho khách." />
+      <PageHeader title="Tạo đơn đặt" description="Mặc định nhận Nội bộ — đổi sang Đối tác nếu giao cho khách." />
       <NewOrderCard />
-      <Link href="/dat-hang" className="text-sm">
+      <Link href="/don-dat" className="text-sm">
         ← Về danh sách đơn
       </Link>
     </>

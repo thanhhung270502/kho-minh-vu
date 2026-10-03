@@ -1,34 +1,76 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Phản hồi vận hành
-status: milestone_complete
-stopped_at: Phase 16 complete — milestone v1.1 xong cả 7 phase (10–16)
-last_updated: 2026-10-02T21:00:00.000Z
-last_activity: 2026-10-02
+milestone: v1.2
+milestone_name: Phản hồi vận hành đợt 2
+status: blocked
+stopped_at: Phase 18 complete — Phase 19 chờ merge quy chuẩn mã + xem lại phạm vi
+last_updated: "2026-10-03T15:40:00.000Z"
+last_activity: 2026-10-03
 progress:
-  total_phases: 16
-  completed_phases: 11
-  total_plans: 101
-  completed_plans: 80
-  percent: 69
+  total_phases: 19
+  completed_phases: 13
+  total_plans: 115
+  completed_plans: 94
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-02)
+See: .planning/PROJECT.md (updated 2026-10-03)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Milestone v1.1 Phản hồi vận hành — xong cả Phase 10–16; còn đẩy migration 0076–0084 lên cloud, merge branch, đóng milestone
+**Current focus:** Milestone v1.2 — Phase 17, 18 xong; Phase 19 chờ merge quy chuẩn mã
 
 ## Current Position
 
-Phase: v1.1 — milestone complete (Phase 10–16 complete)
+Phase: 19 (Dòng xe dùng chung) — chưa plan, BỊ CHẶN
 Plan: —
-Status: Milestone complete — chờ deploy + đóng milestone
-Last activity: 2026-10-02 — Phase 16 Chức vụ & quyền hoàn thành
+Status: Chờ merge Quy chuẩn mã hàng (0085–0088) và xem lại phạm vi — 0086 bỏ bảng `dong_xe`, thay bằng cột text trên `san_pham`
+Last activity: 2026-10-03 — Phase 18 Đơn nhiều người nhận hoàn thành (8/8 plan, verification passed)
+
+### Phase 18 — đã xong (03/10/2026)
+
+Branch `feature/phase-18-nhieu-nguoi-nhan` tách từ `feature/phase-17-doi-ten` (chưa push, chưa merge). NNHAN-01..06 xong.
+Kiểm: `npm run check`, test hàm thuần, pgTAP 51 file / 827 test (108, 109 mới), `npm run test:concurrency`, ma trận route
+267/267, UAT trình duyệt 11 bước (người dùng xác nhận "đạt"; sửa `f8a57f1` Enter ở chế độ Đối tác).
+
+Hệ quả cần nhớ:
+- Người nhận nằm ở bảng nối `don_dat_hang_nguoi_nhan` / `chung_tu_nguoi_nhan` + `nguoi_nhan_id` trên dòng; cột `nguoi_nhan_id`
+  cũ trên `don_dat_hang`/`chung_tu` giữ dữ liệu nhưng thôi dùng. "Nội bộ" = `doi_tac_id is null`.
+- Ghi người nhận cấp đơn chỉ qua RPC `tao_don` / `dat_nguoi_nhan_don`; trigger tự thêm người nhận của dòng vào đơn (D1);
+  bỏ người đang ở dòng bị chặn (23514, nêu mã hàng).
+- Migration **0090, 0091 mới áp ở local** (cùng 0089). Deploy cloud phải đẩy 0089–0091 (và 0085–0088 nếu quy chuẩn merge trước).
+- `hoan_thanh_don`/`ghi_so_chung_tu`/`dong_chung_tu` KHÔNG đổi — tránh đụng 0088 (quy chuẩn D). Merge quy chuẩn sau: kiểm lại
+  `tao_phieu_xuat_tu_don` (0091 viết lại) với 0088.
+- Dữ liệu thử local: DH26-000005 → PX26-000005 (xuất âm 3 mã), DH26-000006 đơn tạm.
+
+### Phase 17 — đã xong (03/10/2026)
+
+Branch `feature/phase-17-doi-ten` tách từ `main` (chưa push, chưa merge). TEN-01..05, DDAT-01..03 xong.
+Kiểm: `npm run check`, test hàm thuần, test đọc Excel, ma trận quyền route 267/267, pgTAP 49 file / 754
+test, UAT trình duyệt 10 bước (người dùng xác nhận "đạt").
+
+Hệ quả cần nhớ:
+
+- Route mới `/don-dat`, `/duyet-don`; `/dat-hang/*`, `/hoa-don/*`, `/xuat-kho/*` chuyển hướng một bước trong `next.config.ts`.
+- "Duyệt đơn" chỉ là tên màn; chứng từ vẫn gọi "hóa đơn" (A1).
+- Migration `0089_ten_hang_ngoai.sql` (dữ liệu) **mới áp ở local** — deploy cloud phải đẩy cùng các migration chưa lên.
+- Phiếu lấy hàng: `recipientDisplayName` (chỉ tên), Người đặt, In lúc — Phase 18 sẽ sửa tiếp phần người nhận.
+- DB local đã dọn về schema nhánh (gỡ 0085–0088 quy chuẩn, giữ dữ liệu; backup `~/Desktop/kiotviet_local_before_reset_20261003.dump`).
+  Quay lại nhánh quy chuẩn cần `migration up --include-all` hoặc merge `main` vào trước.
+
+- **Phase 19 phải xem lại phạm vi**: 0086 (quy chuẩn) xóa bảng `dong_xe`/`loai_hang`, thay bằng cột text trên `san_pham`.
+
+### Milestone v1.2 — bối cảnh lúc mở (03/10/2026)
+
+- Nguồn: phản hồi vận hành 03/10/2026 trên Notion Task board; 3 task bỏ khỏi milestone
+  (Đối tác chỉ còn NCC, kiểm tra chịu tải, Phân tích theo kỳ) — vẫn để "Chưa xử lý" trên Notion.
+
+- Branch Phase 10–16 đã merge vào `main` và push. Song song đang làm Quy chuẩn mã hàng trên
+  `feature/quy-chuan-ma-b` (ngoài GSD, migration tới 0086) — phải merge trước phase "dòng xe dùng chung".
+
+- v1.1 vẫn chưa `/gsd:complete-milestone`.
 
 ### Phase 16 — đã xong (02/10/2026)
 
@@ -40,13 +82,16 @@ thuần, test đọc Excel, ma trận quyền route 220/220, `npm run test:concu
 và xem trên trình duyệt.
 
 Hệ quả cần nhớ:
+
 - Mô hình quyền: chức vụ mang **phạm vi** (enum vai_tro: kho, quản trị — theo token, bẫy 6) +
   **9 quyền nghiệp vụ** (`co_quyen()` đọc DB, có hiệu lực ngay). Giao diện dùng `allows(user, …)`
   gộp cả hai (`src/shared/lib/permissions.ts`); `getCurrentUser()` trả `permissions`.
+
 - Quyền nghiệp vụ mới phải đi qua `co_quyen` — đã ghi vào CLAUDE.md bẫy 6.
 - `seed:users` ghi `chuc_vu_id` → cần 0082 trước. `luu_ho_so_nguoi_dung` đã bỏ (0084), dùng `luu_nguoi_dung`.
 - Còn lỗ `coalesce(vai_tro, 'quan_ly')` ở `huy_duoc_don`, `tao_phieu_tra`, `dat_dinh_muc`,
   `nap_ton_tam`, `tao_phieu_xuat_tu_don`, `xem_duoc_phan_tich`, `sinh_so_ct` — đã tạo việc riêng.
+
 - **`0082`–`0084` mới áp ở local.**
 
 ### Việc còn lại của milestone v1.1
@@ -54,6 +99,7 @@ Hệ quả cần nhớ:
 - Đẩy migration 0076–0084 lên cloud: xử lý lệch lịch sử migration từ 0072 trước; 0078 dừng nếu dữ
   liệu thật có đơn mang 2 hóa đơn chưa hủy (xem ghi chú Phase 12); chạy lại `npm run seed:users`
   sau 0082 nếu dùng tài khoản mẫu trên cloud.
+
 - Merge 7 branch theo thứ tự 10 → 16 (hoặc mở PR chồng nhau), rồi `/gsd:complete-milestone`.
 - Việc treo: "Sửa xuất Excel danh mục bị cắt ở 1.000 mã", vá lỗ coalesce ở RPC ngoài 9 quyền,
   trang xem phiếu điều chỉnh (thẻ kho chưa bấm mở được phiếu DC).
@@ -67,10 +113,13 @@ xong; kiểm trên Supabase local (`npm run check`, pgTAP 46 file / 719 test, te
 Excel, ma trận quyền route 205/205, `npm run test:concurrency`) và chạy trọn luồng trên trình duyệt.
 
 Hệ quả cho các phase sau:
+
 - Hai đường Excel song song: "Nhập mã hàng mới" (file 4 cột → `nhap_ma_hang_moi`, chỉ tạo mã) và
   "Cập nhật từ Excel" (mẫu 12 cột / file KiotViet → `nhap_danh_muc`, giữ nguyên).
+
 - Câu lỗi trùng danh mục được chép ở `products/lib/new-product-import.ts` (`CATALOG_REASONS`) —
   đổi câu trong 0081 thì đổi luôn ở đó.
+
 - Chưa có trang xem phiếu DIEU_CHINH: thẻ kho hiện số phiếu nhưng không bấm mở được.
 - Phase 16 (chức vụ & quyền) nhớ: quyền nhập mã mới đang là `edit-catalog` + kiểm vai trò trong RPC.
 - DB local còn dữ liệu thử ZZT-01/02, phiếu DC26-000001, dòng xe "Wave Alpha".
@@ -85,11 +134,14 @@ Supabase local (`npm run check`, pgTAP 45 file / 702 test, test hàm thuần, te
 quyền route 195/195) và xem trên trình duyệt 1440px + 375px.
 
 Hệ quả cho các phase sau:
+
 - Panel chi tiết dùng chung: `src/shared/components/detail-panel.tsx` + slot `detailPanel` của
   `ListLayout`; mã đang chọn ở `?chon=<uuid>` (`src/shared/lib/selected-id.ts`, bấm vào phần tử
   tương tác hoặc `data-no-row-click` không mở panel). Bảng khác muốn panel thì dùng lại y vậy.
+
 - Thủ kho / chỉ xem KHÔNG thấy khách đặt + dự kiến hết hàng (route chỉ ghép `ProductForecast`
   khi có `view-analysis`). Phase 16 đổi quyền thì nhớ chỗ này.
+
 - `/doi-tac/[id]` đã gỡ, redirect sang `/doi-tac?chon=<id>` trong `next.config.ts`.
 - Lịch sử giao dịch đối tác chỉ còn phiếu hệ thống đã ghi sổ — bỏ hẳn nhánh KiotViet.
 - **`0080` mới áp ở local.**
@@ -104,13 +156,16 @@ ma trận quyền route 190/190, `npm run test:concurrency`) và xem trang với
 (đã xóa, DB về đúng trạng thái trước).
 
 Hệ quả cho các phase sau:
+
 - **Phase 14 (panel mã hàng)** dùng lại `phan_tich_ton_kho(p_so_ngay, p_ngay, p_san_pham_id)` cho
   "Khách đặt" + "Dự kiến hết hàng" — cùng con số với trang Phân tích. Lưu ý quyền: RPC chỉ cho
   quản lý + văn phòng (`xem_duoc_phan_tich`); thủ kho / chỉ xem mở panel sẽ nhận 42501 — Phase 14
   phải quyết ẩn trường đó hay nới quyền riêng cho trường hợp một mã.
+
 - **PostgREST cắt mọi request ở 1.000 dòng** (`max_rows`, supabase/config.toml). Màn cần toàn danh
   mục dùng `src/shared/lib/fetch-all-pages.ts`. Nghi nút xuất Excel danh mục đang bị cắt ở 1.000 mã
   — đã tạo việc riêng "Sửa xuất Excel danh mục bị cắt ở 1.000 mã", chưa làm.
+
 - CSV có BOM dùng chung ở `src/shared/lib/csv.ts`.
 - Hàm quyền mỏng `xem_duoc_phan_tich()` chờ Phase 16. Đổi ngưỡng: RLS chỉ quản lý.
 - `0079` mới áp ở local.
@@ -125,16 +180,20 @@ test đọc Excel, ma trận quyền route 185/185, `npm run test:concurrency` 3
 trên trình duyệt.
 
 Hệ quả cho các phase sau:
+
 - "Bán" = hóa đơn (XUAT) HOAN_THANH; đơn HOAN_THANH có đúng một hóa đơn chưa hủy (unique index
   `uq_chung_tu_hoa_don_cua_don`). Phase 13 tính ADU / khách đặt dựa trên mô hình này: khách đặt
   = dòng của đơn DA_XAC_NHAN (và TAM nếu muốn), không còn "đã xuất một phần".
+
 - Client không gọi thẳng `tao_phieu_xuat_tu_don` nữa — chỉ qua `hoan_thanh_don`.
 - Hàm quyền mỏng `hoan_thanh_duoc_don()` / `huy_duoc_don()` → Phase 16 thay ruột bằng quyền theo
   chức vụ (Hoàn thành, Hủy). `xac_nhan_don` / `mo_khoa_don` / `dong_don_som` vẫn kiểm vai trò
   trực tiếp — Phase 16 nên gói tương tự.
+
 - **`0078` mới áp ở local.** Đẩy lên cloud: xử lý lệch migration từ 0072 trước; 0078 dừng nếu dữ
   liệu thật có đơn mang 2 hóa đơn chưa hủy (hủy hóa đơn thừa bằng tay). Phiếu nháp cũ gắn đơn bị
   migration hủy.
+
 - Lỗ hổng memory "đơn → phiếu xuất" (01/10) đã đóng.
 - Còn treo: ghi chú Notion "Không hiện" dưới mục tạo đơn — chờ người dùng làm rõ.
 
@@ -147,13 +206,17 @@ Supabase local (`npm run check`, pgTAP 42 file / 647 test, test hàm thuần, te
 trận quyền route 180/180).
 
 Hệ quả cho các phase sau:
+
 - Người nhận nội bộ = `nhan_vien_phu_trach` (migration `0077`, giữ tên cột `nguoi_nhan_id`).
   `danh_sach_nguoi_nhan_noi_bo()` trả `id, ten_viet_tat, ten_day_du`. Phase 12 dựng trên đây.
+
 - **`0077` mới áp ở local.** Cloud còn lệch lịch sử migration từ 0072 và nhiều khả năng chưa
   có 0076 — phải xử lý chỗ lệch rồi mới `db:push`, hỏi người dùng trước.
+
 - Nhóm hàng / ĐVT / Công đoạn rời Cài đặt → modal "Danh mục phụ" ở Danh sách hàng hóa (route
   ghép qua prop `extraActions`); URL cũ chuyển về `/danh-muc`. Phase 15 (import v2) dùng lại
   `LookupSelect` / `QuickLookupModal` trong `features/products` cho dropdown từng dòng.
+
 - Văn phòng vào `/cai-dat` mở tab Nhân viên phụ trách (tab duy nhất của vai trò này).
 - `product-drawer.tsx` ~420 dòng (vượt ~200 từ trước) — nên tách khi đụng lại.
 - Sinh type từ local: `npm run db:types:local` hỏng ở máy này; dùng
@@ -168,9 +231,11 @@ GON-01..07 xong; kiểm trên Supabase local (`npm run check`, test hàm thuần
 ma trận quyền route 165/165).
 
 Hệ quả cho các phase sau:
+
 - Route xuất đổi `/xuat-kho` → `/hoa-don` (redirect trong `next.config.ts`). Phase 12 dựng trên `/hoa-don`.
 - `/ton-kho` và `/ton-kho/nap-tam` đã gỡ; `/ton-kho/dinh-muc` tạm giữ, vào bằng nút "Định mức"
   ở Danh sách hàng hóa → Phase 13 chuyển vào `/phan-tich`, thêm mục "Phân tích" vào menu.
+
 - Quyền UI `view-cost`, `edit-sale-price`, `load-provisional-stock` đã bỏ khỏi `permissions.ts`.
 - **Nạp tồn tạm từ KiotViet không còn giao diện** — ghi chú v1.0 bên dưới ("nạp tồn tạm là
   việc vận hành bắt buộc trước go-live") phải chốt lại: tồn đầu kỳ đi bằng kiểm kê (KKE-04 /
@@ -712,6 +777,15 @@ _Song song: Phase 09 (quan-ly-hinh-anh) đang thực thi ở phiên khác — th
 | Phase 07 P06 | 35m | 2 tasks | 4 files |
 | Phase 07 P07 | 30min | 2 tasks | 3 files |
 | Phase 09 P05 | 35min | 2 tasks | 1 files |
+| Phase 17 P01 | 15min | 3 tasks | 12 files |
+| Phase 17 P02 | 5min | 2 tasks | 22 files |
+| Phase 17 P03 | 10min | 2 tasks | 6 files |
+| Phase 17 P04 | 15min | 3 tasks | 17 files |
+| Phase 17 P05 | 10min | 2 tasks | 10 files |
+| Phase 18 P01 | 25min | 2 tasks | 3 files |
+| Phase 18 P02 | 30min | 2 tasks | 4 files |
+| Phase 18 P03 | 20min | 3 tasks | 10 files |
+| Phase 18 P06 | 8min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -815,6 +889,8 @@ Recent decisions affecting current work:
 - [Phase 07]: 07-06: fetchNegativeStockReport chi nhan p_ngay - RPC bao_cao_xuat_am (0069) khong co tham so p_kho_id
 - [Phase 07]: 07-07: ngay chot SalesPaceCard hien trong noi dung, khong dung Card.extra, tranh doc query.data ngoai QueryState children
 - [Phase 09]: CLI supabase mat quyen Management API tren may nay - dung psql DATABASE_URL de day migration 0068 + chay pgTAP, gen types --db-url thay --project-id
+- [Phase 17]: Tên nhóm menu Đơn hàng giữ; shortLabel Duyệt đơn giữ, kiểm 375px ở 17-06
+- [Phase 17]: A3: phiếu lấy hàng chỉ in tên người nhận (recipientDisplayName); DDAT-01 ngừng đọc/gửi ngay_giao_du_kien, giữ cột DB
 
 ### Roadmap Evolution
 
@@ -842,7 +918,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-02T10:00:00.000Z
-Stopped at: Phase 13 complete — branch feature/phase-13-phan-tich (xếp chồng 10 → 11 → 12 → 13) chờ PR
-Last activity: 2026-10-02 - Phase 13 Phân tích tồn kho (quickplan, PTICH-01..07)
-Resume file: .planning/ROADMAP.md (Phase 14)
+Last session: 2026-10-03T15:11:55.680Z
+Stopped at: Completed 18-07-PLAN.md
+Last activity: 2026-10-03
+Resume file: None

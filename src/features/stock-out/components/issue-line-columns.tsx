@@ -3,6 +3,8 @@
 import { Button, InputNumber, Select, Tooltip } from "antd";
 import type { TableColumnsType } from "antd";
 
+import { lineRecipientLabel } from "@/shared/lib/recipient";
+
 import type { IssueLine } from "../types";
 
 function formatNumber(value: number | string | null): string {
@@ -14,6 +16,8 @@ type Warehouse = { id: string; name: string };
 type Params = {
   editable: boolean;
   hasMultipleWarehouses: boolean;
+  showRecipient: boolean;
+  staffCount: number;
   warehouses: Warehouse[];
   isOverStock: (line: IssueLine) => boolean;
   currentQuantity: (line: IssueLine) => number;
@@ -31,6 +35,8 @@ type Params = {
 export function buildIssueLineColumns({
   editable,
   hasMultipleWarehouses,
+  showRecipient,
+  staffCount,
   warehouses,
   isOverStock,
   currentQuantity,
@@ -54,6 +60,17 @@ export function buildIssueLineColumns({
       ellipsis: true,
     },
     { title: "ĐVT", dataIndex: "unitName", key: "unitName", width: 80 },
+    ...(showRecipient
+      ? [
+          {
+            title: "Người nhận",
+            key: "recipient",
+            width: 160,
+            render: (_: unknown, line: IssueLine) =>
+              lineRecipientLabel(line.recipientName, staffCount),
+          },
+        ]
+      : []),
     ...(hasMultipleWarehouses
       ? [
           {

@@ -3,7 +3,7 @@
 import { Button } from "antd";
 import dayjs from "dayjs";
 
-import { formatRecipient } from "@/shared/lib/recipient";
+import { staffNames } from "@/shared/lib/recipient";
 
 import type { IssueDetail, IssueLine } from "../types";
 
@@ -67,8 +67,8 @@ export function DeliveryPrintTemplate({
         <div>
           <span className="text-gray-600">Người nhận: </span>
           <strong>
-            {issue.recipient?.kind === "internal" ? (
-              formatRecipient(issue.recipient)
+            {issue.partnerId === null && issue.staffRecipients.length > 0 ? (
+              staffNames(issue.staffRecipients)
             ) : (
               <>
                 {issue.partnerCode ? `${issue.partnerCode} — ` : ""}
@@ -77,6 +77,12 @@ export function DeliveryPrintTemplate({
             )}
           </strong>
         </div>
+        {issue.partnerId !== null && issue.staffRecipients.length > 0 ? (
+          <div>
+            <span className="text-gray-600">Nhân viên nhận: </span>
+            <strong>{staffNames(issue.staffRecipients)}</strong>
+          </div>
+        ) : null}
         {issue.orderNo ? (
           <div>
             <span className="text-gray-600">Đơn gốc: </span>

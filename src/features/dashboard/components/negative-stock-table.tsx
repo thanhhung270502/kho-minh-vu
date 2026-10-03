@@ -15,7 +15,7 @@ function formatQuantity(value: number): string {
 function documentHref(row: NegativeStockLine): string {
   return row.documentKind === "TRA_NCC"
     ? `/tra-hang/${row.documentId}`
-    : `/hoa-don/${row.documentId}`;
+    : `/duyet-don/${row.documentId}`;
 }
 
 function useColumns(): TableColumnsType<NegativeStockLine> {

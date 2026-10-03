@@ -48,23 +48,26 @@ const ALL = (k: KyVong): Record<VaiTroTest, KyVong> => ({
 
 const MA_TRAN: Dong[] = [
   // Phase 7 (D-11): chỉ quản lý xem tổng quan, vai trò khác chuyển sang màn làm việc chính — không phải /khong-du-quyen.
-  { route: "/", ky_vong: { quanly: "200", vanphong: "→/hoa-don", thukho1: "→/danh-muc", chixem: "→/danh-muc", khach: "dangnhap" } },
+  { route: "/", ky_vong: { quanly: "200", vanphong: "→/duyet-don", thukho1: "→/danh-muc", chixem: "→/danh-muc", khach: "dangnhap" } },
   // /cai-dat chỉ redirect sang tab đầu tiên theo quyền. UAT Phase 2 bắt được
   // lỗi page này crash vì gọi hàm client từ server — ma trận cũ thiếu đúng nó.
   { route: "/cai-dat", ky_vong: { quanly: "→/cai-dat/nguoi-dung", vanphong: "→/cai-dat/nhan-vien-phu-trach", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   { route: "/nhap-kho", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   // Cùng quyền xem với /nhap-kho — nút "Tạo đơn" ẩn/hiện là trang trí ở client
   // (canCreate), chặn thật nằm ở bốn policy ghi trên don_dat_hang (plan 04-02).
-  { route: "/dat-hang", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
+  { route: "/don-dat", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   // Phase 12 (DON-01): bấm Tạo đơn vào thẳng trang tạo đơn — cùng quyền tạo
   // đơn của RLS (quản lý + văn phòng).
-  { route: "/dat-hang/moi", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
-  // Cùng quyền xem với /nhap-kho và /dat-hang — nút "Tạo hóa đơn" ẩn/hiện
+  { route: "/don-dat/moi", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
+  // Cùng quyền xem với /nhap-kho và /don-dat — nút "Tạo hóa đơn" ẩn/hiện
   // là trang trí ở client (canCreate), chặn thật ở policy ghi trên chung_tu (0016).
-  { route: "/hoa-don", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
-  // Phase 10 (GON-05/06): link cũ — redirect trong next.config.ts chạy TRƯỚC
-  // proxy nên cả khách cũng nhận chuyển hướng (rồi mới bị đẩy về đăng nhập).
-  { route: "/xuat-kho", ky_vong: ALL("→/hoa-don") },
+  { route: "/duyet-don", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
+  // Phase 17 (TEN-02): link cũ — redirect next.config chạy TRƯỚC proxy nên khách
+  // cũng nhận chuyển hướng; /xuat-kho đi thẳng, không qua /hoa-don.
+  { route: "/dat-hang", ky_vong: ALL("→/don-dat") },
+  { route: "/dat-hang/moi", ky_vong: ALL("→/don-dat/moi") },
+  { route: "/hoa-don", ky_vong: ALL("→/duyet-don") },
+  { route: "/xuat-kho", ky_vong: ALL("→/duyet-don") },
   { route: "/ton-kho", ky_vong: ALL("→/danh-muc") },
   // Phase 13 (PTICH-07): duyệt định mức thành tab của trang Phân tích.
   { route: "/ton-kho/dinh-muc", ky_vong: ALL("→/phan-tich") },
@@ -140,7 +143,7 @@ async function layCookie(email: string): Promise<string> {
   return [...kho].map(([n, v]) => `${n}=${encodeURIComponent(v)}`).join("; ");
 }
 
-/** Lấy một id đơn đặt hàng có thật để kiểm route chi tiết `/dat-hang/[id]`. */
+/** Lấy một id đơn đặt hàng có thật để kiểm route chi tiết `/don-dat/[id]`. */
 async function layIdDon(): Promise<string | null> {
   const kho = new Map<string, string>();
   const sb = createServerClient(
@@ -222,7 +225,7 @@ async function doMot(route: string, cookie: string): Promise<KyVong | string> {
   return `HTTP ${res.status}`;
 }
 
-/** Lấy một id hóa đơn (chứng từ XUAT) có thật để kiểm route chi tiết `/hoa-don/[id]`. */
+/** Lấy một id hóa đơn (chứng từ XUAT) có thật để kiểm route chi tiết `/duyet-don/[id]`. */
 async function layIdPhieuXuat(): Promise<string | null> {
   const kho = new Map<string, string>();
   const sb = createServerClient(
@@ -523,6 +526,46 @@ async function kiemAnh(
 }
 
 /**
+ * TEN-02: `doMot` chỉ so pathname — kiểm riêng Location ĐẦY ĐỦ: query đi theo
+ * redirect, và khách chưa đăng nhập về /dang-nhap với tiep_tuc = đường MỚI.
+ */
+async function kiemChuyenHuongDayDu(
+  cookie: Record<VaiTroTest, string>,
+  idDon: string | null,
+): Promise<{ tong: number; lech: string[] }> {
+  const lech: string[] = [];
+  let tong = 0;
+  const viTri = async (duong: string, ck: string): Promise<string> => {
+    const res = await fetch(`${BASE_URL}${duong}`, { headers: ck ? { cookie: ck } : {}, redirect: "manual" });
+    const loc = res.headers.get("location");
+    if (!loc) return `HTTP ${res.status} không có Location`;
+    const u = new URL(loc, BASE_URL);
+    return `${u.pathname}${u.search}`;
+  };
+  const so = (nhan: string, thuc: string, mong: string) => {
+    tong++;
+    if (thuc !== mong) lech.push(`${nhan.padEnd(44)} mong ${mong}, thực ${thuc}`);
+  };
+  const cap: [string, string][] = [
+    ["/dat-hang?trang=2&q=abc", "/don-dat?trang=2&q=abc"],
+    ["/hoa-don?trang_thai=HOAN_THANH&trang=3", "/duyet-don?trang_thai=HOAN_THANH&trang=3"],
+    ["/xuat-kho?trang=2", "/duyet-don?trang=2"],
+    ["/dat-hang/moi?x=1", "/don-dat/moi?x=1"],
+    ...(idDon ? ([[`/dat-hang/${idDon}/in?x=1`, `/don-dat/${idDon}/in?x=1`]] as [string, string][]) : []),
+  ];
+  for (const [cu, moi] of cap) {
+    so(`quanly ${cu}`, await viTri(cu, cookie.quanly), moi);
+    so(`khach ${cu}`, await viTri(cu, ""), moi);
+  }
+  // Hai bước của khách: link cũ → đường mới → /dang-nhap?tiep_tuc=<đường mới + query>.
+  const buoc1 = await viTri("/dat-hang/moi?x=1", "");
+  const buoc2 = new URL(await viTri(buoc1, ""), BASE_URL);
+  so("khach /dat-hang/moi?x=1 bước 2 (pathname)", buoc2.pathname, "/dang-nhap");
+  so("khach /dat-hang/moi?x=1 bước 2 (tiep_tuc)", buoc2.searchParams.get("tiep_tuc") ?? "", "/don-dat/moi?x=1");
+  return { tong, lech };
+}
+
+/**
  * QUYEN-04 (Phase 16): ma trận chạy THEO CHỨC VỤ. Bật/tắt quyền của chức vụ
  * bằng service role rồi gọi lại bằng ĐÚNG cookie đã đăng nhập từ trước — đổi
  * quyền không cần token mới. Luôn trả quyền về như cũ, kể cả khi lỗi giữa chừng.
@@ -573,9 +616,9 @@ async function kiemTheoChucVu(cookie: Record<VaiTroTest, string>): Promise<{ ton
     for (const d of doi) await datQuyen(d.ma, d.quyen, d.bat);
 
     so("vanphong / (bật Xem dashboard)", String(await doMot("/", cookie.vanphong)), "200");
-    // Tắt cho quản lý: về /hoa-don, KHÔNG chuyển hướng vòng tròn về "/".
-    so("quanly / (tắt Xem dashboard)", String(await doMot("/", cookie.quanly)), "→/hoa-don");
-    so("thukho1 /dat-hang/moi (bật Tạo đơn)", String(await doMot("/dat-hang/moi", cookie.thukho1)), "200");
+    // Tắt cho quản lý: về /duyet-don, KHÔNG chuyển hướng vòng tròn về "/".
+    so("quanly / (tắt Xem dashboard)", String(await doMot("/", cookie.quanly)), "→/duyet-don");
+    so("thukho1 /don-dat/moi (bật Tạo đơn)", String(await doMot("/don-dat/moi", cookie.thukho1)), "200");
     so("thukho1 /cai-dat (bật Tạo nhân viên)", String(await doMot("/cai-dat", cookie.thukho1)), "→/cai-dat/nhan-vien-phu-trach");
     so("thukho1 /cai-dat/nhan-vien-phu-trach", String(await doMot("/cai-dat/nhan-vien-phu-trach", cookie.thukho1)), "200");
     so("thukho1 POST kiem-ke/nhap-excel (tắt Kiểm kho)", await postRong("/api/kiem-ke/nhap-excel", "thukho1"), "403");
@@ -586,8 +629,8 @@ async function kiemTheoChucVu(cookie: Record<VaiTroTest, string>): Promise<{ ton
   }
 
   // Trả về như cũ: route quay lại đúng hành vi mặc định ngay, cùng phiên.
-  so("vanphong / (trả quyền)", String(await doMot("/", cookie.vanphong)), "→/hoa-don");
-  so("thukho1 /dat-hang/moi (trả quyền)", String(await doMot("/dat-hang/moi", cookie.thukho1)), "quyen");
+  so("vanphong / (trả quyền)", String(await doMot("/", cookie.vanphong)), "→/duyet-don");
+  so("thukho1 /don-dat/moi (trả quyền)", String(await doMot("/don-dat/moi", cookie.thukho1)), "quyen");
 
   return { tong, lech };
 }
@@ -624,28 +667,32 @@ async function main() {
 
   const idDon = await layIdDon();
   if (idDon) {
-    // /dat-hang/[id]/in cùng quyền xem: T-04-61 chấp nhận thu_kho/chi_xem mở
+    // /don-dat/[id]/in cùng quyền xem: T-04-61 chấp nhận thu_kho/chi_xem mở
     // thẳng tờ đi lấy hàng, route vẫn chặn khách chưa đăng nhập.
     MA_TRAN.push(
-      { route: `/dat-hang/${idDon}`, ky_vong: AI_CUNG_XEM },
-      { route: `/dat-hang/${idDon}/in`, ky_vong: AI_CUNG_XEM },
+      { route: `/don-dat/${idDon}`, ky_vong: AI_CUNG_XEM },
+      { route: `/don-dat/${idDon}/in`, ky_vong: AI_CUNG_XEM },
+      { route: `/dat-hang/${idDon}`, ky_vong: ALL(`→/don-dat/${idDon}`) },
+      { route: `/dat-hang/${idDon}/in`, ky_vong: ALL(`→/don-dat/${idDon}/in`) },
     );
   } else {
-    console.warn("⚠ chưa có đơn đặt hàng nào — bỏ qua route /dat-hang/[id] và /in");
+    console.warn("⚠ chưa có đơn đặt hàng nào — bỏ qua route /don-dat/[id] và /in");
   }
 
   const idPhieuXuat = await layIdPhieuXuat();
   if (idPhieuXuat) {
     // /in cùng quyền xem với trang chi tiết — bẫy 12, plan 04-14.
     MA_TRAN.push(
-      { route: `/hoa-don/${idPhieuXuat}`, ky_vong: AI_CUNG_XEM },
-      { route: `/hoa-don/${idPhieuXuat}/in`, ky_vong: AI_CUNG_XEM },
-      // Bookmark cũ /xuat-kho/[id] và trang in giữ nguyên id khi chuyển sang /hoa-don.
-      { route: `/xuat-kho/${idPhieuXuat}`, ky_vong: ALL(`→/hoa-don/${idPhieuXuat}`) },
-      { route: `/xuat-kho/${idPhieuXuat}/in`, ky_vong: ALL(`→/hoa-don/${idPhieuXuat}/in`) },
+      { route: `/duyet-don/${idPhieuXuat}`, ky_vong: AI_CUNG_XEM },
+      { route: `/duyet-don/${idPhieuXuat}/in`, ky_vong: AI_CUNG_XEM },
+      // Bookmark cũ /hoa-don và /xuat-kho giữ nguyên id, đi THẲNG sang /duyet-don.
+      { route: `/hoa-don/${idPhieuXuat}`, ky_vong: ALL(`→/duyet-don/${idPhieuXuat}`) },
+      { route: `/hoa-don/${idPhieuXuat}/in`, ky_vong: ALL(`→/duyet-don/${idPhieuXuat}/in`) },
+      { route: `/xuat-kho/${idPhieuXuat}`, ky_vong: ALL(`→/duyet-don/${idPhieuXuat}`) },
+      { route: `/xuat-kho/${idPhieuXuat}/in`, ky_vong: ALL(`→/duyet-don/${idPhieuXuat}/in`) },
     );
   } else {
-    console.warn("⚠ chưa có hóa đơn nào — bỏ qua route /hoa-don/[id] và /in");
+    console.warn("⚠ chưa có hóa đơn nào — bỏ qua route /duyet-don/[id] và /in");
   }
 
   const idPhieuTra = await layIdPhieuTra();
@@ -690,6 +737,10 @@ async function main() {
   const theoChucVu = await kiemTheoChucVu(cookie);
   tong += theoChucVu.tong;
   lech.push(...theoChucVu.lech);
+
+  const chuyenHuong = await kiemChuyenHuongDayDu(cookie, idDon);
+  tong += chuyenHuong.tong;
+  lech.push(...chuyenHuong.lech);
 
   if (lech.length > 0) {
     console.error(`✗ quyền route: ${lech.length}/${tong} ô LỆCH\n`);

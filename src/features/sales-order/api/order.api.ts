@@ -1,13 +1,16 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import type { RecipientChoice } from "@/shared/lib/recipient";
 
 import {
+  toCreateOrderRpcArgs,
+  toOrderLineInsert,
   toOrderLineUpdate,
+  toSetOrderRecipientsRpcArgs,
   toOrderUpdate,
   toOrderListRpcArgs,
   type OrderFilter,
   type OrderHeaderInput,
   type OrderLineInput,
+  type OrderRecipientsInput,
 } from "../schemas/order.schema";
 import {
   toOrderDetail,
@@ -60,36 +63,29 @@ export async function fetchOrderLines(id: string): Promise<OrderLine[]> {
 // --- Ghi: đầu đơn / dòng đơn --------------------------------------------------
 
 /**
- * D-06: cấp số trên server rồi insert trong cùng một hàm — không ghép số ở
- * client, hai người tạo đơn cùng lúc sẽ trùng `so_dh` nếu làm vậy.
+ * Số đơn và người nhận ghi trong MỘT transaction ở `tao_don` — bất biến D3
+ * (đơn nội bộ >= 1 người) kiểm lúc commit nên không thể insert rời.
  */
-export async function createOrder(input: {
-  recipient: RecipientChoice;
-  deliveryDate?: string | null;
-}): Promise<string> {
-  const supabase = getSupabaseBrowserClient();
-
-  const { data: orderNo, error: orderNoError } = await supabase.rpc(
-    "sinh_so_dh",
-    {},
+export async function createOrder(input: OrderRecipientsInput): Promise<string> {
+  const { data, error } = await getSupabaseBrowserClient().rpc(
+    "tao_don",
+    toCreateOrderRpcArgs(input),
   );
-  if (orderNoError) throw orderNoError;
-
-  const { data, error } = await supabase
-    .from("don_dat_hang")
-    .insert({
-      so_dh: orderNo,
-      doi_tac_id:
-        input.recipient.kind === "partner" ? input.recipient.id : null,
-      nguoi_nhan_id:
-        input.recipient.kind === "internal" ? input.recipient.id : null,
-      ngay_giao_du_kien: input.deliveryDate ?? null,
-    })
-    .select("id")
-    .single();
   if (error) throw error;
+  if (!data) throw new Error("Không tạo được đơn.");
+  return data;
+}
 
-  return data.id;
+/** Đổi người nhận cả đơn trong một transaction (bẫy 8: lỗi là object thường). */
+export async function setOrderRecipients(
+  orderId: string,
+  input: OrderRecipientsInput,
+): Promise<void> {
+  const { error } = await getSupabaseBrowserClient().rpc(
+    "dat_nguoi_nhan_don",
+    toSetOrderRecipientsRpcArgs(orderId, input),
+  );
+  if (error) throw error;
 }
 
 /** Sửa đầu đơn: chỉ chạy được khi đơn còn TAM (policy "sua don dat hang" 0052). */
@@ -119,11 +115,7 @@ export async function addOrderLine(
 ): Promise<string> {
   const { data, error } = await getSupabaseBrowserClient()
     .from("don_dat_hang_dong")
-    .insert({
-      don_dat_hang_id: orderId,
-      san_pham_id: line.productId,
-      so_luong_dat: line.quantity,
-    })
+    .insert(toOrderLineInsert(orderId, line))
     .select("id")
     .single();
   if (error) throw error;

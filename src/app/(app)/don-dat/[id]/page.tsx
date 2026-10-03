@@ -5,7 +5,7 @@ import { OrderDetailView } from "@/features/sales-order/components/order-detail"
 import { requirePermission } from "@/features/auth/api/current-user.server";
 import { can } from "@/shared/lib/permissions";
 
-export const metadata: Metadata = { title: "Đơn đặt hàng" };
+export const metadata: Metadata = { title: "Đơn đặt" };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
