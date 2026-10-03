@@ -2,8 +2,9 @@
 
 import { Button } from "antd";
 import dayjs from "dayjs";
+import { useEffect, useState } from "react";
 
-import { formatRecipient } from "@/shared/lib/recipient";
+import { recipientDisplayName } from "@/shared/lib/recipient";
 
 import { groupLinesByWarehouse } from "../lib/group-lines-by-warehouse";
 import type { OrderDetail, OrderLine } from "../types";
@@ -18,6 +19,7 @@ function formatNumber(value: number): string {
  * không cột công đoạn, không ô ký nhận. Cột cuối để trống, kho ghi tay số
  * thực lấy. Xếp theo kho rồi theo mã hàng, mỗi kho một dòng tiêu đề nhóm
  * (Claude's Discretion, 04-CONTEXT.md) — xem `group-lines-by-warehouse.ts`.
+ * Phase 17: in tên người nhận (không mã), người đặt và giờ in; bỏ ngày giao dự kiến.
  */
 export function PickingPrintTemplate({
   order,
@@ -28,6 +30,14 @@ export function PickingPrintTemplate({
 }) {
   const rows = groupLinesByWarehouse(lines);
   const totalQuantity = lines.reduce((sum, line) => sum + line.orderedQuantity, 0);
+
+  // Giờ in là sự kiện phía trình duyệt: tab mở từ trước vẫn in đúng phút bấm in.
+  const [printedAt, setPrintedAt] = useState(() => new Date());
+  useEffect(() => {
+    const refresh = () => setPrintedAt(new Date());
+    window.addEventListener("beforeprint", refresh);
+    return () => window.removeEventListener("beforeprint", refresh);
+  }, []);
 
   return (
     <div className="mx-auto max-w-[210mm] bg-white p-6 text-black">
@@ -42,7 +52,10 @@ export function PickingPrintTemplate({
       `}</style>
 
       <div data-no-print className="mb-4 flex justify-end">
-        <Button type="primary" onClick={() => window.print()}>
+        <Button type="primary" onClick={() => {
+            setPrintedAt(new Date());
+            window.print();
+          }}>
           In phiếu
         </Button>
       </div>
@@ -59,11 +72,15 @@ export function PickingPrintTemplate({
       <section className="mb-4 grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
         <div>
           <span className="text-gray-600">Người nhận: </span>
-          <strong>{formatRecipient(order.recipient)}</strong>
+          <strong>{recipientDisplayName(order.recipient)}</strong>
         </div>
         <div>
-          <span className="text-gray-600">Ngày giao dự kiến: </span>
-          {order.deliveryDate ? dayjs(order.deliveryDate).format("DD/MM/YYYY") : "—"}
+          <span className="text-gray-600">Người đặt: </span>
+          {order.createdByName ?? "—"}
+        </div>
+        <div className="col-span-2">
+          <span className="text-gray-600">In lúc: </span>
+          {dayjs(printedAt).format("HH:mm DD/MM/YYYY")}
         </div>
         {order.note ? (
           <div className="col-span-2">

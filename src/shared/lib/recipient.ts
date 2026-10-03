@@ -60,3 +60,11 @@ export function formatRecipient(recipient: Recipient | null): string {
   }
   return [recipient.code, recipient.name].filter(Boolean).join(" ") || "—";
 }
+
+/**
+ * Phiếu in (DDAT-02): chỉ tên đầy đủ của người nhận — không tiền tố "Nội bộ —",
+ * không mã đối tác. Các màn khác vẫn dùng `formatRecipient`.
+ */
+export function recipientDisplayName(recipient: Recipient | null): string {
+  return recipient?.name?.trim() || "—";
+}

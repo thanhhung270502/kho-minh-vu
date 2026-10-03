@@ -89,6 +89,7 @@ import {
   DEFAULT_RECIPIENT_KIND,
   RECIPIENT_KIND_ORDER,
   formatRecipient,
+  recipientDisplayName,
   toRecipient,
 } from "../src/shared/lib/recipient";
 import { SETTINGS_TABS, firstTabFor, tabsFor } from "../src/features/settings/lib/settings-tabs";
@@ -624,6 +625,12 @@ assert.equal(formatRecipient({ kind: "partner", id: "dt-1", code: "KH01", name: 
 assert.equal(formatRecipient({ kind: "partner", id: "dt-1", code: null, name: "Liên Hoa" }), "Liên Hoa");
 assert.equal(formatRecipient({ kind: "internal", id: "nd-1", name: "Nguyễn Văn A" }), "Nội bộ — Nguyễn Văn A");
 assert.equal(formatRecipient(null), "—");
+// Phase 17 (DDAT-02, A3): phiếu đi lấy hàng chỉ in TÊN người nhận — không "Nội bộ —", không mã đối tác.
+assert.equal(recipientDisplayName({ kind: "internal", id: "nd-1", name: "Nguyễn Văn A" }), "Nguyễn Văn A");
+assert.equal(recipientDisplayName({ kind: "partner", id: "dt-1", code: "KH01", name: "Liên Hoa" }), "Liên Hoa");
+assert.equal(recipientDisplayName({ kind: "internal", id: "nd-1", name: "  " }), "—");
+assert.equal(recipientDisplayName({ kind: "partner", id: "dt-1", code: "KH01", name: null }), "—");
+assert.equal(recipientDisplayName(null), "—");
 
 const internalOrderDetail = toOrderDetail({
   id: "dh-1", so_dh: "DH26-000001", ngay_dh: "2026-10-01", trang_thai: "TAM",
