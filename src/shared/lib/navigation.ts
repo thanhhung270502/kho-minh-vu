@@ -41,7 +41,7 @@ export const NAV_GROUPS: Record<NavGroupId, { label: string; icon: NavIconId }> 
 
 // mobilePriority: thanh tab đáy chỉ có 4 ô chính — chỗ thủ kho cầm điện thoại
 // dùng nhiều nhất. ~92 hóa đơn/ngày so với ~8 phiếu nhập/ngày (CLAUDE.md) nên
-// "Hóa đơn" đứng trước "Nhập kho". Phase 10 gỡ trang Tồn kho: tra tồn nay ở
+// "Duyệt đơn" đứng trước "Nhập kho". Phase 10 gỡ trang Tồn kho: tra tồn nay ở
 // Danh sách hàng hóa, nên mục đó lấy ô thứ 4 mà "Tồn kho" để lại.
 //
 // Thứ tự mảng là thứ tự menu máy tính; nhóm đứng ở vị trí mục con đầu tiên.
@@ -58,19 +58,19 @@ export const NAV_ITEMS: NavItem[] = [
     mobilePriority: 1,
   },
   {
-    href: "/dat-hang",
-    label: "Đặt hàng",
-    shortLabel: "Đặt hàng",
+    href: "/don-dat",
+    label: "Đơn đặt",
+    shortLabel: "Đơn đặt",
     icon: "sales-order",
     permission: "view-catalog",
     mobilePriority: 5,
     group: "orders",
   },
   {
-    // "Xuất kho" đổi tên thành "Hóa đơn" (Phase 10, GON-05) — vẫn là chứng từ XUAT.
-    href: "/hoa-don",
-    label: "Hóa đơn",
-    shortLabel: "Hóa đơn",
+    // "Xuất kho" → "Hóa đơn" (Phase 10) → "Duyệt đơn" (Phase 17) — vẫn là chứng từ XUAT.
+    href: "/duyet-don",
+    label: "Duyệt đơn",
+    shortLabel: "Duyệt đơn",
     icon: "stock-out",
     permission: "view-catalog",
     mobilePriority: 2,

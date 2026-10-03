@@ -169,13 +169,13 @@ assert.equal(hasPermission("van_phong", "manage-users"), false);
 
 // --- Trang chủ theo vai trò + quyền "view-dashboard" (Phase 7, 07-04) -----
 assert.equal(homePathFor(as("quan_ly")), "/");
-// Phase 10: Xuất kho thành Hóa đơn, trang Tồn kho gỡ — tra tồn ở Danh sách hàng hóa.
-assert.equal(homePathFor(as("van_phong")), "/hoa-don");
+// Phase 10: Xuất kho thành Hóa đơn, Phase 17: Hóa đơn → Duyệt đơn (/duyet-don), trang Tồn kho gỡ — tra tồn ở Danh sách hàng hóa.
+assert.equal(homePathFor(as("van_phong")), "/duyet-don");
 assert.equal(homePathFor(as("thu_kho")), "/danh-muc");
 assert.equal(homePathFor(as("chi_xem")), "/danh-muc");
 // Phase 16: trang chủ theo quyền "Xem dashboard" — tắt cho quản lý không được
 // chuyển hướng về chính "/" (vòng lặp vô hạn); bật cho thủ kho thì về "/".
-assert.equal(homePathFor({ role: "quan_ly", permissions: [] }), "/hoa-don");
+assert.equal(homePathFor({ role: "quan_ly", permissions: [] }), "/duyet-don");
 assert.equal(homePathFor(as("thu_kho", ["xem_dashboard"])), "/");
 
 // Phase 16: Tổng quan theo quyền chức vụ "Xem dashboard", không theo vai trò.
@@ -330,8 +330,8 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
   );
   assert.deepEqual(
     primary.map((i) => i.href),
-    ["/hoa-don", "/nhap-kho", "/danh-muc", "/dat-hang"],
-    "mất ô Tổng quan thì mục ưu tiên 5 (Đặt hàng) đôn lên lấp đủ 4 ô; Danh sách hàng hóa thay ô Tồn kho",
+    ["/duyet-don", "/nhap-kho", "/danh-muc", "/don-dat"],
+    "mất ô Tổng quan thì mục ưu tiên 5 (Đơn đặt) đôn lên lấp đủ 4 ô; Danh sách hàng hóa thay ô Tồn kho",
   );
 }
 
@@ -340,6 +340,7 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
 {
   assert.ok(!NAV_ITEMS.some((i) => i.href === "/ton-kho"), "không còn mục /ton-kho");
   assert.ok(!NAV_ITEMS.some((i) => i.href === "/xuat-kho"), "không còn mục /xuat-kho");
+  assert.ok(!NAV_ITEMS.some((i) => i.href === "/dat-hang" || i.href === "/hoa-don"), "Phase 17: không còn mục /dat-hang, /hoa-don");
 
   const entries = buildNavEntries(filterNavItems(as("quan_ly"), NAV_ITEMS));
   assert.deepEqual(
@@ -351,7 +352,16 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
     const entry = entries.find((e) => e.label === label);
     return entry?.kind === "group" ? entry.items.map((i) => i.href) : null;
   };
-  assert.deepEqual(groupHrefs("Đơn hàng"), ["/dat-hang", "/hoa-don"]);
+  assert.deepEqual(groupHrefs("Đơn hàng"), ["/don-dat", "/duyet-don"]);
+  const orders = entries.find((e) => e.label === "Đơn hàng");
+  assert.deepEqual(
+    orders?.kind === "group" ? orders.items.map((i) => [i.label, i.shortLabel]) : null,
+    [
+      ["Đơn đặt", "Đơn đặt"],
+      ["Duyệt đơn", "Duyệt đơn"],
+    ],
+    "TEN-01: menu và thanh tab đáy dùng tên mới",
+  );
   assert.deepEqual(groupHrefs("Hàng hóa"), ["/danh-muc", "/kiem-ke"]);
   const goods = entries.find((e) => e.label === "Hàng hóa");
   assert.equal(goods?.kind === "group" ? goods.items[0]?.label : null, "Danh sách hàng hóa");
