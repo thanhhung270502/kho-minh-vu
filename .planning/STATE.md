@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: "- [ ] **Phase 1: Nền dữ liệu** - Schema 13 bảng, sổ cái bất biến, trigger tồn kho + giá vốn, RLS bốn vai trò, chuyển danh mục thật — kiểm chứng bằng SQL, chưa có giao diện"
-status: Phase complete — ready for verification
-stopped_at: Completed 17-05-PLAN.md
-last_updated: "2026-10-03T13:21:52.293Z"
+milestone: v1.2
+milestone_name: Phản hồi vận hành đợt 2
+status: ready_to_plan
+stopped_at: Phase 17 complete — next Phase 18 (Đơn nhiều người nhận)
+last_updated: "2026-10-03T13:25:00.000Z"
 last_activity: 2026-10-03
 progress:
-  total_phases: 9
-  completed_phases: 6
-  total_plans: 120
-  completed_plans: 87
+  total_phases: 19
+  completed_phases: 12
+  total_plans: 107
+  completed_plans: 86
 ---
 
 # Project State
@@ -20,12 +20,29 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-03)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Phase 17 — Đổi tên & gọn đơn đặt
+**Current focus:** Milestone v1.2 — Phase 17 xong; kế tiếp Phase 18 Đơn nhiều người nhận
 
 ## Current Position
 
-Phase: 17 (Đổi tên & gọn đơn đặt) — EXECUTING
-Plan: 6 of 6
+Phase: 18 (Đơn nhiều người nhận) — chưa plan
+Plan: —
+Status: Ready to plan (nên /gsd:discuss-phase 18 trước — 4 câu hỏi mở)
+Last activity: 2026-10-03 — Phase 17 Đổi tên & gọn đơn đặt hoàn thành (6/6 plan, verification passed)
+
+### Phase 17 — đã xong (03/10/2026)
+
+Branch `feature/phase-17-doi-ten` tách từ `main` (chưa push, chưa merge). TEN-01..05, DDAT-01..03 xong.
+Kiểm: `npm run check`, test hàm thuần, test đọc Excel, ma trận quyền route 267/267, pgTAP 49 file / 754
+test, UAT trình duyệt 10 bước (người dùng xác nhận "đạt").
+
+Hệ quả cần nhớ:
+- Route mới `/don-dat`, `/duyet-don`; `/dat-hang/*`, `/hoa-don/*`, `/xuat-kho/*` chuyển hướng một bước trong `next.config.ts`.
+- "Duyệt đơn" chỉ là tên màn; chứng từ vẫn gọi "hóa đơn" (A1).
+- Migration `0089_ten_hang_ngoai.sql` (dữ liệu) **mới áp ở local** — deploy cloud phải đẩy cùng các migration chưa lên.
+- Phiếu lấy hàng: `recipientDisplayName` (chỉ tên), Người đặt, In lúc — Phase 18 sẽ sửa tiếp phần người nhận.
+- DB local đã dọn về schema nhánh (gỡ 0085–0088 quy chuẩn, giữ dữ liệu; backup `~/Desktop/kiotviet_local_before_reset_20261003.dump`).
+  Quay lại nhánh quy chuẩn cần `migration up --include-all` hoặc merge `main` vào trước.
+- **Phase 19 phải xem lại phạm vi**: 0086 (quy chuẩn) xóa bảng `dong_xe`/`loai_hang`, thay bằng cột text trên `san_pham`.
 
 ### Milestone v1.2 — bối cảnh lúc mở (03/10/2026)
 

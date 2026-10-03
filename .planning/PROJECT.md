@@ -34,6 +34,11 @@ hàng dùng cho nhiều dòng xe.
 - Bỏ khỏi milestone (task Notion vẫn mở): Đối tác chỉ còn NCC, kiểm tra chịu tải 50 người, Phân tích theo tuần/tháng/quý/năm
 - v1.1 chưa đóng milestone (chờ deploy cloud); v1.2 chạy song song, đánh số phase nối tiếp từ 17
 
+**Tiến độ v1.2:**
+- ✓ Phase 17 Đổi tên & gọn đơn đặt (03/10/2026) — TEN-01..05, DDAT-01..03 validated; "Duyệt đơn" chỉ là tên màn, chứng từ vẫn gọi "hóa đơn"; migration 0089 mới ở local
+- Phase 18 Đơn nhiều người nhận — chưa bắt đầu
+- Phase 19 Dòng xe dùng chung — chờ merge quy chuẩn; phạm vi phải xem lại vì 0086 bỏ bảng `dong_xe`
+
 ## Previous Milestone: v1.1 Phản hồi vận hành (Phase 10–16 xong, chưa đóng)
 
 **Goal:** Đưa hệ thống khớp cách Minh Vũ vận hành thật theo phản hồi 28/09–02/10/2026
@@ -211,4 +216,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-03 — bắt đầu milestone v1.2 Phản hồi vận hành đợt 2*
+*Last updated: 2026-10-03 — Phase 17 hoàn thành (milestone v1.2)*
