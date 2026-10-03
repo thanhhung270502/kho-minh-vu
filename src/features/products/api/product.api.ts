@@ -8,7 +8,6 @@ import {
   PRODUCT_FIELD_TO_COLUMN,
   toProductDetail,
   toProductRow,
-  toStageSuggestion,
   toStockCardRow,
   type EditableProductField,
   type Lookups,
@@ -16,7 +15,6 @@ import {
   toProductInsert,
   type ProductInput,
   type ProductRow,
-  type StageSuggestion,
   type StockCardRow,
   type WarehouseStock,
 } from "../types";
@@ -175,31 +173,6 @@ export async function bulkAssign(
     p_ids: ids,
     p_thay_doi: payload as Json,
     p_nguon: source,
-  });
-  if (error) throw error;
-  return data ?? 0;
-}
-
-export async function fetchStageSuggestions(): Promise<StageSuggestion[]> {
-  const { data, error } = await getSupabaseBrowserClient().rpc(
-    "goi_y_cong_doan_theo_duoi",
-  );
-  if (error) throw error;
-  return (data ?? []).map(toStageSuggestion);
-}
-
-export async function applyStageSuggestions(ids: string[]): Promise<number> {
-  const { data, error } = await getSupabaseBrowserClient().rpc(
-    "ap_dung_goi_y_cong_doan",
-    { p_ids: ids },
-  );
-  if (error) throw error;
-  return data ?? 0;
-}
-
-export async function confirmReviewed(ids: string[]): Promise<number> {
-  const { data, error } = await getSupabaseBrowserClient().rpc("xac_nhan_da_ra", {
-    p_ids: ids,
   });
   if (error) throw error;
   return data ?? 0;

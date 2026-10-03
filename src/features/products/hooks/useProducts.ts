@@ -6,14 +6,11 @@ import {
 } from "@tanstack/react-query";
 
 import {
-  applyStageSuggestions,
   bulkAssign,
-  confirmReviewed,
   createProduct,
   fetchLookups,
   fetchProductDetail,
   fetchProducts,
-  fetchStageSuggestions,
   fetchStockByWarehouse,
   fetchStockCard,
   updateProduct,
@@ -71,14 +68,6 @@ export function useLookups() {
   });
 }
 
-export function useStageSuggestions(enabled: boolean) {
-  return useQuery({
-    queryKey: productKeys.stageSuggestions,
-    queryFn: fetchStageSuggestions,
-    enabled,
-  });
-}
-
 /** Mọi mutation đều làm mới cả danh sách lẫn nhật ký sửa của mã. */
 function useRefreshProducts() {
   const queryClient = useQueryClient();
@@ -113,24 +102,6 @@ export function useBulkAssign() {
       change: BulkChange;
       source: BulkChangeSource;
     }) => bulkAssign(input.ids, input.change, input.source),
-    onSuccess: refresh,
-  });
-}
-
-export function useApplyStageSuggestions() {
-  const refresh = useRefreshProducts();
-
-  return useMutation({
-    mutationFn: (ids: string[]) => applyStageSuggestions(ids),
-    onSuccess: refresh,
-  });
-}
-
-export function useConfirmReviewed() {
-  const refresh = useRefreshProducts();
-
-  return useMutation({
-    mutationFn: (ids: string[]) => confirmReviewed(ids),
     onSuccess: refresh,
   });
 }

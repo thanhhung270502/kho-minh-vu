@@ -186,7 +186,6 @@ export function ProductDrawer({ id, open, onClose, copyFromId = null }: Props) {
   });
 
   const data = lookups.data;
-  const needsReview = Boolean(product?.needsReview || product?.unitNeedsReview);
 
   return (
     <FormDrawer
@@ -218,16 +217,6 @@ export function ProductDrawer({ id, open, onClose, copyFromId = null }: Props) {
         <Form layout="vertical" onFinish={() => void onSave()}>
           {errors.root ? (
             <Alert className="mb-4" type="error" showIcon title={errors.root.message} />
-          ) : null}
-
-          {needsReview ? (
-            <Alert
-              className="mb-4"
-              type="warning"
-              showIcon
-              title="Mã này đang trong danh sách Cần rà"
-              description="Kiểm tra lại đơn vị tính và công đoạn. Lưu ở đây KHÔNG tự gỡ cờ — gỡ bằng nút “Xác nhận đã rà” ngoài bảng."
-            />
           ) : null}
 
           <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">

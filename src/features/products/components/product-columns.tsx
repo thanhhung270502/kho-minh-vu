@@ -149,17 +149,10 @@ export function buildProductColumns({
     {
       title: "Trạng thái",
       key: "status",
-      width: 190,
+      width: 120,
       render: (_: unknown, row: ProductRow) => (
         <Space size={4} wrap>
           {row.isActive ? null : <Tag>Ngừng KD</Tag>}
-          {row.unitNeedsReview ? (
-            <Tooltip title="Ô ĐVT gốc KiotViet khác tên/đuôi mã — kiểm tra ĐVT và công đoạn">
-              <Tag color="red">ĐVT mâu thuẫn</Tag>
-            </Tooltip>
-          ) : row.needsReview ? (
-            <Tag color="orange">Cần rà</Tag>
-          ) : null}
         </Space>
       ),
     },

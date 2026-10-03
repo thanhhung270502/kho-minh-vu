@@ -173,7 +173,6 @@ export function ProductDetailView({
                         <Tag>Ngừng kinh doanh</Tag>
                       )}
                       {product.directSale ? null : <Tag>Không bán trực tiếp</Tag>}
-                      {product.needsReview ? <Tag color="orange">Cần rà</Tag> : null}
                     </span>
                   ),
                 },
