@@ -1351,6 +1351,48 @@ export type Database = {
           },
         ]
       }
+      thanh_phan_combo: {
+        Row: {
+          combo_id: string
+          created_at: string
+          id: string
+          so_luong: number
+          thanh_phan_id: string
+          updated_at: string
+        }
+        Insert: {
+          combo_id: string
+          created_at?: string
+          id?: string
+          so_luong: number
+          thanh_phan_id: string
+          updated_at?: string
+        }
+        Update: {
+          combo_id?: string
+          created_at?: string
+          id?: string
+          so_luong?: number
+          thanh_phan_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thanh_phan_combo_combo_id_fkey"
+            columns: ["combo_id"]
+            isOneToOne: false
+            referencedRelation: "san_pham"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "thanh_phan_combo_thanh_phan_id_fkey"
+            columns: ["thanh_phan_id"]
+            isOneToOne: false
+            referencedRelation: "san_pham"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ton_kho: {
         Row: {
           cap_nhat_luc: string
@@ -1468,6 +1510,13 @@ export type Database = {
         Args: { p_chung_tu_id: string }
         Returns: {
           san_pham_id: string
+        }[]
+      }
+      _tach_combo: {
+        Args: { p_san_pham_id: string; p_so_luong: number }
+        Returns: {
+          san_pham_id: string
+          so_luong: number
         }[]
       }
       ap_dung_goi_y_cong_doan: { Args: { p_ids: string[] }; Returns: number }
@@ -2277,6 +2326,10 @@ export type Database = {
           p_xem_lich_su_kiotviet?: boolean
         }
         Returns: undefined
+      }
+      luu_thanh_phan_combo: {
+        Args: { p_combo_id: string; p_thanh_phan: Json }
+        Returns: number
       }
       mo_khoa_don: {
         Args: { p_id: string; p_ly_do: string }
