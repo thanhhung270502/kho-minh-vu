@@ -1254,6 +1254,7 @@ export type Database = {
           ten_hang: string
           ton_toi_da: number | null
           ton_toi_thieu: number
+          truong_chon_tay: string[]
           updated_at: string
           vi_tri_ke: string | null
         }
@@ -1284,6 +1285,7 @@ export type Database = {
           ten_hang: string
           ton_toi_da?: number | null
           ton_toi_thieu?: number
+          truong_chon_tay?: string[]
           updated_at?: string
           vi_tri_ke?: string | null
         }
@@ -1314,6 +1316,7 @@ export type Database = {
           ten_hang?: string
           ton_toi_da?: number | null
           ton_toi_thieu?: number
+          truong_chon_tay?: string[]
           updated_at?: string
           vi_tri_ke?: string | null
         }
@@ -1773,6 +1776,7 @@ export type Database = {
           p_huong?: string
           p_kich_thuoc?: number
           p_nhom_hang_id?: string
+          p_quy_chuan?: string
           p_sap_xep?: string
           p_trang?: number
           p_trang_thai_ton?: string
@@ -1783,11 +1787,16 @@ export type Database = {
           can_ra_dvt: boolean
           cong_doan_id: string
           dang_kinh_doanh: boolean
+          dong_xe: string
           dvt_id: string
+          ghi_chu: string
           gia_ban: number
           gia_von: number
+          hang_xe: string
           id: string
           kho_mac_dinh_id: string
+          linh_kien: string
+          loai_hang: string
           ma_cong_doan: string
           ma_hang: string
           mau_cong_doan: string
@@ -1801,6 +1810,7 @@ export type Database = {
           ton_toi_thieu: number
           tong_so_dong: number
           tong_ton: number
+          truong_chon_tay: string[]
           updated_at: string
         }[]
       }
@@ -1867,6 +1877,7 @@ export type Database = {
           tong_so_dong: number
         }[]
       }
+      dien_quy_chuan: { Args: { p_dong: Json }; Returns: Json }
       doi_chieu_ton: {
         Args: never
         Returns: {
