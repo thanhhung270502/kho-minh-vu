@@ -55,7 +55,7 @@ sau cần dùng ngay.
 **v1.2 Phản hồi vận hành đợt 2** (chi tiết ở "## Milestone v1.2")
 
 - [x] **Phase 17: Đổi tên & gọn đơn đặt** - Menu Đơn đặt / Duyệt đơn (`/don-dat`, `/duyet-don`), "Khách đặt" → "Đơn đặt", "Mua ngoài" → "Hàng ngoài", bỏ "Cần rà" và Ngày giao dự kiến, phiếu lấy hàng ghi tên đầy đủ + giờ in + người đặt (completed 2026-10-03)
-- [ ] **Phase 18: Đơn nhiều người nhận** - Đơn chọn nhiều người nhận, từng dòng gán người nhận riêng, lọc/in/hóa đơn mang theo cả hai cấp
+- [x] **Phase 18: Đơn nhiều người nhận** - Đơn chọn nhiều người nhận, từng dòng gán người nhận riêng, lọc/in/hóa đơn mang theo cả hai cấp (completed 2026-10-03)
 - [ ] **Phase 19: Dòng xe dùng chung** - Một mã hàng thuộc nhiều dòng xe: chọn trong form, lọc theo dòng xe, import/xuất Excel nhiều dòng xe một ô
  (completed 2026-09-26)
 
@@ -665,7 +665,7 @@ Plans:
 - [x] 18-05-PLAN.md — Lưới dòng: cột/ô người nhận theo dòng, giữ luồng bàn phím
 - [x] 18-06-PLAN.md — Danh sách + lọc ?nhan_vien= + phiếu lấy hàng có cột Người nhận
 - [x] 18-07-PLAN.md — Duyệt đơn: hóa đơn hiện người nhận đơn + dòng
-- [ ] 18-08-PLAN.md — Cổng cuối: bộ kiểm toàn phần + UAT trình duyệt
+- [x] 18-08-PLAN.md — Cổng cuối: bộ kiểm toàn phần + UAT trình duyệt
 **UI hint**: yes
 
 ### Phase 19: Dòng xe dùng chung
@@ -707,5 +707,5 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 | 15. Import danh mục v2 | 4/4 | Complete | 2026-10-02 |
 | 16. Chức vụ & quyền | 4/4 | Complete | 2026-10-02 |
 | 17. Đổi tên & gọn đơn đặt | 6/6 | Complete    | 2026-10-03 |
-| 18. Đơn nhiều người nhận | 6/8 | In Progress|  |
+| 18. Đơn nhiều người nhận | 8/8 | Complete   | 2026-10-03 |
 | 19. Dòng xe dùng chung | 0/TBD | Not started | - |
