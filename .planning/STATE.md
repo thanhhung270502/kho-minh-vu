@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Phản hồi vận hành đợt 2
 status: executing
-stopped_at: Completed 18-04-PLAN.md
+stopped_at: Completed 18-05-PLAN.md
 last_updated: "2026-10-03T15:07:53.466Z"
 last_activity: 2026-10-03 — Phase 17 Đổi tên & gọn đơn đặt hoàn thành (6/6 plan, verification passed)
 progress:
   total_phases: 10
   completed_phases: 6
   total_plans: 128
-  completed_plans: 91
+  completed_plans: 92
 ---
 
 # Project State
@@ -25,8 +25,8 @@ See: .planning/PROJECT.md (updated 2026-10-03)
 ## Current Position
 
 Phase: 18 (Đơn nhiều người nhận) — đang thực thi
-Plan: 4/8 xong (18-01 mô hình DB, 18-02 RPC đọc 0091, 18-03 hợp đồng TS, 18-04 UI tạo đơn + đầu đơn)
-Status: Executing — kế tiếp 18-05
+Plan: 5/8 xong (18-01 mô hình DB, 18-02 RPC đọc 0091, 18-03 hợp đồng TS, 18-04 UI tạo đơn + đầu đơn, 18-05 lưới dòng)
+Status: Executing — kế tiếp 18-06
 Last activity: 2026-10-03 — Phase 17 Đổi tên & gọn đơn đặt hoàn thành (6/6 plan, verification passed)
 
 ### Phase 17 — đã xong (03/10/2026)

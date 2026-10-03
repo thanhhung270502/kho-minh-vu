@@ -662,7 +662,7 @@ Plans:
 - [x] 18-02-PLAN.md — Migration 0091: RPC đọc đổi sang bảng nối, hóa đơn chép người nhận, nguoi_nhan_dong_chung_tu + pgTAP 109, sửa 30/98
 - [x] 18-03-PLAN.md — Nền TS: regen types, kiểu + hàm thuần người nhận, mapper/schema/api/hook sales-order + documents (TDD)
 - [x] 18-04-PLAN.md — UI tạo đơn + đầu đơn chọn nhiều người nhận (StaffMultiSelect)
-- [ ] 18-05-PLAN.md — Lưới dòng: cột/ô người nhận theo dòng, giữ luồng bàn phím
+- [x] 18-05-PLAN.md — Lưới dòng: cột/ô người nhận theo dòng, giữ luồng bàn phím
 - [ ] 18-06-PLAN.md — Danh sách + lọc ?nhan_vien= + phiếu lấy hàng có cột Người nhận
 - [ ] 18-07-PLAN.md — Duyệt đơn: hóa đơn hiện người nhận đơn + dòng
 - [ ] 18-08-PLAN.md — Cổng cuối: bộ kiểm toàn phần + UAT trình duyệt
@@ -707,5 +707,5 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 | 15. Import danh mục v2 | 4/4 | Complete | 2026-10-02 |
 | 16. Chức vụ & quyền | 4/4 | Complete | 2026-10-02 |
 | 17. Đổi tên & gọn đơn đặt | 6/6 | Complete    | 2026-10-03 |
-| 18. Đơn nhiều người nhận | 4/8 | In Progress|  |
+| 18. Đơn nhiều người nhận | 5/8 | In Progress|  |
 | 19. Dòng xe dùng chung | 0/TBD | Not started | - |
