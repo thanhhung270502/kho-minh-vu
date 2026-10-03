@@ -11,7 +11,6 @@ import {
   addDocumentLine,
   deleteDocumentLine,
   fetchDocumentDetail,
-  fetchDocumentLines,
   updateDocumentHeader,
   updateDocumentLine,
 } from "@/features/documents/api/document.api";
@@ -20,6 +19,7 @@ import { orderKeys } from "@/features/sales-order/api/order.keys";
 
 import {
   createIssue,
+  fetchIssueLines,
   fetchIssues,
   fetchSimilarCodes,
   proposeMerge,
@@ -48,7 +48,7 @@ export function useIssueDetail(id: string) {
 export function useIssueLines(id: string) {
   return useQuery({
     queryKey: issueKeys.lines(id),
-    queryFn: () => fetchDocumentLines(id),
+    queryFn: () => fetchIssueLines(id),
     enabled: id !== "",
   });
 }

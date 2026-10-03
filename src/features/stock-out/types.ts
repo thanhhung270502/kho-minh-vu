@@ -2,7 +2,9 @@ import type {
   DocumentDetail,
   DocumentLine,
   DocumentRow,
+  LineRecipient,
 } from "@/features/documents/types";
+import type { OrderRecipients } from "@/shared/lib/recipient";
 
 export type { DocStatus } from "@/features/documents/types";
 export {
@@ -27,7 +29,17 @@ export type IssueRow = DocumentRow & {
   orderNo: string | null;
 };
 export type IssueDetail = DocumentDetail;
-export type IssueLine = DocumentLine;
+export type IssueLine = DocumentLine & LineRecipient;
+
+/** Người nhận của hóa đơn dưới dạng chung với đơn — đối tác (nếu có) + nhân viên chép từ đơn (0091). */
+export function issueRecipients(issue: IssueDetail): OrderRecipients {
+  return {
+    partner: issue.partnerId
+      ? { id: issue.partnerId, code: issue.partnerCode, name: issue.partnerName }
+      : null,
+    staff: issue.staffRecipients,
+  };
+}
 
 export type IssuePermissions = {
   /** Tạo phiếu, thêm dòng, ghi sổ — văn phòng và quản lý. */
