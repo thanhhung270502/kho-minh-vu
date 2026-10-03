@@ -208,9 +208,9 @@ Nguồn: Notion Task board (phản hồi 03/10/2026). Quyết định chốt 03/
 
 - [x] **NNHAN-01**: Tạo/sửa đơn (Nội bộ hoặc Đối tác) chọn được một hoặc nhiều người nhận (nhân viên phụ trách) cho cả đơn; gán người nhận ở dòng tự thêm người đó vào danh sách của đơn
 - [x] **NNHAN-02**: Từng dòng hàng của đơn gán được người nhận riêng
-- [ ] **NNHAN-03**: Danh sách đơn hiện đủ người nhận; lọc theo một người nhận ra đơn có người đó ở cấp đơn hoặc cấp dòng
+- [x] **NNHAN-03**: Danh sách đơn hiện đủ người nhận; lọc theo một người nhận ra đơn có người đó ở cấp đơn hoặc cấp dòng
 - [ ] **NNHAN-04**: Phiếu lấy hàng in người nhận của đơn và của từng dòng
-- [ ] **NNHAN-05**: Hoàn thành đơn sinh hóa đơn mang theo người nhận của đơn và của từng dòng, xem lại được ở Duyệt đơn
+- [x] **NNHAN-05**: Hoàn thành đơn sinh hóa đơn mang theo người nhận của đơn và của từng dòng, xem lại được ở Duyệt đơn
 - [x] **NNHAN-06**: Đơn cũ đang có một người nhận chuyển nguyên sang cấu trúc mới, không mất người nhận
 
 ### Dòng xe dùng chung (DXE)
@@ -397,9 +397,9 @@ Nguồn: Notion Task board (phản hồi 03/10/2026). Quyết định chốt 03/
 | DDAT-03 | Phase 17 | Complete |
 | NNHAN-01 | Phase 18 | Complete |
 | NNHAN-02 | Phase 18 | Complete |
-| NNHAN-03 | Phase 18 | Pending |
+| NNHAN-03 | Phase 18 | Complete |
 | NNHAN-04 | Phase 18 | Pending |
-| NNHAN-05 | Phase 18 | Pending |
+| NNHAN-05 | Phase 18 | Complete |
 | NNHAN-06 | Phase 18 | Complete |
 | DXE-01 | Phase 19 | Pending |
 | DXE-02 | Phase 19 | Pending |
