@@ -18,8 +18,8 @@ type Props = {
 };
 
 /**
- * Phần ruột tạo đơn (DON-01), dùng chung cho dialog trên /dat-hang và trang
- * /dat-hang/moi (giữ cho link cũ). Chọn người nhận rồi bấm "Tạo" mới cấp số
+ * Phần ruột tạo đơn (DON-01), dùng chung cho dialog trên /don-dat và trang
+ * /don-dat/moi (giữ cho link cũ). Chọn người nhận rồi bấm "Tạo" mới cấp số
  * đơn tạm trên server rồi sang trang chi tiết, nơi ô mã hàng đã đứng sẵn con
  * trỏ để gõ dòng (useFocusOnOpen). CHECK database cấm đơn không có người nhận,
  * nên nút "Tạo" khóa tới khi đã chọn người nhận.
@@ -41,7 +41,7 @@ export function NewOrderForm({ onPendingChange, onCancel }: Props) {
         deliveryDate: null,
       });
       // replace: nút Back không quay lại trang tạo — đơn đã có số rồi.
-      router.replace(`/dat-hang/${id}`);
+      router.replace(`/don-dat/${id}`);
     } catch (caught) {
       if (errorCode(caught) === "42501") {
         setError("Tài khoản không có quyền tạo đơn. Nhờ quản lý hoặc văn phòng.");

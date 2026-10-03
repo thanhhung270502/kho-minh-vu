@@ -78,7 +78,7 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
           </Button>
         ) : null}
         {actions.includes("print") ? (
-          <Link href={`/dat-hang/${orderId}/in`} target="_blank">
+          <Link href={`/don-dat/${orderId}/in`} target="_blank">
             <Button>In phiếu đi lấy hàng</Button>
           </Link>
         ) : null}

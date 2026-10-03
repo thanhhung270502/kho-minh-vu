@@ -76,7 +76,7 @@ export function toOrderLineUpdate(
 
 // --- Bộ lọc trên URL ---------------------------------------------------------
 //
-// `/dat-hang?q=&trang_thai=&nguoi_nhan=&doi_tac=&tu_ngay=&den_ngay=&trang=` — khác tham số
+// `/don-dat?q=&trang_thai=&nguoi_nhan=&doi_tac=&tu_ngay=&den_ngay=&trang=` — khác tham số
 // của màn nhập (`ncc`, `kho`, `nguon`): đơn không có kho, không có nguồn nhập.
 
 export type OrderFilter = {

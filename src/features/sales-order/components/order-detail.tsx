@@ -34,7 +34,7 @@ export function OrderDetailView({
           <span>
             Không tìm thấy đơn này, hoặc đơn không thuộc quyền xem của bạn.
           </span>
-          <Link href="/dat-hang">
+          <Link href="/don-dat">
             <Button size="small">Về danh sách đơn</Button>
           </Link>
         </div>
@@ -49,8 +49,8 @@ export function OrderDetailView({
 
         return (
           <>
-            <Link href="/dat-hang" className="mb-2 inline-block text-sm">
-              ← Đơn đặt hàng
+            <Link href="/don-dat" className="mb-2 inline-block text-sm">
+              ← Đơn đặt
             </Link>
 
             <PageHeader
@@ -92,7 +92,7 @@ export function OrderDetailView({
                   order.invoice ? (
                     <>
                       Hóa đơn{" "}
-                      <Link href={`/hoa-don/${order.invoice.id}`} className="font-mono">
+                      <Link href={`/duyet-don/${order.invoice.id}`} className="font-mono">
                         {order.invoice.number}
                       </Link>{" "}
                       đã ghi sổ. Giao sai thì quản lý hủy hóa đơn đó — đơn quay về Đã xác nhận.

@@ -22,7 +22,7 @@ const COLUMNS: TableColumnsType<OrderRow> = [
     width: 150,
     fixed: "left",
     render: (orderNo: string, row) => (
-      <Link href={`/dat-hang/${row.id}`} className="font-mono">
+      <Link href={`/don-dat/${row.id}`} className="font-mono">
         {orderNo}
       </Link>
     ),

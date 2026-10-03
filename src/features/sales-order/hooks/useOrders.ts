@@ -146,7 +146,7 @@ export function useCloseOrderEarly(id: string) {
 }
 
 /**
- * Hoàn thành = hóa đơn mới ĐÃ GHI SỔ: hiện ngay ở `/hoa-don` và tồn đổi — làm
+ * Hoàn thành = hóa đơn mới ĐÃ GHI SỔ: hiện ngay ở `/duyet-don` và tồn đổi — làm
  * mới cả chứng từ lẫn danh mục/thẻ kho, khuôn `usePostDocument`.
  */
 export function useCompleteOrder(id: string) {

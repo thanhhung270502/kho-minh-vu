@@ -75,7 +75,7 @@ export function OrderTable({ canCreate }: { canCreate: boolean }) {
             </div>
           ) : (
             <div className="flex flex-col items-center gap-3">
-              <span>Chưa có đơn đặt hàng nào.</span>
+              <span>Chưa có đơn đặt nào.</span>
               {canCreate ? <CreateOrderButton label="Tạo đơn đầu tiên" /> : null}
             </div>
           )
