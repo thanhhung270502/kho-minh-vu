@@ -172,7 +172,7 @@ export function IssueHeader({ issue, canEdit }: Props) {
           key: "order",
           label: "Đơn gốc",
           children: issue.orderId ? (
-            <Link href={`/dat-hang/${issue.orderId}`}>{issue.orderNo}</Link>
+            <Link href={`/don-dat/${issue.orderId}`}>{issue.orderNo}</Link>
           ) : (
             "Không gắn đơn"
           ),

@@ -19,7 +19,7 @@ const COLUMNS: TableColumnsType<IssueRow> = [
     width: 150,
     fixed: "left",
     render: (docNo: string, row) => (
-      <Link href={`/hoa-don/${row.id}`} className="font-mono">
+      <Link href={`/duyet-don/${row.id}`} className="font-mono">
         {docNo}
       </Link>
     ),
@@ -37,7 +37,7 @@ const COLUMNS: TableColumnsType<IssueRow> = [
     width: 130,
     render: (orderNo: IssueRow["orderNo"], row) =>
       orderNo && row.orderId ? (
-        <Link href={`/dat-hang/${row.orderId}`} className="font-mono">
+        <Link href={`/don-dat/${row.orderId}`} className="font-mono">
           {orderNo}
         </Link>
       ) : (

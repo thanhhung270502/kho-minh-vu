@@ -17,7 +17,7 @@ import { formatNumber } from "./product-columns";
  */
 const DOC_TYPE_TO_ROUTE: Record<string, string> = {
   NHAP: "/nhap-kho",
-  XUAT: "/hoa-don",
+  XUAT: "/duyet-don",
   // Cả hai chiều trả hàng dùng chung một trang chi tiết (features/returns).
   TRA_KHACH: "/tra-hang",
   TRA_NCC: "/tra-hang",

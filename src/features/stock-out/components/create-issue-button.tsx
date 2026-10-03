@@ -70,7 +70,7 @@ export function CreateIssueButton({ label = "Tạo hóa đơn" }: Props) {
       reset();
       // Tạo phiếu là sinh ngay một phiếu có số trên server — không giữ phiếu
       // nháp ở client, giống khuôn createReceipt của Phase 3.
-      router.push(`/hoa-don/${id}`);
+      router.push(`/duyet-don/${id}`);
     } catch (caught) {
       if (errorCode(caught) === "42501") {
         setError("Tài khoản không có quyền tạo hóa đơn.");

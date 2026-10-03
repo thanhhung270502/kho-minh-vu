@@ -42,8 +42,8 @@ export function IssueDetailView({
             Không tìm thấy phiếu này, hoặc phiếu không thuộc kho bạn được phân
             công.
           </span>
-          <Link href="/hoa-don">
-            <Button size="small">Về danh sách hóa đơn</Button>
+          <Link href="/duyet-don">
+            <Button size="small">Về Duyệt đơn</Button>
           </Link>
         </div>
       }
@@ -58,8 +58,8 @@ export function IssueDetailView({
 
         return (
           <>
-            <Link href="/hoa-don" className="mb-2 inline-block text-sm">
-              ← Hóa đơn
+            <Link href="/duyet-don" className="mb-2 inline-block text-sm">
+              ← Duyệt đơn
             </Link>
 
             <PageHeader
@@ -71,7 +71,7 @@ export function IssueDetailView({
                   </Tag>
                   {issue.recipient ? formatRecipient(issue.recipient) : "Chưa chọn người nhận"}
                   {issue.orderId ? (
-                    <Link href={`/dat-hang/${issue.orderId}`} className="text-sm">
+                    <Link href={`/don-dat/${issue.orderId}`} className="text-sm">
                       Từ đơn {issue.orderNo}
                     </Link>
                   ) : null}
@@ -79,7 +79,7 @@ export function IssueDetailView({
               }
               actions={
                 <Space wrap>
-                  <Link href={`/hoa-don/${id}/in`} target="_blank">
+                  <Link href={`/duyet-don/${id}/in`} target="_blank">
                     <Button>In phiếu giao hàng</Button>
                   </Link>
                   <ReturnButton document={issue} canEdit={permissions.canEdit} />
