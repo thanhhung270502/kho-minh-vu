@@ -42,7 +42,7 @@ created: 2026-10-03
 | TEN-02 | Route mới chặn quyền như cũ; link cũ → mới giữ đường con; `/xuat-kho` đi thẳng | integration | `npx tsx scripts/test-route-permissions.ts` | ✅ edit | ⬜ pending |
 | TEN-02 | Giữ query; chưa đăng nhập → `tiep_tuc` = đường mới | integration | kiểm Location đầy đủ trong cùng script | ❌ W0 | ⬜ pending |
 | TEN-03 | "Đơn đặt" ở header CSV | unit | test-pure (assert header CSV) | ❌ W0 | ⬜ pending |
-| TEN-04 | `cong_doan.ten` = "Hàng ngoài"; tên cũ + mới đều khớp khi import | pgTAP | `supabase test db` → `105_ten_hang_ngoai_test.sql` | ❌ W0 | ⬜ pending |
+| TEN-04 | `cong_doan.ten` = "Hàng ngoài"; tên cũ + mới đều khớp khi import | pgTAP | `supabase test db` → `107_ten_hang_ngoai_test.sql` | ❌ W0 | ⬜ pending |
 | TEN-05 | `?can_ra=1` bị bỏ qua; RPC args không còn `p_can_ra` | unit | test-pure (`readFilterFromUrl`) | ✅ edit | ⬜ pending |
 | DDAT-01 | Không còn trường Ngày giao; insert không gửi cột | typecheck | `npm run check` | ✅ | ⬜ pending |
 | DDAT-02 | Người nhận trên phiếu in chỉ có tên | unit | test-pure (`recipientDisplayName`) | ❌ W0 | ⬜ pending |
@@ -53,7 +53,7 @@ created: 2026-10-03
 
 ## Wave 0 Requirements
 
-- [ ] `supabase/tests/105_ten_hang_ngoai_test.sql` — TEN-04
+- [ ] `supabase/tests/107_ten_hang_ngoai_test.sql` — TEN-04
 - [ ] helper kiểm `Location` đầy đủ trong `scripts/test-route-permissions.ts` — TEN-02 (query + tiep_tuc)
 - [ ] assert `recipientDisplayName`, header CSV "Đơn đặt", `can_ra` trên URL bị bỏ qua trong `scripts/test-pure-functions.ts`
 
