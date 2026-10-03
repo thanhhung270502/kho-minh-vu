@@ -54,7 +54,7 @@ sau cần dùng ngay.
 
 **v1.2 Phản hồi vận hành đợt 2** (chi tiết ở "## Milestone v1.2")
 
-- [ ] **Phase 17: Đổi tên & gọn đơn đặt** - Menu Đơn đặt / Duyệt đơn (`/don-dat`, `/duyet-don`), "Khách đặt" → "Đơn đặt", "Mua ngoài" → "Hàng ngoài", bỏ "Cần rà" và Ngày giao dự kiến, phiếu lấy hàng ghi tên đầy đủ + giờ in + người đặt
+- [x] **Phase 17: Đổi tên & gọn đơn đặt** - Menu Đơn đặt / Duyệt đơn (`/don-dat`, `/duyet-don`), "Khách đặt" → "Đơn đặt", "Mua ngoài" → "Hàng ngoài", bỏ "Cần rà" và Ngày giao dự kiến, phiếu lấy hàng ghi tên đầy đủ + giờ in + người đặt (completed 2026-10-03)
 - [ ] **Phase 18: Đơn nhiều người nhận** - Đơn chọn nhiều người nhận, từng dòng gán người nhận riêng, lọc/in/hóa đơn mang theo cả hai cấp
 - [ ] **Phase 19: Dòng xe dùng chung** - Một mã hàng thuộc nhiều dòng xe: chọn trong form, lọc theo dòng xe, import/xuất Excel nhiều dòng xe một ô
  (completed 2026-09-26)
@@ -625,7 +625,7 @@ bảng nhiều-nhiều. Ba task Notion bỏ khỏi milestone (FUT-01..03). Migra
   4. Danh mục hàng hóa không còn bộ lọc, cảnh báo, nút rà hàng loạt hay nhãn "Cần rà"
   5. Tạo/sửa đơn không còn ô Ngày giao dự kiến (danh sách, chi tiết, bản in cũng bỏ); phiếu lấy hàng ghi người nhận bằng tên đầy đủ không kèm mã nhân viên, kèm thời gian in (giờ:phút ngày) và người đặt
 
-**Plans:** 5/6 plans executed
+**Plans:** 6/6 plans complete
 
 Plans:
 - [x] 17-01-PLAN.md — Dời route /don-dat, /duyet-don + redirect thẳng, menu Đơn đặt/Duyệt đơn, ma trận route (W1)
@@ -633,7 +633,7 @@ Plans:
 - [x] 17-03-PLAN.md — Migration 0089 "Hàng ngoài" + pgTAP 107, nhãn Đơn đặt ở Phân tích/CSV (W1)
 - [x] 17-04-PLAN.md — Danh sách hàng hóa: bỏ Cần rà + ĐVT mâu thuẫn, nhãn Đơn đặt / Hàng ngoài (W2)
 - [x] 17-05-PLAN.md — Bỏ Ngày giao dự kiến, phiếu lấy hàng in tên người nhận + người đặt + giờ in (W3)
-- [ ] 17-06-PLAN.md — Cổng cuối: full suite + kiểm trên trình duyệt (checkpoint) (W4)
+- [x] 17-06-PLAN.md — Cổng cuối: full suite + kiểm trên trình duyệt (checkpoint) (W4)
 
 **UI hint**: yes
 
@@ -696,6 +696,6 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 | 14. Panel chi tiết | 4/4 | Complete | 2026-10-02 |
 | 15. Import danh mục v2 | 4/4 | Complete | 2026-10-02 |
 | 16. Chức vụ & quyền | 4/4 | Complete | 2026-10-02 |
-| 17. Đổi tên & gọn đơn đặt | 5/6 | In Progress|  |
+| 17. Đổi tên & gọn đơn đặt | 6/6 | Complete   | 2026-10-03 |
 | 18. Đơn nhiều người nhận | 0/TBD | Not started | - |
 | 19. Dòng xe dùng chung | 0/TBD | Not started | - |
