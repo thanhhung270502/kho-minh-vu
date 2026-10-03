@@ -186,6 +186,47 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 - [x] **QUYEN-03**: Quyền được chặn ở database (RLS/RPC qua `co_quyen()` đọc DB), không chỉ ẩn nút; đổi quyền của chức vụ có hiệu lực ngay, không phải chờ token mới
 - [x] **QUYEN-04**: Menu, nút và route ẩn/chặn đúng theo quyền của chức vụ; ma trận kiểm thử quyền route chạy theo chức vụ
 
+## v1.2 Requirements — Phản hồi vận hành đợt 2
+
+Nguồn: Notion Task board (phản hồi 03/10/2026). Quyết định chốt 03/10/2026 ghi ở PROJECT.md.
+
+### Đổi tên & gọn giao diện (TEN)
+
+- [ ] **TEN-01**: Menu nhóm Đơn hàng hiện "Đơn đặt" và "Duyệt đơn" (máy tính và điện thoại); tiêu đề trang và nút liên quan dùng tên mới
+- [ ] **TEN-02**: Trang đơn ở `/don-dat` (kèm `/moi`, `/[id]`, `/[id]/in`), trang hóa đơn ở `/duyet-don` (kèm `/[id]`); link cũ `/dat-hang/*`, `/hoa-don/*`, `/xuat-kho/*` chuyển thẳng sang đường mới, giữ đường con và tham số; chưa đăng nhập thì sau đăng nhập quay về đúng đường mới
+- [ ] **TEN-03**: Mọi chỗ hiện số lượng đang được đặt (bảng Danh sách hàng hóa, chi tiết mã, xuất Excel) ghi "Đơn đặt" thay "Khách đặt"
+- [ ] **TEN-04**: Công đoạn "Mua ngoài" hiện là "Hàng ngoài" ở mọi màn và file xuất; import Excel nhận cả tên cũ lẫn tên mới; mã `MUA_NGOAI` giữ nguyên
+- [ ] **TEN-05**: Danh mục hàng hóa không còn bộ lọc, cảnh báo, nút rà hàng loạt và nhãn "Cần rà"; cột `can_ra` giữ trong database
+
+### Đơn đặt & phiếu lấy hàng (DDAT)
+
+- [ ] **DDAT-01**: Tạo/sửa đơn không còn ô Ngày giao dự kiến; danh sách, chi tiết và bản in đơn không còn trường này; dữ liệu cũ giữ trong database
+- [ ] **DDAT-02**: Phiếu lấy hàng ghi người nhận bằng tên đầy đủ, không kèm mã nhân viên
+- [ ] **DDAT-03**: Phiếu lấy hàng ghi thời gian in (giờ:phút ngày) và người đặt (tài khoản đã tạo đơn trên app)
+
+### Đơn nhiều người nhận (NNHAN)
+
+- [ ] **NNHAN-01**: Tạo/sửa đơn nội bộ chọn được một hoặc nhiều người nhận (nhân viên phụ trách) cho cả đơn
+- [ ] **NNHAN-02**: Từng dòng hàng của đơn gán được người nhận riêng
+- [ ] **NNHAN-03**: Danh sách đơn hiện đủ người nhận; lọc theo một người nhận ra đơn có người đó ở cấp đơn hoặc cấp dòng
+- [ ] **NNHAN-04**: Phiếu lấy hàng in người nhận của đơn và của từng dòng
+- [ ] **NNHAN-05**: Hoàn thành đơn sinh hóa đơn mang theo người nhận của đơn và của từng dòng, xem lại được ở Duyệt đơn
+- [ ] **NNHAN-06**: Đơn cũ đang có một người nhận chuyển nguyên sang cấu trúc mới, không mất người nhận
+
+### Dòng xe dùng chung (DXE)
+
+- [ ] **DXE-01**: Form mã hàng chọn được nhiều dòng xe cho một mã
+- [ ] **DXE-02**: Chi tiết mã hàng hiện đủ mọi dòng xe của mã
+- [ ] **DXE-03**: Lọc Danh sách hàng hóa theo một dòng xe ra mọi mã dùng cho dòng xe đó
+- [ ] **DXE-04**: Import Excel (nhập mã mới và cập nhật) nhận nhiều dòng xe trong một ô, cách nhau bằng dấu phẩy; xuất Excel ghi cùng định dạng
+- [ ] **DXE-05**: Dòng xe hiện có của mỗi mã chuyển sang cấu trúc mới; tự điền dòng xe từ quy chuẩn mã vẫn chạy
+
+### Bỏ khỏi v1.2 (task Notion vẫn mở)
+
+- **FUT-01**: Đối tác chỉ còn Nhà cung cấp — cần chốt số phận chế độ "Đối tác" của đơn đặt và các đối tác KHACH/CA_HAI hiện có
+- **FUT-02**: Kiểm tra chịu tải khoảng 50 người truy cập cùng lúc — cần chốt môi trường (branch Supabase / cloud chỉ đọc / local) và công cụ
+- **FUT-03**: Phân tích theo tuần, tháng, quý, năm — cần chốt kỳ lịch hay cuốn chiếu
+
 ## v2 Requirements
 
 ### Công nợ (CNO)
@@ -362,3 +403,4 @@ Nguồn: Notion Task board (yêu cầu 28/09–02/10/2026). Quyết định ch�
 *Requirements defined: 2026-09-12*
 *Last updated: 2026-09-26 — thêm ANH-01..06 cho Phase 9 (Quản lý hình ảnh), 9 phases, 100% coverage*
 *Traceability v1.1 added: 2026-10-02 — Phase 10–16, 36/36 mapped*
+*v1.2 requirements added: 2026-10-03 — TEN 5, DDAT 3, NNHAN 6, DXE 5 (19)*
