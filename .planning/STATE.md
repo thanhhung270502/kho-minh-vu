@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: "- [ ] **Phase 1: Nền dữ liệu** - Schema 13 bảng, sổ cái bất biến, trigger tồn kho + giá vốn, RLS bốn vai trò, chuyển danh mục thật — kiểm chứng bằng SQL, chưa có giao diện"
 status: Ready to execute
-stopped_at: Completed 17-01-PLAN.md
-last_updated: "2026-10-03T12:58:28.441Z"
+stopped_at: Completed-17-02-PLAN.md
+last_updated: "2026-10-03T12:59:51.182Z"
 last_activity: 2026-10-03
 progress:
   total_phases: 9
   completed_phases: 5
   total_plans: 120
-  completed_plans: 82
+  completed_plans: 83
 ---
 
 # Project State
@@ -25,7 +25,7 @@ See: .planning/PROJECT.md (updated 2026-10-03)
 ## Current Position
 
 Phase: 17 (Đổi tên & gọn đơn đặt) — EXECUTING
-Plan: 2 of 6
+Plan: 3 of 6
 
 ### Milestone v1.2 — bối cảnh lúc mở (03/10/2026)
 
@@ -743,6 +743,7 @@ _Song song: Phase 09 (quan-ly-hinh-anh) đang thực thi ở phiên khác — th
 | Phase 07 P07 | 30min | 2 tasks | 3 files |
 | Phase 09 P05 | 35min | 2 tasks | 1 files |
 | Phase 17 P01 | 15min | 3 tasks | 12 files |
+| Phase 17 P02 | 5min | 2 tasks | 22 files |
 
 ## Accumulated Context
 
@@ -874,7 +875,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-03T12:58:28.437Z
-Stopped at: Completed 17-01-PLAN.md
+Last session: 2026-10-03T12:59:51.177Z
+Stopped at: Completed-17-02-PLAN.md
 Last activity: 2026-10-03
 Resume file: None
