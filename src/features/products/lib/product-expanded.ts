@@ -2,12 +2,6 @@
 // và scripts/test-pure-functions.ts cùng import.
 import type { ProductFormValues } from "../schemas/product.schema";
 
-const formatQty = (n: number) => n.toLocaleString("vi-VN");
-
-export function stockLimitLabel(min: number, max: number | null): string {
-  return `${formatQty(min)} – ${max === null ? "không giới hạn" : formatQty(max)}`;
-}
-
 /** "Sao chép": mọi trường giữ nguyên, mã để trống, barcode bỏ (thường riêng cho từng mã). */
 export function copyProductDefaults(source: ProductFormValues): ProductFormValues {
   return { ...source, code: "", barcode: null, isActive: true };

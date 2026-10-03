@@ -18,7 +18,7 @@ export const productSchema = z
     // ĐVT và công đoạn là HAI trường riêng — đây chính là lỗi dữ liệu số 1 của
     // hệ cũ (KiotViet nhét công đoạn vào ô ĐVT). Cả hai đều bắt buộc.
     unitId: z.string({ message: "Chọn đơn vị tính" }).uuid("Chọn đơn vị tính"),
-    stageId: z.string({ message: "Chọn công đoạn" }).uuid("Chọn công đoạn"),
+    stageId: z.string({ message: "Chọn xử lý" }).uuid("Chọn xử lý"),
     conversion: z
       .number({ message: "Quy đổi phải là số" })
       .gt(0, "Quy đổi phải lớn hơn 0"),

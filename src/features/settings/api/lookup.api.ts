@@ -69,8 +69,8 @@ export const LOOKUP_TABLE_CONFIG: Record<LookupTableName, LookupTableConfig> = {
     hasStatus: false,
   },
   cong_doan: {
-    label: "công đoạn",
-    title: "Công đoạn",
+    label: "xử lý",
+    title: "Xử lý",
     cot: "id, ma, ten, mau_hien_thi, updated_at",
     deletable: true,
     hasParent: false,

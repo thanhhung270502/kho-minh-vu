@@ -11,7 +11,6 @@ import { QueryState } from "@/shared/components/query-state";
 import { useLookups, useProductDetail } from "../hooks/useProducts";
 import { standardFieldText } from "../lib/product-expanded";
 import { PRODUCT_KIND_LABELS, type Lookups } from "../types";
-import { formatNumber } from "./product-columns";
 import { ProductDrawer } from "./product-drawer";
 import { StockCard } from "./stock-card";
 import { WarehouseStock } from "./warehouse-stock";
@@ -27,7 +26,7 @@ const FIELD_LABELS: Record<string, string> = {
   ten_hang: "Tên hàng",
   nhom_hang_id: "Nhóm hàng",
   dvt_id: "Đơn vị tính",
-  cong_doan_id: "Công đoạn",
+  cong_doan_id: "Xử lý",
   quy_doi: "Quy đổi",
   kho_mac_dinh_id: "Kho mặc định",
   ton_toi_thieu: "Tồn tối thiểu",
@@ -139,7 +138,7 @@ export function ProductDetailView({
                 { key: "unit", label: "Đơn vị tính", children: product.unitName },
                 {
                   key: "stage",
-                  label: "Công đoạn",
+                  label: "Xử lý",
                   children: (
                     <Tag color={product.stageColor || undefined}>
                       {product.stageName}
@@ -147,26 +146,11 @@ export function ProductDetailView({
                   ),
                 },
                 {
-                  key: "conversion",
-                  label: "Quy đổi",
-                  children: formatNumber(product.conversion),
-                },
-                {
                   key: "warehouse",
                   label: "Kho mặc định",
                   children: product.defaultWarehouseName ?? "—",
                 },
-                {
-                  key: "limits",
-                  label: "Tồn tối thiểu / tối đa",
-                  children: `${formatNumber(product.minStock)} / ${
-                    product.maxStock === null
-                      ? "không giới hạn"
-                      : formatNumber(product.maxStock)
-                  }`,
-                },
                 { key: "shelf", label: "Vị trí kệ", children: product.shelfLocation ?? "—" },
-                { key: "barcode", label: "Barcode", children: product.barcode ?? "—" },
                 {
                   key: "status",
                   label: "Trạng thái",
@@ -177,8 +161,6 @@ export function ProductDetailView({
                       ) : (
                         <Tag>Ngừng kinh doanh</Tag>
                       )}
-                      {product.directSale ? null : <Tag>Không bán trực tiếp</Tag>}
-                      {product.needsReview ? <Tag color="orange">Cần rà</Tag> : null}
                     </span>
                   ),
                 },

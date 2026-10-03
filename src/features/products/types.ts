@@ -8,7 +8,6 @@ type Fn = Database["public"]["Functions"];
 type ProductRowDb = Fn["danh_sach_san_pham"]["Returns"][number];
 type ProductDetailDb = Fn["chi_tiet_san_pham"]["Returns"][number];
 type StockCardRowDb = Fn["the_kho_san_pham"]["Returns"][number];
-type StageSuggestionDb = Fn["goi_y_cong_doan_theo_duoi"]["Returns"][number];
 
 // --- Mô hình miền (khóa camelCase tiếng Anh) --------------------------------
 
@@ -30,8 +29,14 @@ export type ProductRow = {
   maxStock: number | null;
   totalStock: number;
   isActive: boolean;
-  needsReview: boolean;
-  unitNeedsReview: boolean;
+  kind: ProductKind;
+  /** Mã trong bộ mã hóa (hãng / dòng / linh kiện) — tên tra bằng bộ mã hóa ở giao diện. */
+  brandCode: string | null;
+  modelCode: string | null;
+  partCode: string | null;
+  /** Ghi chú tự sinh: null = đủ quy chuẩn, có chữ = thiếu trường nào. */
+  note: string | null;
+  manualFields: string[];
   updatedAt: string;
   /** Tổng số dòng của cả bộ lọc — RPC nhét vào mọi dòng. */
   totalRows: number;
@@ -44,24 +49,18 @@ export type ProductRow = {
 
 export type ProductDetail = ProductRow & {
   barcode: string | null;
-  note: string | null;
   imageUrl: string | null;
   shelfLocation: string | null;
   defaultWarehouseName: string | null;
   createdAt: string;
   directSale: boolean;
   description: string | null;
-  kind: ProductKind;
-  /** Mã trong bộ mã hóa + tên tra được (null khi mã không còn trong bộ mã hóa). */
-  brandCode: string | null;
+  /** Tên tra được trong bộ mã hóa (null khi mã không còn trong bộ mã hóa). */
   brandName: string | null;
-  modelCode: string | null;
   modelName: string | null;
-  partCode: string | null;
   partName: string | null;
-  /** Mã xử lý quy chuẩn của công đoạn; null = công đoạn ngoài quy chuẩn. */
+  /** Mã xử lý quy chuẩn; null = xử lý ngoài quy chuẩn (Ép, Mua ngoài). */
   finishCode: string | null;
-  manualFields: string[];
 };
 
 export type StockCardRow = {
@@ -83,16 +82,6 @@ export type StockCardRow = {
   runningBalance: number | null;
   /** Mã lý do xuất âm của phiếu (chung_tu.ly_do_xuat_am) — chỉ có ở dòng xuất của phiếu đó. */
   negativeReason: string | null;
-};
-
-export type StageSuggestion = {
-  id: string;
-  code: string;
-  name: string;
-  categoryName: string | null;
-  suggestedStageId: string;
-  suggestedStageCode: string;
-  suggestedStageName: string;
 };
 
 export type LookupItem = { id: string; code: string; name: string };
@@ -188,6 +177,11 @@ export function toProductInsert(input: ProductInput): ProductInsert {
 
 // --- Mapper: database -> miền ----------------------------------------------
 
+/** Cột text có CHECK HANG_HOA/COMBO (0086) — kiểu sinh ra chỉ biết `string`. */
+function toProductKind(value: string): ProductKind {
+  return value === "COMBO" ? "COMBO" : "HANG_HOA";
+}
+
 export function toProductRow(row: ProductRowDb): ProductRow {
   return {
     id: row.id,
@@ -207,8 +201,13 @@ export function toProductRow(row: ProductRowDb): ProductRow {
     maxStock: row.ton_toi_da === null ? null : Number(row.ton_toi_da),
     totalStock: Number(row.tong_ton),
     isActive: row.dang_kinh_doanh,
-    needsReview: row.can_ra,
-    unitNeedsReview: row.can_ra_dvt,
+    kind: toProductKind(row.loai_hang),
+    brandCode: row.hang_xe,
+    modelCode: row.dong_xe,
+    partCode: row.linh_kien,
+    note: row.ghi_chu,
+    // Kiểu sinh ghi `string[]` nhưng cột text[] có thể null với dòng cũ.
+    manualFields: row.truong_chon_tay ?? [],
     updatedAt: row.updated_at,
     totalRows: Number(row.tong_so_dong),
     primaryImageId: null,
@@ -234,8 +233,6 @@ export function toProductDetail(row: ProductDetailDb): ProductDetail {
     maxStock: row.ton_toi_da === null ? null : Number(row.ton_toi_da),
     totalStock: Number(row.tong_ton),
     isActive: row.dang_kinh_doanh,
-    needsReview: row.can_ra,
-    unitNeedsReview: row.can_ra_dvt,
     updatedAt: row.updated_at,
     // Chi tiết trả đúng một mã — không có khái niệm tổng số dòng.
     totalRows: 1,
@@ -250,8 +247,7 @@ export function toProductDetail(row: ProductDetailDb): ProductDetail {
     createdAt: row.created_at,
     directSale: row.duoc_ban_truc_tiep,
     description: row.mo_ta,
-    // Cột text có CHECK HANG_HOA/COMBO (0086) — kiểu sinh ra chỉ biết `string`.
-    kind: row.loai_hang === "COMBO" ? "COMBO" : "HANG_HOA",
+    kind: toProductKind(row.loai_hang),
     brandCode: row.hang_xe,
     brandName: row.ten_hang_xe,
     modelCode: row.dong_xe,
@@ -283,18 +279,6 @@ export function toStockCardRow(row: StockCardRowDb): StockCardRow {
     runningBalance: row.ton_luy_ke === null ? null : Number(row.ton_luy_ke),
     // Kiểu sinh ghi `string` nhưng RPC trả null với mọi dòng không phải xuất âm.
     negativeReason: row.ly_do_xuat_am ?? null,
-  };
-}
-
-export function toStageSuggestion(row: StageSuggestionDb): StageSuggestion {
-  return {
-    id: row.id,
-    code: row.ma_hang,
-    name: row.ten_hang,
-    categoryName: row.ten_nhom_hang,
-    suggestedStageId: row.cong_doan_de_xuat_id,
-    suggestedStageCode: row.ma_cong_doan_de_xuat,
-    suggestedStageName: row.ten_cong_doan_de_xuat,
   };
 }
 

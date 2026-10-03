@@ -20,13 +20,12 @@ import { duplicateProblemsInFile } from "../src/features/products/lib/new-produc
 import { buildCodeDictionary, parseProductCode } from "../src/features/product-codes/lib/parse-product-code";
 import { SourceSheetError, readSourceSheet } from "../src/features/product-codes/lib/source-sheet";
 import { dictionaryFromEntries, toSyncEntries } from "../src/features/product-codes/lib/sync-entries";
-import { applyCodeToStandardFields, toggleManual } from "../src/features/products/lib/standard-fields";
+import { applyCodeToStandardFields, standardNames, toggleManual } from "../src/features/products/lib/standard-fields";
 import {
   copyProductDefaults,
   expandedActions,
   forecastById,
   standardFieldText,
-  stockLimitLabel,
   toProductFormValues,
 } from "../src/features/products/lib/product-expanded";
 import {
@@ -389,7 +388,7 @@ const sampleFilter: ProductFilter = {
   unitId: null,
   stockStatus: "duoi_dinh_muc",
   tradingStatus: "inactive",
-  needsReview: true,
+  standard: "thieu",
   hasImage: "without",
   sortBy: "totalStock",
   sortDir: "desc",
@@ -410,7 +409,13 @@ assert.equal(
   "lọc tất cả gửi null tường minh, không bỏ trống",
 );
 assert.equal(toListRpcArgs(DEFAULT_PRODUCT_FILTER).p_dang_kinh_doanh, true);
-assert.equal(toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, needsReview: false }).p_can_ra, undefined);
+// --- Bộ lọc "Quy chuẩn" (quy chuẩn mã phần A) thay nút "Cần rà" -------------
+assert.equal(toListRpcArgs(DEFAULT_PRODUCT_FILTER).p_quy_chuan, undefined, "không lọc quy chuẩn thì bỏ trống");
+assert.equal(toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, standard: "chon_tay" }).p_quy_chuan, "chon_tay");
+assert.equal(toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, standard: "du" }).p_can_ra, undefined, "không còn gửi p_can_ra");
+assert.equal(readFilterFromUrl(new URLSearchParams("quy_chuan=du")).standard, "du");
+assert.equal(readFilterFromUrl(new URLSearchParams("quy_chuan=xyz")).standard, null, "giá trị quy chuẩn lạ bị bỏ");
+assert.equal(readFilterFromUrl(new URLSearchParams("can_ra=1")).standard, null, "link cũ ?can_ra=1 không còn lọc");
 
 // --- Bộ lọc "Hình ảnh" (Phase 9, 09-08, D-18, ANH-04) ----------------------
 assert.equal(readFilterFromUrl(new URLSearchParams("anh=co")).hasImage, "with", "?anh=co đọc thành with");
@@ -1164,9 +1169,6 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
 
 // --- Danh mục: chi tiết dạng dòng mở rộng (sửa PANEL-01, ảnh mẫu KiotViet) -
 {
-  assert.equal(stockLimitLabel(0, null), "0 – không giới hạn");
-  assert.equal(stockLimitLabel(5, 1200), "5 – 1.200");
-
   // Sao chép: giữ mọi trường, mã để trống để người dùng gõ mã mới.
   const copied = copyProductDefaults({
     code: "HA26-33K-PC", name: "Hộc chứa đồ", categoryId: "c", unitId: "u", stageId: "s",
@@ -1325,6 +1327,15 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.deepEqual(toggleManual(["hang_xe"], "linh_kien", true), ["hang_xe", "linh_kien"]);
   assert.deepEqual(toggleManual(["hang_xe", "linh_kien"], "hang_xe", false), ["linh_kien"]);
   assert.deepEqual(toggleManual(["hang_xe"], "hang_xe", true), ["hang_xe"], "không trùng");
+
+  // Bảng danh mục lưu mã → tra tên; dòng xe tra theo cặp hãng + dòng, không phân biệt hoa thường.
+  assert.deepEqual(standardNames(dict, { brandCode: "h", modelCode: "a", partCode: "75" }), {
+    brandName: "HONDA", modelName: "Air Blade", partName: "Mặt nạ",
+  });
+  assert.equal(standardNames(dict, { brandCode: "Y", modelCode: "A", partCode: null }).modelName, null, "A là dòng của Honda, không phải Yamaha");
+  assert.deepEqual(standardNames(dict, { brandCode: null, modelCode: null, partCode: "ZZ" }), {
+    brandName: null, modelName: null, partName: null,
+  });
 }
 
 async function kiemTaiTheoTrang() {

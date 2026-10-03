@@ -15,7 +15,7 @@ import { StockByGroupTable } from "./stock-by-group-table";
 
 const TABS: Array<{ key: StockGroupBy; label: string }> = [
   { key: "category", label: "Theo nhóm hàng" },
-  { key: "stage", label: "Theo công đoạn" },
+  { key: "stage", label: "Theo xử lý" },
 ];
 
 /**
@@ -32,7 +32,7 @@ export function StockByGroupSection() {
 
   return (
     <Card
-      title="Tồn theo nhóm hàng / công đoạn"
+      title="Tồn theo nhóm hàng / xử lý"
       extra={
         <Select
           className="w-40"

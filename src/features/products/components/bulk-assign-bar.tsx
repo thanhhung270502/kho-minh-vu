@@ -6,7 +6,7 @@ import { useState } from "react";
 import { explainError } from "@/shared/lib/errors";
 import { filterByLabel } from "@/shared/lib/text";
 
-import { useBulkAssign, useConfirmReviewed } from "../hooks/useProducts";
+import { useBulkAssign } from "../hooks/useProducts";
 import type { EditableProductField, Lookups } from "../types";
 
 const MAX_SELECTION = 1000;
@@ -60,7 +60,6 @@ type Props = {
 export function BulkAssignBar({ ids, lookups, onDone }: Props) {
   const { message, modal } = App.useApp();
   const assign = useBulkAssign();
-  const confirm = useConfirmReviewed();
   const [running, setRunning] = useState(false);
 
   if (ids.length === 0) return null;
@@ -114,13 +113,13 @@ export function BulkAssignBar({ ids, lookups, onDone }: Props) {
 
       <AssignSelect
         className="w-44"
-        placeholder="Gán công đoạn"
+        placeholder="Gán xử lý"
         disabled={running}
         options={(lookups?.stages ?? []).map((stage) => ({
           value: stage.id,
           label: stage.name,
         }))}
-        onSelect={(id, name) => assignField("stageId", id, name, "công đoạn")}
+        onSelect={(id, name) => assignField("stageId", id, name, "xử lý")}
       />
 
       <AssignSelect
@@ -169,14 +168,6 @@ export function BulkAssignBar({ ids, lookups, onDone }: Props) {
       </Dropdown>
 
       <Space className="ms-auto">
-        <Button
-          disabled={running}
-          onClick={() =>
-            confirmThenRun("Xác nhận đã rà", () => confirm.mutateAsync(ids))
-          }
-        >
-          Xác nhận đã rà
-        </Button>
         <Button type="text" onClick={onDone}>
           Bỏ chọn
         </Button>

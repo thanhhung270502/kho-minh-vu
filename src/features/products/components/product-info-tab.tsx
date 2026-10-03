@@ -6,9 +6,9 @@ import type { ReactNode } from "react";
 
 import { ProductImagePreview } from "@/features/images/components/product-image-preview";
 
-import { standardFieldText, stockLimitLabel, type ProductForecast } from "../lib/product-expanded";
+import { standardFieldText, type ProductForecast } from "../lib/product-expanded";
 import { PRODUCT_KIND_LABELS, type ProductDetail } from "../types";
-import { formatNumber } from "./product-columns";
+import { formatNumber } from "../lib/format";
 
 type Props = {
   product: ProductDetail;
@@ -56,9 +56,7 @@ export function ProductInfoTab({ product, forecast }: Props) {
             <Tag className="m-0" color={product.kind === "COMBO" ? "purple" : undefined}>
               {PRODUCT_KIND_LABELS[product.kind]}
             </Tag>
-            <Tag className="m-0">{product.directSale ? "Bán trực tiếp" : "Không bán trực tiếp"}</Tag>
             {product.isActive ? null : <Tag className="m-0" color="orange">Ngừng kinh doanh</Tag>}
-            {product.needsReview ? <Tag className="m-0" color="orange">Cần rà</Tag> : null}
           </div>
         </div>
       </div>
@@ -68,7 +66,6 @@ export function ProductInfoTab({ product, forecast }: Props) {
         <Field label="Tồn kho">
           <span className="tabular-nums">{formatNumber(product.totalStock)} {product.unitName ?? ""}</span>
         </Field>
-        <Field label="Định mức tồn">{stockLimitLabel(product.minStock, product.maxStock)}</Field>
         <Field label="Vị trí kệ">{product.shelfLocation ?? empty}</Field>
         <Field label="Kho mặc định">{product.defaultWarehouseName ?? empty}</Field>
         <Field label="Hãng xe">{standardFieldText(product.brandName, product.brandCode) ?? empty}</Field>
@@ -78,7 +75,7 @@ export function ProductInfoTab({ product, forecast }: Props) {
           {product.note ?? <Tag className="m-0" color="green">Đủ quy chuẩn</Tag>}
         </Field>
         <Field label="Đơn vị tính">{product.unitName ?? empty}</Field>
-        <Field label="Công đoạn">
+        <Field label="Xử lý">
           {product.stageName ? <Tag className="m-0" color={product.stageColor || undefined}>{product.stageName}</Tag> : empty}
         </Field>
         {forecast !== undefined ? (

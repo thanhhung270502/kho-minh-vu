@@ -8,7 +8,7 @@ import Link from "next/link";
 import { negativeReasonLabel } from "@/features/documents/lib/negative-reasons";
 
 import type { StockCardRow } from "../types";
-import { formatNumber } from "./product-columns";
+import { formatNumber } from "../lib/format";
 
 /**
  * Khóa là giá trị `chung_tu.loai_ct`. Chỉ chứa loại ĐÃ có trang chi tiết thật dưới

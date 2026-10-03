@@ -175,7 +175,7 @@ export function LookupDrawer({ table, row, open, allRows, onClose }: Props) {
         ) : null}
 
         {config.hasColor ? (
-          <Form.Item label="Màu hiển thị" help="Dùng cho thẻ công đoạn trong bảng danh mục.">
+          <Form.Item label="Màu hiển thị" help="Dùng cho thẻ xử lý trong bảng danh mục.">
             <Controller
               name="mau_hien_thi"
               control={control}

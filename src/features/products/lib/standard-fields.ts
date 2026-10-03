@@ -1,5 +1,5 @@
 // File thuần: gõ mã → tự điền Hãng xe / Dòng xe / Linh kiện / Xử lý (quy chuẩn mã, phần A).
-import type { ParsedProductCode } from "@/features/product-codes/lib/parse-product-code";
+import type { CodeDictionary, ParsedProductCode } from "@/features/product-codes/lib/parse-product-code";
 
 /**
  * Tên trường quy chuẩn — giá trị CHECK của san_pham.truong_chon_tay (0087),
@@ -68,4 +68,24 @@ export function applyCodeToStandardFields(
 export function toggleManual(fields: ReadonlyArray<string>, key: StandardFieldKey, manual: boolean): string[] {
   const rest = fields.filter((f) => f !== key);
   return manual ? [...rest, key] : rest;
+}
+
+/**
+ * Tên hãng / dòng / linh kiện của một mã đã lưu — tra bộ mã hóa như MATCH của
+ * sheet (không phân biệt hoa thường). Dòng xe tra theo CẶP hãng + dòng vì cùng
+ * mã dòng có thể thuộc nhiều hãng. Không tra được → null, giao diện hiện mã.
+ */
+export function standardNames(
+  dictionary: CodeDictionary,
+  codes: { brandCode: string | null; modelCode: string | null; partCode: string | null },
+): { brandName: string | null; modelName: string | null; partName: string | null } {
+  const upper = (value: string) => value.trim().toUpperCase();
+  return {
+    brandName: codes.brandCode ? (dictionary.brands.get(upper(codes.brandCode)) ?? null) : null,
+    modelName:
+      codes.brandCode && codes.modelCode
+        ? (dictionary.pairs.get(upper(codes.brandCode + codes.modelCode))?.model ?? null)
+        : null,
+    partName: codes.partCode ? (dictionary.parts.get(upper(codes.partCode)) ?? null) : null,
+  };
 }

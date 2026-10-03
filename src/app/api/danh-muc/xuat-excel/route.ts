@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     return Response.json(
       {
         title: `Kết quả có ${total.toLocaleString("vi-VN")} mã`,
-        action: `Xuất tối đa ${MAX_EXPORT_ROWS.toLocaleString("vi-VN")} mã một lần — lọc hẹp lại (theo nhóm hàng hoặc công đoạn) rồi xuất.`,
+        action: `Xuất tối đa ${MAX_EXPORT_ROWS.toLocaleString("vi-VN")} mã một lần — lọc hẹp lại (theo nhóm hàng hoặc xử lý) rồi xuất.`,
       },
       { status: 422 },
     );

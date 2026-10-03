@@ -37,7 +37,7 @@ export const TEMPLATE_COLUMNS: readonly TemplateColumn[] = [
   { key: "ten_hang", title: "Tên hàng", width: 48 },
   { key: "nhom_hang", title: "Nhóm hàng", width: 28 },
   { key: "dvt", title: "Đơn vị tính", width: 14 },
-  { key: "cong_doan", title: "Công đoạn", width: 14 },
+  { key: "cong_doan", title: "Xử lý", width: 14 },
   { key: "quy_doi", title: "Quy đổi", width: 10 },
   { key: "kho_mac_dinh", title: "Kho mặc định", width: 14 },
   { key: "ton_toi_thieu", title: "Tồn tối thiểu", width: 14 },

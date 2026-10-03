@@ -29,7 +29,7 @@ export function LookupManagerButton() {
           items={[
             { key: "nhom_hang", label: "Nhóm hàng", children: <LookupTable table="nhom_hang" /> },
             { key: "don_vi_tinh", label: "Đơn vị tính", children: <LookupTable table="don_vi_tinh" /> },
-            { key: "cong_doan", label: "Công đoạn", children: <LookupTable table="cong_doan" /> },
+            { key: "cong_doan", label: "Xử lý", children: <LookupTable table="cong_doan" /> },
           ]}
         />
       </Modal>

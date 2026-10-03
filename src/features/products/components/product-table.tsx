@@ -8,6 +8,7 @@ import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
 
 import { useAnalysisRows } from "@/features/analytics/hooks/useAnalytics";
+import { useCodeDictionary } from "@/features/product-codes/hooks/useCodeDictionary";
 
 import { useLookups, useProducts } from "../hooks/useProducts";
 import { useProductTableUrl } from "../hooks/useProductTableUrl";
@@ -26,8 +27,7 @@ import { ProductModals } from "./product-modals";
 import { ProductRowDetail } from "./product-row-detail";
 import { ProductTableBody } from "./product-table-body";
 import { ProductToolbar } from "./product-toolbar";
-import { ReviewActions } from "./review-actions";
-import { ReviewAlert } from "./review-alert";
+import { ToolbarActions } from "./toolbar-actions";
 
 export type { CatalogPermissions };
 
@@ -38,7 +38,7 @@ function hasActiveFilter(filter: ProductFilter): boolean {
     filter.unitId !== null ||
     filter.stockStatus !== null ||
     filter.hasImage !== null ||
-    filter.needsReview ||
+    filter.standard !== null ||
     filter.tradingStatus !== DEFAULT_PRODUCT_FILTER.tradingStatus
   );
 }
@@ -65,16 +65,10 @@ export function ProductTable({
     id: null,
   });
   const [selected, setSelected] = useState<string[]>([]);
-  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [importOpen, setImportOpen] = useState<ImportKind | null>(null);
 
-  // Badge "Cần rà": lấy tổng từ chính RPC danh sách, không thêm RPC mới.
-  const reviewCount = useProducts({
-    ...DEFAULT_PRODUCT_FILTER,
-    needsReview: true,
-    tradingStatus: "all",
-    pageSize: 10,
-  });
+  // Bảng lưu MÃ hãng / dòng / linh kiện — tên tra bộ mã hóa ngay trên trình duyệt.
+  const { dictionary } = useCodeDictionary();
 
   // Từ 768px chi tiết mở ngay dưới dòng; điện thoại quá chật cho dòng mở rộng.
   const wide = Grid.useBreakpoint().md ?? false;
@@ -121,6 +115,7 @@ export function ProductTable({
     filter,
     canEdit: permissions.canEdit,
     lookups: lookups.data,
+    dictionary,
     onEdit: (id) => setDrawer({ open: true, id }),
     forecasts: showForecast ? { byId: forecastMap, loading: analysis.isPending } : null,
   });
@@ -140,13 +135,11 @@ export function ProductTable({
             filter={filter}
             onChange={changeFilter}
             secondaryActions={
-              <ReviewActions
+              <ToolbarActions
                 filter={filter}
                 total={total}
-                reviewCount={reviewCount.data?.total ?? 0}
                 canEdit={permissions.canEdit}
                 extraActions={extraActions}
-                onFilterChange={changeFilter}
                 onOpenImport={setImportOpen}
               />
             }
@@ -171,12 +164,6 @@ export function ProductTable({
           ) : null
         }
       >
-        <ReviewAlert
-          visible={filter.needsReview}
-          canEdit={permissions.canEdit}
-          onSuggest={() => setSuggestionsOpen(true)}
-        />
-
         {permissions.canEdit ? (
           <BulkAssignBar
             ids={selected}
@@ -223,8 +210,6 @@ export function ProductTable({
       </ListLayout>
 
       <ProductModals
-        suggestionsOpen={suggestionsOpen}
-        onCloseSuggestions={() => setSuggestionsOpen(false)}
         importOpen={importOpen}
         onCloseImport={() => setImportOpen(null)}
         onViewRecentlyEdited={() => {

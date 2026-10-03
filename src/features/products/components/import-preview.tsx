@@ -86,7 +86,7 @@ export function ImportPreview({
           className="mb-3"
           type="info"
           showIcon
-          title="File KiotViet: công đoạn chỉ cập nhật cho mã suy được từ ô ĐVT (Carbon, Sơn, Xi mạ, Ép, Nano). Mã “CÁI/CẶP/BỘ” giữ nguyên công đoạn đã rà; mã mới nhận Mua ngoài."
+          title="File KiotViet: xử lý chỉ cập nhật cho mã suy được từ ô ĐVT (Carbon, Sơn, Xi mạ, Ép, Nano). Mã “CÁI/CẶP/BỘ” giữ nguyên xử lý đang có; mã mới nhận Mua ngoài."
         />
       ) : null}
 

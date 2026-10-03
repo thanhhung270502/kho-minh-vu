@@ -10,6 +10,5 @@ export const productKeys = {
   stockCard: (id: string, warehouseId: string | null, page: number) =>
     ["products", "stock-card", id, warehouseId, page] as const,
   stockByWarehouse: (id: string) => ["products", "stock-by-warehouse", id] as const,
-  stageSuggestions: ["products", "stage-suggestions"] as const,
   lookups: ["lookups"] as const,
 };
