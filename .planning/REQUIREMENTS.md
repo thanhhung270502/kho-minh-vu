@@ -200,9 +200,9 @@ Nguồn: Notion Task board (phản hồi 03/10/2026). Quyết định chốt 03/
 
 ### Đơn đặt & phiếu lấy hàng (DDAT)
 
-- [ ] **DDAT-01**: Tạo/sửa đơn không còn ô Ngày giao dự kiến; danh sách, chi tiết và bản in đơn không còn trường này; dữ liệu cũ giữ trong database
-- [ ] **DDAT-02**: Phiếu lấy hàng ghi người nhận bằng tên đầy đủ, không kèm mã nhân viên
-- [ ] **DDAT-03**: Phiếu lấy hàng ghi thời gian in (giờ:phút ngày) và người đặt (tài khoản đã tạo đơn trên app)
+- [x] **DDAT-01**: Tạo/sửa đơn không còn ô Ngày giao dự kiến; danh sách, chi tiết và bản in đơn không còn trường này; dữ liệu cũ giữ trong database
+- [x] **DDAT-02**: Phiếu lấy hàng ghi người nhận bằng tên đầy đủ, không kèm mã nhân viên
+- [x] **DDAT-03**: Phiếu lấy hàng ghi thời gian in (giờ:phút ngày) và người đặt (tài khoản đã tạo đơn trên app)
 
 ### Đơn nhiều người nhận (NNHAN)
 
@@ -392,9 +392,9 @@ Nguồn: Notion Task board (phản hồi 03/10/2026). Quyết định chốt 03/
 | TEN-03 | Phase 17 | Complete |
 | TEN-04 | Phase 17 | Complete |
 | TEN-05 | Phase 17 | Complete |
-| DDAT-01 | Phase 17 | Pending |
-| DDAT-02 | Phase 17 | Pending |
-| DDAT-03 | Phase 17 | Pending |
+| DDAT-01 | Phase 17 | Complete |
+| DDAT-02 | Phase 17 | Complete |
+| DDAT-03 | Phase 17 | Complete |
 | NNHAN-01 | Phase 18 | Pending |
 | NNHAN-02 | Phase 18 | Pending |
 | NNHAN-03 | Phase 18 | Pending |
