@@ -179,3 +179,61 @@ $function$;
 
 revoke all    on function public.danh_sach_san_pham(text, uuid, uuid, uuid, text, boolean, boolean, text, text, integer, integer, boolean, text) from public, anon;
 grant execute on function public.danh_sach_san_pham(text, uuid, uuid, uuid, text, boolean, boolean, text, text, integer, integer, boolean, text) to authenticated;
+
+-- --- chi_tiet_san_pham: kèm truong_chon_tay để form biết ô nào chọn tay -------
+drop function public.chi_tiet_san_pham(uuid);
+
+CREATE FUNCTION public.chi_tiet_san_pham(p_id uuid)
+ RETURNS TABLE(id uuid, ma_hang text, ten_hang text, nhom_hang_id uuid, ten_nhom_hang text, dvt_id uuid, ten_dvt text, cong_doan_id uuid, ma_cong_doan text, ten_cong_doan text, mau_cong_doan text, quy_doi numeric, gia_ban numeric, gia_von numeric, ton_toi_thieu numeric, ton_toi_da numeric, kho_mac_dinh_id uuid, ten_kho_mac_dinh text, dang_kinh_doanh boolean, tong_ton numeric, can_ra boolean, can_ra_dvt boolean, barcode text, hinh_anh_url text, vi_tri_ke text, ghi_chu text, created_at timestamp with time zone, updated_at timestamp with time zone, duoc_ban_truc_tiep boolean, loai_hang text, hang_xe text, ten_hang_xe text, dong_xe text, ten_dong_xe text, linh_kien text, ten_linh_kien text, ma_xu_ly text, mo_ta text, truong_chon_tay text[])
+ LANGUAGE plpgsql
+ STABLE SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+declare
+  v_vai_tro public.vai_tro := (select public.vai_tro_hien_tai());
+  v_kho uuid[] := (select public.kho_hien_tai());
+  v_xem_gv boolean := (select public.co_quyen_xem_gia_von());
+begin
+  if v_vai_tro is null then
+    raise exception 'Phiên đăng nhập không hợp lệ hoặc tài khoản đã bị vô hiệu hóa'
+      using errcode = '42501';
+  end if;
+  return query
+  with ton as (
+    select tk.san_pham_id, sum(tk.so_luong) as so_luong
+    from public.ton_kho tk
+    where tk.san_pham_id = p_id
+      and (v_vai_tro <> 'thu_kho' or tk.kho_id = any(v_kho))
+    group by tk.san_pham_id
+  )
+  select sp.id, sp.ma_hang, sp.ten_hang, sp.nhom_hang_id, nh.ten, sp.dvt_id, dv.ten,
+         sp.cong_doan_id, cd.ma, cd.ten, cd.mau_hien_thi, sp.quy_doi, sp.gia_ban,
+         case when v_xem_gv then sp.gia_von end,
+         sp.ton_toi_thieu, sp.ton_toi_da, sp.kho_mac_dinh_id, k.ten, sp.dang_kinh_doanh,
+         coalesce(ton.so_luong, 0),
+         public.la_can_ra(cd.ma, nh.ten, sp.ma_hang, sp.can_ra_dvt, sp.da_xac_nhan_ra),
+         sp.can_ra_dvt, sp.barcode, sp.hinh_anh_url, sp.vi_tri_ke, sp.ghi_chu,
+         sp.created_at, sp.updated_at, sp.duoc_ban_truc_tiep,
+         sp.loai_hang,
+         sp.hang_xe,
+         (select m.ten from public.ma_hoa m where m.loai = 'hang' and upper(m.ma) = upper(sp.hang_xe) order by m.thu_tu limit 1),
+         sp.dong_xe,
+         (select m.ten from public.ma_hoa m where m.loai = 'dong' and upper(m.ma_hang) = upper(sp.hang_xe)
+            and upper(m.ma) = upper(sp.dong_xe) order by m.thu_tu limit 1),
+         sp.linh_kien,
+         (select m.ten from public.ma_hoa m where m.loai = 'linh_kien' and upper(m.ma) = upper(sp.linh_kien) order by m.thu_tu limit 1),
+         cd.ma_quy_chuan,
+         sp.mo_ta,
+         sp.truong_chon_tay
+  from public.san_pham sp
+  left join public.nhom_hang nh on nh.id = sp.nhom_hang_id
+  left join public.don_vi_tinh dv on dv.id = sp.dvt_id
+  left join public.cong_doan cd on cd.id = sp.cong_doan_id
+  left join public.kho k on k.id = sp.kho_mac_dinh_id
+  left join ton on ton.san_pham_id = sp.id
+  where sp.id = p_id;
+end;
+$function$;
+
+revoke all    on function public.chi_tiet_san_pham(uuid) from public, anon;
+grant execute on function public.chi_tiet_san_pham(uuid) to authenticated;

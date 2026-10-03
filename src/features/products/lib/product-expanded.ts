@@ -53,9 +53,10 @@ export function expandedActions({ canEdit, isActive }: { canEdit: boolean; isAct
 }
 
 /** Phần chi tiết mã hàng mà form cần — khớp `ProductDetail`. */
-type ProductFormSource = Omit<ProductFormValues, "unitId" | "stageId"> & {
+type ProductFormSource = Omit<ProductFormValues, "unitId" | "stageId" | "manualFields"> & {
   unitId: string | null;
   stageId: string | null;
+  manualFields: string[];
 };
 
 /** Chi tiết mã → giá trị form (Sửa và Sao chép dùng chung). */
@@ -75,6 +76,11 @@ export function toProductFormValues(product: ProductFormSource): ProductFormValu
     isActive: product.isActive,
     kind: product.kind,
     directSale: product.directSale,
+    brandCode: product.brandCode,
+    modelCode: product.modelCode,
+    partCode: product.partCode,
+    // Cột text[] có CHECK 4 giá trị (0087) — kiểu sinh ra chỉ biết string[].
+    manualFields: product.manualFields as ProductFormValues["manualFields"],
     shelfLocation: product.shelfLocation,
   };
 }

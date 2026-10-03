@@ -38,6 +38,10 @@ export const productSchema = z
       .transform((value) => value || null),
     isActive: z.boolean(),
     kind: z.enum(["HANG_HOA", "COMBO"]),
+    brandCode: z.string().nullable(),
+    modelCode: z.string().nullable(),
+    partCode: z.string().nullable(),
+    manualFields: z.array(z.enum(["hang_xe", "dong_xe", "linh_kien", "xu_ly"])),
     directSale: z.boolean(),
     shelfLocation: z
       .string()

@@ -61,6 +61,7 @@ export type ProductDetail = ProductRow & {
   partName: string | null;
   /** Mã xử lý quy chuẩn của công đoạn; null = công đoạn ngoài quy chuẩn. */
   finishCode: string | null;
+  manualFields: string[];
 };
 
 export type StockCardRow = {
@@ -95,7 +96,11 @@ export type StageSuggestion = {
 };
 
 export type LookupItem = { id: string; code: string; name: string };
-export type StageLookupItem = LookupItem & { color: string | null };
+export type StageLookupItem = LookupItem & {
+  color: string | null;
+  /** Mã xử lý quy chuẩn (0086); null = công đoạn ngoài quy chuẩn (Ép, Mua ngoài). */
+  standardCode: string | null;
+};
 
 export type Lookups = {
   categories: LookupItem[];
@@ -146,6 +151,12 @@ export type ProductInput = {
   kind: ProductKind;
   directSale: boolean;
   shelfLocation: string | null;
+  /** Mã trong bộ mã hóa (quy chuẩn mã, 0086). */
+  brandCode: string | null;
+  modelCode: string | null;
+  partCode: string | null;
+  /** Ô quy chuẩn chọn tay — giá trị CHECK truong_chon_tay (0087). */
+  manualFields: string[];
 };
 
 /** Payload gửi thẳng vào `.insert()` / `.update()` của supabase-js. */
@@ -166,6 +177,10 @@ export function toProductInsert(input: ProductInput): ProductInsert {
     mo_ta: input.description,
     dang_kinh_doanh: input.isActive,
     loai_hang: input.kind,
+    hang_xe: input.brandCode,
+    dong_xe: input.modelCode,
+    linh_kien: input.partCode,
+    truong_chon_tay: input.manualFields,
     duoc_ban_truc_tiep: input.directSale,
     vi_tri_ke: input.shelfLocation,
   };
@@ -244,6 +259,7 @@ export function toProductDetail(row: ProductDetailDb): ProductDetail {
     partCode: row.linh_kien,
     partName: row.ten_linh_kien,
     finishCode: row.ma_xu_ly,
+    manualFields: row.truong_chon_tay ?? [],
   };
 }
 

@@ -99,7 +99,7 @@ export async function fetchLookups(): Promise<Lookups> {
   const [categories, units, stages, warehouses] = await Promise.all([
     supabase.from("nhom_hang").select("id, ma, ten").order("ten"),
     supabase.from("don_vi_tinh").select("id, ma, ten").order("ten"),
-    supabase.from("cong_doan").select("id, ma, ten, mau_hien_thi").order("ten"),
+    supabase.from("cong_doan").select("id, ma, ten, mau_hien_thi, ma_quy_chuan").order("ten"),
     supabase
       .from("kho")
       .select("id, ma, ten")
@@ -123,6 +123,7 @@ export async function fetchLookups(): Promise<Lookups> {
     stages: (stages.data ?? []).map((row) => ({
       ...toItem(row),
       color: row.mau_hien_thi,
+      standardCode: row.ma_quy_chuan,
     })),
     warehouses: (warehouses.data ?? []).map(toItem),
   };

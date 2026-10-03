@@ -1603,6 +1603,7 @@ export type Database = {
           ton_toi_da: number
           ton_toi_thieu: number
           tong_ton: number
+          truong_chon_tay: string[]
           updated_at: string
           vi_tri_ke: string
         }[]

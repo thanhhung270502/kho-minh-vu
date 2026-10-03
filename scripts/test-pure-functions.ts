@@ -20,6 +20,7 @@ import { duplicateProblemsInFile } from "../src/features/products/lib/new-produc
 import { buildCodeDictionary, parseProductCode } from "../src/features/product-codes/lib/parse-product-code";
 import { SourceSheetError, readSourceSheet } from "../src/features/product-codes/lib/source-sheet";
 import { dictionaryFromEntries, toSyncEntries } from "../src/features/product-codes/lib/sync-entries";
+import { applyCodeToStandardFields, toggleManual } from "../src/features/products/lib/standard-fields";
 import {
   copyProductDefaults,
   expandedActions,
@@ -211,6 +212,7 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
     conversion: 1, defaultWarehouseId: null, minStock: 0, maxStock: null,
     barcode: null, description: "Mô tả", isActive: true,
     kind: "COMBO", directSale: false, shelfLocation: "A-01",
+    brandCode: "H", modelCode: null, partCode: "75", manualFields: ["linh_kien"],
   } satisfies ProductInput;
   const payload = toProductInsert(input);
   assert.ok(!("gia_ban" in payload), "payload ghi mã hàng không có gia_ban");
@@ -222,8 +224,10 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
   assert.equal(payload.loai_hang, "COMBO");
   assert.equal(payload.mo_ta, "Mô tả");
   assert.ok(!("ghi_chu" in payload), "form không ghi ghi_chu");
-  // Hãng/dòng/linh kiện do phần A điền từ mã — form B chưa đụng, không được ghi null đè.
-  assert.ok(!("hang_xe" in payload) && !("dong_xe" in payload) && !("linh_kien" in payload));
+  // Phần A: form quản lý Hãng/Dòng/Linh kiện (mã) + danh sách ô chọn tay.
+  assert.equal(payload.hang_xe, "H");
+  assert.equal(payload.dong_xe, null);
+  assert.deepEqual(payload.truong_chon_tay, ["linh_kien"]);
   const keys = TEMPLATE_COLUMNS.map((c) => c.key as string);
   assert.ok(!keys.includes("gia_ban") && !keys.includes("gia_von"), "mẫu Excel không có cột giá");
 }
@@ -1168,7 +1172,7 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
     code: "HA26-33K-PC", name: "Hộc chứa đồ", categoryId: "c", unitId: "u", stageId: "s",
     conversion: 2, defaultWarehouseId: "k", minStock: 1, maxStock: 9, barcode: "123",
     description: "n", isActive: false, kind: "COMBO", directSale: false,
-    shelfLocation: "A-1",
+    shelfLocation: "A-1", brandCode: "H", modelCode: "A", partCode: "75", manualFields: [],
   });
   assert.equal(copied.code, "");
   assert.equal(copied.barcode, null, "barcode thường là duy nhất — không chép");
@@ -1195,8 +1199,10 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
     code: "A", name: "B", categoryId: null, unitId: null, stageId: "s", conversion: 1,
     defaultWarehouseId: null, minStock: 0, maxStock: null, barcode: null, description: "d", isActive: true,
     kind: "HANG_HOA", directSale: true, shelfLocation: null,
+    brandCode: "H", modelCode: null, partCode: null, manualFields: ["dong_xe"],
   });
   assert.equal(form.unitId, "", "ĐVT null → chuỗi rỗng để Select hiện ô trống");
+  assert.deepEqual(form.manualFields, ["dong_xe"]);
   assert.equal(form.description, "d");
 
   assert.equal(standardFieldText("Air Blade", "A"), "Air Blade");
@@ -1278,6 +1284,47 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   for (const code of ["HA26-75ĐOB-X", "HS-75X", "HWT-75-X"]) {
     assert.deepEqual(parseProductCode(code, fromDb), parseProductCode(code, fromSheet), code);
   }
+}
+
+// --- Quy chuẩn mã (A): gõ mã tự điền, giữ ô chọn tay -----------------------
+{
+  const dict = buildCodeDictionary([
+    { brand: "HONDA", brandCode: "H", model: "Air Blade", modelCode: "A", part: "Mặt nạ", partCode: "75", finish: "carbon", finishCode: "CB", color: "", colorCode: "" },
+    { brand: "YAMAHA", brandCode: "Y", model: "Exciter", modelCode: "E", part: "Ốp bầu lọc gió", partCode: "12", finish: "xi", finishCode: "X", color: "", colorCode: "" },
+  ]);
+  const stages = [
+    { id: "st-cb", standardCode: "CB" }, { id: "st-x", standardCode: "X" }, { id: "st-mn", standardCode: null },
+  ];
+  const empty = { brandCode: null, modelCode: null, partCode: null, stageId: "st-mn", manualFields: [] as string[] };
+
+  // Mã đúng chuẩn: điền đủ 4 ô, cả 4 đánh dấu "tự điền".
+  const r1 = applyCodeToStandardFields(parseProductCode("HA26-75-35-WRG-CB", dict), empty, stages, "st-mn");
+  assert.deepEqual(
+    [r1.brandCode, r1.modelCode, r1.partCode, r1.stageId, r1.autoFields],
+    ["H", "A", "75", "st-cb", ["hang_xe", "dong_xe", "linh_kien", "xu_ly"]],
+  );
+
+  // Đổi sang mã khác: ô tự điền đi theo mã mới; ô CHỌN TAY giữ nguyên.
+  const manual = { ...r1, partCode: "12", manualFields: ["linh_kien"] };
+  const r2 = applyCodeToStandardFields(parseProductCode("YE15-75-X", dict), manual, stages, "st-mn");
+  assert.deepEqual([r2.brandCode, r2.modelCode, r2.partCode, r2.stageId], ["Y", "E", "12", "st-x"], "linh kiện chọn tay giữ 12");
+  assert.ok(!r2.autoFields.includes("linh_kien"));
+
+  // Mã không tách được xử lý: công đoạn (bắt buộc) về "ngoài quy chuẩn" (Mua ngoài),
+  // KHÔNG giữ xử lý tự điền của mã gõ trước — lưu sẽ ghi sai.
+  const r3 = applyCodeToStandardFields(parseProductCode("YE15-12Z", dict), { ...r1, manualFields: [] }, stages, "st-mn");
+  assert.equal(r3.stageId, "st-mn", "carbon của mã trước không được giữ lại");
+  assert.ok(!r3.autoFields.includes("xu_ly"));
+  assert.equal(r3.partCode, null, "phần [12Z] không tách được → linh kiện trống để chọn tay");
+
+  // Chọn tay / bỏ chọn tay một ô.
+  // Xử lý chọn tay thì mã không tách được vẫn giữ nguyên.
+  const r4 = applyCodeToStandardFields(parseProductCode("YE15-12Z", dict), { ...r1, manualFields: ["xu_ly"] }, stages, "st-mn");
+  assert.equal(r4.stageId, "st-cb");
+
+  assert.deepEqual(toggleManual(["hang_xe"], "linh_kien", true), ["hang_xe", "linh_kien"]);
+  assert.deepEqual(toggleManual(["hang_xe", "linh_kien"], "hang_xe", false), ["linh_kien"]);
+  assert.deepEqual(toggleManual(["hang_xe"], "hang_xe", true), ["hang_xe"], "không trùng");
 }
 
 async function kiemTaiTheoTrang() {
