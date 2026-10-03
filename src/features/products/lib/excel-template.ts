@@ -21,7 +21,7 @@ export type ColumnKey =
   | "ton_toi_da"
   | "dang_kinh_doanh"
   | "barcode"
-  | "ghi_chu"
+  | "mo_ta"
   | "tong_ton";
 
 export type TemplateColumn = {
@@ -44,7 +44,8 @@ export const TEMPLATE_COLUMNS: readonly TemplateColumn[] = [
   { key: "ton_toi_da", title: "Tồn tối đa", width: 12 },
   { key: "dang_kinh_doanh", title: "Đang kinh doanh", width: 16 },
   { key: "barcode", title: "Barcode", width: 16 },
-  { key: "ghi_chu", title: "Ghi chú", width: 30 },
+  // 0086: Ghi chú là cột tự sinh — file chỉ còn Mô tả (file cũ cột "Ghi chú" vẫn đọc vào Mô tả).
+  { key: "mo_ta", title: "Mô tả", width: 30 },
   { key: "tong_ton", title: "Tồn hiện tại", width: 13, exportOnly: true },
 ];
 
@@ -76,7 +77,7 @@ export type ImportRowPayload = {
   ton_toi_da?: number | null;
   dang_kinh_doanh?: boolean | null;
   barcode?: string | null;
-  ghi_chu?: string | null;
+  mo_ta?: string | null;
 };
 
 /** Một dòng để ghi ra file mẫu hệ mới. */

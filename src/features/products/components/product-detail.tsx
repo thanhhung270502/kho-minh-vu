@@ -9,7 +9,8 @@ import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
 
 import { useLookups, useProductDetail } from "../hooks/useProducts";
-import type { Lookups } from "../types";
+import { standardFieldText } from "../lib/product-expanded";
+import { PRODUCT_KIND_LABELS, type Lookups } from "../types";
 import { formatNumber } from "./product-columns";
 import { ProductDrawer } from "./product-drawer";
 import { StockCard } from "./stock-card";
@@ -35,9 +36,15 @@ const FIELD_LABELS: Record<string, string> = {
   gia_ban: "Giá bán",
   dang_kinh_doanh: "Đang kinh doanh",
   barcode: "Barcode",
-  ghi_chu: "Ghi chú",
-  loai_hang_id: "Loại hàng",
-  dong_xe_id: "Dòng xe",
+  ghi_chu: "Ghi chú (tự sinh)",
+  mo_ta: "Mô tả",
+  loai_hang: "Loại hàng",
+  hang_xe: "Hãng xe",
+  dong_xe: "Dòng xe",
+  linh_kien: "Linh kiện",
+  // Cột Phase 15 đã bỏ (0086) — giữ nhãn để đọc nhật ký sửa cũ.
+  loai_hang_id: "Loại hàng (cũ)",
+  dong_xe_id: "Dòng xe (cũ)",
   duoc_ban_truc_tiep: "Được bán trực tiếp",
   vi_tri_ke: "Vị trí kệ",
   can_ra_dvt: "Cờ ĐVT mâu thuẫn",
@@ -58,11 +65,7 @@ function buildRenderValue(lookups: Lookups | undefined) {
             ? lookups.stages
             : field === "kho_mac_dinh_id"
               ? lookups.warehouses
-              : field === "loai_hang_id"
-                ? lookups.productTypes
-                : field === "dong_xe_id"
-                  ? lookups.vehicleLines
-                  : null;
+              : null;
 
     return items?.find((item) => item.id === value)?.name;
   };
@@ -129,8 +132,10 @@ export function ProductDetailView({
                   label: "Nhóm hàng",
                   children: product.categoryName ?? "—",
                 },
-                { key: "type", label: "Loại hàng", children: product.productTypeName ?? "—" },
-                { key: "vehicle", label: "Dòng xe", children: product.vehicleLineName ?? "—" },
+                { key: "kind", label: "Loại hàng", children: PRODUCT_KIND_LABELS[product.kind] },
+                { key: "brand", label: "Hãng xe", children: standardFieldText(product.brandName, product.brandCode) ?? "—" },
+                { key: "model", label: "Dòng xe", children: standardFieldText(product.modelName, product.modelCode) ?? "—" },
+                { key: "part", label: "Linh kiện", children: standardFieldText(product.partName, product.partCode) ?? "—" },
                 { key: "unit", label: "Đơn vị tính", children: product.unitName },
                 {
                   key: "stage",
@@ -177,7 +182,12 @@ export function ProductDetailView({
                     </span>
                   ),
                 },
-                { key: "note", label: "Ghi chú", children: product.note ?? "—" },
+                { key: "description", label: "Mô tả", children: product.description ?? "—" },
+                {
+                  key: "note",
+                  label: "Ghi chú",
+                  children: product.note ?? <Tag color="green" className="m-0">Đủ quy chuẩn</Tag>,
+                },
               ]}
             />
 

@@ -96,7 +96,7 @@ export async function fetchStockByWarehouse(
 export async function fetchLookups(): Promise<Lookups> {
   const supabase = getSupabaseBrowserClient();
 
-  const [categories, units, stages, warehouses, productTypes, vehicleLines] = await Promise.all([
+  const [categories, units, stages, warehouses] = await Promise.all([
     supabase.from("nhom_hang").select("id, ma, ten").order("ten"),
     supabase.from("don_vi_tinh").select("id, ma, ten").order("ten"),
     supabase.from("cong_doan").select("id, ma, ten, mau_hien_thi").order("ten"),
@@ -105,11 +105,9 @@ export async function fetchLookups(): Promise<Lookups> {
       .select("id, ma, ten")
       .eq("dang_hoat_dong", true)
       .order("ma"),
-    supabase.from("loai_hang").select("id, ma, ten").order("ten"),
-    supabase.from("dong_xe").select("id, ma, ten").order("ten"),
   ]);
 
-  for (const result of [categories, units, stages, warehouses, productTypes, vehicleLines]) {
+  for (const result of [categories, units, stages, warehouses]) {
     if (result.error) throw result.error;
   }
 
@@ -127,8 +125,6 @@ export async function fetchLookups(): Promise<Lookups> {
       color: row.mau_hien_thi,
     })),
     warehouses: (warehouses.data ?? []).map(toItem),
-    productTypes: (productTypes.data ?? []).map(toItem),
-    vehicleLines: (vehicleLines.data ?? []).map(toItem),
   };
 }
 

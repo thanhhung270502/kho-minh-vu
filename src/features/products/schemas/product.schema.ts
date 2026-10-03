@@ -31,14 +31,13 @@ export const productSchema = z
       .max(64, "Barcode tối đa 64 ký tự")
       .nullable()
       .transform((value) => value || null),
-    note: z
+    description: z
       .string()
       .trim()
       .nullable()
       .transform((value) => value || null),
     isActive: z.boolean(),
-    productTypeId: z.string().uuid().nullable(),
-    vehicleLineId: z.string().uuid().nullable(),
+    kind: z.enum(["HANG_HOA", "COMBO"]),
     directSale: z.boolean(),
     shelfLocation: z
       .string()

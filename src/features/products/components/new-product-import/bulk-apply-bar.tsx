@@ -5,7 +5,7 @@ import { Button, Input, Select } from "antd";
 import { filterByLabel } from "@/shared/lib/text";
 
 import type { DraftFields } from "../../lib/new-product-import";
-import type { Lookups } from "../../types";
+import { PRODUCT_KIND_LABELS, type Lookups, type ProductKind } from "../../types";
 
 type Props = {
   count: number;
@@ -13,6 +13,11 @@ type Props = {
   onApply: (patch: Partial<DraftFields>) => void;
   onClear: () => void;
 };
+
+const KIND_OPTIONS = (Object.keys(PRODUCT_KIND_LABELS) as ProductKind[]).map((kind) => ({
+  value: kind,
+  label: PRODUCT_KIND_LABELS[kind],
+}));
 
 const YES_NO = [
   { value: "yes", label: "Có" },
@@ -24,7 +29,7 @@ export function BulkApplyBar({ count, lookups, onApply, onClear }: Props) {
   if (count === 0) {
     return (
       <p className="mb-2 text-xs text-chu-phu">
-        Chọn nhiều dòng (ô vuông đầu dòng) để gán loại hàng, nhóm, dòng xe, ĐVT… một lần.
+        Chọn nhiều dòng (ô vuông đầu dòng) để gán loại hàng, nhóm, ĐVT… một lần.
       </p>
     );
   }
@@ -49,9 +54,15 @@ export function BulkApplyBar({ count, lookups, onApply, onClear }: Props) {
   return (
     <div className="mb-2 flex flex-wrap items-center gap-2 rounded bg-brand-25 p-2">
       <span className="text-sm font-medium">Gán cho {count} dòng đã chọn:</span>
-      {lookupSelect("Loại hàng…", lookups?.productTypes, (id) => ({ productTypeId: id }))}
+      <Select
+        size="small"
+        className="w-32"
+        placeholder="Loại hàng…"
+        value={null}
+        options={KIND_OPTIONS}
+        onChange={(kind: ProductKind) => onApply({ kind })}
+      />
       {lookupSelect("Nhóm hàng…", lookups?.categories, (id) => ({ categoryId: id }))}
-      {lookupSelect("Dòng xe…", lookups?.vehicleLines, (id) => ({ vehicleLineId: id }))}
       {lookupSelect("ĐVT…", lookups?.units, (id) => ({ unitId: id }))}
       <Select
         size="small"

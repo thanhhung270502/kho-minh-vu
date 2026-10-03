@@ -24,6 +24,7 @@ import {
   copyProductDefaults,
   expandedActions,
   forecastById,
+  standardFieldText,
   stockLimitLabel,
   toProductFormValues,
 } from "../src/features/products/lib/product-expanded";
@@ -208,19 +209,21 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
   const input = {
     code: "ABC", name: "Tên", categoryId: null, unitId: "u", stageId: "s",
     conversion: 1, defaultWarehouseId: null, minStock: 0, maxStock: null,
-    barcode: null, note: null, isActive: true,
-    productTypeId: "11111111-1111-4111-8111-111111111111",
-    vehicleLineId: "22222222-2222-4222-8222-222222222222",
-    directSale: false, shelfLocation: "A-01",
+    barcode: null, description: "Mô tả", isActive: true,
+    kind: "COMBO", directSale: false, shelfLocation: "A-01",
   } satisfies ProductInput;
   const payload = toProductInsert(input);
   assert.ok(!("gia_ban" in payload), "payload ghi mã hàng không có gia_ban");
   assert.ok(!("gia_von" in payload), "payload ghi mã hàng không có gia_von");
-  // Phase 15 (IMP-05): ba trường mới + vị trí kệ đi đúng cột.
-  assert.equal(payload.loai_hang_id, input.productTypeId);
-  assert.equal(payload.dong_xe_id, input.vehicleLineId);
   assert.equal(payload.duoc_ban_truc_tiep, false);
   assert.equal(payload.vi_tri_ke, "A-01");
+  // Quy chuẩn mã (B): Loại hàng = HANG_HOA/COMBO; Mô tả vào mo_ta. Ghi chú do DB tự
+  // sinh — payload KHÔNG được mang ghi_chu (trigger sẽ đè, người dùng tưởng đã lưu).
+  assert.equal(payload.loai_hang, "COMBO");
+  assert.equal(payload.mo_ta, "Mô tả");
+  assert.ok(!("ghi_chu" in payload), "form không ghi ghi_chu");
+  // Hãng/dòng/linh kiện do phần A điền từ mã — form B chưa đụng, không được ghi null đè.
+  assert.ok(!("hang_xe" in payload) && !("dong_xe" in payload) && !("linh_kien" in payload));
   const keys = TEMPLATE_COLUMNS.map((c) => c.key as string);
   assert.ok(!keys.includes("gia_ban") && !keys.includes("gia_von"), "mẫu Excel không có cột giá");
 }
@@ -1103,10 +1106,10 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.equal(drafts[0].isActive && drafts[0].directSale, true, "mặc định đang KD + bán trực tiếp");
 
   // Áp hàng loạt chỉ đổi đúng dòng đã chọn, không đụng mảng gốc.
-  const applied = applyToRows(drafts, [2, 4], { productTypeId: lh, directSale: false });
-  assert.deepEqual(applied.map((r) => r.productTypeId), [lh, null, lh]);
+  const applied = applyToRows(drafts, [2, 4], { kind: "COMBO", directSale: false });
+  assert.deepEqual(applied.map((r) => r.kind), ["COMBO", "HANG_HOA", "COMBO"]);
   assert.deepEqual(applied.map((r) => r.directSale), [false, true, false]);
-  assert.equal(drafts[0].productTypeId, null, "không sửa mảng gốc");
+  assert.equal(drafts[0].kind, "HANG_HOA", "không sửa mảng gốc; mặc định Hàng hóa");
 
   // Lỗi của dòng = lỗi đọc file + trùng trong file + thiếu ĐVT + đã có trong danh mục.
   const catalog = catalogProblemsFrom([
@@ -1120,12 +1123,12 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.deepEqual(problems.get(4), [CATALOG_REASONS.name]);
 
   // Payload: chỉ dòng sạch, khóa jsonb đúng hợp đồng RPC nhap_ma_hang_moi.
-  const clean = applyToRows(drafts, [4], { vehicleLineId: lh, shelfLocation: " K-1 " });
+  const clean = applyToRows(drafts, [4], { categoryId: lh, shelfLocation: " K-1 " });
   const payload = toImportPayload(clean, new Map([[3, ["x"]]]));
   assert.deepEqual(payload.map((p) => p.dong), [2, 4], "bỏ dòng đang lỗi");
   assert.deepEqual(payload[1], {
-    dong: 4, ma_hang: "C", ten_hang: "Cá", ton_kho: 1, ghi_chu: "",
-    dvt_id: cai, nhom_hang_id: null, loai_hang_id: null, dong_xe_id: lh,
+    dong: 4, ma_hang: "C", ten_hang: "Cá", ton_kho: 1, mo_ta: "",
+    dvt_id: cai, nhom_hang_id: lh, loai_hang: "HANG_HOA",
     dang_kinh_doanh: true, duoc_ban_truc_tiep: true, vi_tri_ke: "K-1",
   });
 }
@@ -1164,14 +1167,14 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   const copied = copyProductDefaults({
     code: "HA26-33K-PC", name: "Hộc chứa đồ", categoryId: "c", unitId: "u", stageId: "s",
     conversion: 2, defaultWarehouseId: "k", minStock: 1, maxStock: 9, barcode: "123",
-    note: "n", isActive: false, productTypeId: "t", vehicleLineId: "v", directSale: false,
+    description: "n", isActive: false, kind: "COMBO", directSale: false,
     shelfLocation: "A-1",
   });
   assert.equal(copied.code, "");
   assert.equal(copied.barcode, null, "barcode thường là duy nhất — không chép");
   assert.equal(copied.isActive, true, "mã mới luôn đang kinh doanh");
   assert.equal(copied.name, "Hộc chứa đồ");
-  assert.equal(copied.vehicleLineId, "v");
+  assert.equal(copied.kind, "COMBO");
 
   // Ghép số phân tích vào từng dòng bảng theo id sản phẩm.
   const map = forecastById([
@@ -1190,11 +1193,15 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   // Chi tiết mã → giá trị form: null thành giá trị rỗng form hiểu được.
   const form = toProductFormValues({
     code: "A", name: "B", categoryId: null, unitId: null, stageId: "s", conversion: 1,
-    defaultWarehouseId: null, minStock: 0, maxStock: null, barcode: null, note: null, isActive: true,
-    productTypeId: null, vehicleLineId: "v", directSale: true, shelfLocation: null,
+    defaultWarehouseId: null, minStock: 0, maxStock: null, barcode: null, description: "d", isActive: true,
+    kind: "HANG_HOA", directSale: true, shelfLocation: null,
   });
   assert.equal(form.unitId, "", "ĐVT null → chuỗi rỗng để Select hiện ô trống");
-  assert.equal(form.vehicleLineId, "v");
+  assert.equal(form.description, "d");
+
+  assert.equal(standardFieldText("Air Blade", "A"), "Air Blade");
+  assert.equal(standardFieldText(null, "ZZ"), "ZZ (không có trong bộ mã hóa)", "mã bị bỏ khỏi bộ mã hóa vẫn hiện");
+  assert.equal(standardFieldText(null, null), null);
 }
 
 // --- Quy chuẩn mã hàng (C): tách mã như công thức TRA_CUU ---------------

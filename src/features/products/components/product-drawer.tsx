@@ -44,10 +44,9 @@ const EMPTY_FORM: ProductFormValues = {
   minStock: 0,
   maxStock: null,
   barcode: null,
-  note: null,
+  description: null,
   isActive: true,
-  productTypeId: null,
-  vehicleLineId: null,
+  kind: "HANG_HOA",
   directSale: true,
   shelfLocation: null,
 };
@@ -132,10 +131,9 @@ export function ProductDrawer({ id, open, onClose, copyFromId = null }: Props) {
       minStock: Number(values.minStock),
       maxStock: values.maxStock === null ? null : Number(values.maxStock),
       barcode: values.barcode,
-      note: values.note,
+      description: values.description,
       isActive: values.isActive,
-      productTypeId: values.productTypeId,
-      vehicleLineId: values.vehicleLineId,
+      kind: values.kind,
       directSale: values.directSale,
       shelfLocation: values.shelfLocation,
     };
@@ -152,8 +150,7 @@ export function ProductDrawer({ id, open, onClose, copyFromId = null }: Props) {
         reset({
           ...EMPTY_FORM,
           categoryId: kept.categoryId,
-          productTypeId: kept.productTypeId,
-          vehicleLineId: kept.vehicleLineId,
+          kind: kept.kind,
           unitId: kept.unitId,
           stageId: kept.stageId,
           defaultWarehouseId: kept.defaultWarehouseId,
@@ -398,7 +395,7 @@ export function ProductDrawer({ id, open, onClose, copyFromId = null }: Props) {
             </Form.Item>
           </div>
 
-          <ProductClassificationFields control={control} errors={errors} lookups={data} />
+          <ProductClassificationFields control={control} errors={errors} />
 
           <Form.Item label="Barcode">
             <Controller
@@ -408,15 +405,20 @@ export function ProductDrawer({ id, open, onClose, copyFromId = null }: Props) {
             />
           </Form.Item>
 
-          <Form.Item label="Ghi chú">
+          <Form.Item label="Mô tả">
             <Controller
-              name="note"
+              name="description"
               control={control}
               render={({ field }) => (
                 <Input.TextArea {...field} value={field.value ?? ""} rows={2} />
               )}
             />
           </Form.Item>
+
+          {product?.note ? (
+            // Ghi chú do hệ thống tự sinh (0086) — chỉ đọc, đổi khi đủ trường quy chuẩn.
+            <Alert className="mb-4" type="info" showIcon title="Ghi chú quy chuẩn" description={product.note} />
+          ) : null}
 
           {!isNew ? (
             <Form.Item

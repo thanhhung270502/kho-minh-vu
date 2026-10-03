@@ -6,8 +6,8 @@ import type { ReactNode } from "react";
 
 import { ProductImagePreview } from "@/features/images/components/product-image-preview";
 
-import { stockLimitLabel, type ProductForecast } from "../lib/product-expanded";
-import type { ProductDetail } from "../types";
+import { standardFieldText, stockLimitLabel, type ProductForecast } from "../lib/product-expanded";
+import { PRODUCT_KIND_LABELS, type ProductDetail } from "../types";
 import { formatNumber } from "./product-columns";
 
 type Props = {
@@ -53,7 +53,9 @@ export function ProductInfoTab({ product, forecast }: Props) {
           <div className="text-base font-semibold sm:text-lg">{product.name}</div>
           <div className="mt-1 text-sm text-chu-phu">Nhóm hàng: {product.categoryName ?? "(không nhóm)"}</div>
           <div className="mt-2 flex flex-wrap gap-1">
-            {product.productTypeName ? <Tag className="m-0">{product.productTypeName}</Tag> : null}
+            <Tag className="m-0" color={product.kind === "COMBO" ? "purple" : undefined}>
+              {PRODUCT_KIND_LABELS[product.kind]}
+            </Tag>
             <Tag className="m-0">{product.directSale ? "Bán trực tiếp" : "Không bán trực tiếp"}</Tag>
             {product.isActive ? null : <Tag className="m-0" color="orange">Ngừng kinh doanh</Tag>}
             {product.needsReview ? <Tag className="m-0" color="orange">Cần rà</Tag> : null}
@@ -69,7 +71,12 @@ export function ProductInfoTab({ product, forecast }: Props) {
         <Field label="Định mức tồn">{stockLimitLabel(product.minStock, product.maxStock)}</Field>
         <Field label="Vị trí kệ">{product.shelfLocation ?? empty}</Field>
         <Field label="Kho mặc định">{product.defaultWarehouseName ?? empty}</Field>
-        <Field label="Dòng xe">{product.vehicleLineName ?? empty}</Field>
+        <Field label="Hãng xe">{standardFieldText(product.brandName, product.brandCode) ?? empty}</Field>
+        <Field label="Dòng xe">{standardFieldText(product.modelName, product.modelCode) ?? empty}</Field>
+        <Field label="Linh kiện">{standardFieldText(product.partName, product.partCode) ?? empty}</Field>
+        <Field label="Ghi chú">
+          {product.note ?? <Tag className="m-0" color="green">Đủ quy chuẩn</Tag>}
+        </Field>
         <Field label="Đơn vị tính">{product.unitName ?? empty}</Field>
         <Field label="Công đoạn">
           {product.stageName ? <Tag className="m-0" color={product.stageColor || undefined}>{product.stageName}</Tag> : empty}

@@ -47,10 +47,16 @@ export function ProductExpandedDetail({ productId, forecast, renderActions }: Pr
           {
             key: "note",
             label: "Mô tả, ghi chú",
-            children: product.note ? (
-              <p className="m-0 whitespace-pre-wrap">{product.note}</p>
-            ) : (
-              <Typography.Text type="secondary">Chưa có ghi chú.</Typography.Text>
+            children: (
+              <div className="flex flex-col gap-3">
+                {product.description ? (
+                  <p className="m-0 whitespace-pre-wrap">{product.description}</p>
+                ) : (
+                  <Typography.Text type="secondary">Chưa có mô tả.</Typography.Text>
+                )}
+                {/* Ghi chú do hệ thống tự sinh — liệt kê trường quy chuẩn còn thiếu. */}
+                {product.note ? <Typography.Text type="warning">{product.note}</Typography.Text> : null}
+              </div>
             ),
           },
           { key: "stock-card", label: "Thẻ kho", children: <StockCard productId={productId} /> },

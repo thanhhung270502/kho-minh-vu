@@ -1,58 +1,33 @@
 "use client";
 
-import { Form, Input, Switch } from "antd";
+import { Form, Input, Select, Switch } from "antd";
 import { Controller, type Control, type FieldErrors } from "react-hook-form";
 
 import type { ProductFormValues } from "../schemas/product.schema";
-import type { Lookups } from "../types";
-import { LookupSelect } from "./lookup-select";
+import { PRODUCT_KIND_LABELS, type ProductKind } from "../types";
 
 type Props = {
   control: Control<ProductFormValues>;
   errors: FieldErrors<ProductFormValues>;
-  lookups: Lookups | undefined;
 };
 
-/** Loại hàng, Dòng xe, Vị trí kệ, Được bán trực tiếp (IMP-05) — tách khỏi ngăn kéo cho gọn. */
-export function ProductClassificationFields({ control, errors, lookups }: Props) {
-  const toOptions = (items: Lookups["productTypes"] | undefined) =>
-    (items ?? []).map((item) => ({ value: item.id, label: item.name }));
+const KIND_OPTIONS = (Object.keys(PRODUCT_KIND_LABELS) as ProductKind[]).map((kind) => ({
+  value: kind,
+  label: PRODUCT_KIND_LABELS[kind],
+}));
 
+/**
+ * Loại hàng (Hàng hóa / Combo), Vị trí kệ, Được bán trực tiếp. Hãng xe / Dòng
+ * xe / Linh kiện tự điền từ mã theo quy chuẩn — không nhập ở đây.
+ */
+export function ProductClassificationFields({ control, errors }: Props) {
   return (
     <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
-      <Form.Item label="Loại hàng">
+      <Form.Item label="Loại hàng" help="Combo: bán theo bộ, tồn trừ trên các mã thành phần.">
         <Controller
-          name="productTypeId"
+          name="kind"
           control={control}
-          render={({ field }) => (
-            <LookupSelect
-              table="loai_hang"
-              label="loại hàng"
-              allowClear
-              placeholder="Chưa chọn"
-              value={field.value}
-              onChange={field.onChange}
-              options={toOptions(lookups?.productTypes)}
-            />
-          )}
-        />
-      </Form.Item>
-
-      <Form.Item label="Dòng xe">
-        <Controller
-          name="vehicleLineId"
-          control={control}
-          render={({ field }) => (
-            <LookupSelect
-              table="dong_xe"
-              label="dòng xe"
-              allowClear
-              placeholder="Chưa chọn"
-              value={field.value}
-              onChange={field.onChange}
-              options={toOptions(lookups?.vehicleLines)}
-            />
-          )}
+          render={({ field }) => <Select {...field} options={KIND_OPTIONS} />}
         />
       </Form.Item>
 

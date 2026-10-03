@@ -49,11 +49,18 @@ export type ProductDetail = ProductRow & {
   shelfLocation: string | null;
   defaultWarehouseName: string | null;
   createdAt: string;
-  productTypeId: string | null;
-  productTypeName: string | null;
-  vehicleLineId: string | null;
-  vehicleLineName: string | null;
   directSale: boolean;
+  description: string | null;
+  kind: ProductKind;
+  /** Mã trong bộ mã hóa + tên tra được (null khi mã không còn trong bộ mã hóa). */
+  brandCode: string | null;
+  brandName: string | null;
+  modelCode: string | null;
+  modelName: string | null;
+  partCode: string | null;
+  partName: string | null;
+  /** Mã xử lý quy chuẩn của công đoạn; null = công đoạn ngoài quy chuẩn. */
+  finishCode: string | null;
 };
 
 export type StockCardRow = {
@@ -95,8 +102,14 @@ export type Lookups = {
   units: LookupItem[];
   stages: StageLookupItem[];
   warehouses: LookupItem[];
-  productTypes: LookupItem[];
-  vehicleLines: LookupItem[];
+};
+
+/** Giá trị CHECK của san_pham.loai_hang (0086) — hợp đồng với database. */
+export type ProductKind = "HANG_HOA" | "COMBO";
+
+export const PRODUCT_KIND_LABELS: Record<ProductKind, string> = {
+  HANG_HOA: "Hàng hóa",
+  COMBO: "Combo",
 };
 
 export type WarehouseStock = {
@@ -127,10 +140,10 @@ export type ProductInput = {
   minStock: number;
   maxStock: number | null;
   barcode: string | null;
-  note: string | null;
+  /** Mô tả sản phẩm (mo_ta). Ghi chú là cột tự sinh — form không ghi. */
+  description: string | null;
   isActive: boolean;
-  productTypeId: string | null;
-  vehicleLineId: string | null;
+  kind: ProductKind;
   directSale: boolean;
   shelfLocation: string | null;
 };
@@ -150,10 +163,9 @@ export function toProductInsert(input: ProductInput): ProductInsert {
     ton_toi_thieu: input.minStock,
     ton_toi_da: input.maxStock,
     barcode: input.barcode,
-    ghi_chu: input.note,
+    mo_ta: input.description,
     dang_kinh_doanh: input.isActive,
-    loai_hang_id: input.productTypeId,
-    dong_xe_id: input.vehicleLineId,
+    loai_hang: input.kind,
     duoc_ban_truc_tiep: input.directSale,
     vi_tri_ke: input.shelfLocation,
   };
@@ -221,11 +233,17 @@ export function toProductDetail(row: ProductDetailDb): ProductDetail {
     shelfLocation: row.vi_tri_ke,
     defaultWarehouseName: row.ten_kho_mac_dinh,
     createdAt: row.created_at,
-    productTypeId: row.loai_hang_id,
-    productTypeName: row.ten_loai_hang,
-    vehicleLineId: row.dong_xe_id,
-    vehicleLineName: row.ten_dong_xe,
     directSale: row.duoc_ban_truc_tiep,
+    description: row.mo_ta,
+    // Cột text có CHECK HANG_HOA/COMBO (0086) — kiểu sinh ra chỉ biết `string`.
+    kind: row.loai_hang === "COMBO" ? "COMBO" : "HANG_HOA",
+    brandCode: row.hang_xe,
+    brandName: row.ten_hang_xe,
+    modelCode: row.dong_xe,
+    modelName: row.ten_dong_xe,
+    partCode: row.linh_kien,
+    partName: row.ten_linh_kien,
+    finishCode: row.ma_xu_ly,
   };
 }
 

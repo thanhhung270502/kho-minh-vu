@@ -65,7 +65,8 @@ function parseTemplateRow(o: Record<string, unknown>, rowNumber: number): Import
     ton_toi_da: toiDa,
     dang_kinh_doanh: docCo(o["dang_kinh_doanh"]),
     barcode: readString(o["barcode"]),
-    ghi_chu: readString(o["ghi_chu"]),
+    // Mẫu cũ có cột "Ghi chú" — vẫn nhận, vào Mô tả.
+    mo_ta: readString(o["mo_ta"]) ?? readString(o["ghi_chu"]),
   };
 }
 
@@ -90,7 +91,7 @@ function parseKiotVietRow(o: Record<string, unknown>, rowNumber: number): Import
     ton_toi_thieu: readNumber(o["ton_nho_nhat"]),
     ton_toi_da: toiDa === null || toiDa >= KHONG_GIOI_HAN ? null : toiDa,
     dang_kinh_doanh: readString(o["dang_kinh_doanh"]) !== "0",
-    ghi_chu: readString(o["mo_ta"]),
+    mo_ta: readString(o["mo_ta"]),
   };
 }
 

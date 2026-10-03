@@ -7,9 +7,7 @@ export type LookupTableName =
   | "kho"
   | "nhom_hang"
   | "don_vi_tinh"
-  | "cong_doan"
-  | "loai_hang"
-  | "dong_xe";
+  | "cong_doan";
 
 /**
  * Một dòng của bất kỳ bảng danh mục phụ nào. Các cột chỉ có ở một bảng để
@@ -80,26 +78,6 @@ export const LOOKUP_TABLE_CONFIG: Record<LookupTableName, LookupTableConfig> = {
     hasAddress: false,
     hasStatus: false,
   },
-  loai_hang: {
-    label: "loại hàng",
-    title: "Loại hàng",
-    cot: "id, ma, ten, updated_at",
-    deletable: true,
-    hasParent: false,
-    hasColor: false,
-    hasAddress: false,
-    hasStatus: false,
-  },
-  dong_xe: {
-    label: "dòng xe",
-    title: "Dòng xe",
-    cot: "id, ma, ten, updated_at",
-    deletable: true,
-    hasParent: false,
-    hasColor: false,
-    hasAddress: false,
-    hasStatus: false,
-  },
 };
 
 /**
@@ -112,8 +90,6 @@ export const SYSTEM_CODES: Record<LookupTableName, readonly string[]> = {
   nhom_hang: [],
   don_vi_tinh: ["CAI"],
   cong_doan: ["EP", "SON", "CARBON", "XI_MA", "NANO", "MUA_NGOAI"],
-  loai_hang: [],
-  dong_xe: [],
 };
 
 export function isSystemCode(table: LookupTableName, ma: string): boolean {

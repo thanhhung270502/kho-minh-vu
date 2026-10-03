@@ -71,11 +71,20 @@ export function toProductFormValues(product: ProductFormSource): ProductFormValu
     minStock: product.minStock,
     maxStock: product.maxStock,
     barcode: product.barcode ?? null,
-    note: product.note ?? null,
+    description: product.description ?? null,
     isActive: product.isActive,
-    productTypeId: product.productTypeId,
-    vehicleLineId: product.vehicleLineId,
+    kind: product.kind,
     directSale: product.directSale,
     shelfLocation: product.shelfLocation,
   };
+}
+
+/**
+ * Hãng / Dòng / Linh kiện lưu MÃ (0086), tên tra bộ mã hóa. Mã không còn trong
+ * bộ mã hóa (bên làm mã đổi/bỏ) vẫn hiện mã để người dùng thấy và sửa.
+ */
+export function standardFieldText(name: string | null, code: string | null): string | null {
+  if (name) return name;
+  if (code) return `${code} (không có trong bộ mã hóa)`;
+  return null;
 }
