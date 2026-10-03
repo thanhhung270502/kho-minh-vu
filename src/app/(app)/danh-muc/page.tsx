@@ -24,6 +24,7 @@ export default async function ProductsPage() {
         <ProductTable
           permissions={{
             canEdit: can(user, "tao_ma_hang"),
+            canFillStandard: user.role === "quan_ly" && can(user, "tao_ma_hang"),
           }}
           // Quyền khớp RLS danh mục phụ (0015/0040): quản lý + văn phòng.
           // Danh mục phụ đi cùng quyền Tạo mã hàng (RLS 0083).

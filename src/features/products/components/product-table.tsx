@@ -139,6 +139,7 @@ export function ProductTable({
                 filter={filter}
                 total={total}
                 canEdit={permissions.canEdit}
+                canFillStandard={permissions.canFillStandard}
                 extraActions={extraActions}
                 onOpenImport={setImportOpen}
               />

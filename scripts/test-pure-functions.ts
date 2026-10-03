@@ -21,6 +21,7 @@ import { buildCodeDictionary, parseProductCode } from "../src/features/product-c
 import { SourceSheetError, readSourceSheet } from "../src/features/product-codes/lib/source-sheet";
 import { dictionaryFromEntries, toSyncEntries } from "../src/features/product-codes/lib/sync-entries";
 import { applyCodeToStandardFields, standardNames, toggleManual } from "../src/features/products/lib/standard-fields";
+import { chunk, planStandardFill } from "../src/features/products/lib/standard-fill";
 import {
   copyProductDefaults,
   expandedActions,
@@ -1336,6 +1337,34 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.deepEqual(standardNames(dict, { brandCode: null, modelCode: null, partCode: "ZZ" }), {
     brandName: null, modelName: null, partName: null,
   });
+
+  // Điền quy chuẩn từ mã cho mã cũ: chỉ ô trống, không đụng ô chọn tay.
+  const base = { name: "x", brandCode: null, modelCode: null, partCode: null, finishCode: null, manualFields: [] as string[] };
+  const plan = planStandardFill(
+    [
+      { ...base, id: "1", code: "HA26-75-35-WRG-CB" }, // trống hết → điền 4 ô
+      { ...base, id: "2", code: "HA26-75-CB", brandCode: "Y", finishCode: "X" }, // hãng + xử lý đã có → giữ
+      { ...base, id: "3", code: "HA26-75-CB", manualFields: ["linh_kien", "xu_ly"] }, // chọn tay → bỏ qua
+      { ...base, id: "4", code: "06410KFL850" }, // sai chuẩn, không tách được gì
+      { ...base, id: "5", code: "HA26-75-CB", brandCode: "H", modelCode: "A", partCode: "75", finishCode: "CB" }, // đủ → không đổi
+    ],
+    dict,
+    new Set(["CB", "X"]),
+  );
+  assert.equal(plan.total, 5);
+  assert.equal(plan.validCount, 4);
+  assert.deepEqual(plan.invalid.map((i) => i.code), ["06410KFL850"]);
+  assert.equal(plan.invalid[0].reason, "Mã không theo quy chuẩn (không có dấu -)");
+  assert.deepEqual(plan.changes, [
+    { id: "1", brandCode: "H", modelCode: "A", partCode: "75", finishCode: "CB" },
+    { id: "2", modelCode: "A", partCode: "75" },
+    { id: "3", brandCode: "H", modelCode: "A" },
+  ]);
+  assert.deepEqual(plan.fieldCounts, { hang_xe: 2, dong_xe: 3, linh_kien: 2, xu_ly: 1 });
+  // Mã xử lý chưa có công đoạn tương ứng → không gửi (RPC không gán được).
+  const unknown = planStandardFill([{ ...base, id: "6", code: "HA26-75-CB" }], dict, new Set(["X"]));
+  assert.equal(unknown.changes[0].finishCode, undefined);
+  assert.deepEqual(chunk([1, 2, 3, 4, 5], 2), [[1, 2], [3, 4], [5]]);
 }
 
 async function kiemTaiTheoTrang() {

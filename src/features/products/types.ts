@@ -114,6 +114,8 @@ export type WarehouseStock = {
 
 export type CatalogPermissions = {
   canEdit: boolean;
+  /** "Điền quy chuẩn từ mã" cho cả danh mục — chỉ quản lý (RPC còn chặn bằng quyền Tạo mã hàng). */
+  canFillStandard: boolean;
 };
 
 /**
