@@ -655,7 +655,17 @@ Plans:
   4. Hoàn thành đơn sinh hóa đơn mang theo người nhận của đơn và của từng dòng, xem lại được ở Duyệt đơn
   5. Đơn cũ đang có một người nhận vẫn hiện đúng người đó sau khi chuyển sang cấu trúc mới, không mất người nhận nào
 
-**Plans**: TBD
+**Plans**: 8 plans
+
+Plans:
+- [ ] 18-01-PLAN.md — Migration 0090: bảng nối người nhận, cột dòng, backfill, trigger D1/D3, RPC tao_don/dat_nguoi_nhan_don + pgTAP 108
+- [ ] 18-02-PLAN.md — Migration 0091: RPC đọc đổi sang bảng nối, hóa đơn chép người nhận, nguoi_nhan_dong_chung_tu + pgTAP 109, sửa 30/98
+- [ ] 18-03-PLAN.md — Nền TS: regen types, kiểu + hàm thuần người nhận, mapper/schema/api/hook sales-order + documents (TDD)
+- [ ] 18-04-PLAN.md — UI tạo đơn + đầu đơn chọn nhiều người nhận (StaffMultiSelect)
+- [ ] 18-05-PLAN.md — Lưới dòng: cột/ô người nhận theo dòng, giữ luồng bàn phím
+- [ ] 18-06-PLAN.md — Danh sách + lọc ?nhan_vien= + phiếu lấy hàng có cột Người nhận
+- [ ] 18-07-PLAN.md — Duyệt đơn: hóa đơn hiện người nhận đơn + dòng
+- [ ] 18-08-PLAN.md — Cổng cuối: bộ kiểm toàn phần + UAT trình duyệt
 **UI hint**: yes
 
 ### Phase 19: Dòng xe dùng chung

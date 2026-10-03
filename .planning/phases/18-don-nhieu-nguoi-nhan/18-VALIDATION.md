@@ -2,7 +2,7 @@
 phase: 18
 slug: don-nhieu-nguoi-nhan
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-10-03
 ---
@@ -52,10 +52,10 @@ created: 2026-10-03
 
 ## Wave 0 Requirements
 
-- [ ] `supabase/tests/108_don_nhieu_nguoi_nhan_test.sql` — bất biến D1/D3, RPC ghi, backfill, RLS bảng nối, chặn bỏ người đang dùng
-- [ ] `supabase/tests/109_nguoi_nhan_rpc_doc_test.sql` — RPC đọc, lọc, chép sang hóa đơn, phân tích tồn
-- [ ] Sửa `supabase/tests/30_don_noi_bo_test.sql`, `98_phan_tich_ton_kho_test.sql`
-- [ ] Mở rộng `scripts/test-pure-functions.ts` (mapper người nhận, nhãn "Chung", `?nhan_vien=`, RPC args)
+- [ ] `supabase/tests/108_don_nhieu_nguoi_nhan_test.sql` — bất biến D1/D3, RPC ghi, backfill, RLS bảng nối, chặn bỏ người đang dùng → **18-01 Task 2**
+- [ ] `supabase/tests/109_nguoi_nhan_rpc_doc_test.sql` — RPC đọc, lọc, chép sang hóa đơn, phân tích tồn → **18-02 Task 2**
+- [ ] Sửa `supabase/tests/30_don_noi_bo_test.sql`, `98_phan_tich_ton_kho_test.sql` → **18-01 Task 2 (CHECK) + 18-02 Task 2**
+- [ ] Mở rộng `scripts/test-pure-functions.ts` (mapper người nhận, nhãn "Chung", `?nhan_vien=`, RPC args) → **18-03 Task 1–3**
 
 ---
 
