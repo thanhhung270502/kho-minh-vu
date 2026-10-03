@@ -1,17 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Phản hồi vận hành đợt 2
-status: ready_to_plan
-stopped_at: "Roadmap v1.2 created — Phase 17 ready to plan"
-last_updated: 2026-10-03T10:00:00.000Z
+milestone: v1.0
+milestone_name: "- [ ] **Phase 1: Nền dữ liệu** - Schema 13 bảng, sổ cái bất biến, trigger tồn kho + giá vốn, RLS bốn vai trò, chuyển danh mục thật — kiểm chứng bằng SQL, chưa có giao diện"
+status: Ready to execute
+stopped_at: Completed 17-01-PLAN.md
+last_updated: "2026-10-03T12:58:28.441Z"
 last_activity: 2026-10-03
 progress:
-  total_phases: 19
-  completed_phases: 11
-  total_plans: 101
-  completed_plans: 80
-  percent: 69
+  total_phases: 9
+  completed_phases: 5
+  total_plans: 120
+  completed_plans: 82
 ---
 
 # Project State
@@ -21,21 +20,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-03)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Milestone v1.2 Phản hồi vận hành đợt 2 — đang định nghĩa requirements
+**Current focus:** Phase 17 — Đổi tên & gọn đơn đặt
 
 ## Current Position
 
-Phase: 17 — Đổi tên & gọn đơn đặt
-Plan: —
-Status: Ready to plan
-Last activity: 2026-10-03 — Roadmap v1.2 created (Phase 17–19)
+Phase: 17 (Đổi tên & gọn đơn đặt) — EXECUTING
+Plan: 2 of 6
 
 ### Milestone v1.2 — bối cảnh lúc mở (03/10/2026)
 
 - Nguồn: phản hồi vận hành 03/10/2026 trên Notion Task board; 3 task bỏ khỏi milestone
   (Đối tác chỉ còn NCC, kiểm tra chịu tải, Phân tích theo kỳ) — vẫn để "Chưa xử lý" trên Notion.
+
 - Branch Phase 10–16 đã merge vào `main` và push. Song song đang làm Quy chuẩn mã hàng trên
   `feature/quy-chuan-ma-b` (ngoài GSD, migration tới 0086) — phải merge trước phase "dòng xe dùng chung".
+
 - v1.1 vẫn chưa `/gsd:complete-milestone`.
 
 ### Phase 16 — đã xong (02/10/2026)
@@ -48,13 +47,16 @@ thuần, test đọc Excel, ma trận quyền route 220/220, `npm run test:concu
 và xem trên trình duyệt.
 
 Hệ quả cần nhớ:
+
 - Mô hình quyền: chức vụ mang **phạm vi** (enum vai_tro: kho, quản trị — theo token, bẫy 6) +
   **9 quyền nghiệp vụ** (`co_quyen()` đọc DB, có hiệu lực ngay). Giao diện dùng `allows(user, …)`
   gộp cả hai (`src/shared/lib/permissions.ts`); `getCurrentUser()` trả `permissions`.
+
 - Quyền nghiệp vụ mới phải đi qua `co_quyen` — đã ghi vào CLAUDE.md bẫy 6.
 - `seed:users` ghi `chuc_vu_id` → cần 0082 trước. `luu_ho_so_nguoi_dung` đã bỏ (0084), dùng `luu_nguoi_dung`.
 - Còn lỗ `coalesce(vai_tro, 'quan_ly')` ở `huy_duoc_don`, `tao_phieu_tra`, `dat_dinh_muc`,
   `nap_ton_tam`, `tao_phieu_xuat_tu_don`, `xem_duoc_phan_tich`, `sinh_so_ct` — đã tạo việc riêng.
+
 - **`0082`–`0084` mới áp ở local.**
 
 ### Việc còn lại của milestone v1.1
@@ -62,6 +64,7 @@ Hệ quả cần nhớ:
 - Đẩy migration 0076–0084 lên cloud: xử lý lệch lịch sử migration từ 0072 trước; 0078 dừng nếu dữ
   liệu thật có đơn mang 2 hóa đơn chưa hủy (xem ghi chú Phase 12); chạy lại `npm run seed:users`
   sau 0082 nếu dùng tài khoản mẫu trên cloud.
+
 - Merge 7 branch theo thứ tự 10 → 16 (hoặc mở PR chồng nhau), rồi `/gsd:complete-milestone`.
 - Việc treo: "Sửa xuất Excel danh mục bị cắt ở 1.000 mã", vá lỗ coalesce ở RPC ngoài 9 quyền,
   trang xem phiếu điều chỉnh (thẻ kho chưa bấm mở được phiếu DC).
@@ -75,10 +78,13 @@ xong; kiểm trên Supabase local (`npm run check`, pgTAP 46 file / 719 test, te
 Excel, ma trận quyền route 205/205, `npm run test:concurrency`) và chạy trọn luồng trên trình duyệt.
 
 Hệ quả cho các phase sau:
+
 - Hai đường Excel song song: "Nhập mã hàng mới" (file 4 cột → `nhap_ma_hang_moi`, chỉ tạo mã) và
   "Cập nhật từ Excel" (mẫu 12 cột / file KiotViet → `nhap_danh_muc`, giữ nguyên).
+
 - Câu lỗi trùng danh mục được chép ở `products/lib/new-product-import.ts` (`CATALOG_REASONS`) —
   đổi câu trong 0081 thì đổi luôn ở đó.
+
 - Chưa có trang xem phiếu DIEU_CHINH: thẻ kho hiện số phiếu nhưng không bấm mở được.
 - Phase 16 (chức vụ & quyền) nhớ: quyền nhập mã mới đang là `edit-catalog` + kiểm vai trò trong RPC.
 - DB local còn dữ liệu thử ZZT-01/02, phiếu DC26-000001, dòng xe "Wave Alpha".
@@ -93,11 +99,14 @@ Supabase local (`npm run check`, pgTAP 45 file / 702 test, test hàm thuần, te
 quyền route 195/195) và xem trên trình duyệt 1440px + 375px.
 
 Hệ quả cho các phase sau:
+
 - Panel chi tiết dùng chung: `src/shared/components/detail-panel.tsx` + slot `detailPanel` của
   `ListLayout`; mã đang chọn ở `?chon=<uuid>` (`src/shared/lib/selected-id.ts`, bấm vào phần tử
   tương tác hoặc `data-no-row-click` không mở panel). Bảng khác muốn panel thì dùng lại y vậy.
+
 - Thủ kho / chỉ xem KHÔNG thấy khách đặt + dự kiến hết hàng (route chỉ ghép `ProductForecast`
   khi có `view-analysis`). Phase 16 đổi quyền thì nhớ chỗ này.
+
 - `/doi-tac/[id]` đã gỡ, redirect sang `/doi-tac?chon=<id>` trong `next.config.ts`.
 - Lịch sử giao dịch đối tác chỉ còn phiếu hệ thống đã ghi sổ — bỏ hẳn nhánh KiotViet.
 - **`0080` mới áp ở local.**
@@ -112,13 +121,16 @@ ma trận quyền route 190/190, `npm run test:concurrency`) và xem trang với
 (đã xóa, DB về đúng trạng thái trước).
 
 Hệ quả cho các phase sau:
+
 - **Phase 14 (panel mã hàng)** dùng lại `phan_tich_ton_kho(p_so_ngay, p_ngay, p_san_pham_id)` cho
   "Khách đặt" + "Dự kiến hết hàng" — cùng con số với trang Phân tích. Lưu ý quyền: RPC chỉ cho
   quản lý + văn phòng (`xem_duoc_phan_tich`); thủ kho / chỉ xem mở panel sẽ nhận 42501 — Phase 14
   phải quyết ẩn trường đó hay nới quyền riêng cho trường hợp một mã.
+
 - **PostgREST cắt mọi request ở 1.000 dòng** (`max_rows`, supabase/config.toml). Màn cần toàn danh
   mục dùng `src/shared/lib/fetch-all-pages.ts`. Nghi nút xuất Excel danh mục đang bị cắt ở 1.000 mã
   — đã tạo việc riêng "Sửa xuất Excel danh mục bị cắt ở 1.000 mã", chưa làm.
+
 - CSV có BOM dùng chung ở `src/shared/lib/csv.ts`.
 - Hàm quyền mỏng `xem_duoc_phan_tich()` chờ Phase 16. Đổi ngưỡng: RLS chỉ quản lý.
 - `0079` mới áp ở local.
@@ -133,16 +145,20 @@ test đọc Excel, ma trận quyền route 185/185, `npm run test:concurrency` 3
 trên trình duyệt.
 
 Hệ quả cho các phase sau:
+
 - "Bán" = hóa đơn (XUAT) HOAN_THANH; đơn HOAN_THANH có đúng một hóa đơn chưa hủy (unique index
   `uq_chung_tu_hoa_don_cua_don`). Phase 13 tính ADU / khách đặt dựa trên mô hình này: khách đặt
   = dòng của đơn DA_XAC_NHAN (và TAM nếu muốn), không còn "đã xuất một phần".
+
 - Client không gọi thẳng `tao_phieu_xuat_tu_don` nữa — chỉ qua `hoan_thanh_don`.
 - Hàm quyền mỏng `hoan_thanh_duoc_don()` / `huy_duoc_don()` → Phase 16 thay ruột bằng quyền theo
   chức vụ (Hoàn thành, Hủy). `xac_nhan_don` / `mo_khoa_don` / `dong_don_som` vẫn kiểm vai trò
   trực tiếp — Phase 16 nên gói tương tự.
+
 - **`0078` mới áp ở local.** Đẩy lên cloud: xử lý lệch migration từ 0072 trước; 0078 dừng nếu dữ
   liệu thật có đơn mang 2 hóa đơn chưa hủy (hủy hóa đơn thừa bằng tay). Phiếu nháp cũ gắn đơn bị
   migration hủy.
+
 - Lỗ hổng memory "đơn → phiếu xuất" (01/10) đã đóng.
 - Còn treo: ghi chú Notion "Không hiện" dưới mục tạo đơn — chờ người dùng làm rõ.
 
@@ -155,13 +171,17 @@ Supabase local (`npm run check`, pgTAP 42 file / 647 test, test hàm thuần, te
 trận quyền route 180/180).
 
 Hệ quả cho các phase sau:
+
 - Người nhận nội bộ = `nhan_vien_phu_trach` (migration `0077`, giữ tên cột `nguoi_nhan_id`).
   `danh_sach_nguoi_nhan_noi_bo()` trả `id, ten_viet_tat, ten_day_du`. Phase 12 dựng trên đây.
+
 - **`0077` mới áp ở local.** Cloud còn lệch lịch sử migration từ 0072 và nhiều khả năng chưa
   có 0076 — phải xử lý chỗ lệch rồi mới `db:push`, hỏi người dùng trước.
+
 - Nhóm hàng / ĐVT / Công đoạn rời Cài đặt → modal "Danh mục phụ" ở Danh sách hàng hóa (route
   ghép qua prop `extraActions`); URL cũ chuyển về `/danh-muc`. Phase 15 (import v2) dùng lại
   `LookupSelect` / `QuickLookupModal` trong `features/products` cho dropdown từng dòng.
+
 - Văn phòng vào `/cai-dat` mở tab Nhân viên phụ trách (tab duy nhất của vai trò này).
 - `product-drawer.tsx` ~420 dòng (vượt ~200 từ trước) — nên tách khi đụng lại.
 - Sinh type từ local: `npm run db:types:local` hỏng ở máy này; dùng
@@ -176,9 +196,11 @@ GON-01..07 xong; kiểm trên Supabase local (`npm run check`, test hàm thuần
 ma trận quyền route 165/165).
 
 Hệ quả cho các phase sau:
+
 - Route xuất đổi `/xuat-kho` → `/hoa-don` (redirect trong `next.config.ts`). Phase 12 dựng trên `/hoa-don`.
 - `/ton-kho` và `/ton-kho/nap-tam` đã gỡ; `/ton-kho/dinh-muc` tạm giữ, vào bằng nút "Định mức"
   ở Danh sách hàng hóa → Phase 13 chuyển vào `/phan-tich`, thêm mục "Phân tích" vào menu.
+
 - Quyền UI `view-cost`, `edit-sale-price`, `load-provisional-stock` đã bỏ khỏi `permissions.ts`.
 - **Nạp tồn tạm từ KiotViet không còn giao diện** — ghi chú v1.0 bên dưới ("nạp tồn tạm là
   việc vận hành bắt buộc trước go-live") phải chốt lại: tồn đầu kỳ đi bằng kiểm kê (KKE-04 /
@@ -720,6 +742,7 @@ _Song song: Phase 09 (quan-ly-hinh-anh) đang thực thi ở phiên khác — th
 | Phase 07 P06 | 35m | 2 tasks | 4 files |
 | Phase 07 P07 | 30min | 2 tasks | 3 files |
 | Phase 09 P05 | 35min | 2 tasks | 1 files |
+| Phase 17 P01 | 15min | 3 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -823,6 +846,7 @@ Recent decisions affecting current work:
 - [Phase 07]: 07-06: fetchNegativeStockReport chi nhan p_ngay - RPC bao_cao_xuat_am (0069) khong co tham so p_kho_id
 - [Phase 07]: 07-07: ngay chot SalesPaceCard hien trong noi dung, khong dung Card.extra, tranh doc query.data ngoai QueryState children
 - [Phase 09]: CLI supabase mat quyen Management API tren may nay - dung psql DATABASE_URL de day migration 0068 + chay pgTAP, gen types --db-url thay --project-id
+- [Phase 17]: Tên nhóm menu Đơn hàng giữ; shortLabel Duyệt đơn giữ, kiểm 375px ở 17-06
 
 ### Roadmap Evolution
 
@@ -850,7 +874,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-02T10:00:00.000Z
-Stopped at: Phase 13 complete — branch feature/phase-13-phan-tich (xếp chồng 10 → 11 → 12 → 13) chờ PR
-Last activity: 2026-10-02 - Phase 13 Phân tích tồn kho (quickplan, PTICH-01..07)
-Resume file: .planning/ROADMAP.md (Phase 14)
+Last session: 2026-10-03T12:58:28.437Z
+Stopped at: Completed 17-01-PLAN.md
+Last activity: 2026-10-03
+Resume file: None

@@ -192,8 +192,8 @@ Nguồn: Notion Task board (phản hồi 03/10/2026). Quyết định chốt 03/
 
 ### Đổi tên & gọn giao diện (TEN)
 
-- [ ] **TEN-01**: Menu nhóm Đơn hàng hiện "Đơn đặt" và "Duyệt đơn" (máy tính và điện thoại); tiêu đề trang và nút liên quan dùng tên mới
-- [ ] **TEN-02**: Trang đơn ở `/don-dat` (kèm `/moi`, `/[id]`, `/[id]/in`), trang hóa đơn ở `/duyet-don` (kèm `/[id]`); link cũ `/dat-hang/*`, `/hoa-don/*`, `/xuat-kho/*` chuyển thẳng sang đường mới, giữ đường con và tham số; chưa đăng nhập thì sau đăng nhập quay về đúng đường mới
+- [x] **TEN-01**: Menu nhóm Đơn hàng hiện "Đơn đặt" và "Duyệt đơn" (máy tính và điện thoại); tiêu đề trang và nút liên quan dùng tên mới
+- [x] **TEN-02**: Trang đơn ở `/don-dat` (kèm `/moi`, `/[id]`, `/[id]/in`), trang hóa đơn ở `/duyet-don` (kèm `/[id]`); link cũ `/dat-hang/*`, `/hoa-don/*`, `/xuat-kho/*` chuyển thẳng sang đường mới, giữ đường con và tham số; chưa đăng nhập thì sau đăng nhập quay về đúng đường mới
 - [ ] **TEN-03**: Mọi chỗ hiện số lượng đang được đặt (bảng Danh sách hàng hóa, chi tiết mã, xuất Excel) ghi "Đơn đặt" thay "Khách đặt"
 - [ ] **TEN-04**: Công đoạn "Mua ngoài" hiện là "Hàng ngoài" ở mọi màn và file xuất; import Excel nhận cả tên cũ lẫn tên mới; mã `MUA_NGOAI` giữ nguyên
 - [ ] **TEN-05**: Danh mục hàng hóa không còn bộ lọc, cảnh báo, nút rà hàng loạt và nhãn "Cần rà"; cột `can_ra` giữ trong database
@@ -387,8 +387,8 @@ Nguồn: Notion Task board (phản hồi 03/10/2026). Quyết định chốt 03/
 | QUYEN-02 | Phase 16 | Complete |
 | QUYEN-03 | Phase 16 | Complete |
 | QUYEN-04 | Phase 16 | Complete |
-| TEN-01 | Phase 17 | Pending |
-| TEN-02 | Phase 17 | Pending |
+| TEN-01 | Phase 17 | Complete |
+| TEN-02 | Phase 17 | Complete |
 | TEN-03 | Phase 17 | Pending |
 | TEN-04 | Phase 17 | Pending |
 | TEN-05 | Phase 17 | Pending |
