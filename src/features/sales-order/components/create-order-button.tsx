@@ -11,7 +11,7 @@ type Props = {
 };
 
 /**
- * Mở dialog chọn người nhận ngay trên danh sách — chọn xong là đơn tạm được
+ * Mở dialog chọn người nhận ngay trên danh sách — bấm "Tạo" là đơn tạm được
  * tạo và chuyển sang trang chi tiết để gõ dòng.
  */
 export function CreateOrderButton({ label = "Tạo đơn" }: Props) {
@@ -40,7 +40,7 @@ export function CreateOrderButton({ label = "Tạo đơn" }: Props) {
         destroyOnHidden
       >
         <p className="mb-3 text-sm text-gray-500">Mặc định nhận Nội bộ — đổi sang Đối tác nếu giao cho khách.</p>
-        <NewOrderForm onPendingChange={setPending} />
+        <NewOrderForm onPendingChange={setPending} onCancel={close} />
       </Modal>
     </>
   );
