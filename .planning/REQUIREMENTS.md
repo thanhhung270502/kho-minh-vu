@@ -206,7 +206,7 @@ Nguồn: Notion Task board (phản hồi 03/10/2026). Quyết định chốt 03/
 
 ### Đơn nhiều người nhận (NNHAN)
 
-- [ ] **NNHAN-01**: Tạo/sửa đơn nội bộ chọn được một hoặc nhiều người nhận (nhân viên phụ trách) cho cả đơn
+- [ ] **NNHAN-01**: Tạo/sửa đơn (Nội bộ hoặc Đối tác) chọn được một hoặc nhiều người nhận (nhân viên phụ trách) cho cả đơn; gán người nhận ở dòng tự thêm người đó vào danh sách của đơn
 - [ ] **NNHAN-02**: Từng dòng hàng của đơn gán được người nhận riêng
 - [ ] **NNHAN-03**: Danh sách đơn hiện đủ người nhận; lọc theo một người nhận ra đơn có người đó ở cấp đơn hoặc cấp dòng
 - [ ] **NNHAN-04**: Phiếu lấy hàng in người nhận của đơn và của từng dòng
