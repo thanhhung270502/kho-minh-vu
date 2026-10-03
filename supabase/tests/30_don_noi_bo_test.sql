@@ -3,6 +3,7 @@
 -- 0077 đổi đích: người nhận nội bộ là NHÂN VIÊN PHỤ TRÁCH (bảng riêng, có tên
 -- viết tắt + tên đầy đủ), không còn là tài khoản đăng nhập nguoi_dung.
 -- Khuôn: supabase/tests/29_phieu_xuat_tu_don_test.sql
+-- 0090: CHECK một-người-nhận của đơn đã bỏ (xem 108)
 -- =============================================================================
 begin;
 select plan(26);
@@ -69,14 +70,13 @@ select fk_ok('public', 'chung_tu', 'nguoi_nhan_id', 'public', 'nhan_vien_phu_tra
   'chung_tu.nguoi_nhan_id → nhan_vien_phu_trach');
 
 -- ─── 10–12: đúng một người nhận ─────────────────────────────────────────────
-select throws_ok(
-  $$ insert into public.don_dat_hang (so_dh, doi_tac_id, nguoi_nhan_id)
-     select 'ZQX-NB-HAI', doi_tac_id, nguoi_nhan from t_nb $$,
-  '23514', null, 'Đơn có cả đối tác lẫn người nhận nội bộ bị từ chối'
+select is(
+  (select count(*)::int from pg_constraint where conname = 'ck_ddh_mot_nguoi_nhan'), 0,
+  '0090: đơn bỏ CHECK một-người-nhận — đối tác kèm nhân viên hợp lệ (D3)'
 );
-select throws_ok(
-  $$ insert into public.don_dat_hang (so_dh) values ('ZQX-NB-KHONG') $$,
-  '23514', null, 'Đơn không có người nhận nào bị từ chối'
+select ok(
+  exists (select 1 from pg_trigger where tgname = 'kiem_don_noi_bo_co_nguoi_nhan' and tgdeferrable),
+  '0090: đơn nội bộ rỗng bị chặn bằng constraint trigger hoãn (chứng minh ở 108)'
 );
 select throws_ok(
   $$ insert into public.chung_tu (so_ct, loai_ct, kho_id, doi_tac_id, nguoi_nhan_id)
