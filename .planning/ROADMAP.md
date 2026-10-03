@@ -625,13 +625,13 @@ bảng nhiều-nhiều. Ba task Notion bỏ khỏi milestone (FUT-01..03). Migra
   4. Danh mục hàng hóa không còn bộ lọc, cảnh báo, nút rà hàng loạt hay nhãn "Cần rà"
   5. Tạo/sửa đơn không còn ô Ngày giao dự kiến (danh sách, chi tiết, bản in cũng bỏ); phiếu lấy hàng ghi người nhận bằng tên đầy đủ không kèm mã nhân viên, kèm thời gian in (giờ:phút ngày) và người đặt
 
-**Plans:** 3/6 plans executed
+**Plans:** 4/6 plans executed
 
 Plans:
 - [x] 17-01-PLAN.md — Dời route /don-dat, /duyet-don + redirect thẳng, menu Đơn đặt/Duyệt đơn, ma trận route (W1)
 - [x] 17-02-PLAN.md — Trỏ mọi link trong features sang đường mới, tên màn ở back-link/empty state (W1)
 - [x] 17-03-PLAN.md — Migration 0089 "Hàng ngoài" + pgTAP 107, nhãn Đơn đặt ở Phân tích/CSV (W1)
-- [ ] 17-04-PLAN.md — Danh sách hàng hóa: bỏ Cần rà + ĐVT mâu thuẫn, nhãn Đơn đặt / Hàng ngoài (W2)
+- [x] 17-04-PLAN.md — Danh sách hàng hóa: bỏ Cần rà + ĐVT mâu thuẫn, nhãn Đơn đặt / Hàng ngoài (W2)
 - [ ] 17-05-PLAN.md — Bỏ Ngày giao dự kiến, phiếu lấy hàng in tên người nhận + người đặt + giờ in (W3)
 - [ ] 17-06-PLAN.md — Cổng cuối: full suite + kiểm trên trình duyệt (checkpoint) (W4)
 
@@ -696,6 +696,6 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 | 14. Panel chi tiết | 4/4 | Complete | 2026-10-02 |
 | 15. Import danh mục v2 | 4/4 | Complete | 2026-10-02 |
 | 16. Chức vụ & quyền | 4/4 | Complete | 2026-10-02 |
-| 17. Đổi tên & gọn đơn đặt | 3/6 | In Progress|  |
+| 17. Đổi tên & gọn đơn đặt | 4/6 | In Progress|  |
 | 18. Đơn nhiều người nhận | 0/TBD | Not started | - |
 | 19. Dòng xe dùng chung | 0/TBD | Not started | - |
