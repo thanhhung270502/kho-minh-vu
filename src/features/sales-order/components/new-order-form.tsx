@@ -8,6 +8,7 @@ import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 import { DEFAULT_RECIPIENT_KIND, type RecipientKind } from "@/shared/lib/recipient";
 
 import { useCreateOrder } from "../hooks/useOrders";
+import { orderRecipientsSchema } from "../schemas/order.schema";
 import { RecipientPicker } from "./recipient-picker";
 
 type Props = {
@@ -28,17 +29,22 @@ export function NewOrderForm({ onPendingChange, onCancel }: Props) {
   const router = useRouter();
   const createOrder = useCreateOrder();
   const [kind, setKind] = useState<RecipientKind>(DEFAULT_RECIPIENT_KIND);
-  const [recipientId, setRecipientId] = useState<string | undefined>();
+  const [partnerId, setPartnerId] = useState<string | undefined>();
+  const [staffIds, setStaffIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  const parsed = orderRecipientsSchema.safeParse({
+    partnerId: kind === "partner" ? (partnerId ?? null) : null,
+    staffIds,
+  });
+  const canCreate = kind === "partner" ? Boolean(partnerId) && parsed.success : parsed.success;
+
   async function create() {
-    if (!recipientId || createOrder.isPending) return;
+    if (!canCreate || !parsed.success || createOrder.isPending) return;
     setError(null);
     onPendingChange?.(true);
     try {
-      const id = await createOrder.mutateAsync({
-        recipient: { kind, id: recipientId },
-      });
+      const id = await createOrder.mutateAsync(parsed.data);
       // replace: nút Back không quay lại trang tạo — đơn đã có số rồi.
       router.replace(`/don-dat/${id}`);
     } catch (caught) {
@@ -69,15 +75,20 @@ export function NewOrderForm({ onPendingChange, onCancel }: Props) {
           <RecipientPicker
             autoFocus
             kind={kind}
-            id={recipientId}
+            partnerId={partnerId}
+            staffIds={staffIds}
+            onEnterWhenEmpty={() => void create()}
             onKindChange={(next) => {
               setKind(next);
-              // id của chế độ cũ không còn nghĩa (xem RecipientPicker).
-              setRecipientId(undefined);
+              if (next === "internal") setPartnerId(undefined);
               setError(null);
             }}
-            onIdChange={(id) => {
-              setRecipientId(id);
+            onPartnerChange={(id) => {
+              setPartnerId(id);
+              setError(null);
+            }}
+            onStaffChange={(ids) => {
+              setStaffIds(ids);
               setError(null);
             }}
           />
@@ -85,7 +96,7 @@ export function NewOrderForm({ onPendingChange, onCancel }: Props) {
 
         <div className="mt-4 flex justify-end gap-2">
           {onCancel ? <Button onClick={onCancel}>Hủy</Button> : null}
-          <Button type="primary" htmlType="submit" disabled={!recipientId} loading={createOrder.isPending}>
+          <Button type="primary" htmlType="submit" disabled={!canCreate} loading={createOrder.isPending}>
             Tạo
           </Button>
         </div>
