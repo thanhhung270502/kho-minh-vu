@@ -160,7 +160,7 @@ async function writeJourney(acc) {
 }
 
 async function pageJourney(acc) {
-  await call("page /hoa-don", `${SITE}/hoa-don`, {
+  await call("page /duyet-don", `${SITE}/duyet-don`, {
     headers: { cookie: acc.cookie },
   });
 }
@@ -254,7 +254,7 @@ async function main() {
         : 0,
       p95_ds: pct(stats["danh_sach_san_pham"]?.lat ?? [], 95) | 0,
       p95_ghi: pct(ghi?.lat ?? [], 95) | 0,
-      p95_page: pct(stats["page /hoa-don"]?.lat ?? [], 95) | 0,
+      p95_page: pct(stats["page /duyet-don"]?.lat ?? [], 95) | 0,
     };
     summary.push(row);
     console.log(
