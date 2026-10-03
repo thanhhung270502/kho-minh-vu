@@ -66,6 +66,7 @@ npx tsx scripts/test-route-permissions.ts   # ma trận quyền route × 4 vai t
 npm run import:kiotviet -- --mau   # thử nạp dữ liệu trên file mẫu
 npm run import:sample              # sinh file Excel mẫu để thử
 npm run test:concurrency           # hai người ghi sổ cùng lúc
+ENV_FILE=.env.cloud.backup npm run test:load -- 5:45 25:45 50:45   # load test (vu:giây), tự nạp + dọn dữ liệu LOADTEST
 ```
 
 ## Tech stack

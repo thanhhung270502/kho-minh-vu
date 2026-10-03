@@ -27,7 +27,8 @@
     "import:kiotviet": "tsx scripts/import-kiotviet/index.ts",
     "import:sample": "tsx scripts/import-kiotviet/make-sample-data.ts",
     "import:kiotviet-images": "tsx scripts/copy-kiotviet-images/index.ts",
-    "test:concurrency": "bash scripts/test-concurrency.sh"
+    "test:concurrency": "bash scripts/test-concurrency.sh",
+    "test:load": "bash scripts/load-test/run.sh"
   },
   "dependencies": {
     "@ant-design/cssinjs": "^2.1.2",
