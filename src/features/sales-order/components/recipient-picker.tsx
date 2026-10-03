@@ -64,6 +64,7 @@ export function RecipientPicker({
             onChange={onStaffChange}
             extraOptions={extraStaff}
             placeholder="Chọn nhân viên phụ trách"
+            onEnterWhenEmpty={onEnterWhenEmpty}
           />
         </>
       ) : (
