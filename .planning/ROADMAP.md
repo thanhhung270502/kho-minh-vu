@@ -649,9 +649,9 @@ Plans:
 
 **Success Criteria** (what must be TRUE):
 
-  1. Tạo/sửa đơn nội bộ chọn được một hoặc nhiều người nhận (nhân viên phụ trách) cho cả đơn, và gán được người nhận riêng cho từng dòng hàng (quy tắc ràng buộc giữa hai cấp chốt ở discuss-phase)
+  1. Tạo/sửa đơn (Nội bộ hoặc Đối tác) chọn được một hoặc nhiều người nhận (nhân viên phụ trách) cho cả đơn, và gán được người nhận riêng cho từng dòng hàng; gán ở dòng tự thêm người đó vào danh sách của đơn, dòng trống = hàng chung (18-CONTEXT D1–D3)
   2. Danh sách đơn hiện đủ người nhận; lọc theo một người nhận ra mọi đơn có người đó ở cấp đơn hoặc cấp dòng
-  3. Phiếu lấy hàng in người nhận của đơn và của từng dòng (cách trình bày — một tờ hay nhiều tờ — chốt ở discuss-phase)
+  3. Phiếu lấy hàng một tờ chung: đầu phiếu liệt kê người nhận của đơn, bảng có cột "Người nhận" theo dòng (18-CONTEXT D4)
   4. Hoàn thành đơn sinh hóa đơn mang theo người nhận của đơn và của từng dòng, xem lại được ở Duyệt đơn
   5. Đơn cũ đang có một người nhận vẫn hiện đúng người đó sau khi chuyển sang cấu trúc mới, không mất người nhận nào
 
