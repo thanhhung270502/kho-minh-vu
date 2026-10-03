@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: Phản hồi vận hành
-status: milestone_complete
-stopped_at: Phase 16 complete — milestone v1.1 xong cả 7 phase (10–16)
-last_updated: 2026-10-02T21:00:00.000Z
-last_activity: 2026-10-02
+milestone: v1.2
+milestone_name: Phản hồi vận hành đợt 2
+status: defining_requirements
+stopped_at: Milestone v1.2 started — defining requirements
+last_updated: 2026-10-03T10:00:00.000Z
+last_activity: 2026-10-03
 progress:
   total_phases: 16
   completed_phases: 11
@@ -18,17 +18,25 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-02)
+See: .planning/PROJECT.md (updated 2026-10-03)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Milestone v1.1 Phản hồi vận hành — xong cả Phase 10–16; còn đẩy migration 0076–0084 lên cloud, merge branch, đóng milestone
+**Current focus:** Milestone v1.2 Phản hồi vận hành đợt 2 — đang định nghĩa requirements
 
 ## Current Position
 
-Phase: v1.1 — milestone complete (Phase 10–16 complete)
+Phase: Not started (defining requirements)
 Plan: —
-Status: Milestone complete — chờ deploy + đóng milestone
-Last activity: 2026-10-02 — Phase 16 Chức vụ & quyền hoàn thành
+Status: Defining requirements
+Last activity: 2026-10-03 — Milestone v1.2 started
+
+### Milestone v1.2 — bối cảnh lúc mở (03/10/2026)
+
+- Nguồn: phản hồi vận hành 03/10/2026 trên Notion Task board; 3 task bỏ khỏi milestone
+  (Đối tác chỉ còn NCC, kiểm tra chịu tải, Phân tích theo kỳ) — vẫn để "Chưa xử lý" trên Notion.
+- Branch Phase 10–16 đã merge vào `main` và push. Song song đang làm Quy chuẩn mã hàng trên
+  `feature/quy-chuan-ma-b` (ngoài GSD, migration tới 0086) — phải merge trước phase "dòng xe dùng chung".
+- v1.1 vẫn chưa `/gsd:complete-milestone`.
 
 ### Phase 16 — đã xong (02/10/2026)
 
