@@ -75,7 +75,7 @@ export function ProductInfoTab({ product, forecast }: Props) {
         </Field>
         {forecast !== undefined ? (
           <>
-            <Field label="Khách đặt">{forecast ? formatNumber(forecast.customerOrdered) : "—"}</Field>
+            <Field label="Đơn đặt">{forecast ? formatNumber(forecast.customerOrdered) : "—"}</Field>
             <Field label="Dự kiến hết hàng">{stockoutText(forecast)}</Field>
           </>
         ) : null}

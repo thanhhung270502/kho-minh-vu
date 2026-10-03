@@ -180,7 +180,7 @@ export function buildProductColumns({
 }
 
 /**
- * Khách đặt / Dự kiến hết hàng — cùng số với trang Phân tích (nhịp bán 30 ngày).
+ * Đơn đặt / Dự kiến hết hàng — cùng số với trang Phân tích (nhịp bán 30 ngày).
  * Số ghép ở trình duyệt nên KHÔNG sắp xếp được theo hai cột này.
  */
 function forecastColumns(forecasts: {
@@ -190,7 +190,7 @@ function forecastColumns(forecasts: {
   const pending = <Typography.Text type="secondary">…</Typography.Text>;
   return [
     {
-      title: "Khách đặt",
+      title: "Đơn đặt",
       key: "customerOrdered",
       width: 100,
       align: "right",

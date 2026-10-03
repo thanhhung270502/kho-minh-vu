@@ -1233,6 +1233,7 @@ async function kiemCsvPhanTich() {
   const header = csv.split("\r\n")[0] ?? "";
   assert.ok(header.includes("Đề nghị nhập") && header.includes("Mã hàng"), "CSV đề nghị nhập có tiêu đề tiếng Việt");
   assert.ok(!/giá|vốn/i.test(header), "CSV đề nghị nhập không có cột giá");
+  assert.ok(header.includes("Đơn đặt") && !header.includes("Khách đặt"), "TEN-03: CSV ghi Đơn đặt thay Khách đặt");
   assert.ok(csv.includes("RWT") && csv.includes(",65"), "dòng RWT đề nghị 65");
 }
 

@@ -49,7 +49,7 @@ export function ProductTable({
   permissions: CatalogPermissions;
   /** Nút do route ghép vào thanh công cụ — xem `danh-muc/page.tsx`. */
   extraActions?: ReactNode;
-  /** Quản lý + văn phòng (view-analysis): hai cột Khách đặt / Dự kiến hết hàng. */
+  /** Quản lý + văn phòng (view-analysis): hai cột Đơn đặt / Dự kiến hết hàng. */
   showForecast?: boolean;
 }) {
   const { filter, selectedId, navigate, selectProduct, toggleProduct } = useProductTableUrl();

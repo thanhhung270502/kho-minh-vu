@@ -295,7 +295,7 @@ export function ProductDrawer({ id, open, onClose, copyFromId = null }: Props) {
               validateStatus={errors.stageId ? "error" : undefined}
               help={
                 errors.stageId?.message ??
-                "Hàng qua xử lý gì: sơn, carbon, xi mạ… hoặc mua ngoài"
+                "Hàng qua xử lý gì: sơn, carbon, xi mạ… hoặc hàng ngoài"
               }
             >
               <Controller
