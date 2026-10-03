@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Phản hồi vận hành đợt 2
-status: ready_to_plan
-stopped_at: Phase 17 complete — next Phase 18 (Đơn nhiều người nhận)
-last_updated: "2026-10-03T13:25:00.000Z"
+status: executing
+stopped_at: Completed 18-01-PLAN.md
+last_updated: "2026-10-03T15:00:41.529Z"
 last_activity: 2026-10-03
 progress:
   total_phases: 19
   completed_phases: 12
   total_plans: 107
-  completed_plans: 86
+  completed_plans: 87
 ---
 
 # Project State
@@ -36,12 +36,14 @@ Kiểm: `npm run check`, test hàm thuần, test đọc Excel, ma trận quyền
 test, UAT trình duyệt 10 bước (người dùng xác nhận "đạt").
 
 Hệ quả cần nhớ:
+
 - Route mới `/don-dat`, `/duyet-don`; `/dat-hang/*`, `/hoa-don/*`, `/xuat-kho/*` chuyển hướng một bước trong `next.config.ts`.
 - "Duyệt đơn" chỉ là tên màn; chứng từ vẫn gọi "hóa đơn" (A1).
 - Migration `0089_ten_hang_ngoai.sql` (dữ liệu) **mới áp ở local** — deploy cloud phải đẩy cùng các migration chưa lên.
 - Phiếu lấy hàng: `recipientDisplayName` (chỉ tên), Người đặt, In lúc — Phase 18 sẽ sửa tiếp phần người nhận.
 - DB local đã dọn về schema nhánh (gỡ 0085–0088 quy chuẩn, giữ dữ liệu; backup `~/Desktop/kiotviet_local_before_reset_20261003.dump`).
   Quay lại nhánh quy chuẩn cần `migration up --include-all` hoặc merge `main` vào trước.
+
 - **Phase 19 phải xem lại phạm vi**: 0086 (quy chuẩn) xóa bảng `dong_xe`/`loai_hang`, thay bằng cột text trên `san_pham`.
 
 ### Milestone v1.2 — bối cảnh lúc mở (03/10/2026)
@@ -764,6 +766,7 @@ _Song song: Phase 09 (quan-ly-hinh-anh) đang thực thi ở phiên khác — th
 | Phase 17 P03 | 10min | 2 tasks | 6 files |
 | Phase 17 P04 | 15min | 3 tasks | 17 files |
 | Phase 17 P05 | 10min | 2 tasks | 10 files |
+| Phase 18 P01 | 25min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -896,7 +899,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-03T13:05:29.373Z
-Stopped at: Completed 17-05-PLAN.md
+Last session: 2026-10-03T15:00:41.525Z
+Stopped at: Completed 18-01-PLAN.md
 Last activity: 2026-10-03
 Resume file: None
