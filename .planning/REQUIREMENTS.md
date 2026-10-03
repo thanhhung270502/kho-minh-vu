@@ -387,6 +387,25 @@ Nguồn: Notion Task board (phản hồi 03/10/2026). Quyết định chốt 03/
 | QUYEN-02 | Phase 16 | Complete |
 | QUYEN-03 | Phase 16 | Complete |
 | QUYEN-04 | Phase 16 | Complete |
+| TEN-01 | Phase 17 | Pending |
+| TEN-02 | Phase 17 | Pending |
+| TEN-03 | Phase 17 | Pending |
+| TEN-04 | Phase 17 | Pending |
+| TEN-05 | Phase 17 | Pending |
+| DDAT-01 | Phase 17 | Pending |
+| DDAT-02 | Phase 17 | Pending |
+| DDAT-03 | Phase 17 | Pending |
+| NNHAN-01 | Phase 18 | Pending |
+| NNHAN-02 | Phase 18 | Pending |
+| NNHAN-03 | Phase 18 | Pending |
+| NNHAN-04 | Phase 18 | Pending |
+| NNHAN-05 | Phase 18 | Pending |
+| NNHAN-06 | Phase 18 | Pending |
+| DXE-01 | Phase 19 | Pending |
+| DXE-02 | Phase 19 | Pending |
+| DXE-03 | Phase 19 | Pending |
+| DXE-04 | Phase 19 | Pending |
+| DXE-05 | Phase 19 | Pending |
 
 **Coverage:**
 - v1 requirements: 80 total
@@ -399,8 +418,15 @@ Nguồn: Notion Task board (phản hồi 03/10/2026). Quyết định chốt 03/
 - Unmapped: 0 ✓
 - MRNG-02 hoãn (v2), không thuộc phase nào
 
+**Coverage v1.2:**
+- v1.2 requirements: 19 total (TEN 5, DDAT 3, NNHAN 6, DXE 5)
+- Mapped to phases 17–19: 19 (Phase 17: 8, Phase 18: 6, Phase 19: 5)
+- Unmapped: 0 ✓
+- FUT-01..03 hoãn, không thuộc phase nào
+
 ---
 *Requirements defined: 2026-09-12*
 *Last updated: 2026-09-26 — thêm ANH-01..06 cho Phase 9 (Quản lý hình ảnh), 9 phases, 100% coverage*
 *Traceability v1.1 added: 2026-10-02 — Phase 10–16, 36/36 mapped*
 *v1.2 requirements added: 2026-10-03 — TEN 5, DDAT 3, NNHAN 6, DXE 5 (19)*
+*Traceability v1.2 added: 2026-10-03 — Phase 17–19, 19/19 mapped*

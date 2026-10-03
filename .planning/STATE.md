@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Phản hồi vận hành đợt 2
-status: defining_requirements
-stopped_at: Milestone v1.2 started — defining requirements
+status: ready_to_plan
+stopped_at: "Roadmap v1.2 created — Phase 17 ready to plan"
 last_updated: 2026-10-03T10:00:00.000Z
 last_activity: 2026-10-03
 progress:
-  total_phases: 16
+  total_phases: 19
   completed_phases: 11
   total_plans: 101
   completed_plans: 80
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-10-03)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 17 — Đổi tên & gọn đơn đặt
 Plan: —
-Status: Defining requirements
-Last activity: 2026-10-03 — Milestone v1.2 started
+Status: Ready to plan
+Last activity: 2026-10-03 — Roadmap v1.2 created (Phase 17–19)
 
 ### Milestone v1.2 — bối cảnh lúc mở (03/10/2026)
 
