@@ -36,7 +36,7 @@ hàng dùng cho nhiều dòng xe.
 
 **Tiến độ v1.2:**
 - ✓ Phase 17 Đổi tên & gọn đơn đặt (03/10/2026) — TEN-01..05, DDAT-01..03 validated; "Duyệt đơn" chỉ là tên màn, chứng từ vẫn gọi "hóa đơn"; migration 0089 mới ở local
-- Phase 18 Đơn nhiều người nhận — chưa bắt đầu
+- ✓ Phase 18 Đơn nhiều người nhận (03/10/2026) — NNHAN-01..06 validated; bảng nối người nhận đơn/hóa đơn + người nhận theo dòng, áp cho cả Nội bộ và Đối tác; migration 0090–0091 mới ở local
 - Phase 19 Dòng xe dùng chung — chờ merge quy chuẩn; phạm vi phải xem lại vì 0086 bỏ bảng `dong_xe`
 
 ## Previous Milestone: v1.1 Phản hồi vận hành (Phase 10–16 xong, chưa đóng)
@@ -216,4 +216,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-03 — Phase 17 hoàn thành (milestone v1.2)*
+*Last updated: 2026-10-03 — Phase 18 hoàn thành (milestone v1.2)*

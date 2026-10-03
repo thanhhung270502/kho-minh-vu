@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: Phản hồi vận hành đợt 2
-status: executing
-stopped_at: Completed 18-07-PLAN.md
-last_updated: "2026-10-03T15:11:55.683Z"
-last_activity: 2026-10-03 — Phase 17 Đổi tên & gọn đơn đặt hoàn thành (6/6 plan, verification passed)
+status: blocked
+stopped_at: Phase 18 complete — Phase 19 chờ merge quy chuẩn mã + xem lại phạm vi
+last_updated: "2026-10-03T15:40:00.000Z"
+last_activity: 2026-10-03
 progress:
-  total_phases: 10
-  completed_phases: 6
-  total_plans: 128
+  total_phases: 19
+  completed_phases: 13
+  total_plans: 115
   completed_plans: 94
 ---
 
@@ -20,14 +20,30 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-03)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Milestone v1.2 — Phase 17 xong; kế tiếp Phase 18 Đơn nhiều người nhận
+**Current focus:** Milestone v1.2 — Phase 17, 18 xong; Phase 19 chờ merge quy chuẩn mã
 
 ## Current Position
 
-Phase: 18 (Đơn nhiều người nhận) — đang thực thi
-Plan: 7/8 xong (18-01 mô hình DB, 18-02 RPC đọc 0091, 18-03 hợp đồng TS, 18-04 UI tạo đơn + đầu đơn, 18-05 lưới dòng, 18-06 danh sách/lọc/phiếu lấy hàng, 18-07 Duyệt đơn)
-Status: Executing — kế tiếp 18-08
-Last activity: 2026-10-03 — Phase 17 Đổi tên & gọn đơn đặt hoàn thành (6/6 plan, verification passed)
+Phase: 19 (Dòng xe dùng chung) — chưa plan, BỊ CHẶN
+Plan: —
+Status: Chờ merge Quy chuẩn mã hàng (0085–0088) và xem lại phạm vi — 0086 bỏ bảng `dong_xe`, thay bằng cột text trên `san_pham`
+Last activity: 2026-10-03 — Phase 18 Đơn nhiều người nhận hoàn thành (8/8 plan, verification passed)
+
+### Phase 18 — đã xong (03/10/2026)
+
+Branch `feature/phase-18-nhieu-nguoi-nhan` tách từ `feature/phase-17-doi-ten` (chưa push, chưa merge). NNHAN-01..06 xong.
+Kiểm: `npm run check`, test hàm thuần, pgTAP 51 file / 827 test (108, 109 mới), `npm run test:concurrency`, ma trận route
+267/267, UAT trình duyệt 11 bước (người dùng xác nhận "đạt"; sửa `f8a57f1` Enter ở chế độ Đối tác).
+
+Hệ quả cần nhớ:
+- Người nhận nằm ở bảng nối `don_dat_hang_nguoi_nhan` / `chung_tu_nguoi_nhan` + `nguoi_nhan_id` trên dòng; cột `nguoi_nhan_id`
+  cũ trên `don_dat_hang`/`chung_tu` giữ dữ liệu nhưng thôi dùng. "Nội bộ" = `doi_tac_id is null`.
+- Ghi người nhận cấp đơn chỉ qua RPC `tao_don` / `dat_nguoi_nhan_don`; trigger tự thêm người nhận của dòng vào đơn (D1);
+  bỏ người đang ở dòng bị chặn (23514, nêu mã hàng).
+- Migration **0090, 0091 mới áp ở local** (cùng 0089). Deploy cloud phải đẩy 0089–0091 (và 0085–0088 nếu quy chuẩn merge trước).
+- `hoan_thanh_don`/`ghi_so_chung_tu`/`dong_chung_tu` KHÔNG đổi — tránh đụng 0088 (quy chuẩn D). Merge quy chuẩn sau: kiểm lại
+  `tao_phieu_xuat_tu_don` (0091 viết lại) với 0088.
+- Dữ liệu thử local: DH26-000005 → PX26-000005 (xuất âm 3 mã), DH26-000006 đơn tạm.
 
 ### Phase 17 — đã xong (03/10/2026)
 

@@ -707,5 +707,5 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 | 15. Import danh mục v2 | 4/4 | Complete | 2026-10-02 |
 | 16. Chức vụ & quyền | 4/4 | Complete | 2026-10-02 |
 | 17. Đổi tên & gọn đơn đặt | 6/6 | Complete    | 2026-10-03 |
-| 18. Đơn nhiều người nhận | 8/8 | Complete   | 2026-10-03 |
+| 18. Đơn nhiều người nhận | 8/8 | Complete    | 2026-10-03 |
 | 19. Dòng xe dùng chung | 0/TBD | Not started | - |
