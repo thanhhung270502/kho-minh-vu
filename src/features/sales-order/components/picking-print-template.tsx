@@ -4,7 +4,7 @@ import { Button } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 
-import { recipientDisplayName } from "@/shared/lib/recipient";
+import { lineRecipientLabel, recipientDisplayName } from "@/shared/lib/recipient";
 
 import { groupLinesByWarehouse } from "../lib/group-lines-by-warehouse";
 import type { OrderDetail, OrderLine } from "../types";
@@ -20,6 +20,8 @@ function formatNumber(value: number): string {
  * thực lấy. Xếp theo kho rồi theo mã hàng, mỗi kho một dòng tiêu đề nhóm
  * (Claude's Discretion, 04-CONTEXT.md) — xem `group-lines-by-warehouse.ts`.
  * Phase 17: in tên người nhận (không mã), người đặt và giờ in; bỏ ngày giao dự kiến.
+ * Phase 18 (D4): một tờ chung — đầu phiếu liệt kê mọi nhân viên nhận, cột Người nhận
+ * theo dòng; dòng chung ghi "Chung" khi đơn ≥ 2 nhân viên.
  */
 export function PickingPrintTemplate({
   order,
@@ -29,6 +31,7 @@ export function PickingPrintTemplate({
   lines: OrderLine[];
 }) {
   const rows = groupLinesByWarehouse(lines);
+  const { partner, staff } = order.recipients;
   const totalQuantity = lines.reduce((sum, line) => sum + line.orderedQuantity, 0);
 
   // Giờ in là sự kiện phía trình duyệt: tab mở từ trước vẫn in đúng phút bấm in.
@@ -70,10 +73,20 @@ export function PickingPrintTemplate({
       </header>
 
       <section className="mb-4 grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
-        <div>
+        <div className={staff.length >= 2 ? "col-span-2" : undefined}>
           <span className="text-gray-600">Người nhận: </span>
-          <strong>{recipientDisplayName(order.recipient)}</strong>
+          <strong>
+            {staff.length > 0
+              ? staff.map((person) => recipientDisplayName(person.name)).join(", ")
+              : recipientDisplayName(partner?.name)}
+          </strong>
         </div>
+        {staff.length > 0 && partner ? (
+          <div className="col-span-2">
+            <span className="text-gray-600">Đối tác: </span>
+            {recipientDisplayName(partner.name)}
+          </div>
+        ) : null}
         <div>
           <span className="text-gray-600">Người đặt: </span>
           {order.createdByName ?? "—"}
@@ -97,6 +110,7 @@ export function PickingPrintTemplate({
             <th className="border border-gray-400 p-1 text-left">Mã hàng</th>
             <th className="border border-gray-400 p-1 text-left">Tên hàng</th>
             <th className="border border-gray-400 p-1 text-left">ĐVT</th>
+            <th className="border border-gray-400 p-1 text-left">Người nhận</th>
             <th className="border border-gray-400 p-1 text-right">SL đặt</th>
             <th className="border border-gray-400 p-1 text-left">SL thực lấy</th>
           </tr>
@@ -105,7 +119,7 @@ export function PickingPrintTemplate({
           {rows.map((row) =>
             row.kind === "group" ? (
               <tr key={`kho-${row.warehouseName}`} className="bg-gray-100 font-semibold">
-                <td className="border border-gray-400 p-1" colSpan={6}>
+                <td className="border border-gray-400 p-1" colSpan={7}>
                   Kho: {row.warehouseName}
                 </td>
               </tr>
@@ -117,6 +131,9 @@ export function PickingPrintTemplate({
                 </td>
                 <td className="border border-gray-400 p-1">{row.line.productName}</td>
                 <td className="border border-gray-400 p-1">{row.line.unitName}</td>
+                <td className="border border-gray-400 p-1">
+                  {lineRecipientLabel(row.line.recipientName, staff.length)}
+                </td>
                 <td className="border border-gray-400 p-1 text-right">
                   {formatNumber(row.line.orderedQuantity)}
                 </td>
@@ -127,7 +144,7 @@ export function PickingPrintTemplate({
         </tbody>
         <tfoot>
           <tr className="font-semibold">
-            <td className="border border-gray-400 p-1" colSpan={4}>
+            <td className="border border-gray-400 p-1" colSpan={5}>
               Tổng cộng — {lines.length} dòng
             </td>
             <td className="border border-gray-400 p-1 text-right">
