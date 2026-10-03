@@ -5,13 +5,12 @@ import dayjs from "dayjs";
 import { useState } from "react";
 
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
-import { formatRecipient } from "@/shared/lib/recipient";
 
-import { useUpdateOrderHeader } from "../hooks/useOrders";
+import { useSetOrderRecipients, useUpdateOrderHeader } from "../hooks/useOrders";
 import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from "../lib/order-status";
-import type { OrderHeaderInput } from "../schemas/order.schema";
+import type { OrderHeaderInput, OrderRecipientsInput } from "../schemas/order.schema";
 import type { OrderDetail } from "../types";
-import { OrderRecipientField } from "./order-recipient-field";
+import { OrderRecipientField, RecipientsReadonly } from "./order-recipient-field";
 
 type Props = { order: OrderDetail; editable: boolean };
 
@@ -19,28 +18,51 @@ type Props = { order: OrderDetail; editable: boolean };
 export function OrderHeader({ order, editable }: Props) {
   const { message } = App.useApp();
   const update = useUpdateOrderHeader(order.id);
+  const setRecipients = useSetOrderRecipients(order.id);
   const [justSaved, setJustSaved] = useState<string | null>(null);
+
+  function reportError(error: unknown) {
+    if (errorCode(error) === "42501") {
+      message.error("Bạn không có quyền sửa đơn này. Liên hệ quản trị hệ thống.");
+      return;
+    }
+    // Câu của DB đã nêu rõ mã hàng đang được gán / đơn đã xác nhận / nội bộ rỗng.
+    if (isPostgrestError(error) && error.code === "23514") {
+      message.error(error.message);
+      return;
+    }
+    // Lớp api ném Error thường khi RLS lọc im lặng — câu đó đã đủ rõ (bẫy 8).
+    if (error instanceof Error && !isPostgrestError(error)) {
+      message.error(error.message);
+      return;
+    }
+    const explained = explainError(error);
+    message.error(`${explained.title}. ${explained.action}`);
+  }
+
+  function markSaved(field: string) {
+    setJustSaved(field);
+    setTimeout(() => setJustSaved(null), 2000);
+  }
 
   async function save(field: string, values: Partial<OrderHeaderInput>): Promise<boolean> {
     try {
       await update.mutateAsync(values);
-      setJustSaved(field);
-      setTimeout(() => setJustSaved(null), 2000);
+      markSaved(field);
       return true;
     } catch (error) {
-      if (errorCode(error) === "42501") {
-        message.error("Bạn không có quyền sửa đơn này. Liên hệ quản trị hệ thống.");
-        return false;
-      }
-      // Lớp api ném Error thường (không phải PostgrestError) khi RLS lọc im
-      // lặng — count trả về rỗng. Hiện nguyên văn câu đó, đã đủ rõ đường phục
-      // hồi (bẫy 8: đây không phải PostgrestError, không dùng instanceof).
-      if (error instanceof Error && !isPostgrestError(error)) {
-        message.error(error.message);
-        return false;
-      }
-      const explained = explainError(error);
-      message.error(`${explained.title}. ${explained.action}`);
+      reportError(error);
+      return false;
+    }
+  }
+
+  async function saveRecipients(input: OrderRecipientsInput): Promise<boolean> {
+    try {
+      await setRecipients.mutateAsync(input);
+      markSaved("recipient");
+      return true;
+    } catch (error) {
+      reportError(error);
       return false;
     }
   }
@@ -78,12 +100,9 @@ export function OrderHeader({ order, editable }: Props) {
           key: "partner",
           label: fieldLabel("recipient", "Người nhận"),
           children: editable ? (
-            <OrderRecipientField
-              recipient={order.recipient}
-              onSave={(recipient) => save("recipient", { recipient })}
-            />
+            <OrderRecipientField recipients={order.recipients} onSave={saveRecipients} />
           ) : (
-            formatRecipient(order.recipient)
+            <RecipientsReadonly recipients={order.recipients} />
           ),
         },
         {
