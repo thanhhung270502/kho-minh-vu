@@ -1,4 +1,4 @@
-import { toRecipient, type Recipient } from "@/shared/lib/recipient";
+import { toStaffRefs, type OrderRecipients } from "@/shared/lib/recipient";
 import type { Database } from "@/types/database.types";
 
 import type { OrderStatus } from "./lib/order-status";
@@ -18,7 +18,7 @@ export type OrderRow = {
   orderNo: string;
   orderDate: string;
   status: OrderStatus;
-  recipient: Recipient | null;
+  recipients: OrderRecipients;
   lineCount: number;
   orderedQuantity: number;
   shippedQuantity: number;
@@ -33,7 +33,7 @@ export type OrderDetail = {
   orderNo: string;
   orderDate: string;
   status: OrderStatus;
-  recipient: Recipient | null;
+  recipients: OrderRecipients;
   createdByName: string | null;
   note: string | null;
   orderedQuantity: number;
@@ -53,6 +53,9 @@ export type OrderLine = {
   shippedQuantity: number;
   /** D-04: tính TRONG mapper này, không lưu ở database hay ở state. */
   remainingQuantity: number;
+  /** Người nhận riêng của dòng; null = hàng chung của đơn (0090). */
+  recipientId: string | null;
+  recipientName: string | null;
   defaultWarehouseId: string | null;
   defaultWarehouseName: string | null;
   createdAt: string;
@@ -64,13 +67,13 @@ export function toOrderRow(row: OrderRowDb): OrderRow {
     orderNo: row.so_dh,
     orderDate: row.ngay_dh,
     status: row.trang_thai,
-    recipient: toRecipient({
-      partnerId: row.doi_tac_id,
-      partnerCode: null,
-      partnerName: row.ten_doi_tac,
-      internalId: row.nguoi_nhan_id,
-      internalName: row.ten_nguoi_nhan,
-    }),
+    // RPC trả null cho cột không dùng dù type sinh tự động khai `string`.
+    recipients: {
+      partner: row.doi_tac_id
+        ? { id: row.doi_tac_id, code: null, name: row.ten_doi_tac }
+        : null,
+      staff: toStaffRefs(row.nguoi_nhan_ids, row.ten_nguoi_nhan),
+    },
     lineCount: Number(row.so_dong),
     orderedQuantity: Number(row.tong_so_luong_dat),
     shippedQuantity: Number(row.tong_so_luong_da_xuat),
@@ -87,13 +90,12 @@ export function toOrderDetail(row: OrderDetailDb): OrderDetail {
     orderNo: row.so_dh,
     orderDate: row.ngay_dh,
     status: row.trang_thai,
-    recipient: toRecipient({
-      partnerId: row.doi_tac_id,
-      partnerCode: row.ma_doi_tac,
-      partnerName: row.ten_doi_tac,
-      internalId: row.nguoi_nhan_id,
-      internalName: row.ten_nguoi_nhan,
-    }),
+    recipients: {
+      partner: row.doi_tac_id
+        ? { id: row.doi_tac_id, code: row.ma_doi_tac, name: row.ten_doi_tac }
+        : null,
+      staff: toStaffRefs(row.nguoi_nhan_ids, row.ten_nguoi_nhan),
+    },
     createdByName: row.ho_ten_nguoi_tao,
     note: row.ghi_chu,
     orderedQuantity: Number(row.tong_so_luong_dat),
@@ -117,6 +119,8 @@ export function toOrderLine(row: OrderLineDb): OrderLine {
     shippedQuantity,
     // D-04 — "còn lại" tính khi đọc, không lưu cột, không lưu state.
     remainingQuantity: Math.max(0, orderedQuantity - shippedQuantity),
+    recipientId: row.nguoi_nhan_id ?? null,
+    recipientName: row.ten_nguoi_nhan ?? null,
     defaultWarehouseId: row.kho_mac_dinh_id,
     defaultWarehouseName: row.ten_kho_mac_dinh,
     createdAt: row.created_at,

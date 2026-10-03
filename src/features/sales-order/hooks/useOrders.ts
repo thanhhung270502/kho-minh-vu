@@ -9,7 +9,6 @@ import {
 
 import { documentKeys } from "@/features/documents/api/document.keys";
 import { productKeys } from "@/features/products/api/product.keys";
-import type { RecipientChoice } from "@/shared/lib/recipient";
 
 import {
   addOrderLine,
@@ -22,6 +21,7 @@ import {
   fetchOrderDetail,
   fetchOrderLines,
   fetchOrders,
+  setOrderRecipients,
   unlockOrder,
   updateOrderHeader,
   updateOrderLine,
@@ -31,6 +31,7 @@ import type {
   OrderFilter,
   OrderHeaderInput,
   OrderLineInput,
+  OrderRecipientsInput,
 } from "../schemas/order.schema";
 
 // --- Đọc ---------------------------------------------------------------------
@@ -78,7 +79,15 @@ function useRefreshOrder(id?: string) {
 export function useCreateOrder() {
   const refresh = useRefreshOrder();
   return useMutation({
-    mutationFn: (input: { recipient: RecipientChoice }) => createOrder(input),
+    mutationFn: (input: OrderRecipientsInput) => createOrder(input),
+    onSuccess: refresh,
+  });
+}
+
+export function useSetOrderRecipients(id: string) {
+  const refresh = useRefreshOrder(id);
+  return useMutation({
+    mutationFn: (input: OrderRecipientsInput) => setOrderRecipients(id, input),
     onSuccess: refresh,
   });
 }

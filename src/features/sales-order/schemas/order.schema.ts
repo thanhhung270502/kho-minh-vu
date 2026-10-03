@@ -8,17 +8,50 @@ import { ORDER_STATUSES, type OrderStatus } from "../lib/order-status";
 
 // --- Form đầu đơn / dòng đơn ------------------------------------------------
 //
-// D-03: người nhận bắt buộc, không có ô text tự do. Từ 0076 người nhận là
-// đối tác HOẶC nhân viên nội bộ — database ép đúng một (ck_ddh_mot_nguoi_nhan).
+// Người nhận đơn = một đối tác (tùy chọn) + danh sách nhân viên (0090). Đơn nội
+// bộ (không đối tác) phải có ít nhất một nhân viên — database cũng ép (D3).
 // Đơn KHÔNG mang giá (chốt 19/09 câu 7): không có trường giá ở đây.
 
-export const recipientChoiceSchema = z.object({
-  kind: z.enum(["partner", "internal"]),
-  id: z.string().uuid("Chọn người nhận"),
-});
+export const orderRecipientsSchema = z
+  .object({
+    partnerId: z.string().uuid("Chọn đối tác").nullable(),
+    staffIds: z.array(z.string().uuid()),
+  })
+  .superRefine((value, ctx) => {
+    if (value.partnerId === null && value.staffIds.length === 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["staffIds"],
+        message: "Đơn nội bộ phải có ít nhất một người nhận",
+      });
+    }
+  });
+
+export type OrderRecipientsInput = z.infer<typeof orderRecipientsSchema>;
+
+type Fn = Database["public"]["Functions"];
+
+export function toCreateOrderRpcArgs(
+  input: OrderRecipientsInput,
+): Fn["tao_don"]["Args"] {
+  return {
+    p_doi_tac_id: input.partnerId ?? undefined,
+    p_nguoi_nhan_ids: input.staffIds,
+  };
+}
+
+export function toSetOrderRecipientsRpcArgs(
+  orderId: string,
+  input: OrderRecipientsInput,
+): Fn["dat_nguoi_nhan_don"]["Args"] {
+  return {
+    p_don_id: orderId,
+    p_doi_tac_id: input.partnerId ?? undefined,
+    p_nguoi_nhan_ids: input.staffIds,
+  };
+}
 
 export const orderHeaderSchema = z.object({
-  recipient: recipientChoiceSchema,
   orderDate: z.string().min(1, "Chọn ngày").optional(),
   note: z
     .string()
@@ -32,6 +65,7 @@ export const orderLineSchema = z.object({
   quantity: z.coerce
     .number({ message: "Số lượng phải là số" })
     .positive("Số lượng phải lớn hơn 0"),
+  recipientId: z.string().uuid().nullable().optional(),
 });
 
 export type OrderHeaderInput = z.input<typeof orderHeaderSchema>;
@@ -45,14 +79,6 @@ type OrderLineUpdate = Partial<
 /** Ranh giới duy nhất đổi khóa miền sang tên cột `don_dat_hang`. */
 export function toOrderUpdate(input: Partial<OrderHeaderInput>): OrderUpdate {
   const update: OrderUpdate = {};
-  if (input.recipient !== undefined) {
-    // Ghi CẢ HAI cột mỗi lần đổi người nhận: đổi chế độ mà quên xóa cột kia
-    // là vướng CHECK ngay.
-    update.doi_tac_id =
-      input.recipient.kind === "partner" ? input.recipient.id : null;
-    update.nguoi_nhan_id =
-      input.recipient.kind === "internal" ? input.recipient.id : null;
-  }
   if (input.note !== undefined) update.ghi_chu = input.note;
   return update;
 }
@@ -64,12 +90,26 @@ export function toOrderLineUpdate(
   const update: OrderLineUpdate = {};
   if (input.productId !== undefined) update.san_pham_id = input.productId;
   if (input.quantity !== undefined) update.so_luong_dat = input.quantity;
+  if (input.recipientId !== undefined) update.nguoi_nhan_id = input.recipientId;
   return update;
+}
+
+/** Không truyền `don_gia` — đơn không mang giá. */
+export function toOrderLineInsert(
+  orderId: string,
+  line: OrderLineInput,
+): Database["public"]["Tables"]["don_dat_hang_dong"]["Insert"] {
+  return {
+    don_dat_hang_id: orderId,
+    san_pham_id: line.productId,
+    so_luong_dat: line.quantity,
+    ...(line.recipientId ? { nguoi_nhan_id: line.recipientId } : {}),
+  };
 }
 
 // --- Bộ lọc trên URL ---------------------------------------------------------
 //
-// `/don-dat?q=&trang_thai=&nguoi_nhan=&doi_tac=&tu_ngay=&den_ngay=&trang=` — khác tham số
+// `/don-dat?q=&trang_thai=&nguoi_nhan=&nhan_vien=&doi_tac=&tu_ngay=&den_ngay=&trang=` — khác tham số
 // của màn nhập (`ncc`, `kho`, `nguon`): đơn không có kho, không có nguồn nhập.
 
 export type OrderFilter = {
@@ -77,6 +117,7 @@ export type OrderFilter = {
   status: OrderStatus | null;
   recipientKind: RecipientKind | null;
   partnerId: string | null;
+  staffId: string | null;
   fromDate: string | null;
   toDate: string | null;
   page: number;
@@ -87,6 +128,7 @@ export const DEFAULT_ORDER_FILTER: OrderFilter = {
   status: null,
   recipientKind: null,
   partnerId: null,
+  staffId: null,
   fromDate: null,
   toDate: null,
   page: 1,
@@ -100,6 +142,7 @@ export function countActiveOrderFilters(filter: OrderFilter): number {
   if (filter.status !== null) count++;
   if (filter.recipientKind !== null) count++;
   if (filter.partnerId !== null) count++;
+  if (filter.staffId !== null) count++;
   if (filter.fromDate !== null || filter.toDate !== null) count++;
   return count;
 }
@@ -142,6 +185,7 @@ export function readOrderFilterFromUrl(params: {
       : null,
     recipientKind: readRecipientKind(params.get("nguoi_nhan")),
     partnerId: readUuid(params.get("doi_tac")),
+    staffId: readUuid(params.get("nhan_vien")),
     fromDate: readDate(params.get("tu_ngay")),
     toDate: readDate(params.get("den_ngay")),
     page: Number.isFinite(page) && page >= 1 ? Math.trunc(page) : 1,
@@ -156,6 +200,7 @@ export function writeOrderFilterToUrl(filter: OrderFilter): URLSearchParams {
     params.set("nguoi_nhan", RECIPIENT_KIND_TO_URL[filter.recipientKind]);
   }
   if (filter.partnerId) params.set("doi_tac", filter.partnerId);
+  if (filter.staffId) params.set("nhan_vien", filter.staffId);
   if (filter.fromDate) params.set("tu_ngay", filter.fromDate);
   if (filter.toDate) params.set("den_ngay", filter.toDate);
   if (filter.page !== 1) params.set("trang", String(filter.page));
@@ -169,6 +214,7 @@ export function toOrderListRpcArgs(filter: OrderFilter): OrderListArgs {
   return {
     p_trang_thai: filter.status ?? undefined,
     p_doi_tac_id: filter.partnerId ?? undefined,
+    p_nguoi_nhan_id: filter.staffId ?? undefined,
     p_tu_ngay: filter.fromDate ?? undefined,
     p_den_ngay: filter.toDate ?? undefined,
     p_tu_khoa: filter.q || undefined,
