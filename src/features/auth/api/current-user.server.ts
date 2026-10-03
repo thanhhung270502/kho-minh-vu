@@ -1,6 +1,7 @@
 import "server-only";
 
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
@@ -29,8 +30,14 @@ export type CurrentUser = {
 
 const KNOWN = new Set<string>(BUSINESS_PERMISSIONS.map((p) => p.key));
 
-/** Đọc vai trò từ BẢNG (không từ claim) để giao diện khớp RLS ngay sau khi quản lý đổi quyền. */
-export async function getCurrentUser(): Promise<CurrentUser | null> {
+/**
+ * Đọc vai trò từ BẢNG (không từ claim) để giao diện khớp RLS ngay sau khi quản lý đổi quyền.
+ *
+ * `cache()` gộp mọi lần gọi trong CÙNG một request: layout và page đều gọi hàm
+ * này, không gộp thì mỗi lần tải trang đi Supabase 6 vòng nối tiếp (~1,2 giây).
+ * Phạm vi cache chỉ là một request nên không rò phiên giữa người dùng.
+ */
+export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -38,18 +45,23 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
   if (!user) return null;
 
-  const { data, error } = await supabase
-    .from("nguoi_dung")
-    .select(
-      "id, ho_ten, vai_tro, dang_hoat_dong, phai_doi_mat_khau, duyet_kiem_ke",
-    )
-    .eq("id", user.id)
-    .maybeSingle();
+  // Hai truy vấn độc lập — chạy song song cho bớt một vòng mạng.
+  const [profile, permissionResult] = await Promise.all([
+    supabase
+      .from("nguoi_dung")
+      .select(
+        "id, ho_ten, vai_tro, dang_hoat_dong, phai_doi_mat_khau, duyet_kiem_ke",
+      )
+      .eq("id", user.id)
+      .maybeSingle(),
+    supabase.rpc("quyen_cua_toi"),
+  ]);
 
+  const { data, error } = profile;
   if (error) throw error;
   if (!data || !data.dang_hoat_dong) return null;
 
-  const { data: granted, error: permissionError } = await supabase.rpc("quyen_cua_toi");
+  const { data: granted, error: permissionError } = permissionResult;
   if (permissionError) throw permissionError;
 
   return {
@@ -61,7 +73,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     // RPC trả text[] — chỉ giữ khóa giao diện biết (CHECK 0082 cùng danh sách).
     permissions: (granted ?? []).filter((p): p is BusinessPermission => KNOWN.has(p)),
   };
-}
+});
 
 /** Mảng = cần MỘT trong các quyền. */
 export async function requirePermission(
