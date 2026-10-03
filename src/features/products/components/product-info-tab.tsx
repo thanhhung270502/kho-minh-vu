@@ -64,7 +64,11 @@ export function ProductInfoTab({ product, forecast }: Props) {
       <div className="grid grid-cols-2 gap-x-6 gap-y-3 lg:grid-cols-4">
         <Field label="Mã hàng"><span className="font-mono">{product.code}</span></Field>
         <Field label="Tồn kho">
-          <span className="tabular-nums">{formatNumber(product.totalStock)} {product.unitName ?? ""}</span>
+          {product.kind === "COMBO" ? (
+            <span className="text-chu-phu">Theo thành phần</span>
+          ) : (
+            <span className="tabular-nums">{formatNumber(product.totalStock)} {product.unitName ?? ""}</span>
+          )}
         </Field>
         <Field label="Vị trí kệ">{product.shelfLocation ?? empty}</Field>
         <Field label="Kho mặc định">{product.defaultWarehouseName ?? empty}</Field>

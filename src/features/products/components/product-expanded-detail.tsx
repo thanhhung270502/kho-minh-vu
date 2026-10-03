@@ -8,6 +8,7 @@ import { explainError } from "@/shared/lib/errors";
 import { useProductDetail } from "../hooks/useProducts";
 import type { ProductForecast } from "../lib/product-expanded";
 import type { ProductDetail } from "../types";
+import { ComboComponents } from "./combo-components";
 import { ProductInfoTab } from "./product-info-tab";
 import { StockCard } from "./stock-card";
 import { WarehouseStock } from "./warehouse-stock";
@@ -15,6 +16,8 @@ import { WarehouseStock } from "./warehouse-stock";
 type Props = {
   productId: string;
   forecast: ProductForecast | null | undefined;
+  /** Quyền Tạo mã hàng — sửa thành phần combo. */
+  canEdit: boolean;
   /** Hàng nút đáy — bảng ghép vào (Chỉnh sửa, Sao chép, Ngừng KD, Xem chi tiết). */
   renderActions?: (product: ProductDetail) => ReactNode;
 };
@@ -23,7 +26,7 @@ type Props = {
  * Chi tiết mã hàng mở ngay dưới dòng được bấm ở /danh-muc (ảnh mẫu KiotViet).
  * Điện thoại dùng cùng nội dung trong ngăn kéo toàn màn.
  */
-export function ProductExpandedDetail({ productId, forecast, renderActions }: Props) {
+export function ProductExpandedDetail({ productId, forecast, canEdit, renderActions }: Props) {
   const detail = useProductDetail(productId);
   const product = detail.data;
 
@@ -44,6 +47,9 @@ export function ProductExpandedDetail({ productId, forecast, renderActions }: Pr
         size="small"
         items={[
           { key: "info", label: "Thông tin", children: <ProductInfoTab product={product} forecast={forecast} /> },
+          ...(product.kind === "COMBO"
+            ? [{ key: "combo", label: "Thành phần", children: <ComboComponents comboId={productId} canEdit={canEdit} /> }]
+            : []),
           {
             key: "note",
             label: "Mô tả, ghi chú",

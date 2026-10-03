@@ -139,8 +139,12 @@ export function buildProductColumns({
       className: "tabular-nums",
       sorter: true,
       sortOrder: sortOrderFor(filter, "totalStock"),
-      render: (stock: number) =>
-        Number(stock) === 0 ? (
+      render: (stock: number, row: ProductRow) =>
+        row.kind === "COMBO" ? (
+          <Tooltip title="Combo không có tồn riêng — tồn nằm ở các mã thành phần">
+            <Typography.Text type="secondary">Combo</Typography.Text>
+          </Tooltip>
+        ) : Number(stock) === 0 ? (
           <Typography.Text type="secondary">0</Typography.Text>
         ) : (
           formatNumber(stock)

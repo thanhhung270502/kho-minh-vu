@@ -11,6 +11,7 @@ import { QueryState } from "@/shared/components/query-state";
 import { useLookups, useProductDetail } from "../hooks/useProducts";
 import { standardFieldText } from "../lib/product-expanded";
 import { PRODUCT_KIND_LABELS, type Lookups } from "../types";
+import { ComboComponents } from "./combo-components";
 import { ProductDrawer } from "./product-drawer";
 import { StockCard } from "./stock-card";
 import { WarehouseStock } from "./warehouse-stock";
@@ -172,6 +173,13 @@ export function ProductDetailView({
                 },
               ]}
             />
+
+            {product.kind === "COMBO" ? (
+              <div className="mt-4">
+                <h3 className="mb-2 text-sm font-medium">Thành phần combo</h3>
+                <ComboComponents comboId={id} canEdit={permissions.canEdit} />
+              </div>
+            ) : null}
 
             {imagesSection ? <div className="mt-4">{imagesSection}</div> : null}
 

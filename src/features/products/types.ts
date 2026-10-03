@@ -112,6 +112,15 @@ export type WarehouseStock = {
   quantity: number;
 };
 
+/** Một mã thành phần của combo (0088) — xuất 1 combo trừ `quantity` mã này. */
+export type ComboComponent = {
+  productId: string;
+  code: string;
+  name: string;
+  unitName: string | null;
+  quantity: number;
+};
+
 export type CatalogPermissions = {
   canEdit: boolean;
   /** "Điền quy chuẩn từ mã" cho cả danh mục — chỉ quản lý (RPC còn chặn bằng quyền Tạo mã hàng). */

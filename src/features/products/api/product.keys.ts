@@ -12,5 +12,6 @@ export const productKeys = {
   stockByWarehouse: (id: string) => ["products", "stock-by-warehouse", id] as const,
   /** Toàn bộ mã cho "Điền quy chuẩn từ mã" — nằm dưới `all` để mọi mutation làm mới. */
   standardFillSources: ["products", "standard-fill-sources"] as const,
+  comboComponents: (id: string) => ["products", "combo-components", id] as const,
   lookups: ["lookups"] as const,
 };
