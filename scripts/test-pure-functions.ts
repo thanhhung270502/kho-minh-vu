@@ -86,11 +86,17 @@ import {
   writeOrderFilterToUrl,
 } from "../src/features/sales-order/schemas/order.schema";
 import {
+  COMMON_GOODS_LABEL,
   DEFAULT_RECIPIENT_KIND,
   RECIPIENT_KIND_ORDER,
-  formatRecipient,
+  formatOrderRecipients,
+  isMultiRecipientOrder,
+  lineRecipientLabel,
+  partnerLabel,
   recipientDisplayName,
-  toRecipient,
+  recipientKindOf,
+  staffNames,
+  toStaffRefs,
 } from "../src/shared/lib/recipient";
 import { SETTINGS_TABS, firstTabFor, tabsFor } from "../src/features/settings/lib/settings-tabs";
 import { staffSchema } from "../src/features/settings/schemas/staff.schema";
@@ -605,32 +611,38 @@ assert.deepEqual(
   "STT liên tục trong cả tờ, không đánh lại từ 1 ở mỗi kho",
 );
 
-// --- Người nhận: đối tác hoặc nội bộ (0076) ---------------------------------
-assert.deepEqual(
-  toRecipient({ partnerId: "dt-1", partnerCode: "KH01", partnerName: "Liên Hoa", internalId: null, internalName: null }),
-  { kind: "partner", id: "dt-1", code: "KH01", name: "Liên Hoa" },
-  "có doi_tac_id → người nhận đối tác",
-);
-assert.deepEqual(
-  toRecipient({ partnerId: null, partnerCode: null, partnerName: null, internalId: "nd-1", internalName: "Nguyễn Văn A" }),
-  { kind: "internal", id: "nd-1", name: "Nguyễn Văn A" },
-  "có nguoi_nhan_id → người nhận nội bộ",
-);
-assert.equal(
-  toRecipient({ partnerId: null, partnerCode: null, partnerName: null, internalId: null, internalName: null }),
-  null,
-  "không có cả hai (phiếu nhập, kiểm kê…) → null",
-);
-assert.equal(formatRecipient({ kind: "partner", id: "dt-1", code: "KH01", name: "Liên Hoa" }), "KH01 Liên Hoa");
-assert.equal(formatRecipient({ kind: "partner", id: "dt-1", code: null, name: "Liên Hoa" }), "Liên Hoa");
-assert.equal(formatRecipient({ kind: "internal", id: "nd-1", name: "Nguyễn Văn A" }), "Nội bộ — Nguyễn Văn A");
-assert.equal(formatRecipient(null), "—");
+// --- Người nhận: một đối tác tùy chọn + nhiều nhân viên (0090) ---------------
+// Phase 18 (NNHAN, D2/D4): hàm thuần ở shared/lib/recipient.ts.
+const staffAn = { id: "a", name: "An" };
+const staffBinh = { id: "b", name: "Bình" };
+const partnerLienHoa = { id: "d", code: "KH01", name: "Liên Hoa" };
+assert.deepEqual(toStaffRefs(["a", "b"], ["An", "Bình"]), [staffAn, staffBinh]);
+assert.deepEqual(toStaffRefs(null, null), []);
+assert.deepEqual(toStaffRefs(["a"], []), [{ id: "a", name: "?" }], "thiếu tên → '?'");
+assert.equal(staffNames([staffAn, { id: "b", name: " Bình " }]), "An, Bình");
+assert.equal(staffNames([]), "—");
+assert.equal(partnerLabel(partnerLienHoa), "KH01 Liên Hoa");
+assert.equal(partnerLabel({ ...partnerLienHoa, code: null }), "Liên Hoa");
+assert.equal(partnerLabel({ id: "d", code: null, name: null }), "—");
+assert.equal(formatOrderRecipients({ partner: null, staff: [staffAn, staffBinh] }), "Nội bộ — An, Bình");
+assert.equal(formatOrderRecipients({ partner: null, staff: [] }), "—");
+assert.equal(formatOrderRecipients({ partner: partnerLienHoa, staff: [] }), "KH01 Liên Hoa");
+assert.equal(formatOrderRecipients({ partner: partnerLienHoa, staff: [staffAn] }), "KH01 Liên Hoa · An");
+assert.equal(recipientKindOf({ partner: null, staff: [staffAn] }), "internal");
+assert.equal(recipientKindOf({ partner: partnerLienHoa, staff: [] }), "partner");
 // Phase 17 (DDAT-02, A3): phiếu đi lấy hàng chỉ in TÊN người nhận — không "Nội bộ —", không mã đối tác.
-assert.equal(recipientDisplayName({ kind: "internal", id: "nd-1", name: "Nguyễn Văn A" }), "Nguyễn Văn A");
-assert.equal(recipientDisplayName({ kind: "partner", id: "dt-1", code: "KH01", name: "Liên Hoa" }), "Liên Hoa");
-assert.equal(recipientDisplayName({ kind: "internal", id: "nd-1", name: "  " }), "—");
-assert.equal(recipientDisplayName({ kind: "partner", id: "dt-1", code: "KH01", name: null }), "—");
+assert.equal(recipientDisplayName("Nguyễn Văn A"), "Nguyễn Văn A");
+assert.equal(recipientDisplayName("  "), "—");
 assert.equal(recipientDisplayName(null), "—");
+assert.equal(lineRecipientLabel("An", 1), "An");
+assert.equal(lineRecipientLabel(null, 2), "Chung", "hàng chung khi đơn có ≥ 2 người");
+assert.equal(lineRecipientLabel(null, 1), "");
+assert.equal(lineRecipientLabel("  ", 3), "Chung");
+assert.equal(COMMON_GOODS_LABEL, "Chung");
+assert.equal(isMultiRecipientOrder(1, false), false);
+assert.equal(isMultiRecipientOrder(2, false), true);
+assert.equal(isMultiRecipientOrder(1, true), true);
+assert.equal(isMultiRecipientOrder(0, false), false);
 
 const internalOrderDetail = toOrderDetail({
   id: "dh-1", so_dh: "DH26-000001", ngay_dh: "2026-10-01", trang_thai: "TAM",
