@@ -128,6 +128,8 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
   const columns = buildIssueLineColumns({
     editable,
     hasMultipleWarehouses,
+    showRecipient: lines.some((line) => line.recipientId !== null),
+    staffCount: issue.staffRecipients.length,
     warehouses,
     isOverStock,
     currentQuantity,

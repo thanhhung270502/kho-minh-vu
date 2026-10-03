@@ -7,9 +7,7 @@ import { useState } from "react";
 
 import { useLookups } from "@/features/products/hooks/useProducts";
 import { PartnerSearchInput } from "@/shared/components/partner-search-input";
-import { StaffSelect } from "@/shared/components/staff-select";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
-import { formatRecipient } from "@/shared/lib/recipient";
 
 import { useUpdateIssueHeader } from "../hooks/useIssues";
 import type { DocumentHeaderInput } from "../schemas/issue.schema";
@@ -18,15 +16,12 @@ import {
   DOC_STATUS_LABELS,
   type IssueDetail,
 } from "../types";
-
 type Props = { issue: IssueDetail; canEdit: boolean };
 
 /**
- * Đầu phiếu xuất sửa tại chỗ. Không có mục cho biết nhập từ nhà cung cấp hay
- * nhà máy (chỉ chiều nhập mới cần phân biệt) và không có mục thu thập lý do
- * xuất âm ở đây — lý do đó thu thập ở khối cảnh báo ngay trước khi ghi sổ
- * (plan 04-13), đặt ở đầu phiếu sẽ mời chọn sẵn rồi quên.
- * Phiếu đã ghi sổ hoặc đã hủy thì chỉ đọc — khóa thật nằm ở policy 0016.
+ * Đầu phiếu xuất sửa tại chỗ. Lý do xuất âm thu ở khối cảnh báo trước khi ghi
+ * sổ (plan 04-13), không đặt ở đây. Phiếu đã ghi sổ/hủy chỉ đọc — khóa thật
+ * nằm ở policy 0016.
  */
 export function IssueHeader({ issue, canEdit }: Props) {
   const { message } = App.useApp();
@@ -48,8 +43,7 @@ export function IssueHeader({ issue, canEdit }: Props) {
         );
         return;
       }
-      // Lớp api ném Error thường (không phải PostgrestError) khi RLS lọc im
-      // lặng — count trả về rỗng. Hiện nguyên văn câu đó (bẫy 8).
+      // RLS lọc im lặng thì api ném Error thường — hiện nguyên văn (bẫy 8).
       if (error instanceof Error && !isPostgrestError(error)) {
         message.error(error.message);
         return;
@@ -71,6 +65,47 @@ export function IssueHeader({ issue, canEdit }: Props) {
       </span>
     );
   }
+
+  const hasStaff = issue.staffRecipients.length > 0;
+  const recipientItems = [
+    ...(issue.partnerId !== null || !hasStaff
+      ? [
+          {
+            key: "partner",
+            label: fieldLabel("partnerId", hasStaff ? "Đối tác" : "Người nhận"),
+            children: editable ? (
+              <PartnerSearchInput
+                value={issue.partnerId ?? undefined}
+                onChange={(value) =>
+                  value ? void save("partnerId", { partnerId: value }) : null
+                }
+              />
+            ) : (
+              `${issue.partnerCode ?? ""} ${issue.partnerName ?? "—"}`.trim()
+            ),
+          },
+        ]
+      : []),
+    ...(hasStaff
+      ? [
+          {
+            // Người nhận đi theo đơn gốc (hóa đơn từ đơn đã ghi sổ) nên chỉ đọc.
+            key: "staff",
+            label: issue.partnerId ? "Nhân viên nhận" : "Người nhận",
+            children: (
+              <span className="flex flex-wrap gap-1">
+                {issue.partnerId ? null : <Tag className="m-0">Nội bộ</Tag>}
+                {issue.staffRecipients.map((p) => (
+                  <Tag key={p.id} className="m-0">
+                    {p.name}
+                  </Tag>
+                ))}
+              </span>
+            ),
+          },
+        ]
+      : []),
+  ];
 
   return (
     <Descriptions
@@ -109,41 +144,7 @@ export function IssueHeader({ issue, canEdit }: Props) {
             ? dayjs(issue.postedAt).format("HH:mm DD/MM/YYYY")
             : "—",
         },
-        issue.recipient?.kind === "internal"
-          ? {
-              // Phiếu sinh từ đơn nội bộ: chỉ đổi nhân viên, không đổi chế độ
-              // — chế độ đi theo đơn gốc.
-              key: "partner",
-              label: fieldLabel("internalRecipientId", "Người nhận"),
-              children: editable ? (
-                <StaffSelect
-                  value={issue.recipient.id}
-                  onChange={(value) =>
-                    value
-                      ? void save("internalRecipientId", {
-                          internalRecipientId: value,
-                        })
-                      : null
-                  }
-                />
-              ) : (
-                formatRecipient(issue.recipient)
-              ),
-            }
-          : {
-              key: "partner",
-              label: fieldLabel("partnerId", "Người nhận"),
-              children: editable ? (
-                <PartnerSearchInput
-                  value={issue.partnerId ?? undefined}
-                  onChange={(value) =>
-                    value ? void save("partnerId", { partnerId: value }) : null
-                  }
-                />
-              ) : (
-                `${issue.partnerCode ?? ""} ${issue.partnerName ?? "—"}`.trim()
-              ),
-            },
+        ...recipientItems,
         {
           key: "warehouse",
           label: fieldLabel("warehouseId", "Kho đầu phiếu"),
