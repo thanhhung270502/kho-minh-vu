@@ -20,10 +20,6 @@ export const recipientChoiceSchema = z.object({
 export const orderHeaderSchema = z.object({
   recipient: recipientChoiceSchema,
   orderDate: z.string().min(1, "Chọn ngày").optional(),
-  deliveryDate: z
-    .string()
-    .nullable()
-    .transform((value) => value || null),
   note: z
     .string()
     .trim()
@@ -56,9 +52,6 @@ export function toOrderUpdate(input: Partial<OrderHeaderInput>): OrderUpdate {
       input.recipient.kind === "partner" ? input.recipient.id : null;
     update.nguoi_nhan_id =
       input.recipient.kind === "internal" ? input.recipient.id : null;
-  }
-  if (input.deliveryDate !== undefined) {
-    update.ngay_giao_du_kien = input.deliveryDate;
   }
   if (input.note !== undefined) update.ghi_chu = input.note;
   return update;

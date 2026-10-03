@@ -18,7 +18,6 @@ export type OrderRow = {
   orderNo: string;
   orderDate: string;
   status: OrderStatus;
-  deliveryDate: string | null;
   recipient: Recipient | null;
   lineCount: number;
   orderedQuantity: number;
@@ -34,7 +33,6 @@ export type OrderDetail = {
   orderNo: string;
   orderDate: string;
   status: OrderStatus;
-  deliveryDate: string | null;
   recipient: Recipient | null;
   createdByName: string | null;
   note: string | null;
@@ -66,7 +64,6 @@ export function toOrderRow(row: OrderRowDb): OrderRow {
     orderNo: row.so_dh,
     orderDate: row.ngay_dh,
     status: row.trang_thai,
-    deliveryDate: row.ngay_giao_du_kien,
     recipient: toRecipient({
       partnerId: row.doi_tac_id,
       partnerCode: null,
@@ -90,7 +87,6 @@ export function toOrderDetail(row: OrderDetailDb): OrderDetail {
     orderNo: row.so_dh,
     orderDate: row.ngay_dh,
     status: row.trang_thai,
-    deliveryDate: row.ngay_giao_du_kien,
     recipient: toRecipient({
       partnerId: row.doi_tac_id,
       partnerCode: row.ma_doi_tac,

@@ -78,11 +78,7 @@ function useRefreshOrder(id?: string) {
 export function useCreateOrder() {
   const refresh = useRefreshOrder();
   return useMutation({
-    mutationFn: (input: {
-      recipient: RecipientChoice;
-      deliveryDate?: string | null;
-    }) =>
-      createOrder(input),
+    mutationFn: (input: { recipient: RecipientChoice }) => createOrder(input),
     onSuccess: refresh,
   });
 }

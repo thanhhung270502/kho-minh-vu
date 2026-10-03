@@ -49,12 +49,6 @@ const COLUMNS: TableColumnsType<OrderRow> = [
       ),
   },
   {
-    title: "Ngày giao dự kiến",
-    dataIndex: "deliveryDate",
-    width: 140,
-    render: (date: string | null) => (date ? dayjs(date).format("DD/MM/YYYY") : "—"),
-  },
-  {
     title: "Tiến độ",
     key: "progress",
     width: 100,

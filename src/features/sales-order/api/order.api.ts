@@ -65,7 +65,6 @@ export async function fetchOrderLines(id: string): Promise<OrderLine[]> {
  */
 export async function createOrder(input: {
   recipient: RecipientChoice;
-  deliveryDate?: string | null;
 }): Promise<string> {
   const supabase = getSupabaseBrowserClient();
 
@@ -83,7 +82,6 @@ export async function createOrder(input: {
         input.recipient.kind === "partner" ? input.recipient.id : null,
       nguoi_nhan_id:
         input.recipient.kind === "internal" ? input.recipient.id : null,
-      ngay_giao_du_kien: input.deliveryDate ?? null,
     })
     .select("id")
     .single();

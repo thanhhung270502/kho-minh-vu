@@ -38,7 +38,6 @@ export function NewOrderForm({ onPendingChange, onCancel }: Props) {
     try {
       const id = await createOrder.mutateAsync({
         recipient: { kind, id: recipientId },
-        deliveryDate: null,
       });
       // replace: nút Back không quay lại trang tạo — đơn đã có số rồi.
       router.replace(`/don-dat/${id}`);
@@ -65,7 +64,7 @@ export function NewOrderForm({ onPendingChange, onCancel }: Props) {
       <Form layout="vertical" onFinish={() => void create()} disabled={createOrder.isPending}>
         <Form.Item
           label="Người nhận"
-          help="Bấm Tạo là tạo đơn tạm và chuyển sang gõ dòng hàng. Ngày giao, ghi chú sửa ở đầu đơn."
+          help="Bấm Tạo là tạo đơn tạm và chuyển sang gõ dòng hàng. Ghi chú sửa ở đầu đơn."
         >
           <RecipientPicker
             autoFocus

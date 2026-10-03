@@ -1,6 +1,6 @@
 "use client";
 
-import { App, DatePicker, Descriptions, Input, Tag, Typography } from "antd";
+import { App, Descriptions, Input, Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 
@@ -84,26 +84,6 @@ export function OrderHeader({ order, editable }: Props) {
             />
           ) : (
             formatRecipient(order.recipient)
-          ),
-        },
-        {
-          key: "deliveryDate",
-          label: fieldLabel("deliveryDate", "Ngày giao dự kiến"),
-          children: editable ? (
-            <DatePicker
-              format="DD/MM/YYYY"
-              allowClear
-              value={order.deliveryDate ? dayjs(order.deliveryDate) : null}
-              onChange={(value) =>
-                void save("deliveryDate", {
-                  deliveryDate: value ? value.format("YYYY-MM-DD") : null,
-                })
-              }
-            />
-          ) : order.deliveryDate ? (
-            dayjs(order.deliveryDate).format("DD/MM/YYYY")
-          ) : (
-            "—"
           ),
         },
         {
