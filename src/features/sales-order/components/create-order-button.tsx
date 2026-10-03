@@ -1,18 +1,47 @@
 "use client";
 
-import { Button } from "antd";
-import Link from "next/link";
+import { Button, Modal } from "antd";
+import { useState } from "react";
+
+import { NewOrderForm } from "./new-order-form";
 
 type Props = {
   /** Nhãn nút — trạng thái rỗng dùng câu khác toolbar để rõ đây là bước tiếp theo. */
   label?: string;
 };
 
-/** DON-01: vào thẳng trang tạo đơn, không mở modal. */
+/**
+ * Mở dialog chọn người nhận ngay trên danh sách — chọn xong là đơn tạm được
+ * tạo và chuyển sang trang chi tiết để gõ dòng.
+ */
 export function CreateOrderButton({ label = "Tạo đơn" }: Props) {
+  const [open, setOpen] = useState(false);
+  const [pending, setPending] = useState(false);
+
+  function close() {
+    // Đang tạo đơn thì không cho đóng — đóng giữa chừng vẫn ra đơn nhưng người dùng tưởng đã hủy.
+    if (pending) return;
+    setOpen(false);
+  }
+
   return (
-    <Link href="/dat-hang/moi">
-      <Button type="primary">{label}</Button>
-    </Link>
+    <>
+      <Button type="primary" onClick={() => setOpen(true)}>
+        {label}
+      </Button>
+      <Modal
+        title="Tạo đơn đặt hàng"
+        open={open}
+        onCancel={close}
+        footer={null}
+        mask={{ closable: !pending }}
+        keyboard={!pending}
+        closable={!pending}
+        destroyOnHidden
+      >
+        <p className="mb-3 text-sm text-gray-500">Mặc định nhận Nội bộ — đổi sang Đối tác nếu giao cho khách.</p>
+        <NewOrderForm onPendingChange={setPending} />
+      </Modal>
+    </>
   );
 }

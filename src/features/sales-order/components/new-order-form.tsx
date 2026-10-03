@@ -1,7 +1,6 @@
 "use client";
 
-import { Alert, Card, Form, Spin } from "antd";
-import Link from "next/link";
+import { Alert, Form, Spin } from "antd";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -11,13 +10,18 @@ import { DEFAULT_RECIPIENT_KIND, type RecipientKind } from "@/shared/lib/recipie
 import { useCreateOrder } from "../hooks/useOrders";
 import { RecipientPicker } from "./recipient-picker";
 
+type Props = {
+  /** Báo cha khi đang tạo đơn — dialog dùng để chặn đóng giữa chừng. */
+  onPendingChange?: (pending: boolean) => void;
+};
+
 /**
- * Bấm "Tạo đơn" vào thẳng giao diện tạo đơn (DON-01) — không còn modal.
- * Chọn người nhận là đơn tạm được cấp số ngay trên server rồi sang trang chi
+ * Phần ruột tạo đơn (DON-01), dùng chung cho dialog trên /dat-hang và trang
+ * /dat-hang/moi (giữ cho link cũ). Chọn người nhận là đơn tạm được cấp số ngay trên server rồi sang trang chi
  * tiết, nơi ô mã hàng đã đứng sẵn con trỏ để gõ dòng (useFocusOnOpen). CHECK
  * database cấm đơn không có người nhận, nên người nhận là bước bắt buộc đầu tiên.
  */
-export function NewOrderForm() {
+export function NewOrderForm({ onPendingChange }: Props) {
   const router = useRouter();
   const createOrder = useCreateOrder();
   const [kind, setKind] = useState<RecipientKind>(DEFAULT_RECIPIENT_KIND);
@@ -26,6 +30,7 @@ export function NewOrderForm() {
   async function create(recipientId: string | undefined) {
     if (!recipientId || createOrder.isPending) return;
     setError(null);
+    onPendingChange?.(true);
     try {
       const id = await createOrder.mutateAsync({
         recipient: { kind, id: recipientId },
@@ -44,11 +49,13 @@ export function NewOrderForm() {
       }
       const explained = explainError(caught);
       setError(`${explained.title}. ${explained.action}`);
+    } finally {
+      onPendingChange?.(false);
     }
   }
 
   return (
-    <Card className="max-w-xl">
+    <>
       {error ? <Alert className="mb-3" type="error" showIcon title={error} /> : null}
 
       <Spin spinning={createOrder.isPending} description="Đang tạo đơn…">
@@ -70,10 +77,6 @@ export function NewOrderForm() {
           </Form.Item>
         </Form>
       </Spin>
-
-      <Link href="/dat-hang" className="text-sm">
-        ← Về danh sách đơn
-      </Link>
-    </Card>
+    </>
   );
 }
