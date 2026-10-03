@@ -105,7 +105,7 @@ import {
 } from "../src/shared/lib/recipient";
 import { SETTINGS_TABS, firstTabFor, tabsFor } from "../src/features/settings/lib/settings-tabs";
 import { staffSchema } from "../src/features/settings/schemas/staff.schema";
-import { toDocumentDetail } from "../src/features/documents/types";
+import { toDocumentDetail, toDocumentLineRecipient, withLineRecipients } from "../src/features/documents/types";
 import { toDocumentUpdate } from "../src/features/documents/schemas/document.schema";
 import {
   discrepancyOf,
@@ -802,13 +802,23 @@ const internalIssue = toDocumentDetail({
   don_dat_hang_id: "dh-1", so_dh: "DH26-000002", chung_tu_goc_id: null as unknown as string,
   so_ct_goc: null as unknown as string, ly_do_xuat_am: null as unknown as string,
   ghi_chu_ly_do: null as unknown as string, nguoi_duyet_id: null as unknown as string,
-  nguoi_nhan_id: "nd-1", ten_nguoi_nhan: "Thủ kho K1",
+  nguoi_nhan_ids: ["nd-1"], ten_nguoi_nhan: ["Thủ kho K1"],
 });
-assert.deepEqual(internalIssue.recipient, { kind: "internal", id: "nd-1", name: "Thủ kho K1" });
+assert.deepEqual(internalIssue.staffRecipients, [{ id: "nd-1", name: "Thủ kho K1" }]);
+assert.deepEqual(toDocumentUpdate({ note: "x" }), { ghi_chu: "x" });
 assert.deepEqual(
-  toDocumentUpdate({ internalRecipientId: "nd-2" }),
-  { nguoi_nhan_id: "nd-2" },
-  "đổi nhân viên nhận trên phiếu xuất nội bộ",
+  toDocumentLineRecipient({ chung_tu_dong_id: "l1", nguoi_nhan_id: "nv-1", ten_nguoi_nhan: "An" }),
+  { lineId: "l1", recipientId: "nv-1", recipientName: "An" },
+);
+assert.deepEqual(
+  withLineRecipients(
+    [{ id: "l1", x: 1 }, { id: "l2", x: 2 }],
+    [{ lineId: "l1", recipientId: "nv-1", recipientName: "An" }],
+  ),
+  [
+    { id: "l1", x: 1, recipientId: "nv-1", recipientName: "An" },
+    { id: "l2", x: 2, recipientId: null, recipientName: null },
+  ],
 );
 
 // --- Kiểm kê: ngưỡng lệch và nhãn trạng thái phiên (06-09) ------------------

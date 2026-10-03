@@ -1,4 +1,4 @@
-import { toRecipient, type Recipient } from "@/shared/lib/recipient";
+import { toStaffRefs, type StaffRef } from "@/shared/lib/recipient";
 import type { Database } from "@/types/database.types";
 
 type Fn = Database["public"]["Functions"];
@@ -45,10 +45,10 @@ export type DocumentDetail = {
   partnerCode: string | null;
   partnerName: string | null;
   /**
-   * Người nhận của phiếu xuất: đối tác hoặc nhân viên nội bộ (0076). Các field
-   * `partner*` ở trên giữ cho phiếu nhập/trả, nơi đối tác là nhà cung cấp.
+   * Nhân viên nhận của hóa đơn sinh từ đơn — chép ở tao_phieu_xuat_tu_don (0091).
+   * Các field `partner*` ở trên giữ cho đối tác / nhà cung cấp.
    */
-  recipient: Recipient | null;
+  staffRecipients: StaffRef[];
   warehouseId: string | null;
   warehouseName: string | null;
   createdByName: string | null;
@@ -128,13 +128,7 @@ export function toDocumentDetail(row: DocumentDetailDb): DocumentDetail {
     partnerId: row.doi_tac_id,
     partnerCode: row.ma_doi_tac,
     partnerName: row.ten_doi_tac,
-    recipient: toRecipient({
-      partnerId: row.doi_tac_id,
-      partnerCode: row.ma_doi_tac,
-      partnerName: row.ten_doi_tac,
-      internalId: row.nguoi_nhan_id,
-      internalName: row.ten_nguoi_nhan,
-    }),
+    staffRecipients: toStaffRefs(row.nguoi_nhan_ids, row.ten_nguoi_nhan),
     warehouseId: row.kho_id,
     warehouseName: row.ten_kho,
     createdByName: row.ho_ten_nguoi_tao,
@@ -177,4 +171,42 @@ export function toDocumentLine(row: DocumentLineDb): DocumentLine {
     note: row.ghi_chu,
     currentStock: Number(row.ton_hien_tai),
   };
+}
+
+type DocumentLineRecipientDb = Fn["nguoi_nhan_dong_chung_tu"]["Returns"][number];
+
+export type LineRecipient = {
+  recipientId: string | null;
+  recipientName: string | null;
+};
+export type DocumentLineRecipient = {
+  lineId: string;
+  recipientId: string;
+  recipientName: string;
+};
+
+export function toDocumentLineRecipient(
+  row: DocumentLineRecipientDb,
+): DocumentLineRecipient {
+  return {
+    lineId: row.chung_tu_dong_id,
+    recipientId: row.nguoi_nhan_id,
+    recipientName: row.ten_nguoi_nhan,
+  };
+}
+
+/** Nối người nhận theo dòng (RPC riêng, không sửa dong_chung_tu — 0088 nhánh quy chuẩn) vào dòng chứng từ. */
+export function withLineRecipients<T extends { id: string }>(
+  lines: T[],
+  recipients: DocumentLineRecipient[],
+): (T & LineRecipient)[] {
+  const byLine = new Map(recipients.map((item) => [item.lineId, item] as const));
+  return lines.map((line) => {
+    const found = byLine.get(line.id);
+    return {
+      ...line,
+      recipientId: found?.recipientId ?? null,
+      recipientName: found?.recipientName ?? null,
+    };
+  });
 }

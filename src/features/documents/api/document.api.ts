@@ -11,9 +11,11 @@ import {
 import {
   toDocumentDetail,
   toDocumentLine,
+  toDocumentLineRecipient,
   toDocumentRow,
   type DocumentDetail,
   type DocumentLine,
+  type DocumentLineRecipient,
   type DocumentRow,
 } from "../types";
 import type { NegativeReasonCode } from "../lib/negative-reasons";
@@ -189,4 +191,16 @@ export async function postDocumentWithReason(
     await saveNegativeReason(id, reason);
   }
   await postDocument(id);
+}
+
+/** Người nhận theo dòng của hóa đơn — chỉ các dòng đã gán (0091). */
+export async function fetchDocumentLineRecipients(
+  id: string,
+): Promise<DocumentLineRecipient[]> {
+  const { data, error } = await getSupabaseBrowserClient().rpc(
+    "nguoi_nhan_dong_chung_tu",
+    { p_id: id },
+  );
+  if (error) throw error;
+  return (data ?? []).map(toDocumentLineRecipient);
 }
