@@ -46,16 +46,16 @@ select isnt(
 );
 
 select ok(
-  (select split_part(lan_2, '-', 2)::int from t_so_dh)
-  > (select split_part(lan_1, '-', 2)::int from t_so_dh),
+  (select substr(lan_2, 3)::int from t_so_dh)
+  > (select substr(lan_1, 3)::int from t_so_dh),
   'so phan duoi lan sau lon hon lan truoc'
 );
 
--- ─── 3: chuỗi trả về khớp dạng DH91-000001 ───────────────────────────────────
+-- ─── 3: dạng DH + 6 chữ số, không năm (0092 — nối tiếp số đơn KiotViet) ──────
 select matches(
   (select lan_1 from t_so_dh),
-  '^DH91-\d{6}$',
-  'so dh khop dinh dang DH{YY}-{6 chu so}'
+  '^DH\d{6}$',
+  'so dh khop dinh dang DH{6 chu so}'
 );
 
 -- ─── 4: năm hiện tại — chỉ so sánh tương đối, KHÔNG assert gia tri cu the ──

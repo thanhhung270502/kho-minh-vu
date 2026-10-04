@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
   public: {
     Tables: {
       anh_xa_ghi_chu_kiotviet: {
@@ -80,6 +85,7 @@ export type Database = {
           loai_ct: Database["public"]["Enums"]["loai_ct"]
           nguon: string
           so_chu_so: number
+          theo_nam: boolean
           tien_to: string
           updated_at: string
         }
@@ -87,6 +93,7 @@ export type Database = {
           loai_ct: Database["public"]["Enums"]["loai_ct"]
           nguon?: string
           so_chu_so?: number
+          theo_nam?: boolean
           tien_to: string
           updated_at?: string
         }
@@ -94,6 +101,7 @@ export type Database = {
           loai_ct?: Database["public"]["Enums"]["loai_ct"]
           nguon?: string
           so_chu_so?: number
+          theo_nam?: boolean
           tien_to?: string
           updated_at?: string
         }
@@ -1763,6 +1771,7 @@ export type Database = {
           nguon: string
           so_chu_so: number
           so_hien_tai: number
+          theo_nam: boolean
           tien_to: string
           vi_du: string
         }[]
@@ -2989,4 +2998,3 @@ export const Constants = {
     },
   },
 } as const
-

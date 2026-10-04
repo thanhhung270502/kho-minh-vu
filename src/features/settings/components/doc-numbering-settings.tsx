@@ -170,7 +170,7 @@ export function DocNumberingSettings() {
         width: 170,
         render: (_, row) => (
           <code>
-            {nextDocNoExample(draftOf(row).prefix, draftOf(row).digits, row.current)}
+            {nextDocNoExample(draftOf(row).prefix, draftOf(row).digits, row.current, row.withYear)}
           </code>
         ),
       },
