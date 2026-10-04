@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { requirePermission } from "@/features/auth/api/current-user.server";
-import { ProductImageGallery } from "@/features/images/components/product-image-gallery";
+import { ProductImageAside } from "@/features/images/components/product-image-aside";
 import { ProductDetailView } from "@/features/products/components/product-detail";
 import { can, hasPermission } from "@/shared/lib/permissions";
 
@@ -24,12 +24,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         canEdit: can(user, "tao_ma_hang"),
         // Lịch sử sửa đọc theo phạm vi (RLS nhat_ky_sua: quản lý + văn phòng).
         canViewHistory: hasPermission(user.role, "edit-catalog"),
+        // Chặn thật ở RPC gia_von_san_pham — đây chỉ ẩn cột Giá trị.
+        canViewCost: hasPermission(user.role, "view-cost"),
       }}
       imagesSection={
-        <ProductImageGallery
-          productId={id}
-          canEdit={can(user, "tao_ma_hang")}
-        />
+        <ProductImageAside productId={id} canEdit={can(user, "tao_ma_hang")} />
       }
     />
   );
