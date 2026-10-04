@@ -136,5 +136,5 @@ Bố cục từng khung (giữ bố cục nội dung hiện có khi design khôn
 - `20-DESIGN-3b.html` — design gốc đã giải nén (đọc style inline để lấy kích thước/màu chính xác).
 - `.planning/quick/261004-f2l-ap-design-system-moi-1a-giu-bo-cuc/261004-f2l-SUMMARY.md` — design system 1A đang
   chạy và cách đổi token không phải sửa từng file.
-- `.planning/phases/18-*/18-CONTEXT.md` — quy tắc người nhận theo dòng (liên quan D-03).
+- `.planning/phases/18-don-nhieu-nguoi-nhan/18-CONTEXT.md` — quy tắc người nhận theo dòng (liên quan D-03).
 </canonical_refs>
