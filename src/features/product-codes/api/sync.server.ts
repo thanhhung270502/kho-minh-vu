@@ -12,7 +12,7 @@ const FETCH_TIMEOUT_MS = 15_000;
 
 export type CodeSyncResult =
   | { ok: true; counts: Record<string, number> }
-  | { ok: false; stage: "fetch" | "format" | "data"; message: string };
+  | { ok: false; stage: "config" | "fetch" | "format" | "data"; message: string };
 
 /**
  * Tải sheet quy chuẩn mã → kiểm cấu trúc → RPC dong_bo_ma_hoa (một transaction).
@@ -20,10 +20,17 @@ export type CodeSyncResult =
  * quyết định và tự ghi nhật ký. `source` vào ma_hoa_dong_bo.nguon.
  */
 export async function syncCodeDictionary(source: "cron" | "tay"): Promise<CodeSyncResult> {
-  const { MA_HOA_SHEET_ID } = getCodeSyncEnv();
+  const { MA_HOA_SHEET_CSV_URL } = getCodeSyncEnv();
+  if (!MA_HOA_SHEET_CSV_URL) {
+    return {
+      ok: false,
+      stage: "config",
+      message: "Chưa cấu hình MA_HOA_SHEET_CSV_URL (link CSV của tab quy chuẩn mã). Khai biến này rồi deploy lại.",
+    };
+  }
   let response: Response;
   try {
-    response = await fetch(`https://docs.google.com/spreadsheets/d/${MA_HOA_SHEET_ID}/export?format=csv`, {
+    response = await fetch(MA_HOA_SHEET_CSV_URL, {
       cache: "no-store",
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
@@ -44,7 +51,7 @@ export async function syncCodeDictionary(source: "cron" | "tay"): Promise<CodeSy
     return {
       ok: false,
       stage: "fetch",
-      message: `Không tải được sheet quy chuẩn mã (HTTP ${response.status}). Kiểm sheet còn để "ai có link đều xem được".`,
+      message: `Không tải được sheet quy chuẩn mã (HTTP ${response.status}). Kiểm link MA_HOA_SHEET_CSV_URL còn đúng và tab vẫn đang "Xuất bản lên web".`,
     };
   }
 

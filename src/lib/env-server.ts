@@ -74,24 +74,21 @@ export function getAppsScriptEnv(): { APPS_SCRIPT_URL: string; APPS_SCRIPT_SECRE
 /**
  * Job đồng bộ bộ mã hóa (Quy chuẩn mã). CRON_SECRET: Vercel Cron gửi kèm
  * `Authorization: Bearer <CRON_SECRET>` — thiếu thì route từ chối mọi lời gọi.
- * MA_HOA_SHEET_ID: sheet công khai chứa 10 cột quy chuẩn; mặc định là sheet NGUON
- * công khai do văn phòng chuẩn lại (04/10/2026), thay file trung gian cũ.
+ * MA_HOA_SHEET_CSV_URL: link CSV "Xuất bản lên web" của tab quy chuẩn 10 cột.
+ * Không có giá trị mặc định trong code — link sheet chỉ nằm ở biến môi trường.
  */
-export function getCodeSyncEnv(): { CRON_SECRET: string | null; MA_HOA_SHEET_ID: string } {
+export function getCodeSyncEnv(): { CRON_SECRET: string | null; MA_HOA_SHEET_CSV_URL: string | null } {
   // `||` chứ không `??` — biến khai trên Vercel nhưng để trống là chuỗi rỗng (bẫy 17).
   return {
     CRON_SECRET: process.env.CRON_SECRET || null,
-    MA_HOA_SHEET_ID: process.env.MA_HOA_SHEET_ID || "1lG9MEAdHGVw-MTaxWkcLm5fcIr1pf-CVO8eyhsoRXsQ",
+    MA_HOA_SHEET_CSV_URL: process.env.MA_HOA_SHEET_CSV_URL || null,
   };
 }
 
 /**
- * Sheet tên hàng chuẩn (2 cột: mã, tên — không tiêu đề), dạng CSV "Xuất bản lên web".
- * Nhập mã hàng mới tự điền tên cho mã có trong sheet mà file để trống ô tên.
+ * Sheet tên hàng chuẩn (2 cột: mã, tên — không tiêu đề), link CSV "Xuất bản lên web".
+ * null = chưa cấu hình: nhập mã mới vẫn chạy, chỉ không tự điền tên.
  */
-export function getProductNameSheetUrl(): string {
-  return (
-    process.env.TEN_HANG_SHEET_CSV_URL ||
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRkRbOsZwM9ZAA6HRR_8zYEz_ncdgfnkvpDj8C_X5v7iBQoadfP8Q_7bpYv1Lk0NxdevfBCELTvp96i/pub?gid=0&single=true&output=csv"
-  );
+export function getProductNameSheetUrl(): string | null {
+  return process.env.TEN_HANG_SHEET_CSV_URL || null;
 }
