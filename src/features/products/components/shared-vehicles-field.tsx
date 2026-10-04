@@ -1,7 +1,7 @@
 "use client";
 
 import { Button, Form, Select } from "antd";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   useFieldArray,
   useFormState,
@@ -48,12 +48,18 @@ export function SharedVehiclesField({ control, setValue, getValues, entries, dic
       .map((e) => ({ value: e.ma, label: `${e.ten} (${e.ma})` }));
 
   // Chỉ viết lại Mô tả khi người dùng ĐỔI xe — mở form sửa không đụng mô tả đã lưu.
+  // generatedLine nhớ câu hệ thống sinh ra từ bộ xe TRƯỚC: chỉ dòng đầu trùng đúng
+  // câu đó mới được thay/bỏ, dòng người dùng viết thì giữ nguyên.
   const vehiclesTouched = Boolean(dirtyFields.sharedVehicles || dirtyFields.brandCode || dirtyFields.modelCode);
+  const generatedLine = useRef<string | null>(null);
   useEffect(() => {
-    if (!vehiclesTouched || entries.length === 0) return;
-    const labels = vehicleLabels(dictionary, { brandCode, modelCode }, shared ?? []);
+    if (entries.length === 0) return;
+    const line = usageLine(vehicleLabels(dictionary, { brandCode, modelCode }, shared ?? []));
+    const previous = generatedLine.current;
+    generatedLine.current = line;
+    if (!vehiclesTouched) return;
     const current = getValues("description");
-    const next = withUsageLine(current, usageLine(labels));
+    const next = withUsageLine(current, line, previous);
     if (next !== current) setValue("description", next, { shouldDirty: true });
   }, [vehiclesTouched, entries.length, dictionary, brandCode, modelCode, shared, getValues, setValue]);
 

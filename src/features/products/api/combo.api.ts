@@ -1,7 +1,7 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Json } from "@/types/database.types";
 
-import type { ComboComponent } from "../types";
+import { toProductKind, type ComboComponent, type ProductKind } from "../types";
 
 export async function fetchComboComponents(comboId: string): Promise<ComboComponent[]> {
   // Hai khóa ngoại cùng trỏ san_pham — chỉ định cột thanh_phan_id cho phép nhúng.
@@ -18,6 +18,22 @@ export async function fetchComboComponents(comboId: string): Promise<ComboCompon
     unitName: row.san_pham.don_vi_tinh?.ten ?? null,
     quantity: Number(row.so_luong),
   }));
+}
+
+/**
+ * Loại hàng + ĐVT của mã sắp thêm vào combo — kết quả tìm mã dùng chung không
+ * mang hai thứ này. Liệt kê cột (bẫy 5: san_pham chỉ cấp SELECT theo cột).
+ */
+export async function fetchComponentCandidate(
+  productId: string,
+): Promise<{ kind: ProductKind; unitName: string | null }> {
+  const { data, error } = await getSupabaseBrowserClient()
+    .from("san_pham")
+    .select("loai_hang, don_vi_tinh(ten)")
+    .eq("id", productId)
+    .single();
+  if (error) throw error;
+  return { kind: toProductKind(data.loai_hang), unitName: data.don_vi_tinh?.ten ?? null };
 }
 
 /** Thay TOÀN BỘ thành phần của combo. Trả số thành phần đã lưu. */

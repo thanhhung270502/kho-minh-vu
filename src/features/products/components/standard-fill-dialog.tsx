@@ -12,6 +12,7 @@ import { useLookups } from "../hooks/useProducts";
 import { useFillStandardFields, useStandardFillSources } from "../hooks/useStandardFill";
 import { planStandardFill, type StandardFillPlan } from "../lib/standard-fill";
 import { STANDARD_FIELD_LABELS, type StandardFieldKey } from "../lib/standard-fields";
+import { CodeDictionaryError } from "./code-dictionary-error";
 
 type Props = { open: boolean; onClose: () => void };
 
@@ -24,7 +25,8 @@ const nf = (n: number) => n.toLocaleString("vi-VN");
  */
 export function StandardFillDialog({ open, onClose }: Props) {
   const lookups = useLookups();
-  const { dictionary, entries, isPending: dictPending } = useCodeDictionary();
+  const dict = useCodeDictionary();
+  const { dictionary, entries, isPending: dictPending } = dict;
   const sources = useStandardFillSources(lookups.data?.stages, open);
   const fill = useFillStandardFields();
   const [done, setDone] = useState(0);
@@ -83,7 +85,9 @@ export function StandardFillDialog({ open, onClose }: Props) {
         ) : null
       }
     >
-      {dictPending ? null : entries.length === 0 ? (
+      {dict.isError ? (
+        <CodeDictionaryError error={dict.error} retrying={dict.isFetching} onRetry={() => void dict.refetch()} />
+      ) : dictPending ? null : entries.length === 0 ? (
         <Alert
           type="warning"
           showIcon

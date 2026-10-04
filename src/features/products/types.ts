@@ -195,7 +195,7 @@ export function toProductInsert(input: ProductInput): ProductInsert {
 // --- Mapper: database -> miền ----------------------------------------------
 
 /** Cột text có CHECK HANG_HOA/COMBO (0086) — kiểu sinh ra chỉ biết `string`. */
-function toProductKind(value: string): ProductKind {
+export function toProductKind(value: string): ProductKind {
   return value === "COMBO" ? "COMBO" : "HANG_HOA";
 }
 

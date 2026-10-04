@@ -13,11 +13,7 @@ import { useCodeDictionary } from "@/features/product-codes/hooks/useCodeDiction
 import { useLookups, useProducts } from "../hooks/useProducts";
 import { useProductTableUrl } from "../hooks/useProductTableUrl";
 import { forecastById } from "../lib/product-expanded";
-import {
-  DEFAULT_PRODUCT_FILTER,
-  countActiveFilters,
-  type ProductFilter,
-} from "../schemas/filter.schema";
+import { DEFAULT_PRODUCT_FILTER, countActiveFilters, type ProductFilter } from "../schemas/filter.schema";
 import type { CatalogPermissions } from "../types";
 import { BulkAssignBar } from "./bulk-assign-bar";
 import type { ImportKind } from "./excel-button";
@@ -26,22 +22,11 @@ import { ProductFilterPanel } from "./product-filter-panel";
 import { ProductModals } from "./product-modals";
 import { ProductRowDetail } from "./product-row-detail";
 import { ProductTableBody } from "./product-table-body";
+import { ProductTableEmpty } from "./product-table-empty";
 import { ProductToolbar } from "./product-toolbar";
 import { ToolbarActions } from "./toolbar-actions";
 
 export type { CatalogPermissions };
-
-function hasActiveFilter(filter: ProductFilter): boolean {
-  return (
-    filter.categoryId !== null ||
-    filter.stageId !== null ||
-    filter.unitId !== null ||
-    filter.stockStatus !== null ||
-    filter.hasImage !== null ||
-    filter.standard !== null ||
-    filter.tradingStatus !== DEFAULT_PRODUCT_FILTER.tradingStatus
-  );
-}
 
 export function ProductTable({
   permissions,
@@ -81,7 +66,6 @@ export function ProductTable({
       onCopy={(fromId) => setDrawer({ open: true, id: null, copyFromId: fromId })}
     />
   );
-
 
   /**
    * Người dùng đổi bộ lọc thì tập đang chọn không còn nghĩa — bỏ chọn để không
@@ -123,13 +107,7 @@ export function ProductTable({
   return (
     <>
       <ListLayout
-        filterPanel={
-          <ProductFilterPanel
-            filter={filter}
-            lookups={lookups.data}
-            onChange={changeFilter}
-          />
-        }
+        filterPanel={<ProductFilterPanel filter={filter} lookups={lookups.data} onChange={changeFilter} />}
         toolbar={
           <ProductToolbar
             filter={filter}
@@ -146,10 +124,7 @@ export function ProductTable({
             }
             addButton={
               permissions.canEdit ? (
-                <Button
-                  type="primary"
-                  onClick={() => setDrawer({ open: true, id: null })}
-                >
+                <Button type="primary" onClick={() => setDrawer({ open: true, id: null })}>
                   Thêm mã hàng
                 </Button>
               ) : null
@@ -166,29 +141,14 @@ export function ProductTable({
         }
       >
         {permissions.canEdit ? (
-          <BulkAssignBar
-            ids={selected}
-            lookups={lookups.data}
-            onDone={() => setSelected([])}
-          />
+          <BulkAssignBar ids={selected} lookups={lookups.data} onDone={() => setSelected([])} />
         ) : null}
 
         <QueryState
           query={products}
           isEmpty={(page) => page.rows.length === 0}
           emptyDescription={
-            filter.q ? (
-              `Không có mã khớp “${filter.q}”. Thử gõ ít chữ hơn hoặc bỏ dấu.`
-            ) : hasActiveFilter(filter) ? (
-              <div className="flex flex-col items-center gap-3">
-                <span>Không có mã nào khớp bộ lọc. Xóa bớt điều kiện.</span>
-                <Button size="small" onClick={() => changeFilter(DEFAULT_PRODUCT_FILTER)}>
-                  Xóa bộ lọc
-                </Button>
-              </div>
-            ) : (
-              "Chưa có mã hàng nào. Bấm “Thêm mã hàng” hoặc nhập từ Excel."
-            )
+            <ProductTableEmpty filter={filter} onClearFilter={() => changeFilter(DEFAULT_PRODUCT_FILTER)} />
           }
         >
           {(page) => (

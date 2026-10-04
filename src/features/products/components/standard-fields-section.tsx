@@ -18,10 +18,12 @@ import type { ProductFormValues } from "../schemas/product.schema";
 import {
   STANDARD_FIELD_LABELS,
   applyCodeToStandardFields,
+  modelFitsBrand,
   toggleManual,
   type StandardFieldKey,
 } from "../lib/standard-fields";
 import type { Lookups } from "../types";
+import { CodeDictionaryError } from "./code-dictionary-error";
 import { SharedVehiclesField } from "./shared-vehicles-field";
 
 type Props = {
@@ -50,7 +52,7 @@ const ISSUE_FIELD: Record<StandardFieldKey, CodeField> = {
  * do và cho chọn tay (đánh dấu "Chọn tay", đổi mã không ghi đè ô đó).
  */
 export function StandardFieldsSection({ control, setValue, getValues, lookups }: Props) {
-  const { entries, dictionary } = useCodeDictionary();
+  const { entries, dictionary, isError, error, refetch, isFetching } = useCodeDictionary();
   const code = useWatch({ control, name: "code" });
   const brandCode = useWatch({ control, name: "brandCode" });
   const modelCode = useWatch({ control, name: "modelCode" });
@@ -78,11 +80,15 @@ export function StandardFieldsSection({ control, setValue, getValues, lookups }:
       stageId: getValues("stageId"),
       manualFields: getValues("manualFields"),
     }, stages, fallbackStageId);
+    // Hãng chọn tay mà dòng tách từ mã không thuộc hãng đó → không điền dòng sai cặp.
+    const manual = getValues("manualFields");
+    const modelOk =
+      !manual.includes("hang_xe") || manual.includes("dong_xe") || modelFitsBrand(dictionary, next.brandCode, next.modelCode);
     setValue("brandCode", next.brandCode, { shouldDirty: true });
-    setValue("modelCode", next.modelCode, { shouldDirty: true });
+    setValue("modelCode", modelOk ? next.modelCode : null, { shouldDirty: true });
     setValue("partCode", next.partCode, { shouldDirty: true });
     setValue("stageId", next.stageId, { shouldDirty: true });
-  }, [parsed, dirtyFields.code, entries.length, stages, fallbackStageId, getValues, setValue]);
+  }, [parsed, dirtyFields.code, entries.length, dictionary, stages, fallbackStageId, getValues, setValue]);
 
   const options = useMemo(() => {
     const opt = (kind: string, filter: (e: (typeof entries)[number]) => boolean = () => true) =>
@@ -107,6 +113,11 @@ export function StandardFieldsSection({ control, setValue, getValues, lookups }:
     setValue("manualFields", toggleManual(getValues("manualFields"), key, true) as ProductFormValues["manualFields"], {
       shouldDirty: true,
     });
+    // Đổi hãng thì dòng xe cũ (tự điền hay chọn tay) không thuộc hãng mới phải bỏ —
+    // để nguyên là lưu cặp hãng/dòng không tồn tại.
+    if (key === "hang_xe" && entries.length > 0 && !modelFitsBrand(dictionary, value, getValues("modelCode"))) {
+      setValue("modelCode", null, { shouldDirty: true });
+    }
   };
 
   const followCode = (key: StandardFieldKey) => {
@@ -125,6 +136,9 @@ export function StandardFieldsSection({ control, setValue, getValues, lookups }:
 
   return (
     <div className="mb-2 rounded border border-gray-100 bg-gray-50 p-3">
+      {isError ? (
+        <CodeDictionaryError className="mb-2" error={error} retrying={isFetching} onRetry={() => void refetch()} />
+      ) : null}
       <div className="mb-2 text-xs text-chu-phu">
         Quy chuẩn mã — tự điền khi gõ mã{parsed.status === "ok" && code ? ": mã đúng chuẩn" : ""}.
       </div>

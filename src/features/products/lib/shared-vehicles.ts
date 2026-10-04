@@ -86,13 +86,24 @@ export function usageLine(labels: ReadonlyArray<string>): string | null {
 }
 
 /**
- * Dòng đầu Mô tả do hệ thống quản lý: thay dòng "Dùng cho xe …" cũ bằng dòng
- * mới (hoặc bỏ đi khi chỉ còn một xe); phần người dùng viết bên dưới giữ nguyên.
+ * Dòng đầu Mô tả do hệ thống quản lý — nhưng CHỈ khi nó đúng là dòng hệ thống đã
+ * sinh ra từ bộ xe trước đó (`previousLine`). Dòng đầu do người dùng hay KiotViet
+ * viết (kể cả khi tình cờ bắt đầu bằng "Dùng cho xe ") không bao giờ bị xóa/đè:
+ * cần thêm câu mới thì chèn lên trên, không cần thì để nguyên.
  */
-export function withUsageLine(description: string | null, line: string | null): string | null {
+export function withUsageLine(
+  description: string | null,
+  line: string | null,
+  previousLine: string | null = null,
+): string | null {
   const text = description ?? "";
-  const rest = text.startsWith(USAGE_PREFIX) ? text.slice(text.indexOf("\n") + 1 || text.length) : text;
-  const body = rest.replace(/^\n+/, "");
+  const newlineAt = text.indexOf("\n");
+  const firstLine = newlineAt === -1 ? text : text.slice(0, newlineAt);
+  if (line !== null && firstLine === line) return description;
+
+  const ownsFirstLine = previousLine !== null && firstLine === previousLine;
+  const body = ownsFirstLine ? (newlineAt === -1 ? "" : text.slice(newlineAt + 1)).replace(/^\n+/, "") : text;
+  if (!ownsFirstLine && line === null) return description;
   const next = line ? (body ? `${line}\n${body}` : line) : body;
   return next === "" ? null : next;
 }

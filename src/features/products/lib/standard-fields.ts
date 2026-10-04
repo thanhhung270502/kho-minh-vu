@@ -89,3 +89,10 @@ export function standardNames(
     partName: codes.partCode ? (dictionary.parts.get(upper(codes.partCode)) ?? null) : null,
   };
 }
+
+/** Dòng xe có thuộc hãng này trong bộ mã hóa không (tra theo CẶP như standardNames). */
+export function modelFitsBrand(dictionary: CodeDictionary, brandCode: string | null, modelCode: string | null): boolean {
+  if (!modelCode) return true;
+  if (!brandCode) return false;
+  return dictionary.pairs.has((brandCode + modelCode).trim().toUpperCase());
+}

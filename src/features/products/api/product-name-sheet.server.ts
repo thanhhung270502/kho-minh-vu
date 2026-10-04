@@ -14,7 +14,11 @@ export type ProductNameSheet = { names: Map<string, string>; error: string | nul
 export async function loadProductNameSheet(): Promise<ProductNameSheet> {
   const unavailable = "Không tải được sheet tên hàng chuẩn nên chưa tự điền tên. Gõ tên vào ô trống, hoặc thử lại sau ít phút.";
   try {
-    const response = await fetch(getProductNameSheetUrl(), { next: { revalidate: 3600 } });
+    const response = await fetch(getProductNameSheetUrl(), {
+      next: { revalidate: 3600 },
+      // Google treo thì nhập file vẫn phải đi tiếp — quá 15 giây coi như tải lỗi.
+      signal: AbortSignal.timeout(15_000),
+    });
     if (!response.ok) return { names: new Map(), error: unavailable };
     return { names: readProductNameSheet(await response.text()), error: null };
   } catch {
