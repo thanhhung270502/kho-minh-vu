@@ -223,13 +223,13 @@ Nguồn: Notion Task board (phản hồi 03/10/2026). Quyết định chốt 03/
 
 ### Giao diện 3b (UI3B)
 
-- [ ] **UI3B-01**: Toàn app dùng design system "hướng 3b": Manrope, header 2 tầng (logo · ô tìm · tài khoản / menu tab gạch chân), nút viên thuốc, thẻ viền mảnh bo 16; mobile giữ thanh tab đáy
-- [ ] **UI3B-02**: Ô tìm kiếm toàn cục (bấm hoặc ⌘K/Ctrl+K) tìm mã hàng, số phiếu/số đơn, đối tác; Enter mở trang chi tiết; kết quả tôn trọng RLS
-- [ ] **UI3B-03**: Tổng quan có 4 KPI kèm xu hướng (Giá trị tồn — không có quyền giá vốn thì Tổng SL tồn; Mã đang kinh doanh; Phiếu xuất hôm nay; Phiếu chờ ghi sổ) và biểu đồ Nhập–Xuất theo ngày 7N/30N/90N
-- [ ] **UI3B-04**: Tổng quan có Tồn theo nhóm kèm SL tồn + tỷ trọng, panel "Cần xử lý" (dưới định mức, tồn âm, xuất âm hôm nay, phiếu chờ ghi sổ — mỗi việc có nút dẫn tới màn xử lý), "Không luân chuyển > 30 ngày" có số ngày; Nhịp bán và Xuất âm theo ngày vẫn còn
-- [ ] **UI3B-05**: Danh sách đơn đặt: lọc trạng thái có số đếm, preset ngày 7N/30N/Tháng/Tùy, cột Tiến độ có thanh, Xuất Excel theo bộ lọc
-- [ ] **UI3B-06**: Chi tiết đơn đặt hai cột (dòng hàng | aside Thông tin đơn); gõ lại mã đã có với cùng người nhận dòng thì cộng dồn số lượng
-- [ ] **UI3B-07**: Chi tiết hàng hóa: badge trạng thái + nút Ngừng/Mở lại kinh doanh; bảng Tồn theo kho (Tồn · Tối thiểu · Giá trị chỉ hiện khi có quyền giá vốn · Tổng tồn); ảnh ở aside (ảnh chính lớn + dải ảnh nhỏ)
+- [x] **UI3B-01**: Toàn app dùng design system "hướng 3b": Manrope, header 2 tầng (logo · ô tìm · tài khoản / menu tab gạch chân), nút viên thuốc, thẻ viền mảnh bo 16; mobile giữ thanh tab đáy
+- [x] **UI3B-02**: Ô tìm kiếm toàn cục (bấm hoặc ⌘K/Ctrl+K) tìm mã hàng, số phiếu/số đơn, đối tác; Enter mở trang chi tiết; kết quả tôn trọng RLS
+- [x] **UI3B-03**: Tổng quan có 4 KPI kèm xu hướng (Giá trị tồn — không có quyền giá vốn thì Tổng SL tồn; Mã đang kinh doanh; Phiếu xuất hôm nay; Phiếu chờ ghi sổ) và biểu đồ Nhập–Xuất theo ngày 7N/30N/90N
+- [x] **UI3B-04**: Tổng quan có Tồn theo nhóm kèm SL tồn + tỷ trọng, panel "Cần xử lý" (dưới định mức, tồn âm, xuất âm hôm nay, phiếu chờ ghi sổ — mỗi việc có nút dẫn tới màn xử lý), "Không luân chuyển > 30 ngày" có số ngày; Nhịp bán và Xuất âm theo ngày vẫn còn
+- [x] **UI3B-05**: Danh sách đơn đặt: lọc trạng thái có số đếm, preset ngày 7N/30N/Tháng/Tùy, cột Tiến độ có thanh, Xuất Excel theo bộ lọc
+- [x] **UI3B-06**: Chi tiết đơn đặt hai cột (dòng hàng | aside Thông tin đơn); gõ lại mã đã có với cùng người nhận dòng thì cộng dồn số lượng
+- [x] **UI3B-07**: Chi tiết hàng hóa: badge trạng thái + nút Ngừng/Mở lại kinh doanh; bảng Tồn theo kho (Tồn · Tối thiểu · Giá trị chỉ hiện khi có quyền giá vốn · Tổng tồn); ảnh ở aside (ảnh chính lớn + dải ảnh nhỏ)
 
 ### Bỏ khỏi v1.2 (task Notion vẫn mở)
 
@@ -416,13 +416,13 @@ Nguồn: Notion Task board (phản hồi 03/10/2026). Quyết định chốt 03/
 | DXE-03 | Phase 19 | Pending |
 | DXE-04 | Phase 19 | Pending |
 | DXE-05 | Phase 19 | Pending |
-| UI3B-01 | Phase 20 | Pending |
-| UI3B-02 | Phase 20 | Pending |
-| UI3B-03 | Phase 20 | Pending |
-| UI3B-04 | Phase 20 | Pending |
-| UI3B-05 | Phase 20 | Pending |
-| UI3B-06 | Phase 20 | Pending |
-| UI3B-07 | Phase 20 | Pending |
+| UI3B-01 | Phase 20 | Complete |
+| UI3B-02 | Phase 20 | Complete |
+| UI3B-03 | Phase 20 | Complete |
+| UI3B-04 | Phase 20 | Complete |
+| UI3B-05 | Phase 20 | Complete |
+| UI3B-06 | Phase 20 | Complete |
+| UI3B-07 | Phase 20 | Complete |
 
 **Coverage:**
 - v1 requirements: 80 total
