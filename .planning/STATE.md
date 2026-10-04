@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-10-03)
 Phase: 19 (Dòng xe dùng chung) — chưa plan, BỊ CHẶN
 Plan: —
 Status: Chờ merge Quy chuẩn mã hàng (0085–0088) và xem lại phạm vi — 0086 bỏ bảng `dong_xe`, thay bằng cột text trên `san_pham`
-Last activity: 2026-10-03 — Phase 18 Đơn nhiều người nhận hoàn thành (8/8 plan, verification passed)
+Last activity: 2026-10-04 - Completed quick task 261004-f2l: Áp design system mới 1A, giữ bố cục
 
 ### Phase 18 — đã xong (03/10/2026)
 
@@ -913,6 +913,7 @@ None yet.
 | 260919-dm4 | Design system theo giao diện KiotViet: token + top-nav shell + bố cục trang danh sách | 2026-09-19 | 39da902 | [260919-dm4-update-design-system-theo-giao-dien-kiot](./quick/260919-dm4-update-design-system-theo-giao-dien-kiot/) |
 | 260921-v15 | Bản demo UI/UX tĩnh (HTML/CSS/JS) cho toàn bộ hệ thống trong design/ | 2026-09-21 | eba487a | [260921-v15-ban-demo-ui-ux-tinh-html-css-js-trong-th](./quick/260921-v15-ban-demo-ui-ux-tinh-html-css-js-trong-th/) |
 | 260928-q4u | Sửa 3 lỗi từ checklist kiểm thử: lưu người dùng chưa có tên đăng nhập, thứ tự thẻ kho, lý do xuất âm trên thẻ kho | 2026-09-28 | be1a918 | [260928-q4u-sua-3-loi-checklist-luu-nguoi-dung-the-k](./quick/260928-q4u-sua-3-loi-checklist-luu-nguoi-dung-the-k/) |
+| 261004-f2l | Áp design system mới (tham khảo design 1A), giữ nguyên bố cục: token đơn sắc, font, nav, trạng thái chấm màu | 2026-10-04 | 41378f2 | [261004-f2l-ap-design-system-moi-1a-giu-bo-cuc](./quick/261004-f2l-ap-design-system-moi-1a-giu-bo-cuc/) |
 | 260928-sn5 | Phiếu xuất: mở phiếu đang nhập liệu thì con trỏ nằm sẵn ở ô mã hàng (checklist 5.2) | 2026-09-28 | 319f736 | [260928-sn5-phieu-xuat-tu-focus-o-ma-hang](./quick/260928-sn5-phieu-xuat-tu-focus-o-ma-hang/) |
 | 260928-t0j | Seed tài khoản demo đúng quyền, tự focus ô mã ở phiếu nhập/đơn hàng, migration ten_danh_muc | 2026-09-28 | 0d93f8b | [260928-t0j-seed-quyen-focus-o-ma-ten-danh-muc](./quick/260928-t0j-seed-quyen-focus-o-ma-ten-danh-muc/) |
 
