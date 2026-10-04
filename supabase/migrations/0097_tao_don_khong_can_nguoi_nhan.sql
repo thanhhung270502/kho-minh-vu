@@ -1,5 +1,5 @@
 -- =============================================================================
--- 0094 — Bấm "Tạo đơn" vào thẳng trang đơn, chọn người nhận trong đó
+-- 0097 — Bấm "Tạo đơn" vào thẳng trang đơn, chọn người nhận trong đó
 --
 -- Trước (0090): tao_don đòi người nhận ngay, nên giao diện phải hỏi trong một
 -- hộp thoại trước khi có đơn. Giờ đơn TẠM được tạo trống người nhận; người nhận

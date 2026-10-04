@@ -1,18 +1,24 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { JetBrains_Mono, Manrope } from "next/font/google";
 
 import { AppProviders } from "@/providers/app-providers";
 
 import "./globals.css";
 
-// KiotViet dùng Inter, Roboto, Helvetica, Arial — đổi từ Be Vietnam Pro để
-// giao diện gần với cái người dùng đang quen. Weight 800 dùng cho số liệu
-// nổi bật trên dashboard (Phase 5).
-const fontSans = Inter({
+// Design system 3b: Manrope cho chữ (có subset vietnamese, đậm 800 cho tiêu
+// đề), JetBrains Mono cho số phiếu và mã hàng.
+const fontSans = Manrope({
   subsets: ["latin", "vietnamese"],
   weight: ["400", "500", "600", "700", "800"],
   display: "swap",
   variable: "--font-app-sans",
+});
+
+const fontMono = JetBrains_Mono({
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500"],
+  display: "swap",
+  variable: "--font-app-mono",
 });
 
 export const metadata: Metadata = {
@@ -28,7 +34,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="vi" className={fontSans.variable}>
+    <html lang="vi" className={`${fontSans.variable} ${fontMono.variable}`}>
       <body className="antialiased">
         <AppProviders>{children}</AppProviders>
       </body>

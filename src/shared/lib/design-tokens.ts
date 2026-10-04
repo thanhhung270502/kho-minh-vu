@@ -3,27 +3,22 @@
 // được từ đây.
 
 /**
- * Dãy màu biểu đồ Recharts. Dashboard (Phase 5) import từ đây, không tự đặt màu.
- *
- * LƯU Ý: lần trích xuất CSS thật từ KiotViet chỉ chạy trên page Kho hàng
- * (fnb.kiotviet.vn/hoffee/man/#/WareHouse) nên KHÔNG bắt được màu biểu đồ
- * dashboard thật của họ. Dãy dưới đây là SUY RA từ chính thang màu primary/
- * success/warning/danger đã trích xuất được, chưa phải giá trị trích xuất
- * trực tiếp — cần trích xuất lại khi có page dashboard thật của KiotViet.
+ * Dãy màu biểu đồ Recharts — design system đơn sắc 3b: series
+ * chính màu mực, series phụ xám, chỉ dùng cam/đỏ khi series mang nghĩa cảnh báo.
  */
 export const CHART_COLORS = [
-  "#0070F4",
-  "#00B63E",
-  "#FF8800",
-  "#FF0000",
-  "#66A9F8",
-  "#66D38B",
+  "#0A0A0A",
+  "#D4D4D4",
+  "#737373",
+  "#BF6600",
+  "#CC2827",
+  "#A3A3A3",
 ] as const;
 
-/** Màu ngữ nghĩa — dùng cho viền trái card KPI và trạng thái. */
+/** Màu ngữ nghĩa — khớp colorPrimary/Success/Warning/Error ở antd-theme.ts. */
 export const SEMANTIC_COLORS = {
-  primary: "#0070F4",
-  success: "#00B63E",
-  warning: "#FF8800",
-  danger: "#FF0000",
+  primary: "#0A0A0A",
+  success: "#2F9E5B",
+  warning: "#BF6600",
+  danger: "#CC2827",
 } as const;

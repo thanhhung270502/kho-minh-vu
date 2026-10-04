@@ -3,7 +3,7 @@
 import { DownOutlined } from "@ant-design/icons";
 import { Dropdown, type MenuProps } from "antd";
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 
 import type { NavEntry } from "@/shared/lib/navigation";
 
@@ -11,29 +11,29 @@ import { cn } from "../utils/cn";
 import { NAV_ICONS } from "./nav-icons";
 
 /**
- * Thanh điều hướng ngang dạng pill — dựng bằng thẻ HTML thường + next/link,
- * không dùng antd Menu (pill nền xanh không ép được qua token antd). Vì
- * không phải component antd nên Tailwind ở đây là đúng chỗ, không cần `!`.
+ * Thanh điều hướng ngang — dựng bằng thẻ HTML thường + next/link, không dùng
+ * antd Menu. Vì không phải component antd nên Tailwind ở đây là đúng chỗ,
+ * không cần `!`. Kiểu 3b: tab chữ, mục đang chọn gạch chân 2px đen.
  */
 export const PILL_CLASS =
-  "flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-2 py-2.5 text-sm font-semibold text-white transition-all duration-200 ease-in-out hover:bg-white/25";
+  "-mb-px flex h-full shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 text-[13.5px] transition-colors duration-150";
 
-export function PillLabel({ label, active }: { label: string; active: boolean }) {
-  return (
-    <span className="relative">
-      {label}
-      {active ? (
-        <span className="absolute left-1/2 top-6 h-0.75 w-10 -translate-x-1/2 rounded-full bg-white" />
-      ) : null}
-    </span>
-  );
+/** Lớp màu theo trạng thái — tách khỏi PILL_CLASS để hàng đo ẩn dùng chung kích thước. */
+export function pillTone(active: boolean): string {
+  return active
+    ? "border-chu-chinh font-bold text-chu-chinh hover:text-chu-chinh"
+    : "border-transparent font-semibold text-chu-phu hover:text-chu-chinh";
 }
 
-export function DropdownLabel({ label, active }: { label: string; active: boolean }) {
+export function PillLabel({ label }: { label: string }) {
+  return <span>{label}</span>;
+}
+
+export function DropdownLabel({ label }: { label: string }) {
   return (
     <>
-      <PillLabel label={label} active={active} />
-      <DownOutlined className="text-xs" />
+      <PillLabel label={label} />
+      <DownOutlined className="text-[9px] text-trung-tinh-300" />
     </>
   );
 }
@@ -61,13 +61,11 @@ export function linkItems(entry: Extract<NavEntry, { kind: "group" }>) {
 export function DropdownPill({
   label,
   active,
-  icon,
   items,
   activeHref,
 }: {
   label: string;
   active: boolean;
-  icon?: ReactNode;
   items: NonNullable<MenuProps["items"]>;
   activeHref: string;
 }) {
@@ -83,10 +81,9 @@ export function DropdownPill({
       <button
         type="button"
         aria-current={active ? "page" : undefined}
-        className={cn(PILL_CLASS, "cursor-pointer border-0 bg-transparent", active ? "bg-white/25" : "")}
+        className={cn(PILL_CLASS, "cursor-pointer border-0 bg-transparent", pillTone(active))}
       >
-        {icon}
-        <DropdownLabel label={label} active={active} />
+        <DropdownLabel label={label} />
       </button>
     </Dropdown>
   );

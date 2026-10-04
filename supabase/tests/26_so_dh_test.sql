@@ -51,7 +51,7 @@ select ok(
   'so phan duoi lan sau lon hon lan truoc'
 );
 
--- ─── 3: dạng DH + 6 chữ số, không năm (0092 — nối tiếp số đơn KiotViet) ──────
+-- ─── 3: dạng DH + 6 chữ số, không năm (0095 — nối tiếp số đơn KiotViet) ──────
 select matches(
   (select lan_1 from t_so_dh),
   '^DH\d{6}$',

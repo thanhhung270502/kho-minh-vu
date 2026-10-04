@@ -4,6 +4,7 @@ import { App, DatePicker, Descriptions, Input, Select, Tag, Typography } from "a
 import dayjs from "dayjs";
 import { useState } from "react";
 
+import { StatusDot } from "@/shared/components/status-dot";
 import { usePartners } from "@/features/partners/hooks/usePartners";
 import { DEFAULT_PARTNER_FILTER } from "@/features/partners/types";
 import { useLookups } from "@/features/products/hooks/useProducts";
@@ -13,9 +14,8 @@ import { filterByLabel } from "@/shared/lib/text";
 import { useUpdateReceiptHeader } from "../hooks/useReceipts";
 import type { DocumentHeaderInput } from "../schemas/receipt.schema";
 import {
-  DOC_STATUS_COLORS,
+  DOC_STATUS_TONES,
   DOC_STATUS_LABELS,
-  RECEIPT_SOURCE_COLORS,
   RECEIPT_SOURCE_LABELS,
   type DocumentDetail,
 } from "../types";
@@ -67,9 +67,9 @@ export function ReceiptHeader({ receipt, canEdit }: Props) {
           label: "Trạng thái",
           children: (
             <span className="flex flex-wrap items-center gap-2">
-              <Tag color={DOC_STATUS_COLORS[receipt.status]}>
+              <StatusDot tone={DOC_STATUS_TONES[receipt.status]} strike={receipt.status === "DA_HUY"}>
                 {DOC_STATUS_LABELS[receipt.status]}
-              </Tag>
+              </StatusDot>
               {receipt.postedAt ? (
                 <Typography.Text type="secondary" className="text-xs">
                   ghi sổ {dayjs(receipt.postedAt).format("HH:mm DD/MM/YYYY")}
@@ -82,7 +82,7 @@ export function ReceiptHeader({ receipt, canEdit }: Props) {
           key: "source",
           label: "Nguồn nhập",
           children: receipt.source ? (
-            <Tag color={RECEIPT_SOURCE_COLORS[receipt.source]}>
+            <Tag>
               {RECEIPT_SOURCE_LABELS[receipt.source]}
             </Tag>
           ) : (

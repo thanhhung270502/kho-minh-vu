@@ -68,7 +68,7 @@ export function UserTable({ currentUserId }: { currentUserId: string }) {
       render: (ten: string, d) => (
         <Space size={6}>
           <span className="font-medium">{ten}</span>
-          {d.id === currentUserId ? <Tag color="blue">Bạn</Tag> : null}
+          {d.id === currentUserId ? <Tag>Bạn</Tag> : null}
         </Space>
       ),
     },

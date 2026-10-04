@@ -71,12 +71,12 @@ update t_id set dt = (select id from public.doi_tac where ma = 'NCC-TEST');
 -- sống, phiếu thật đầu tiên của năm nay làm mọi assertion neo vào '-000001'
 -- đỏ vĩnh viễn. Đã đỏ thật một lần sau UAT Phase 3.
 --
--- 0092: cấu hình thật đánh số kiểu KiotViet (không năm). Bật lại theo_nam trong
+-- 0095: cấu hình thật đánh số kiểu KiotViet (không năm). Bật lại theo_nam trong
 -- transaction test để vẫn kiểm dạng có năm; rollback cuối file trả về như cũ.
 update public.cau_hinh_so_ct set theo_nam = true;
 select is(public.sinh_so_ct('NHAP', 2092::smallint), 'PN92-000001', 'số phiếu nhập đầu tiên đúng định dạng PN92-000001');
 select is(public.sinh_so_ct('NHAP', 2092::smallint), 'PN92-000002', 'gọi lần hai cho số kế tiếp');
-select is(public.sinh_so_ct('XUAT', 2092::smallint), 'HD92-000001', 'chuỗi số độc lập theo từng loại chứng từ (hóa đơn tiền tố HD, 0092)');
+select is(public.sinh_so_ct('XUAT', 2092::smallint), 'HD92-000001', 'chuỗi số độc lập theo từng loại chứng từ (hóa đơn tiền tố HD, 0095)');
 select is(public.sinh_so_ct('NHAP', 2093::smallint), 'PN93-000001', 'reset theo năm');
 select is(
   array[

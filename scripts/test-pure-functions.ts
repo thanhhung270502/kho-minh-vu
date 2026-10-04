@@ -3,6 +3,33 @@
  * Chạy: npx tsx scripts/test-pure-functions.ts
  */
 import assert from "node:assert/strict";
+import { toAddOrderLineResult, toOrderStatusCounts } from "../src/features/sales-order/types";
+import { statusCountKeyOf, toAddOrderLineRpcArgs, toOrderStatusCountRpcArgs } from "../src/features/sales-order/schemas/order.schema";
+import { DATE_PRESET_LABELS, activeDatePreset, datePresetRange, todayInVietnam } from "../src/features/sales-order/lib/date-presets";
+import { orderProgress } from "../src/features/sales-order/lib/order-progress";
+import {
+  toFlowDay,
+  toIdleProduct,
+  toOverviewKpis,
+  toStockByGroupRow,
+} from "../src/features/dashboard/types";
+import {
+  averageIssuesLabel,
+  buildInventoryKpi,
+  examplesLabel,
+  formatMoneyShort,
+  formatPercentDelta,
+  formatUpdatedAt,
+  groupShare,
+  negativeByWarehouseLabel,
+  newProductsLabel,
+  oldestPendingLabel,
+  pendingBreakdownLabel,
+  percentChange,
+  previousMonthNumber,
+} from "../src/features/dashboard/lib/overview-format";
+import { toGlobalSearchResult, type GlobalSearchResult } from "../src/features/global-search/types";
+import { defaultActiveIndex, groupSearchResults, searchResultHref } from "../src/features/global-search/lib/search-results";
 
 import { removeDiacritics, normalizeUsername, usernameToEmail, labelMatches } from "../src/shared/lib/text";
 import { hasPermission } from "../src/shared/lib/permissions";
@@ -761,7 +788,7 @@ const orderLineRow = {
 {
   const uuid1 = "11111111-1111-4111-8111-111111111111";
   const uuid2 = "22222222-2222-4222-8222-222222222222";
-  // 0094: đơn tạm được trống người nhận — database đòi người nhận lúc xác nhận.
+  // 0097: đơn tạm được trống người nhận — database đòi người nhận lúc xác nhận.
   assert.equal(orderRecipientsSchema.safeParse({ partnerId: null, staffIds: [] }).success, true);
   assert.equal(orderRecipientsSchema.safeParse({ partnerId: uuid1, staffIds: [] }).success, true);
   assert.equal(orderRecipientsSchema.safeParse({ partnerId: null, staffIds: [uuid2] }).success, true);
@@ -1274,7 +1301,7 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.deepEqual(draftProblems(edited.drafts, edited.catalog).get(4), ["Thiếu tên hàng"], "mã không có trong sheet vẫn báo thiếu tên");
 }
 
-// --- Xe dùng chung nhiều hãng / dòng (0093) --------------------------------
+// --- Xe dùng chung nhiều hãng / dòng (0096) --------------------------------
 {
   const dict = dictionaryFromEntries([
     { loai: "hang", ma: "H", ten: "HONDA", ma_hang: null, thu_tu: 1 },
@@ -1568,6 +1595,163 @@ async function kiemCsvPhanTich() {
   assert.ok(!/giá|vốn/i.test(header), "CSV đề nghị nhập không có cột giá");
   assert.ok(header.includes("Đơn đặt") && !header.includes("Khách đặt"), "TEN-03: CSV ghi Đơn đặt thay Khách đặt");
   assert.ok(csv.includes("RWT") && csv.includes(",65"), "dòng RWT đề nghị 65");
+}
+
+// --- Phase 20 — tìm kiếm toàn cục (UI3B-02) ---------------------------------
+{
+  const row = (loai: string, id: string, nhan: string) =>
+    ({ loai, id, nhan, phu: "Bạc đạn", loai_ct: null, trang_thai: null, xep_hang: 0 }) as unknown as Parameters<typeof toGlobalSearchResult>[0];
+  assert.deepEqual(toGlobalSearchResult(row("san_pham", "p1", "ABC")), {
+    key: "product:p1", kind: "product", id: "p1", label: "ABC", hint: "Bạc đạn", documentType: null, status: null, rank: 0,
+  });
+  assert.equal(toGlobalSearchResult(row("x", "p1", "ABC")), null, "loại lạ bị bỏ");
+
+  const r = (kind: GlobalSearchResult["kind"], id: string, label = "L", documentType: string | null = null): GlobalSearchResult => ({
+    key: `${kind}:${id}`, kind, id, label, hint: null, documentType, status: null, rank: 0,
+  });
+  assert.equal(searchResultHref(r("product", "p1")), "/danh-muc/p1");
+  assert.equal(searchResultHref(r("order", "o1")), "/don-dat/o1");
+  assert.equal(searchResultHref(r("partner", "x", "Liên Hoa")), "/doi-tac?q=Li%C3%AAn%20Hoa");
+  assert.equal(searchResultHref(r("document", "d1", "L", "NHAP")), "/nhap-kho/d1");
+  assert.equal(searchResultHref(r("document", "d1", "L", "XUAT")), "/duyet-don/d1");
+  assert.equal(searchResultHref(r("document", "d1", "L", "TRA_NCC")), "/tra-hang/d1");
+  assert.equal(searchResultHref(r("document", "d1", "L", "TRA_KHACH")), "/tra-hang/d1");
+  assert.equal(searchResultHref(r("document", "d1", "L", "KIEM_KE")), "/kiem-ke/d1");
+  assert.equal(searchResultHref(r("document", "d1", "L", "CHUYEN_KHO")), null);
+
+  const groups = groupSearchResults([r("order", "o"), r("product", "p"), r("partner", "t")]);
+  assert.deepEqual(groups.map((g) => g.title), ["Mã hàng", "Đơn đặt", "Đối tác"], "thứ tự nhóm, bỏ nhóm rỗng");
+  assert.equal(defaultActiveIndex([{ label: "ABC1" }, { label: "ABC" }], " abc "), 1);
+  assert.equal(defaultActiveIndex([{ label: "ABC1" }, { label: "ABD" }], "abc"), 0);
+  assert.equal(defaultActiveIndex([], "abc"), -1);
+}
+
+// --- Phase 20 — tổng quan 3b (UI3B-03/04) -----------------------------------
+{
+  type OverviewDb = Parameters<typeof toOverviewKpis>[0];
+  const overviewRow = (over: Partial<Record<string, unknown>> = {}) =>
+    ({
+      xem_gia_von: true, gia_tri_ton: 312500000, gia_tri_ton_thang_truoc: 305000000,
+      tong_sl_ton: "9000", tong_sl_ton_thang_truoc: "8800", xu_huong_ton: ["1", 2],
+      ma_kinh_doanh: 3000, ma_moi_thang: 3, xu_huong_ma_kd: [1, 2], phieu_xuat_tb_ngay: 4.2,
+      cho_ghi_so: 5, cho_ghi_so_nhap: 3, cho_ghi_so_xuat: 2, cho_ghi_so_cu_nhat_ngay: 2, xu_huong_cho_ghi_so: [0, 5],
+      ton_am_theo_kho: [{ ten_kho: "Kho 1", so_ma: 4 }], vi_du_duoi_dinh_muc: ["A", "B"],
+      ...over,
+    }) as unknown as OverviewDb;
+
+  const k = toOverviewKpis(overviewRow());
+  assert.equal(k.canViewCost, true);
+  assert.equal(k.totalQuantity, 9000);
+  assert.deepEqual(k.inventoryTrend, [1, 2], "xu_huong_ton ép về number[]");
+  assert.deepEqual(k.negativeByWarehouse, [{ warehouseName: "Kho 1", count: 4 }]);
+  assert.equal(k.oldestPendingDays, 2);
+  assert.deepEqual(toOverviewKpis(overviewRow({ ton_am_theo_kho: { x: 1 } })).negativeByWarehouse, [], "jsonb không phải mảng → []");
+
+  assert.equal(
+    toStockByGroupRow({ nhom_id: null, ten_nhom: null, tong_ma: 1, con_hang: 1, het_hang: 0, am: 0, duoi_dinh_muc: 0, tong_so_luong: "120.5" } as unknown as Parameters<typeof toStockByGroupRow>[0]).totalQuantity,
+    120.5,
+  );
+  assert.deepEqual(
+    toFlowDay({ ngay: "2092-03-09", so_phieu_nhap: 2, so_phieu_xuat: 0, sl_nhap: "10", sl_xuat: "0" } as unknown as Parameters<typeof toFlowDay>[0]),
+    { date: "2092-03-09", receiptCount: 2, issueCount: 0, receiptQuantity: 10, issueQuantity: 0 },
+  );
+  assert.deepEqual(
+    toIdleProduct({ san_pham_id: "p", ma_hang: "A", ten_hang: "B", so_ngay: 45, ton: "3" } as unknown as Parameters<typeof toIdleProduct>[0]),
+    { key: "p", productId: "p", code: "A", name: "B", idleDays: 45, quantity: 3 },
+  );
+
+  assert.equal(percentChange(102.4, 100), 2.4);
+  assert.equal(percentChange(5, 0), null);
+  assert.equal(percentChange(5, null), null);
+  assert.equal(percentChange(90, 100), -10);
+  assert.equal(formatPercentDelta(2.4, 9), "↑ 2,4% so tháng 9");
+  assert.equal(formatPercentDelta(-10, 9), "↓ 10% so tháng 9");
+  assert.equal(formatPercentDelta(0, 9), "Bằng tháng 9");
+  assert.equal(formatPercentDelta(null, 9), "Chưa đủ dữ liệu tháng trước");
+  assert.equal(previousMonthNumber("2026-10-04"), 9);
+  assert.equal(previousMonthNumber("2026-01-15"), 12);
+  assert.deepEqual(formatMoneyShort(312_500_000), { value: "312,5", unit: "tr đ" });
+  assert.deepEqual(formatMoneyShort(1_240_000_000), { value: "1,2", unit: "tỷ đ" });
+  assert.deepEqual(formatMoneyShort(850_000), { value: "850.000", unit: "đ" });
+
+  const withCost = buildInventoryKpi(
+    { canViewCost: true, inventoryValue: 312_500_000, inventoryValuePrevMonth: 305_000_000, totalQuantity: 9000, totalQuantityPrevMonth: 8800 },
+    "2026-10-04",
+  );
+  assert.deepEqual(withCost, { label: "Giá trị tồn", value: "312,5", unit: "tr đ", delta: "↑ 2,5% so tháng 9" });
+  const noCost = buildInventoryKpi(
+    { canViewCost: false, inventoryValue: null, inventoryValuePrevMonth: null, totalQuantity: 9000, totalQuantityPrevMonth: 9000 },
+    "2026-10-04",
+  );
+  assert.deepEqual(noCost, { label: "Tổng SL tồn", value: "9.000", unit: "", delta: "Bằng tháng 9" });
+
+  assert.equal(newProductsLabel(3), "+3 mã tháng này");
+  assert.equal(newProductsLabel(0), "Không có mã mới tháng này");
+  assert.equal(averageIssuesLabel(4.2), "TB 4,2 phiếu/ngày");
+  assert.equal(oldestPendingLabel(null), "Không có phiếu chờ");
+  assert.equal(oldestPendingLabel(0), "Cũ nhất hôm nay");
+  assert.equal(oldestPendingLabel(2), "Cũ nhất 2 ngày");
+  assert.equal(examplesLabel(["VOR-275-17", "ACQ-GS-5A"], 8), "VOR-275-17, ACQ-GS-5A và 6 mã khác");
+  assert.equal(examplesLabel(["A"], 1), "A");
+  assert.equal(examplesLabel([], 0), "Không có");
+  assert.equal(pendingBreakdownLabel(5, 3, 2), "3 phiếu nhập · 2 phiếu xuất");
+  assert.equal(pendingBreakdownLabel(6, 3, 2), "3 phiếu nhập · 2 phiếu xuất · 1 phiếu trả");
+  assert.equal(
+    negativeByWarehouseLabel([{ warehouseName: "Kho 1", count: 4 }, { warehouseName: "Kho 2", count: 2 }]),
+    "Kho 1: 4 mã · Kho 2: 2 mã",
+  );
+  assert.equal(negativeByWarehouseLabel([]), "Không có");
+  const share = groupShare([{ key: "a", totalQuantity: 75 }, { key: "b", totalQuantity: 25 }]);
+  assert.equal(share.get("a"), 75);
+  assert.equal(share.get("b"), 25);
+  assert.equal(groupShare([{ key: "a", totalQuantity: 0 }]).get("a"), 0, "tổng 0 → 0%");
+  assert.equal(formatUpdatedAt(Date.UTC(2026, 8, 19, 1, 42)), "Cập nhật 08:42 · 19/09/2026");
+}
+
+// --- Phase 20 — đơn đặt 3b (UI3B-05/06) -------------------------------------
+{
+  assert.deepEqual(
+    toOrderStatusCounts([{ trang_thai: "TAM", so_don: 2 }, { trang_thai: "HOAN_THANH", so_don: "5" }] as unknown as Parameters<typeof toOrderStatusCounts>[0]),
+    { byStatus: { TAM: 2, DA_XAC_NHAN: 0, HOAN_THANH: 5, DA_HUY: 0 }, total: 7 },
+  );
+  assert.deepEqual(
+    toAddOrderLineResult({ dong_id: "l1", da_cong_don: true, so_luong_moi: "5" } as unknown as Parameters<typeof toAddOrderLineResult>[0]),
+    { lineId: "l1", merged: true, quantity: 5 },
+  );
+
+  const staff = "11111111-1111-4111-8111-111111111111";
+  const countArgs = toOrderStatusCountRpcArgs({ ...DEFAULT_ORDER_FILTER, status: "TAM", page: 3, recipientKind: "internal", staffId: staff });
+  assert.deepEqual(countArgs, {
+    p_doi_tac_id: undefined, p_tu_ngay: undefined, p_den_ngay: undefined, p_tu_khoa: undefined,
+    p_loai_nhan: "NOI_BO", p_nguoi_nhan_id: staff,
+  });
+  assert.ok(!("p_trang_thai" in countArgs) && !("p_trang" in countArgs) && !("p_kich_thuoc" in countArgs));
+  assert.deepEqual(
+    statusCountKeyOf({ ...DEFAULT_ORDER_FILTER, status: "TAM", page: 3 }),
+    statusCountKeyOf({ ...DEFAULT_ORDER_FILTER, status: null, page: 1 }),
+    "đổi trạng thái/trang không đổi khóa đếm",
+  );
+  assert.deepEqual(toAddOrderLineRpcArgs("o1", { productId: "p1", quantity: 2, recipientId: null }), {
+    p_don_id: "o1", p_san_pham_id: "p1", p_so_luong: 2, p_nguoi_nhan_id: undefined,
+  });
+  assert.equal(toAddOrderLineRpcArgs("o1", { productId: "p1", quantity: 2, recipientId: "nv" }).p_nguoi_nhan_id, "nv");
+
+  assert.equal(todayInVietnam(new Date(Date.UTC(2026, 9, 3, 18, 30))), "2026-10-04", "01:30 sáng VN");
+  assert.deepEqual(datePresetRange("7d", "2026-10-04"), { fromDate: "2026-09-28", toDate: "2026-10-04" });
+  assert.deepEqual(datePresetRange("30d", "2026-10-04"), { fromDate: "2026-09-05", toDate: "2026-10-04" });
+  assert.deepEqual(datePresetRange("month", "2026-10-04"), { fromDate: "2026-10-01", toDate: "2026-10-04" });
+  assert.deepEqual(datePresetRange("7d", "2026-03-03"), { fromDate: "2026-02-25", toDate: "2026-03-03" });
+  assert.equal(activeDatePreset(null, null, "2026-10-04"), null);
+  assert.equal(activeDatePreset("2026-09-28", "2026-10-04", "2026-10-04"), "7d");
+  assert.equal(activeDatePreset("2026-10-01", "2026-10-04", "2026-10-04"), "month");
+  assert.equal(activeDatePreset("2026-09-01", "2026-09-15", "2026-10-04"), "custom");
+  assert.deepEqual(DATE_PRESET_LABELS, { "7d": "7N", "30d": "30N", month: "Tháng", custom: "Tùy" });
+
+  assert.deepEqual(orderProgress(0, 0), { percent: null, label: "—" });
+  assert.deepEqual(orderProgress(3, 7), { percent: 43, label: "3/7" });
+  assert.deepEqual(orderProgress(400, 400), { percent: 100, label: "400/400" });
+  assert.deepEqual(orderProgress(1500, 2000), { percent: 75, label: "1.500/2.000" });
+  assert.equal(orderProgress(9, 7).percent, 100);
 }
 
 void Promise.all([kiemCsvLoi(), kiemCsvPhanTich(), kiemTaiTheoTrang()]).then(() => {

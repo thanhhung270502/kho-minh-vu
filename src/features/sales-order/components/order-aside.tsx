@@ -1,13 +1,14 @@
 "use client";
 
-import { App, Descriptions, Input, Tag, Typography } from "antd";
+import { App, Input, Typography } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 
+import { StatusDot } from "@/shared/components/status-dot";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 
 import { useSetOrderRecipients, useUpdateOrderHeader } from "../hooks/useOrders";
-import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from "../lib/order-status";
+import { ORDER_STATUS_TONES, ORDER_STATUS_LABELS } from "../lib/order-status";
 import type { OrderHeaderInput, OrderRecipientsInput } from "../schemas/order.schema";
 import type { OrderDetail } from "../types";
 import { OrderRecipientField, RecipientsReadonly } from "./order-recipient-field";
@@ -15,7 +16,7 @@ import { OrderRecipientField, RecipientsReadonly } from "./order-recipient-field
 type Props = { order: OrderDetail; editable: boolean };
 
 /** Đơn đã xác nhận thì chỉ đọc — chặn thật nằm ở bốn policy ghi của plan 04-02. */
-export function OrderHeader({ order, editable }: Props) {
+export function OrderAside({ order, editable }: Props) {
   const { message } = App.useApp();
   const update = useUpdateOrderHeader(order.id);
   const setRecipients = useSetOrderRecipients(order.id);
@@ -80,62 +81,62 @@ export function OrderHeader({ order, editable }: Props) {
     );
   }
 
+  const metaLabel = "text-xs text-trung-tinh-350";
+  const metaValue = "text-[13.5px] font-semibold";
+
   return (
-    <Descriptions
-      bordered
-      size="small"
-      column={{ xs: 1, sm: 2, lg: 3 }}
-      items={[
-        {
-          key: "orderNo",
-          label: "Số đơn",
-          children: <span className="font-mono">{order.orderNo}</span>,
-        },
-        {
-          key: "orderDate",
-          label: "Ngày đơn",
-          children: dayjs(order.orderDate).format("DD/MM/YYYY"),
-        },
-        {
-          key: "partner",
-          label: fieldLabel("recipient", "Người nhận"),
-          children: editable ? (
-            <OrderRecipientField recipients={order.recipients} onSave={saveRecipients} />
-          ) : (
-            <RecipientsReadonly recipients={order.recipients} />
-          ),
-        },
-        {
-          key: "createdBy",
-          label: "Người tạo",
-          children: order.createdByName ?? "—",
-        },
-        {
-          key: "status",
-          label: "Trạng thái",
-          children: (
-            <Tag color={ORDER_STATUS_COLORS[order.status]}>
+    <aside className="flex flex-col gap-4 rounded-the border border-vien p-5">
+      <h2 className="m-0 text-[15px] font-extrabold">Thông tin đơn</h2>
+
+      <div className="flex flex-col gap-1.5">
+        <div className="text-xs font-bold text-chu-phu">
+          {fieldLabel("recipient", "Người nhận")}
+        </div>
+        {editable ? (
+          <OrderRecipientField recipients={order.recipients} onSave={saveRecipients} />
+        ) : (
+          <RecipientsReadonly recipients={order.recipients} />
+        )}
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <div className="text-xs font-bold text-chu-phu">{fieldLabel("note", "Ghi chú")}</div>
+        {editable ? (
+          <Input.TextArea
+            defaultValue={order.note ?? ""}
+            placeholder="Ghi chú cho đơn này"
+            autoSize={{ minRows: 2, maxRows: 5 }}
+            onBlur={(event) => void save("note", { note: event.target.value || null })}
+          />
+        ) : (
+          <span className="text-[13.5px]">{order.note ?? "—"}</span>
+        )}
+      </div>
+
+      <hr className="m-0 border-vien" />
+
+      <dl className="m-0 grid grid-cols-2 gap-x-4 gap-y-3">
+        <div>
+          <dt className={metaLabel}>Số đơn</dt>
+          <dd className={`m-0 font-mono ${metaValue}`}>{order.orderNo}</dd>
+        </div>
+        <div>
+          <dt className={metaLabel}>Ngày đơn</dt>
+          <dd className={`m-0 ${metaValue}`}>{dayjs(order.orderDate).format("DD/MM/YYYY")}</dd>
+        </div>
+        <div>
+          <dt className={metaLabel}>Người tạo</dt>
+          <dd className={`m-0 ${metaValue}`}>{order.createdByName ?? "—"}</dd>
+        </div>
+        <div>
+          <dt className={metaLabel}>Trạng thái</dt>
+          <dd className={`m-0 ${metaValue}`}>
+            <StatusDot tone={ORDER_STATUS_TONES[order.status]} strike={order.status === "DA_HUY"}>
               {ORDER_STATUS_LABELS[order.status]}
-            </Tag>
-          ),
-        },
-        {
-          key: "note",
-          label: fieldLabel("note", "Ghi chú"),
-          children: editable ? (
-            <Input.TextArea
-              defaultValue={order.note ?? ""}
-              placeholder="Ghi chú cho đơn này"
-              autoSize={{ minRows: 1, maxRows: 3 }}
-              onBlur={(event) =>
-                void save("note", { note: event.target.value || null })
-              }
-            />
-          ) : (
-            (order.note ?? "—")
-          ),
-        },
-      ]}
-    />
+            </StatusDot>
+          </dd>
+        </div>
+      </dl>
+    </aside>
   );
 }

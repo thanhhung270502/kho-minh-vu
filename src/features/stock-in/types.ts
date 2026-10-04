@@ -7,7 +7,7 @@ export type {
   DocumentRow,
 } from "@/features/documents/types";
 export {
-  DOC_STATUS_COLORS,
+  DOC_STATUS_TONES,
   DOC_STATUS_LABELS,
   toDocumentDetail,
   toDocumentLine,
@@ -20,11 +20,6 @@ export type ReceiptSource = DocumentSource;
 export const RECEIPT_SOURCE_LABELS: Record<ReceiptSource, string> = {
   NCC: "NCC ngoài",
   NHA_MAY: "Nhà máy",
-};
-
-export const RECEIPT_SOURCE_COLORS: Record<ReceiptSource, string> = {
-  NCC: "blue",
-  NHA_MAY: "purple",
 };
 
 export type ReceiptPermissions = {

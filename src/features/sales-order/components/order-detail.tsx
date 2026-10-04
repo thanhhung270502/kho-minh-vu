@@ -1,17 +1,18 @@
 "use client";
 
-import { Alert, Button, Tag } from "antd";
+import { Alert, Button } from "antd";
 import Link from "next/link";
 
+import { StatusDot } from "@/shared/components/status-dot";
 import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
 import { formatOrderRecipients } from "@/shared/lib/recipient";
 
 import { useOrderDetail, useOrderLines } from "../hooks/useOrders";
-import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from "../lib/order-status";
+import { ORDER_STATUS_TONES, ORDER_STATUS_LABELS } from "../lib/order-status";
 import type { OrderPermissions } from "../types";
 import { OrderActions } from "./order-actions";
-import { OrderHeader } from "./order-header";
+import { OrderAside } from "./order-aside";
 import { OrderLineTable } from "./order-line-table";
 
 export function OrderDetailView({
@@ -49,7 +50,7 @@ export function OrderDetailView({
 
         return (
           <>
-            <Link href="/don-dat" className="mb-2 inline-block text-sm">
+            <Link href="/don-dat" className="mb-2 inline-block text-[13px] font-semibold text-chu-phu">
               ← Đơn đặt
             </Link>
 
@@ -57,9 +58,9 @@ export function OrderDetailView({
               title={order.orderNo}
               description={
                 <span className="flex flex-wrap items-center gap-2">
-                  <Tag color={ORDER_STATUS_COLORS[order.status]}>
+                  <StatusDot tone={ORDER_STATUS_TONES[order.status]} variant="badge">
                     {ORDER_STATUS_LABELS[order.status]}
-                  </Tag>
+                  </StatusDot>
                   {formatOrderRecipients(order.recipients)}
                 </span>
               }
@@ -113,9 +114,7 @@ export function OrderDetailView({
               />
             ) : null}
 
-            <OrderHeader order={order} editable={editable} />
-
-            <div className="mt-4">
+            <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
               <QueryState query={lines} isEmpty={() => false} emptyDescription="">
                 {(loadedLines) => (
                   <OrderLineTable
@@ -127,6 +126,7 @@ export function OrderDetailView({
                   />
                 )}
               </QueryState>
+              <OrderAside order={order} editable={editable} />
             </div>
           </>
         );

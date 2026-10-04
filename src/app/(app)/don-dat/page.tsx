@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { requirePermission } from "@/features/auth/api/current-user.server";
+import { OrderExcelButton } from "@/features/sales-order/components/order-excel-button";
 import { OrderTable } from "@/features/sales-order/components/order-table";
 import { PageHeader } from "@/shared/components/page-header";
 import { can } from "@/shared/lib/permissions";
@@ -15,6 +16,11 @@ export default async function SalesOrderPage() {
     <>
       <PageHeader
         title="Đơn đặt"
+        actions={
+          <Suspense fallback={null}>
+            <OrderExcelButton />
+          </Suspense>
+        }
         description="Đơn tạm cho tới khi quản lý xác nhận — xác nhận xong mới in phiếu đi lấy hàng."
       />
 

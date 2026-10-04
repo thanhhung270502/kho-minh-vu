@@ -12,15 +12,17 @@ type PageHeaderProps = {
 
 export function PageHeader({ title, description, actions }: PageHeaderProps) {
   return (
-    <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+    <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
       <div>
         {/* `mb-1` không cần `!` vì @layer utilities đứng sau @layer antd —
             layer quyết định thắng thua trước cả độ ưu tiên selector. */}
-        <Typography.Title level={4} className="mb-1">
+        <Typography.Title level={1} className="mb-1 text-[30px] leading-[1.1] font-extrabold tracking-[-0.04em]">
           {title}
         </Typography.Title>
         {description ? (
-          <Typography.Text type="secondary">{description}</Typography.Text>
+          <Typography.Text type="secondary" className="text-[13.5px]">
+            {description}
+          </Typography.Text>
         ) : null}
       </div>
 

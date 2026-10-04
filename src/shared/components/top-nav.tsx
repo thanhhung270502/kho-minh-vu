@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { AccountMenu } from "@/shared/components/account-menu";
 import type { NavEntry } from "@/shared/lib/navigation";
@@ -15,6 +16,7 @@ import {
   linkItems,
   PILL_CLASS,
   PillLabel,
+  pillTone,
 } from "./nav-pill";
 import { useNavOverflow } from "./use-nav-overflow";
 
@@ -23,44 +25,53 @@ type TopNavProps = {
   /** Mục cấp 1 — mục lẻ hoặc nhóm (Đơn hàng, Hàng hóa) mở dropdown. */
   entries: NavEntry[];
   activeHref: string;
+  /** Ô tìm toàn cục ở giữa tầng 1 — route ghép vào, shared không import feature. */
+  search?: ReactNode;
 };
 
-export function TopNav({ user, entries, activeHref }: TopNavProps) {
-  const { containerRef, measureRef, visibleCount } = useNavOverflow(entries.length);
+// Chiều cao tầng 1 (h-[60px]) và tầng 2 (h-11 + border-b) phải khớp
+// hooks/use-sticky-table-offset.ts.
+export function TopNav({ user, entries, activeHref, search }: TopNavProps) {
+  const { containerRef, measureRef, visibleCount } = useNavOverflow(
+    entries.length,
+  );
   const visible = entries.slice(0, visibleCount);
   const overflow = entries.slice(visibleCount);
-  const activeIsInOverflow = overflow.some((entry) => entryIsActive(entry, activeHref));
+  const activeIsInOverflow = overflow.some((entry) =>
+    entryIsActive(entry, activeHref),
+  );
 
   return (
-    <header
-      data-no-print
-      className="sticky top-0 z-20 border-b border-vien bg-nen-the"
-    >
-      <div className="flex h-14 items-center gap-3 px-4 lg:px-6">
-        <Link href="/" className="shrink-0 font-semibold text-chu-chinh">
-          Kho Minh Vũ
+    <header data-no-print className="sticky top-0 z-20 bg-nen-the">
+      <div className="flex h-[60px] items-center gap-4 px-4 max-lg:border-b max-lg:border-vien lg:px-6">
+        <Link
+          href="/"
+          className="flex shrink-0 items-center gap-2.5 text-chu-chinh hover:text-chu-chinh lg:w-[260px]"
+        >
+          <span className="flex size-7 items-center justify-center rounded-full bg-chu-chinh text-[10.5px] font-extrabold text-white">
+            MV
+          </span>
+          <span className="text-[15px] font-extrabold tracking-[-0.02em]">
+            Kho Minh Vũ
+          </span>
         </Link>
 
-        {/*
-          Khung đo: chiếm hết chỗ trống giữa logo và tài khoản. Mục nào không
-          vừa thì gộp vào "Khác" (như KiotViet) thay vì để chữ xuống dòng.
-        */}
-        <div ref={containerRef} className="relative hidden min-w-0 flex-1 lg:block">
-          {/*
-            Pill nav — chỉ hiện từ 992px, dưới đó đã có thanh tab đáy. Nền là
-            gradient + viền + đổ bóng nhẹ (giá trị trích xuất thật từ KiotViet),
-            không phải màu đặc nên cần style riêng — Tailwind color scale không
-            biểu diễn được gradient 2 điểm dừng chính xác từ token.
-          */}
-          <nav
-            className="flex w-fit max-w-full items-center gap-0.5 rounded-full p-px"
-            style={{
-              background:
-                "linear-gradient(0deg, var(--color-brand-500) 0%, var(--color-brand-400) 100%)",
-              border: "1px solid var(--color-brand-500)",
-              boxShadow: "0 0 4px 0 rgba(0,112,244,.15)",
-            }}
-          >
+        <div className="flex min-w-0 flex-1 justify-end lg:justify-center">
+          {search}
+        </div>
+
+        <div className="flex shrink-0 justify-end lg:w-[260px]">
+          <AccountMenu user={user} />
+        </div>
+      </div>
+
+      {/*
+        Tầng 2: khung đo chiếm hết bề ngang. Mục nào không vừa thì gộp vào
+        "Khác" thay vì để chữ xuống dòng. Dưới lg đã có thanh tab đáy.
+      */}
+      <div className="hidden h-11 border-b border-vien px-6 lg:block">
+        <div ref={containerRef} className="relative h-full">
+          <nav className="flex h-full w-fit max-w-full items-stretch gap-1">
             {visible.map((entry) => {
               const active = entryIsActive(entry, activeHref);
               if (entry.kind === "group") {
@@ -68,7 +79,6 @@ export function TopNav({ user, entries, activeHref }: TopNavProps) {
                   <DropdownPill
                     key={entry.key}
                     label={entry.label}
-                    icon={entryIcon(entry)}
                     active={active}
                     items={linkItems(entry)}
                     activeHref={activeHref}
@@ -80,10 +90,9 @@ export function TopNav({ user, entries, activeHref }: TopNavProps) {
                   key={entry.key}
                   href={entry.item.href}
                   aria-current={active ? "page" : undefined}
-                  className={cn(PILL_CLASS, active ? "bg-white/25" : "")}
+                  className={cn(PILL_CLASS, pillTone(active))}
                 >
-                  {entryIcon(entry)}
-                  <PillLabel label={entry.label} active={active} />
+                  <PillLabel label={entry.label} />
                 </Link>
               );
             })}
@@ -95,18 +104,25 @@ export function TopNav({ user, entries, activeHref }: TopNavProps) {
                 activeHref={activeHref}
                 items={overflow.map((entry) =>
                   entry.kind === "group"
-                    ? { type: "group" as const, key: entry.key, label: entry.label, children: linkItems(entry) }
+                    ? {
+                        type: "group" as const,
+                        key: entry.key,
+                        label: entry.label,
+                        children: linkItems(entry),
+                      }
                     : {
                         key: entry.item.href,
                         icon: entryIcon(entry),
-                        label: <Link href={entry.item.href}>{entry.label}</Link>,
+                        label: (
+                          <Link href={entry.item.href}>{entry.label}</Link>
+                        ),
                       },
                 )}
               />
             ) : null}
           </nav>
 
-          {/* Hàng đo ẩn: mọi pill + pill "Khác" (phải đứng cuối) ở bề rộng thật. */}
+          {/* Hàng đo ẩn: mọi tab + tab "Khác" (phải đứng cuối) ở bề rộng thật. */}
           <div
             ref={measureRef}
             aria-hidden
@@ -114,22 +130,17 @@ export function TopNav({ user, entries, activeHref }: TopNavProps) {
           >
             {entries.map((entry) => (
               <span key={entry.key} className={PILL_CLASS}>
-                {entryIcon(entry)}
                 {entry.kind === "group" ? (
-                  <DropdownLabel label={entry.label} active={false} />
+                  <DropdownLabel label={entry.label} />
                 ) : (
-                  <PillLabel label={entry.label} active={false} />
+                  <PillLabel label={entry.label} />
                 )}
               </span>
             ))}
             <span className={PILL_CLASS}>
-              <DropdownLabel label="Khác" active={false} />
+              <DropdownLabel label="Khác" />
             </span>
           </div>
-        </div>
-
-        <div className="ms-auto shrink-0">
-          <AccountMenu user={user} />
         </div>
       </div>
     </header>

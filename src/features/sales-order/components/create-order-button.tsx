@@ -14,7 +14,7 @@ type Props = {
 
 /**
  * Bấm là tạo ngay một đơn tạm (chưa có người nhận) rồi sang trang đơn — người
- * nhận, dòng hàng, ghi chú điền hết ở đó (0094). Không còn hộp thoại hỏi trước
+ * nhận, dòng hàng, ghi chú điền hết ở đó (0097). Không còn hộp thoại hỏi trước
  * Nội bộ hay Đối tác.
  */
 export function CreateOrderButton({ label = "Tạo đơn" }: Props) {

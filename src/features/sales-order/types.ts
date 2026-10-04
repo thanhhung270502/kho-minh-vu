@@ -1,13 +1,15 @@
 import { toStaffRefs, type OrderRecipients } from "@/shared/lib/recipient";
 import type { Database } from "@/types/database.types";
 
-import type { OrderStatus } from "./lib/order-status";
+import { ORDER_STATUSES, type OrderStatus } from "./lib/order-status";
 
 type Fn = Database["public"]["Functions"];
 
 type OrderRowDb = Fn["danh_sach_don"]["Returns"][number];
 type OrderDetailDb = Fn["chi_tiet_don"]["Returns"][number];
 type OrderLineDb = Fn["dong_don"]["Returns"][number];
+type StatusCountDb = Fn["dem_don_theo_trang_thai"]["Returns"][number];
+type AddLineDb = Fn["them_dong_don"]["Returns"][number];
 
 /**
  * Đơn đặt hàng KHÔNG mang giá (chốt 19/09 câu 7) — ba kiểu dưới đây không có
@@ -143,3 +145,36 @@ export type OrderPermissions = {
   /** Hủy đơn — theo phạm vi quản trị (huy_don, 0078), không thuộc 9 quyền chức vụ. */
   canCancel: boolean;
 };
+
+export type OrderStatusCounts = {
+  byStatus: Record<OrderStatus, number>;
+  total: number;
+};
+
+export function toOrderStatusCounts(rows: StatusCountDb[]): OrderStatusCounts {
+  const byStatus = Object.fromEntries(
+    ORDER_STATUSES.map((status) => [status, 0]),
+  ) as Record<OrderStatus, number>;
+  let total = 0;
+  for (const row of rows) {
+    const count = Number(row.so_don);
+    byStatus[row.trang_thai] += count;
+    total += count;
+  }
+  return { byStatus, total };
+}
+
+/** Kết quả thêm dòng (0094): merged = cộng dồn vào dòng cùng mã + cùng người nhận (D-03). */
+export type AddOrderLineResult = {
+  lineId: string;
+  merged: boolean;
+  quantity: number;
+};
+
+export function toAddOrderLineResult(row: AddLineDb): AddOrderLineResult {
+  return {
+    lineId: row.dong_id,
+    merged: row.da_cong_don,
+    quantity: Number(row.so_luong_moi),
+  };
+}

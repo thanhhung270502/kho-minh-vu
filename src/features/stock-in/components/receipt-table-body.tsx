@@ -5,14 +5,16 @@ import type { TableColumnsType } from "antd";
 import dayjs from "dayjs";
 import Link from "next/link";
 
+import { StatusDot } from "@/shared/components/status-dot";
+
 import { RECEIPT_PAGE_SIZE, type ReceiptFilter } from "../schemas/receipt.schema";
 import {
-  DOC_STATUS_COLORS,
+  DOC_STATUS_TONES,
   DOC_STATUS_LABELS,
-  RECEIPT_SOURCE_COLORS,
   RECEIPT_SOURCE_LABELS,
   type DocumentRow,
 } from "../types";
+import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
 
 function formatNumber(value: number | string | null): string {
   return value === null ? "—" : Number(value).toLocaleString("vi-VN");
@@ -42,7 +44,7 @@ const COLUMNS: TableColumnsType<DocumentRow> = [
     width: 110,
     render: (source: DocumentRow["source"]) =>
       source ? (
-        <Tag color={RECEIPT_SOURCE_COLORS[source]}>
+        <Tag>
           {RECEIPT_SOURCE_LABELS[source]}
         </Tag>
       ) : null,
@@ -68,7 +70,7 @@ const COLUMNS: TableColumnsType<DocumentRow> = [
     dataIndex: "status",
     width: 140,
     render: (status: DocumentRow["status"]) => (
-      <Tag color={DOC_STATUS_COLORS[status]}>{DOC_STATUS_LABELS[status]}</Tag>
+      <StatusDot tone={DOC_STATUS_TONES[status]} strike={status === "DA_HUY"}>{DOC_STATUS_LABELS[status]}</StatusDot>
     ),
   },
   { title: "Người tạo", dataIndex: "createdByName", width: 160, ellipsis: true },
@@ -89,11 +91,12 @@ export function ReceiptTableBody({
   loading,
   onFilterChange,
 }: Props) {
+  const offsetHeader = useStickyTableOffset();
   return (
     <Table<DocumentRow>
       rowKey="id"
       size="small"
-      sticky
+      sticky={{ offsetHeader }}
       columns={COLUMNS}
       dataSource={rows}
       loading={loading}

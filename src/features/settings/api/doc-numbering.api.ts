@@ -12,7 +12,7 @@ export type DocNumberingRow = {
   source: string;
   prefix: string;
   digits: number;
-  /** false = kiểu KiotViet {tiền tố}{số} đếm liên tục; true = {tiền tố}{YY}-{số} theo năm (0092). */
+  /** false = kiểu KiotViet {tiền tố}{số} đếm liên tục; true = {tiền tố}{YY}-{số} theo năm (0095). */
   withYear: boolean;
   current: number;
   example: string;

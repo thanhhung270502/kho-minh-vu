@@ -54,8 +54,10 @@ sau cần dùng ngay.
 
 **v1.2 Phản hồi vận hành đợt 2** (chi tiết ở "## Milestone v1.2")
 
-- [x] **Phase 17: Đổi tên & gọn đơn đặt** - Menu Đơn đặt / Duyệt đơn (`/don-dat`, `/duyet-don`), "Khách đặt" → "Đơn đặt", "Mua ngoài" → "Hàng ngoài", bỏ "Cần rà" và Ngày giao dự kiến, phiếu lấy hàng ghi tên đầy đủ + giờ in + người đặt (completed 2026-10-03)
-- [x] **Phase 18: Đơn nhiều người nhận** - Đơn chọn nhiều người nhận, từng dòng gán người nhận riêng, lọc/in/hóa đơn mang theo cả hai cấp (completed 2026-10-03)
+- [x] **Phase 17: Đổi tên & gọn đơn đặt** - Menu Đơn đặt / Duyệt đơn (`/don-dat`, `/duyet-don`), "Khách đặt" → "Đơn đặt", "Mua ngoài" → "Hàng ngoài", bỏ "Cần rà" và Ngày giao dự kiến, phiếu lấy hàng ghi tên đầy đủ + giờ in + người đặt
+ (completed 2026-10-03)
+- [x] **Phase 18: Đơn nhiều người nhận** - Đơn chọn nhiều người nhận, từng dòng gán người nhận riêng, lọc/in/hóa đơn mang theo cả hai cấp
+ (completed 2026-10-03)
 - [ ] **Phase 19: Dòng xe dùng chung** - Một mã hàng thuộc nhiều dòng xe: chọn trong form, lọc theo dòng xe, import/xuất Excel nhiều dòng xe một ô
  (completed 2026-09-26)
 
@@ -709,3 +711,38 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 | 17. Đổi tên & gọn đơn đặt | 6/6 | Complete    | 2026-10-03 |
 | 18. Đơn nhiều người nhận | 8/8 | Complete    | 2026-10-03 |
 | 19. Dòng xe dùng chung | 0/TBD | Not started | - |
+
+### Phase 20: Giao diện 3b và tính năng còn thiếu
+
+**Goal**: Toàn app mang design system "hướng 3b" (artifact https://claude.ai/artifact/CmTtL7XqUnZzLSV54iE1ZC), và bốn màn có design — Tổng quan, Đơn đặt (danh sách + chi tiết), Chi tiết hàng hóa — có đủ tính năng design thể hiện mà hệ thống còn thiếu.
+**Depends on**: Phase 18 (dựng trên đơn nhiều người nhận). Độc lập với Phase 19.
+**Requirements**: UI3B-01, UI3B-02, UI3B-03, UI3B-04, UI3B-05, UI3B-06, UI3B-07
+**Success Criteria** (what must be TRUE):
+
+  1. Mọi màn dùng chung design system 3b: font Manrope, header 2 tầng (logo · ô tìm ⌘K · tài khoản / menu tab gạch chân), nút bo tròn, thẻ viền mảnh bo 16 — bố cục nội dung từng màn không vỡ, mobile vẫn có thanh tab đáy
+  2. Ô tìm kiếm toàn cục (bấm hoặc ⌘K/Ctrl+K) tìm được mã hàng, số phiếu/số đơn và đối tác, Enter mở thẳng trang chi tiết; tôn trọng RLS/quyền xem
+  3. Tổng quan có 4 KPI kèm xu hướng (Giá trị tồn — người không có quyền giá vốn thấy Tổng SL tồn thay thế; Mã đang kinh doanh; Phiếu xuất hôm nay; Phiếu chờ ghi sổ), biểu đồ Nhập–Xuất 7N/30N/90N, Tồn theo nhóm có SL + tỷ trọng, panel "Cần xử lý" có nút dẫn tới đúng màn, "Không luân chuyển > 30 ngày" có số ngày; Nhịp bán và Xuất âm theo ngày vẫn còn
+  4. Danh sách Đơn đặt: lọc trạng thái có số đếm, khoảng ngày có preset 7N/30N/Tháng/Tùy, cột Tiến độ có thanh, nút Xuất Excel theo bộ lọc hiện tại
+  5. Chi tiết đơn: nội dung hai cột — dòng hàng bên trái, aside "Thông tin đơn" (người nhận, ghi chú, số đơn/ngày/người tạo/trạng thái) bên phải; gõ lại mã đã có với cùng người nhận thì cộng dồn số lượng
+  6. Chi tiết hàng hóa: badge trạng thái cạnh mã, nút Ngừng/Mở lại kinh doanh; "Tồn theo kho" là bảng Tồn · Tối thiểu · Giá trị (ẩn với người không có quyền giá vốn) + Tổng tồn; ảnh nằm ở aside (ảnh chính lớn + dải ảnh nhỏ)
+
+**Plans**: 16 plans (5 waves)
+
+Plans:
+- [x] 20-01-PLAN.md — W1: RPC tìm kiếm toàn cục `tim_kiem_toan_cuc` (0092, invoker) + pgTAP 110
+- [x] 20-02-PLAN.md — W1: RPC Tổng quan (`tong_quan_chi_so`, `nhap_xuat_theo_ngay`, `khong_luan_chuyen`, `ton_theo_nhom` + SL) (0093) + pgTAP 111/93
+- [x] 20-03-PLAN.md — W1: RPC đơn đặt (`dem_don_theo_trang_thai`, `them_dong_don` cộng dồn) (0094) + pgTAP 113
+- [x] 20-04-PLAN.md — W1: Token design system 3b (Manrope, antd pill/bo 16, biến CSS, chip trạng thái, tiêu đề trang)
+- [x] 20-05-PLAN.md — W1: Bảng Tồn theo kho có giá trị theo quyền + khung ảnh aside
+- [x] 20-06-PLAN.md — W2: Đồng bộ migration + database.types + mapper/hàm thuần có test cho 3 feature
+- [x] 20-07-PLAN.md — W2: Header hai tầng + slot ô tìm + offsetHeader 6 bảng dính (D-10)
+- [x] 20-08-PLAN.md — W2: Chi tiết hàng hóa hai cột — badge, Ngừng/Mở lại KD, ghép bảng tồn + ảnh aside
+- [x] 20-09-PLAN.md — W3: Ô tìm kiếm ⌘K (feature global-search) ghép vào header
+- [x] 20-10-PLAN.md — W3: Tổng quan A — 4 KPI + sparkline + biểu đồ Nhập–Xuất 7N/30N/90N
+- [x] 20-11-PLAN.md — W3: Đơn đặt — panel lọc có số đếm trạng thái, preset ngày
+- [x] 20-12-PLAN.md — W3: Đơn đặt — cột Tiến độ dạng thanh, chip trạng thái, số kết quả
+- [x] 20-13-PLAN.md — W3: Xuất Excel danh sách đơn theo bộ lọc
+- [x] 20-14-PLAN.md — W4: Tổng quan B — Cần xử lý, Không luân chuyển, Tồn theo nhóm có SL + tỷ trọng, lưới 1fr 300px
+- [x] 20-15-PLAN.md — W4: Chi tiết đơn hai cột + thêm dòng cộng dồn qua RPC
+- [x] 20-16-PLAN.md — W5: Ma trận quyền route, cổng kiểm toàn bộ, UAT trình duyệt (checkpoint)
+**UI hint**: yes

@@ -11,7 +11,7 @@ import {
 
 /** Màu theo độ tin cậy: lịch sử của chính mã > mượn trung bình nhóm > không có gì. */
 const BASIS_COLORS: Record<SuggestionBasis, string> = {
-  theo_ma: "green",
+  theo_ma: "default",
   trung_binh_nhom: "gold",
   khong_du_lieu: "default",
 };

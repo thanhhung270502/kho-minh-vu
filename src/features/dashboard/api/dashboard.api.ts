@@ -2,10 +2,16 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 import type { StockGroupBy } from "../lib/stock-drilldown";
 import {
+  toFlowDay,
+  toIdleProduct,
   toNegativeStockLine,
+  toOverviewKpis,
   toSalesPace,
   toStockByGroupRow,
+  type FlowDay,
+  type IdleProduct,
   type NegativeStockLine,
+  type OverviewKpis,
   type SalesPace,
   type StockByGroupRow,
 } from "../types";
@@ -14,9 +20,11 @@ import {
  * Lớp api (cùng mapper trong `types.ts`) là chỗ DUY NHẤT của feature được chạm tên
  * RPC và tên cột tiếng Việt. Hook và component chỉ thấy kiểu miền tiếng Anh.
  *
- * Cả ba RPC tự chặn quyền ở database (42501 nếu không phải `quan_ly`, D-12) —
- * không lọc/ẩn gì thêm ở JS.
+ * Các RPC tự chặn quyền ở database (42501 nếu thiếu quyền; các RPC 3b dùng
+ * `co_quyen('xem_dashboard')`, 0083/0093) — không lọc/ẩn gì thêm ở JS.
  */
+
+export type FlowRange = 7 | 30 | 90;
 
 export async function fetchSalesPace(): Promise<SalesPace> {
   const supabase = getSupabaseBrowserClient();
@@ -51,4 +59,30 @@ export async function fetchStockByGroup(
   });
   if (error) throw error;
   return (data ?? []).map(toStockByGroupRow);
+}
+
+export async function fetchOverviewKpis(): Promise<OverviewKpis> {
+  const supabase = getSupabaseBrowserClient();
+  const { data, error } = await supabase.rpc("tong_quan_chi_so");
+  if (error) throw error;
+  const row = data?.[0];
+  if (!row) throw new Error("Tổng quan: không nhận được chỉ số");
+  return toOverviewKpis(row);
+}
+
+export async function fetchFlowByDay(days: FlowRange): Promise<FlowDay[]> {
+  const supabase = getSupabaseBrowserClient();
+  const { data, error } = await supabase.rpc("nhap_xuat_theo_ngay", { p_so_ngay: days });
+  if (error) throw error;
+  return (data ?? []).map(toFlowDay);
+}
+
+export async function fetchIdleProducts(): Promise<IdleProduct[]> {
+  const supabase = getSupabaseBrowserClient();
+  const { data, error } = await supabase.rpc("khong_luan_chuyen", {
+    p_so_ngay: 30,
+    p_gioi_han: 8,
+  });
+  if (error) throw error;
+  return (data ?? []).map(toIdleProduct);
 }

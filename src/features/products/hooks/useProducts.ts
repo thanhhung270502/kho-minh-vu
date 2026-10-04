@@ -9,6 +9,7 @@ import {
   bulkAssign,
   createProduct,
   fetchLookups,
+  fetchProductCost,
   fetchProductDetail,
   fetchProducts,
   fetchStockByWarehouse,
@@ -56,6 +57,15 @@ export function useStockByWarehouse(productId: string) {
   return useQuery({
     queryKey: productKeys.stockByWarehouse(productId),
     queryFn: () => fetchStockByWarehouse(productId),
+  });
+}
+
+/** Không có quyền giá vốn thì không bắn RPC (bẫy 10); chặn thật nằm ở RPC (42501). */
+export function useProductCost(productId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: productKeys.cost(productId),
+    queryFn: () => fetchProductCost(productId),
+    enabled: enabled && productId !== "",
   });
 }
 

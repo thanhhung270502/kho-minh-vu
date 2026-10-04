@@ -1,8 +1,9 @@
 "use client";
 
-import { Alert, Button, Space, Tag } from "antd";
+import { Alert, Button, Space } from "antd";
 import Link from "next/link";
 
+import { StatusDot } from "@/shared/components/status-dot";
 import { NegativeStockPanel } from "@/features/documents/components/negative-stock-panel";
 import { PostDocumentButton } from "@/features/documents/components/post-document-button";
 import { VoidDocumentDialog } from "@/features/documents/components/void-document-dialog";
@@ -14,7 +15,7 @@ import { formatOrderRecipients } from "@/shared/lib/recipient";
 import { QueryState } from "@/shared/components/query-state";
 
 import { useIssueDetail, useIssueLines } from "../hooks/useIssues";
-import { DOC_STATUS_COLORS, DOC_STATUS_LABELS, issueRecipients } from "../types";
+import { DOC_STATUS_TONES, DOC_STATUS_LABELS, issueRecipients } from "../types";
 import type { IssuePermissions } from "../types";
 import { IssueHeader } from "./issue-header";
 import { IssueLineTable } from "./issue-line-table";
@@ -67,9 +68,9 @@ export function IssueDetailView({
               title={issue.docNo}
               description={
                 <span className="flex flex-wrap items-center gap-2">
-                  <Tag color={DOC_STATUS_COLORS[issue.status]}>
+                  <StatusDot tone={DOC_STATUS_TONES[issue.status]} variant="badge">
                     {DOC_STATUS_LABELS[issue.status]}
-                  </Tag>
+                  </StatusDot>
                   {recipientText === "—" ? "Chưa chọn người nhận" : recipientText}
                   {issue.orderId ? (
                     <Link href={`/don-dat/${issue.orderId}`} className="text-sm">

@@ -1,3 +1,5 @@
+import type { StatusTone } from "@/shared/lib/status-tone";
+
 /**
  * Nhãn trạng thái phiên kiểm kê hiển thị trên giao diện. Tính từ tiến độ đếm,
  * KHÔNG lưu cột riêng trên database (nguyên tắc kiến trúc số 1 — tồn/trạng
@@ -13,13 +15,13 @@ export const SESSION_STATUS_LABELS: Record<SessionStatus, string> = {
   voided: "Đã hủy",
 };
 
-/** Màu `Tag` antd tương ứng từng trạng thái. */
-export const SESSION_STATUS_COLORS: Record<SessionStatus, string> = {
-  new: "default",
-  counting: "processing",
-  ready: "warning",
-  approved: "success",
-  voided: "error",
+/** Tông chấm màu tương ứng từng trạng thái (`StatusDot`). */
+export const SESSION_STATUS_TONES: Record<SessionStatus, StatusTone> = {
+  new: "active",
+  counting: "active",
+  ready: "pending",
+  approved: "done",
+  voided: "muted",
 };
 
 export type SessionStatusInput = {

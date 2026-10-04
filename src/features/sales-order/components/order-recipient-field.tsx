@@ -19,7 +19,7 @@ type Props = {
 
 /**
  * Giá trị luôn lấy từ server: lưu lỗi thì ô quay về người nhận đã lưu. Mỗi lần
- * đổi gửi cả tập (dat_nguoi_nhan_don). Đơn tạm được để trống (0094) — chỉ lúc
+ * đổi gửi cả tập (dat_nguoi_nhan_don). Đơn tạm được để trống (0097) — chỉ lúc
  * Xác nhận đơn database mới đòi có người nhận.
  */
 export function OrderRecipientField({ recipients, onSave }: Props) {

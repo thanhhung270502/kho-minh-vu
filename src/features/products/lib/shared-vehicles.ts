@@ -1,4 +1,4 @@
-// File thuần (bẫy 9): hàng dùng chung nhiều hãng / dòng xe (0093). Form, bảng,
+// File thuần (bẫy 9): hàng dùng chung nhiều hãng / dòng xe (0096). Form, bảng,
 // chi tiết và scripts/test-pure-functions.ts cùng import.
 import type { CodeDictionary } from "@/features/product-codes/lib/parse-product-code";
 
@@ -17,7 +17,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
- * Đọc san_pham.xe_dung_chung. Khóa "hang"/"dong" là hợp đồng jsonb với 0093 —
+ * Đọc san_pham.xe_dung_chung. Khóa "hang"/"dong" là hợp đồng jsonb với 0096 —
  * giữ snake_case tiếng Việt. Phần tử sai dạng bỏ qua, không làm vỡ cả bảng.
  */
 export function fromSharedVehiclesDb(value: unknown): SharedVehicle[] {

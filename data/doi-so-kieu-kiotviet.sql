@@ -1,4 +1,4 @@
--- Chạy SAU migration 0092, một lần, trên phonzy (04/10/2026).
+-- Chạy SAU migration 0095, một lần, trên phonzy (04/10/2026).
 -- Trả chứng từ và đơn đã nạp về số KiotViet, đánh lại phiếu Điều chỉnh theo
 -- quy tắc mới (DC + 6 số), rồi đặt bộ đếm liên tục (nam = 0) nối tiếp số cuối.
 begin;

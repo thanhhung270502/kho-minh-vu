@@ -1,16 +1,17 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Alert, App, Button, Descriptions, Input, Modal, Progress, Tag, Typography } from "antd";
+import { Alert, App, Button, Descriptions, Input, Modal, Progress, Typography } from "antd";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
+import { StatusDot } from "@/shared/components/status-dot";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 
 import { useVoidSession } from "../hooks/useStocktake";
-import { SESSION_STATUS_COLORS, SESSION_STATUS_LABELS, sessionStatus } from "../lib/session-status";
+import { SESSION_STATUS_TONES, SESSION_STATUS_LABELS, sessionStatus } from "../lib/session-status";
 import { voidSessionSchema, type VoidSessionInput } from "../schemas/stocktake.schema";
 import type { StocktakeSession } from "../types";
 
@@ -128,7 +129,7 @@ export function SessionHeader({ session, canVoid }: Props) {
             key: "status",
             label: "Trạng thái",
             children: (
-              <Tag color={SESSION_STATUS_COLORS[status]}>{SESSION_STATUS_LABELS[status]}</Tag>
+              <StatusDot tone={SESSION_STATUS_TONES[status]} strike={status === "voided"}>{SESSION_STATUS_LABELS[status]}</StatusDot>
             ),
           },
           {

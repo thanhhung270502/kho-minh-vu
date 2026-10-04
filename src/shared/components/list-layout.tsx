@@ -31,11 +31,11 @@ export function ListLayout({
     <>
       <div className="flex items-start gap-4">
         {/* Panel lọc cố định trái, 264px, chỉ từ 992px */}
-        <aside className="hidden w-[264px] shrink-0 rounded-the bg-nen-the p-4 shadow-the lg:block">
+        <aside className="hidden w-[264px] shrink-0 rounded-the border border-vien bg-nen-the p-[18px] lg:block">
           {filterPanel}
         </aside>
 
-        <section className="min-w-0 flex-1 rounded-the bg-nen-the p-3 shadow-the lg:p-4">
+        <section className="min-w-0 flex-1 rounded-the border border-vien bg-nen-the p-3 lg:p-4">
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <Button
               className="lg:hidden"
@@ -47,8 +47,13 @@ export function ListLayout({
             <div className="min-w-0 flex-1">{toolbar}</div>
           </div>
 
-          {/* Bảng cuộn ngang TRONG khung này, không để cả page tràn ngang. */}
-          <div className="overflow-x-auto">{children}</div>
+          {/*
+            Bảng tự cuộn ngang bằng `scroll={{ x }}` của antd nên page không
+            tràn ngang. KHÔNG bọc `overflow-x-auto` ở đây: nó biến khung này
+            thành vùng cuộn riêng, tiêu đề bảng dính (`sticky.offsetHeader`)
+            tính top theo khung thay vì theo cửa sổ và rơi vào giữa các dòng.
+          */}
+          <div className="min-w-0">{children}</div>
         </section>
 
         {detailPanel}

@@ -31,7 +31,7 @@ export function standardColumns(dictionary: CodeDictionary): TableColumnsType<Pr
     );
   };
   const names = (row: ProductRow) => standardNames(dictionary, row);
-  // Hàng dùng chung nhiều xe (0093): "HONDA, YAMAHA" / "Air Blade, Acruzo".
+  // Hàng dùng chung nhiều xe (0096): "HONDA, YAMAHA" / "Air Blade, Acruzo".
   const shared = (row: ProductRow, key: "brands" | "models") => {
     if (row.sharedVehicles.length === 0) return null;
     const text = vehicleColumns(dictionary, row, row.sharedVehicles)[key].join(", ");

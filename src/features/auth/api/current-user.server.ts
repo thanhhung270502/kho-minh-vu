@@ -33,9 +33,9 @@ const KNOWN = new Set<string>(BUSINESS_PERMISSIONS.map((p) => p.key));
 /**
  * Đọc vai trò từ BẢNG (không từ claim) để giao diện khớp RLS ngay sau khi quản lý đổi quyền.
  *
- * `cache()` gộp mọi lần gọi trong CÙNG một request: layout và page đều gọi hàm
- * này, không gộp thì mỗi lần tải trang đi Supabase 6 vòng nối tiếp (~1,2 giây).
- * Phạm vi cache chỉ là một request nên không rò phiên giữa người dùng.
+ * `cache()` gộp các lần gọi trong CÙNG một request (layout + page) — database
+ * đặt xa nên mỗi lượt đi về tốn vài trăm ms. Phạm vi cache là một request,
+ * không dùng chung giữa người dùng.
  */
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const supabase = await createSupabaseServerClient();
@@ -45,8 +45,8 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
 
   if (!user) return null;
 
-  // Hai truy vấn độc lập — chạy song song cho bớt một vòng mạng.
-  const [profile, permissionResult] = await Promise.all([
+  // Hai truy vấn độc lập (RPC tự lọc theo auth.uid()) — chạy song song thay vì nối tiếp.
+  const [profile, grants] = await Promise.all([
     supabase
       .from("nguoi_dung")
       .select(
@@ -61,7 +61,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   if (error) throw error;
   if (!data || !data.dang_hoat_dong) return null;
 
-  const { data: granted, error: permissionError } = permissionResult;
+  const { data: granted, error: permissionError } = grants;
   if (permissionError) throw permissionError;
 
   return {

@@ -10,7 +10,7 @@
 -- exist" — pgTAP báo not ok, đúng ý đồ TDD.
 -- =============================================================================
 begin;
-select plan(24);
+select plan(26);
 
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
@@ -271,6 +271,31 @@ select is(
   (select coalesce(sum(tong_ma), 0)::bigint from public.ton_theo_nhom('nhom')),
   (select tong_so_dong from public.danh_sach_ton_kho(p_kich_thuoc := 1)),
   'D-08: tổng tong_ma mọi dòng (kể cả chưa có nhóm) = tong_so_dong của danh_sach_ton_kho'
+);
+
+-- UI3B-04: tong_so_luong = tổng SL tồn dương. Nhóm test: 001 +5, 004 +1;
+-- 003 âm và 005 gộp 0 không góp; 006 ngừng KD bị loại.
+select is(
+  (select tong_so_luong from public.ton_theo_nhom('nhom') where nhom_id = (select nhom_id from t_tn)),
+  6::numeric,
+  'UI3B-04: nhóm test tong_so_luong = 6 (SL tồn dương của 5 mã đang KD)'
+);
+
+-- Mọi nhóm thật: tong_so_luong = sum(max(tồn,0)) thô theo nhóm.
+select is(
+  (
+    select count(*)
+    from public.ton_theo_nhom('nhom') t
+    where t.tong_so_luong <> (
+      select coalesce(sum(greatest(coalesce(d.tong, 0), 0)), 0)
+      from public.san_pham sp
+      left join (select tk.san_pham_id, sum(tk.so_luong) as tong from public.ton_kho tk group by tk.san_pham_id) d
+        on d.san_pham_id = sp.id
+      where sp.dang_kinh_doanh and sp.nhom_hang_id is not distinct from t.nhom_id
+    )
+  ),
+  0::bigint,
+  'UI3B-04: mọi nhóm khớp tong_so_luong thô'
 );
 
 -- ---------------------------------------------------------------------------

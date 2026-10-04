@@ -1,5 +1,5 @@
 -- =============================================================================
--- 0093 — Hàng dùng chung nhiều hãng / dòng xe
+-- 0096 — Hàng dùng chung nhiều hãng / dòng xe
 --
 -- hang_xe + dong_xe (0086) vẫn là cặp CHÍNH, tách từ mã hàng. Xe dùng chung thêm
 -- vào xe_dung_chung: mảng jsonb [{"hang": "<mã hãng>", "dong": "<mã dòng>"|null}]

@@ -62,12 +62,6 @@ export const PARTNER_KIND_LABELS: Record<PartnerKind, string> = {
   CA_HAI: "Cả hai",
 };
 
-export const PARTNER_KIND_COLORS: Record<PartnerKind, string> = {
-  NCC: "blue",
-  KHACH: "green",
-  CA_HAI: "purple",
-};
-
 /** Khóa là giá trị enum `loai_ct` trong database. */
 const DOC_TYPE_LABELS: Record<string, string> = {
   NHAP: "Nhập kho",

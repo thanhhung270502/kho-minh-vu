@@ -91,6 +91,17 @@ export async function fetchStockByWarehouse(
   }));
 }
 
+/** Giá vốn bình quân hiện tại của MỘT mã — chỉ qua RPC (0029 thu quyền cột gia_von). Ném 42501 với người không có quyền. */
+export async function fetchProductCost(productId: string): Promise<number | null> {
+  const { data, error } = await getSupabaseBrowserClient().rpc("gia_von_san_pham", {
+    p_ids: [productId],
+  });
+  if (error) throw error;
+
+  const row = data?.[0];
+  return row ? Number(row.gia_von) : null;
+}
+
 export async function fetchLookups(): Promise<Lookups> {
   const supabase = getSupabaseBrowserClient();
 

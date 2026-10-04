@@ -4,121 +4,187 @@ import type { ThemeConfig } from "antd";
  * Token giao diện dùng chung. Đổi màu/khoảng cách ở đây, KHÔNG ghi đè bằng
  * class Tailwind trên từng component antd — làm vậy mỗi màn hình sẽ lệch nhau.
  *
- * Giá trị lấy từ script trích xuất CSS thật của KiotViet (fnb.kiotviet.vn), đã
- * giải hết alias `--kv-*` và quy đổi rem->px. Giữ `colorPrimary` trùng với
- * `--color-brand-500` trong src/app/globals.css (thang màu của KiotViet đặt
- * mốc chính ở bậc 500, không phải 600 như bản ước lượng từ ảnh trước đây).
+ * Design system đơn sắc "hướng 3b" (Phase 20, nối tiếp 1A của quick 261004-f2l):
+ * đen #0A0A0A là màu chính, thẻ trắng viền mảnh #EDEDED không đổ bóng, màu chỉ
+ * dùng để báo hiệu (cam = cần xử lý, đỏ = tồn âm/lỗi). Giữ `colorPrimary` trùng
+ * với `--color-brand-500` trong src/app/globals.css.
  */
+const INK = "#0A0A0A";
+const WARNING = "#BF6600"; // oklch(0.6 0.15 60) trong design
+const DANGER = "#CC2827"; // oklch(0.55 0.2 27)
+const SUCCESS = "#2F9E5B";
+
 export const antdTheme: ThemeConfig = {
   token: {
-    colorPrimary: "#0070F4",
-    colorPrimaryHover: "#005AC3",
-    colorPrimaryActive: "#004392",
-    colorLink: "#0070F4",
-    colorInfo: "#0070F4",
-    colorSuccess: "#00B63E",
-    colorWarning: "#FF8800",
-    colorError: "#FF0000",
-    colorText: "#15171A",
-    colorTextSecondary: "#525D6A",
-    colorTextTertiary: "#85909D",
-    colorTextQuaternary: "#A4ACB5",
-    colorBorder: "#D1D5DA",
-    colorBorderSecondary: "#E8EAED",
-    colorBgLayout: "#F7F8F9",
+    colorPrimary: INK,
+    colorPrimaryHover: "#262626",
+    colorPrimaryActive: "#000000",
+    // antd tự sinh các bậc nhạt (nền thông báo, nền ngày được chọn, option
+    // đang chọn…) từ màu seed. Seed là đen thì các bậc "nhạt" ra xám đậm —
+    // Alert info thành dải đen. Khai báo tường minh để giữ nền sáng.
+    colorPrimaryBg: "#F3F3F3",
+    colorPrimaryBgHover: "#EBEBEB",
+    colorPrimaryBorder: "#D4D4D4",
+    colorPrimaryBorderHover: "#A3A3A3",
+    colorLink: INK,
+    colorLinkHover: "#404040",
+    colorInfo: INK,
+    colorInfoBg: "#F5F5F5",
+    colorInfoBgHover: "#EBEBEB",
+    colorInfoBorder: "#E5E5E5",
+    colorInfoBorderHover: "#D4D4D4",
+    colorSuccess: SUCCESS,
+    colorWarning: WARNING,
+    colorError: DANGER,
+    colorText: INK,
+    colorTextSecondary: "#737373",
+    colorTextTertiary: "#8C8C8C",
+    colorTextQuaternary: "#A3A3A3",
+    colorTextPlaceholder: "#A3A3A3",
+    colorBorder: "#E5E5E5",
+    colorBorderSecondary: "#EDEDED",
+    colorSplit: "#F3F3F3",
+    colorBgLayout: "#FFFFFF",
     colorBgContainer: "#FFFFFF",
     colorBgElevated: "#FFFFFF",
-    colorFillSecondary: "#F0F1F3",
-    colorFillTertiary: "#F7F8F9",
+    colorFillSecondary: "#F3F3F3",
+    colorFillTertiary: "#F5F5F5",
+    controlItemBgActive: "#F3F3F3",
+    controlItemBgActiveHover: "#EBEBEB",
+    controlOutline: "rgba(10,10,10,.08)",
     // Màn hình kho chủ yếu là bảng số liệu dày đặc, cỡ chữ 14 dễ đọc trên
     // máy văn phòng lẫn điện thoại thủ kho.
     fontSize: 14,
     fontSizeSM: 12,
     fontSizeLG: 16,
-    lineHeight: 1.4286,
-    borderRadius: 9,
-    borderRadiusLG: 12,
-    borderRadiusSM: 7,
+    lineHeight: 1.45,
+    fontFamily: "var(--font-sans)",
+    fontFamilyCode: "var(--font-mono)",
+    borderRadius: 10,
+    borderRadiusLG: 16,
+    borderRadiusSM: 8,
     borderRadiusXS: 4,
-    boxShadowTertiary: "-8px 8px 24px 0 rgba(0,0,0,.04)",
-    controlHeight: 32,
+    // Thẻ trong design chỉ có viền, không đổ bóng; bóng chỉ còn cho lớp nổi
+    // (dropdown, modal) để vẫn tách khỏi nền.
+    boxShadowTertiary: "none",
+    boxShadowSecondary: "0 6px 24px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06)",
+    fontWeightStrong: 700,
+    controlHeight: 34,
   },
   components: {
     Table: {
-      // Bảng lô hàng thường dài, header dính giúp không mất tên cột khi cuộn.
-      headerBg: "#E6F1FE",
-      headerColor: "#15171A",
+      headerBg: "#FAFAFA",
+      headerColor: "#8C8C8C",
       headerSplitColor: "transparent",
-      borderColor: "#E8EAED",
-      rowHoverBg: "#F0F1F3",
-      rowSelectedBg: "#CCE2FD",
-      rowSelectedHoverBg: "#B3D4FC",
-      cellPaddingBlock: 6,
-      cellPaddingInline: 10,
-      headerBorderRadius: 12,
+      headerSortActiveBg: "#F5F5F5",
+      headerSortHoverBg: "#F5F5F5",
+      borderColor: "#F3F3F3",
+      rowHoverBg: "#FAFAFA",
+      rowSelectedBg: "#F3F3F3",
+      rowSelectedHoverBg: "#EBEBEB",
+      cellPaddingBlock: 9,
+      cellPaddingInline: 12,
+      headerBorderRadius: 0,
+      footerBg: "#FAFAFA",
     },
     Layout: {
-      bodyBg: "#F7F8F9",
+      bodyBg: "#FFFFFF",
       headerBg: "#FFFFFF",
-      headerHeight: 56,
+      headerHeight: 60,
     },
     Modal: {
-      borderRadiusLG: 24,
-      titleFontSize: 18,
-      titleColor: "#15171A",
+      borderRadiusLG: 16,
+      titleFontSize: 17,
+      titleColor: INK,
       contentBg: "#FFFFFF",
       headerBg: "#FFFFFF",
       footerBg: "#FFFFFF",
-      boxShadow: "0 8px 16px rgba(0,0,0,.15)",
     },
-    // Tag KiotViet là dạng VIỀN nền trong suốt (không phải nền xám đặc như bản
-    // ước lượng trước) — border tự động lấy từ colorBorder ở trên (#D1D5DA).
+    // Tag trong design là chip nền xám nhạt, không viền.
     Tag: {
-      defaultBg: "transparent",
-      defaultColor: "#3E464F",
-      borderRadiusSM: 7,
+      defaultBg: "#F3F3F3",
+      defaultColor: "#404040",
+      borderRadiusSM: 9999,
     },
     Menu: {
       itemHeight: 40,
+      itemSelectedBg: "#F3F3F3",
+      itemSelectedColor: INK,
     },
     Button: {
-      borderRadius: 12,
+      borderRadius: 9999,
+      borderRadiusLG: 9999,
+      borderRadiusSM: 9999,
       fontWeight: 600,
-      primaryShadow: "0 2px 12px 0 rgba(0,112,244,.15)",
+      primaryShadow: "none",
       defaultShadow: "none",
+      dangerShadow: "none",
+      defaultBorderColor: "#E5E5E5",
+      defaultHoverBorderColor: "#A3A3A3",
+      defaultHoverColor: INK,
     },
     Input: {
-      borderRadius: 9,
-      hoverBorderColor: "#A4ACB5",
-      activeBorderColor: "#0070F4",
-      activeShadow: "0 2px 12px 0 rgba(0,112,244,.35)",
-      colorBgContainerDisabled: "#F0F1F3",
+      borderRadius: 10,
+      hoverBorderColor: "#A3A3A3",
+      activeBorderColor: INK,
+      activeShadow: "0 0 0 3px rgba(10,10,10,.08)",
+      colorBgContainerDisabled: "#F3F3F3",
+    },
+    InputNumber: {
+      borderRadius: 10,
+      hoverBorderColor: "#A3A3A3",
+      activeBorderColor: INK,
+      activeShadow: "0 0 0 3px rgba(10,10,10,.08)",
     },
     Select: {
-      borderRadius: 9,
-      hoverBorderColor: "#A4ACB5",
-      activeBorderColor: "#0070F4",
-      colorBgContainerDisabled: "#F0F1F3",
-      // Select không có token `activeShadow` riêng (chỉ Input/DatePicker có) —
-      // bỏ hẳn thay vì ép kiểu, đúng luật "token antd không nhận thì bỏ".
+      borderRadius: 10,
+      hoverBorderColor: "#A3A3A3",
+      activeBorderColor: INK,
+      activeOutlineColor: "rgba(10,10,10,.08)",
+      optionSelectedBg: "#F3F3F3",
+      colorBgContainerDisabled: "#F3F3F3",
     },
     DatePicker: {
-      borderRadius: 9,
-      hoverBorderColor: "#A4ACB5",
-      activeBorderColor: "#0070F4",
-      activeShadow: "0 2px 12px 0 rgba(0,112,244,.35)",
-      colorBgContainerDisabled: "#F0F1F3",
+      borderRadius: 10,
+      hoverBorderColor: "#A3A3A3",
+      activeBorderColor: INK,
+      activeShadow: "0 0 0 3px rgba(10,10,10,.08)",
+      colorBgContainerDisabled: "#F3F3F3",
     },
     Card: {
-      borderRadiusLG: 12,
-      colorBorderSecondary: "transparent",
-      // Không đặt thêm `boxShadow` riêng cho Card: đổ bóng thật của Card lấy
-      // từ `boxShadowTertiary` ở token chung, đã khớp giá trị KiotViet phía trên.
+      borderRadiusLG: 16,
+      colorBorderSecondary: "#EDEDED",
+      headerFontSize: 15,
+    },
+    Checkbox: {
+      borderRadiusSM: 4,
+    },
+    Segmented: {
+      itemSelectedBg: "#FFFFFF",
+      itemSelectedColor: INK,
+      itemColor: "#737373",
+      itemHoverColor: INK,
+      trackBg: "#F5F5F5",
+      borderRadius: 9,
+      borderRadiusSM: 7,
+    },
+    Tabs: {
+      inkBarColor: INK,
+      itemSelectedColor: INK,
+      itemHoverColor: "#404040",
+    },
+    Pagination: {
+      itemActiveBg: INK,
+      itemActiveColor: "#FFFFFF",
+      itemActiveColorHover: "#FFFFFF",
+    },
+    Statistic: {
+      contentFontSize: 28,
     },
     Form: {
-      labelColor: "#15171A",
+      labelColor: "#737373",
       labelFontSize: 12,
-      labelRequiredMarkColor: "#FF0000",
+      labelRequiredMarkColor: DANGER,
       itemMarginBottom: 16,
     },
   },

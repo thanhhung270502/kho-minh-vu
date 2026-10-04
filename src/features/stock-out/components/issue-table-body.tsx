@@ -1,12 +1,15 @@
 "use client";
 
-import { Table, Tag } from "antd";
+import { Table } from "antd";
 import type { TableColumnsType } from "antd";
 import dayjs from "dayjs";
 import Link from "next/link";
 
-import { DOC_STATUS_COLORS, DOC_STATUS_LABELS, type IssueRow } from "../types";
+import { StatusDot } from "@/shared/components/status-dot";
+
+import { DOC_STATUS_TONES, DOC_STATUS_LABELS, type IssueRow } from "../types";
 import { ISSUE_PAGE_SIZE, type IssueFilter } from "../schemas/issue.schema";
+import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
 
 function formatNumber(value: number | string | null): string {
   return value === null ? "—" : Number(value).toLocaleString("vi-VN");
@@ -63,7 +66,7 @@ const COLUMNS: TableColumnsType<IssueRow> = [
     dataIndex: "status",
     width: 140,
     render: (status: IssueRow["status"]) => (
-      <Tag color={DOC_STATUS_COLORS[status]}>{DOC_STATUS_LABELS[status]}</Tag>
+      <StatusDot tone={DOC_STATUS_TONES[status]} strike={status === "DA_HUY"}>{DOC_STATUS_LABELS[status]}</StatusDot>
     ),
   },
   { title: "Người tạo", dataIndex: "createdByName", width: 160, ellipsis: true },
@@ -84,11 +87,12 @@ export function IssueTableBody({
   loading,
   onFilterChange,
 }: Props) {
+  const offsetHeader = useStickyTableOffset();
   return (
     <Table<IssueRow>
       rowKey="id"
       size="small"
-      sticky
+      sticky={{ offsetHeader }}
       columns={COLUMNS}
       dataSource={rows}
       loading={loading}

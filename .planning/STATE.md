@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Phản hồi vận hành đợt 2
-status: blocked
-stopped_at: Phase 18 complete — Phase 19 chờ merge quy chuẩn mã + xem lại phạm vi
-last_updated: "2026-10-03T15:40:00.000Z"
-last_activity: 2026-10-03
+milestone: v1.0
+milestone_name: "- [ ] **Phase 1: Nền dữ liệu** - Schema 13 bảng, sổ cái bất biến, trigger tồn kho + giá vốn, RLS bốn vai trò, chuyển danh mục thật — kiểm chứng bằng SQL, chưa có giao diện"
+status: Milestone complete
+stopped_at: Completed 18-07-PLAN.md
+last_updated: "2026-10-04T08:43:55.441Z"
+last_activity: 2026-10-04
 progress:
-  total_phases: 19
-  completed_phases: 13
-  total_plans: 115
-  completed_plans: 94
+  total_phases: 11
+  completed_phases: 8
+  total_plans: 144
+  completed_plans: 111
 ---
 
 # Project State
@@ -20,14 +20,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-03)
 
 **Core value:** Ngày đầu go-live, toàn bộ 923 phiếu xuất/tuần và 78 phiếu nhập/tuần chạy trên hệ mới mà không ai phải mở KiotViet để đối chiếu.
-**Current focus:** Milestone v1.2 — Phase 17, 18 xong; Phase 19 chờ merge quy chuẩn mã
+**Current focus:** Phase 20 — Giao diện 3b và tính năng còn thiếu
 
 ## Current Position
 
-Phase: 19 (Dòng xe dùng chung) — chưa plan, BỊ CHẶN
-Plan: —
-Status: Chờ merge Quy chuẩn mã hàng (0085–0088) và xem lại phạm vi — 0086 bỏ bảng `dong_xe`, thay bằng cột text trên `san_pham`
-Last activity: 2026-10-03 — Phase 18 Đơn nhiều người nhận hoàn thành (8/8 plan, verification passed)
+Phase: 20
+Plan: Not started
 
 ### Phase 18 — đã xong (03/10/2026)
 
@@ -36,13 +34,17 @@ Kiểm: `npm run check`, test hàm thuần, pgTAP 51 file / 827 test (108, 109 m
 267/267, UAT trình duyệt 11 bước (người dùng xác nhận "đạt"; sửa `f8a57f1` Enter ở chế độ Đối tác).
 
 Hệ quả cần nhớ:
+
 - Người nhận nằm ở bảng nối `don_dat_hang_nguoi_nhan` / `chung_tu_nguoi_nhan` + `nguoi_nhan_id` trên dòng; cột `nguoi_nhan_id`
   cũ trên `don_dat_hang`/`chung_tu` giữ dữ liệu nhưng thôi dùng. "Nội bộ" = `doi_tac_id is null`.
+
 - Ghi người nhận cấp đơn chỉ qua RPC `tao_don` / `dat_nguoi_nhan_don`; trigger tự thêm người nhận của dòng vào đơn (D1);
   bỏ người đang ở dòng bị chặn (23514, nêu mã hàng).
+
 - Migration **0090, 0091 mới áp ở local** (cùng 0089). Deploy cloud phải đẩy 0089–0091 (và 0085–0088 nếu quy chuẩn merge trước).
 - `hoan_thanh_don`/`ghi_so_chung_tu`/`dong_chung_tu` KHÔNG đổi — tránh đụng 0088 (quy chuẩn D). Merge quy chuẩn sau: kiểm lại
   `tao_phieu_xuat_tu_don` (0091 viết lại) với 0088.
+
 - Dữ liệu thử local: DH26-000005 → PX26-000005 (xuất âm 3 mã), DH26-000006 đơn tạm.
 
 ### Phase 17 — đã xong (03/10/2026)
@@ -895,6 +897,7 @@ Recent decisions affecting current work:
 ### Roadmap Evolution
 
 - Phase 9 added (2026-09-26): Quản lý hình ảnh — ảnh mã hàng lưu Google Drive qua Apps Script, lớp lưu trữ trừu tượng (`noi_luu`/`khoa_luu`, hiển thị qua `/anh/<id>` có cache) để sau chuyển cloud không đổi giao diện
+- Phase 20 added (2026-10-04): Giao diện 3b và tính năng còn thiếu — design system "hướng 3b" + tính năng thiếu ở Tổng quan, Đơn đặt, Chi tiết hàng hóa, tìm kiếm ⌘K
 
 ### Pending Todos
 
@@ -913,12 +916,14 @@ None yet.
 | 260919-dm4 | Design system theo giao diện KiotViet: token + top-nav shell + bố cục trang danh sách | 2026-09-19 | 39da902 | [260919-dm4-update-design-system-theo-giao-dien-kiot](./quick/260919-dm4-update-design-system-theo-giao-dien-kiot/) |
 | 260921-v15 | Bản demo UI/UX tĩnh (HTML/CSS/JS) cho toàn bộ hệ thống trong design/ | 2026-09-21 | eba487a | [260921-v15-ban-demo-ui-ux-tinh-html-css-js-trong-th](./quick/260921-v15-ban-demo-ui-ux-tinh-html-css-js-trong-th/) |
 | 260928-q4u | Sửa 3 lỗi từ checklist kiểm thử: lưu người dùng chưa có tên đăng nhập, thứ tự thẻ kho, lý do xuất âm trên thẻ kho | 2026-09-28 | be1a918 | [260928-q4u-sua-3-loi-checklist-luu-nguoi-dung-the-k](./quick/260928-q4u-sua-3-loi-checklist-luu-nguoi-dung-the-k/) |
+| 261004-f2l | Áp design system mới (tham khảo design 1A), giữ nguyên bố cục: token đơn sắc, font, nav, trạng thái chấm màu | 2026-10-04 | 41378f2 | [261004-f2l-ap-design-system-moi-1a-giu-bo-cuc](./quick/261004-f2l-ap-design-system-moi-1a-giu-bo-cuc/) |
 | 260928-sn5 | Phiếu xuất: mở phiếu đang nhập liệu thì con trỏ nằm sẵn ở ô mã hàng (checklist 5.2) | 2026-09-28 | 319f736 | [260928-sn5-phieu-xuat-tu-focus-o-ma-hang](./quick/260928-sn5-phieu-xuat-tu-focus-o-ma-hang/) |
 | 260928-t0j | Seed tài khoản demo đúng quyền, tự focus ô mã ở phiếu nhập/đơn hàng, migration ten_danh_muc | 2026-09-28 | 0d93f8b | [260928-t0j-seed-quyen-focus-o-ma-ten-danh-muc](./quick/260928-t0j-seed-quyen-focus-o-ma-ten-danh-muc/) |
+| 261004-g6p | Tăng tốc chuyển trang: loading.tsx, cache getCurrentUser, đọc quyền song song | 2026-10-04 | 2bbd9e8 | [261004-g6p-speed-up-navigation](./quick/261004-g6p-speed-up-navigation/) |
 
 ## Session Continuity
 
 Last session: 2026-10-03T15:11:55.680Z
 Stopped at: Completed 18-07-PLAN.md
-Last activity: 2026-10-03
+Last activity: 2026-10-04
 Resume file: None

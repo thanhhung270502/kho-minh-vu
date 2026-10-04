@@ -1,5 +1,5 @@
 -- =============================================================================
--- 0092 — Đánh số chứng từ theo kiểu KiotViet (04/10/2026)
+-- 0095 — Đánh số chứng từ theo kiểu KiotViet (04/10/2026)
 --
 -- Người dùng chốt: số phiếu đi tiếp dãy số đang dùng trên KiotViet — tiền tố +
 -- 6 chữ số, KHÔNG có năm, không về 1 khi sang năm: PN000802, HD008878,

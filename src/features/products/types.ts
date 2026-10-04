@@ -36,7 +36,7 @@ export type ProductRow = {
   brandCode: string | null;
   modelCode: string | null;
   partCode: string | null;
-  /** Hãng / dòng xe dùng chung ngoài cặp chính (0093). */
+  /** Hãng / dòng xe dùng chung ngoài cặp chính (0096). */
   sharedVehicles: SharedVehicle[];
   /** Ghi chú tự sinh: null = đủ quy chuẩn, có chữ = thiếu trường nào. */
   note: string | null;

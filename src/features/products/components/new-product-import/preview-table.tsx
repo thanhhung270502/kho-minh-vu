@@ -6,6 +6,7 @@ import type { TableColumnsType } from "antd";
 import type { DraftFields, DraftRow } from "../../lib/new-product-import";
 import { PRODUCT_KIND_LABELS, type Lookups, type ProductKind } from "../../types";
 import { LookupSelect } from "../lookup-select";
+import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
 
 type Props = {
   rows: DraftRow[];
@@ -30,6 +31,7 @@ const toOptions = (items: { id: string; name: string }[] | undefined) =>
  * xe / Linh kiện / Xử lý tự điền từ mã theo quy chuẩn (phần A) — không chọn tay ở đây.
  */
 export function PreviewTable({ rows, problems, lookups, selected, onSelect, onChange }: Props) {
+  const offsetHeader = useStickyTableOffset();
   const lookupColumn = (
     title: string,
     field: "categoryId" | "unitId",
@@ -159,7 +161,7 @@ export function PreviewTable({ rows, problems, lookups, selected, onSelect, onCh
     <Table<DraftRow>
       rowKey="row"
       size="small"
-      sticky
+      sticky={{ offsetHeader }}
       columns={columns}
       dataSource={rows}
       scroll={{ x: 1560 }}

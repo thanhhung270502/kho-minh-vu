@@ -2,10 +2,10 @@
 
 import { useLayoutEffect, useRef, useState } from "react";
 
-// Khoảng cách giữa hai pill (gap-0.5) và phần viền + padding hai bên thanh
-// pill (border 1px + p-px mỗi bên). Đổi class ở top-nav.tsx thì sửa ở đây.
-const ITEM_GAP = 2;
-const NAV_CHROME = 4;
+// Khoảng cách giữa hai tab (gap-1); khung đo không có viền/padding (px-6 nằm
+// ở div ngoài). Đổi class ở top-nav.tsx thì sửa ở đây.
+const ITEM_GAP = 4;
+const NAV_CHROME = 0;
 
 /**
  * Đếm xem bao nhiêu mục điều hướng đầu tiên nằm vừa khung, phần còn lại gộp

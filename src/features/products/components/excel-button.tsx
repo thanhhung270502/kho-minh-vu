@@ -3,6 +3,8 @@
 import { App, Button, Dropdown, Space } from "antd";
 import { useState } from "react";
 
+import { downloadFile } from "@/shared/lib/download-file";
+
 import { writeFilterToUrl, type ProductFilter } from "../schemas/filter.schema";
 
 type Props = {
@@ -15,42 +17,6 @@ type Props = {
 /** "new" = nhập mã mới từ file 4 cột (Phase 15); "update" = cập nhật mã đã có (mẫu 12 cột / KiotViet). */
 export type ImportKind = "new" | "update";
 
-type DownloadResult = { ok: true } | { ok: false; message: string };
-
-/** Tải một file từ route trả blob; lỗi thì đọc JSON để hiện câu tiếng Việt. */
-async function downloadFile(url: string): Promise<DownloadResult> {
-  const response = await fetch(url);
-
-  if (!response.ok) {
-    try {
-      const body = (await response.json()) as { title?: string; action?: string };
-      return {
-        ok: false,
-        message: `${body.title ?? "Không tải được file"}. ${body.action ?? ""}`,
-      };
-    } catch {
-      return { ok: false, message: "Không tải được file. Thử lại sau ít phút." };
-    }
-  }
-
-  const blob = await response.blob();
-  const fileName =
-    /filename="([^"]+)"/.exec(response.headers.get("Content-Disposition") ?? "")?.[1] ??
-    "danh-muc.xlsx";
-
-  const objectUrl = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = objectUrl;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  // Thu hồi ngay sau khi trình duyệt nhận lệnh tải, không giữ blob trong bộ nhớ.
-  URL.revokeObjectURL(objectUrl);
-
-  return { ok: true };
-}
-
 export function ExcelButton({
   filter,
   productCount,
@@ -61,7 +27,7 @@ export function ExcelButton({
 
   async function run(url: string) {
     setDownloading(true);
-    const result = await downloadFile(url);
+    const result = await downloadFile(url, "danh-muc.xlsx");
     setDownloading(false);
     if (!result.ok) message.error(result.message);
   }

@@ -27,7 +27,7 @@ type Props = {
 };
 
 /**
- * Xe dùng chung (0093): một phụ tùng lắp được nhiều hãng / dòng xe. Hãng + dòng
+ * Xe dùng chung (0096): một phụ tùng lắp được nhiều hãng / dòng xe. Hãng + dòng
  * CHÍNH vẫn tách từ mã ở ô phía trên; đây là các xe thêm. Có từ 2 xe trở lên thì
  * dòng đầu Mô tả tự thành "Dùng cho xe A và B".
  */

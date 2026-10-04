@@ -1,21 +1,23 @@
 "use client";
 
-import { Button, Progress, Select, Table, Tag } from "antd";
+import { Button, Progress, Select, Table } from "antd";
 import type { TableColumnsType } from "antd";
 import dayjs from "dayjs";
 import Link from "next/link";
 import { useState } from "react";
 
+import { StatusDot } from "@/shared/components/status-dot";
 import { QueryState } from "@/shared/components/query-state";
 
 import { useStocktakeLookups, useStocktakeSessions } from "../hooks/useStocktake";
 import {
-  SESSION_STATUS_COLORS,
+  SESSION_STATUS_TONES,
   SESSION_STATUS_LABELS,
   sessionStatus,
 } from "../lib/session-status";
 import type { StocktakeSession, StocktakeSessionState } from "../types";
 import { OpenSessionDrawer } from "./open-session-drawer";
+import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
 
 const PAGE_SIZE = 20;
 
@@ -45,7 +47,7 @@ function statusColumn(row: StocktakeSession) {
     scope: row.scopeCount,
     recount: row.recountCount,
   });
-  return <Tag color={SESSION_STATUS_COLORS[status]}>{SESSION_STATUS_LABELS[status]}</Tag>;
+  return <StatusDot tone={SESSION_STATUS_TONES[status]} strike={status === "voided"}>{SESSION_STATUS_LABELS[status]}</StatusDot>;
 }
 
 const COLUMNS: TableColumnsType<StocktakeSession> = [
@@ -93,6 +95,7 @@ export function SessionList({
   canOpen: boolean;
   isStorekeeper: boolean;
 }) {
+  const offsetHeader = useStickyTableOffset();
   const [warehouseId, setWarehouseId] = useState("");
   const [status, setStatus] = useState<StocktakeSessionState | "">("");
   const [page, setPage] = useState(1);
@@ -157,7 +160,7 @@ export function SessionList({
             <Table<StocktakeSession>
               rowKey="id"
               size="small"
-              sticky
+              sticky={{ offsetHeader }}
               columns={COLUMNS}
               dataSource={rows}
               loading={sessions.isFetching && !sessions.isPending}

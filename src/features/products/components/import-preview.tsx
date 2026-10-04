@@ -75,7 +75,7 @@ export function ImportPreview({
   return (
     <>
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <Tag color={format === "mau_moi" ? "blue" : "orange"}>
+        <Tag>
           {format === "mau_moi" ? "Mẫu hệ mới" : "File KiotViet"}
         </Tag>
         <Typography.Text type="secondary">{fileName}</Typography.Text>

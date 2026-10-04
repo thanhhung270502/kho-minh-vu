@@ -41,7 +41,7 @@ export const productSchema = z
     brandCode: z.string().nullable(),
     modelCode: z.string().nullable(),
     partCode: z.string().nullable(),
-    // Xe dùng chung (0093): mỗi dòng phải đủ cặp hãng + dòng xe.
+    // Xe dùng chung (0096): mỗi dòng phải đủ cặp hãng + dòng xe.
     sharedVehicles: z.array(
       z.object({
         brandCode: z.string().nullable().refine((value) => Boolean(value), "Chọn hãng xe"),

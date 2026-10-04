@@ -10,6 +10,7 @@ export const productKeys = {
   stockCard: (id: string, warehouseId: string | null, page: number) =>
     ["products", "stock-card", id, warehouseId, page] as const,
   stockByWarehouse: (id: string) => ["products", "stock-by-warehouse", id] as const,
+  cost: (id: string) => ["products", "cost", id] as const,
   /** Toàn bộ mã cho "Điền quy chuẩn từ mã" — nằm dưới `all` để mọi mutation làm mới. */
   standardFillSources: ["products", "standard-fill-sources"] as const,
   comboComponents: (id: string) => ["products", "combo-components", id] as const,

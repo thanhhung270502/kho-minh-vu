@@ -8,7 +8,7 @@ import type { OrderRecipients } from "@/shared/lib/recipient";
 
 export type { DocStatus } from "@/features/documents/types";
 export {
-  DOC_STATUS_COLORS,
+  DOC_STATUS_TONES,
   DOC_STATUS_LABELS,
   exceedsStock,
   toDocumentDetail,
