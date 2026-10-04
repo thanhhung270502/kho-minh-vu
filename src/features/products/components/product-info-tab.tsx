@@ -6,9 +6,9 @@ import type { ReactNode } from "react";
 
 import { ProductImagePreview } from "@/features/images/components/product-image-preview";
 
-import { stockLimitLabel, type ProductForecast } from "../lib/product-expanded";
-import type { ProductDetail } from "../types";
-import { formatNumber } from "./product-columns";
+import { standardFieldText, type ProductForecast } from "../lib/product-expanded";
+import { PRODUCT_KIND_LABELS, type ProductDetail } from "../types";
+import { formatNumber } from "../lib/format";
 
 type Props = {
   product: ProductDetail;
@@ -53,8 +53,9 @@ export function ProductInfoTab({ product, forecast }: Props) {
           <div className="text-base font-semibold sm:text-lg">{product.name}</div>
           <div className="mt-1 text-sm text-chu-phu">Nhóm hàng: {product.categoryName ?? "(không nhóm)"}</div>
           <div className="mt-2 flex flex-wrap gap-1">
-            {product.productTypeName ? <Tag className="m-0">{product.productTypeName}</Tag> : null}
-            <Tag className="m-0">{product.directSale ? "Bán trực tiếp" : "Không bán trực tiếp"}</Tag>
+            <Tag className="m-0" color={product.kind === "COMBO" ? "purple" : undefined}>
+              {PRODUCT_KIND_LABELS[product.kind]}
+            </Tag>
             {product.isActive ? null : <Tag className="m-0" color="orange">Ngừng kinh doanh</Tag>}
           </div>
         </div>
@@ -63,14 +64,22 @@ export function ProductInfoTab({ product, forecast }: Props) {
       <div className="grid grid-cols-2 gap-x-6 gap-y-3 lg:grid-cols-4">
         <Field label="Mã hàng"><span className="font-mono">{product.code}</span></Field>
         <Field label="Tồn kho">
-          <span className="tabular-nums">{formatNumber(product.totalStock)} {product.unitName ?? ""}</span>
+          {product.kind === "COMBO" ? (
+            <span className="text-chu-phu">Theo thành phần</span>
+          ) : (
+            <span className="tabular-nums">{formatNumber(product.totalStock)} {product.unitName ?? ""}</span>
+          )}
         </Field>
-        <Field label="Định mức tồn">{stockLimitLabel(product.minStock, product.maxStock)}</Field>
         <Field label="Vị trí kệ">{product.shelfLocation ?? empty}</Field>
         <Field label="Kho mặc định">{product.defaultWarehouseName ?? empty}</Field>
-        <Field label="Dòng xe">{product.vehicleLineName ?? empty}</Field>
+        <Field label="Hãng xe">{standardFieldText(product.brandName, product.brandCode) ?? empty}</Field>
+        <Field label="Dòng xe">{standardFieldText(product.modelName, product.modelCode) ?? empty}</Field>
+        <Field label="Linh kiện">{standardFieldText(product.partName, product.partCode) ?? empty}</Field>
+        <Field label="Ghi chú">
+          {product.note ?? <Tag className="m-0" color="green">Đủ quy chuẩn</Tag>}
+        </Field>
         <Field label="Đơn vị tính">{product.unitName ?? empty}</Field>
-        <Field label="Công đoạn">
+        <Field label="Xử lý">
           {product.stageName ? <Tag className="m-0" color={product.stageColor || undefined}>{product.stageName}</Tag> : empty}
         </Field>
         {forecast !== undefined ? (

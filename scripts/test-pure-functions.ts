@@ -17,11 +17,16 @@ import { BUSINESS_PERMISSIONS, SCOPE_LABELS, allows, type BusinessPermission, ty
 import { jobTitleSchema, titleCodeFromName } from "../src/features/settings/schemas/job-title.schema";
 import { editUserFormSchema } from "../src/features/settings/schemas/user.schema";
 import { duplicateProblemsInFile } from "../src/features/products/lib/new-product-file";
+import { buildCodeDictionary, parseProductCode } from "../src/features/product-codes/lib/parse-product-code";
+import { SourceSheetError, readSourceSheet } from "../src/features/product-codes/lib/source-sheet";
+import { dictionaryFromEntries, toSyncEntries } from "../src/features/product-codes/lib/sync-entries";
+import { applyCodeToStandardFields, standardNames, toggleManual } from "../src/features/products/lib/standard-fields";
+import { chunk, planStandardFill } from "../src/features/products/lib/standard-fill";
 import {
   copyProductDefaults,
   expandedActions,
   forecastById,
-  stockLimitLabel,
+  standardFieldText,
   toProductFormValues,
 } from "../src/features/products/lib/product-expanded";
 import {
@@ -215,19 +220,24 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
   const input = {
     code: "ABC", name: "Tên", categoryId: null, unitId: "u", stageId: "s",
     conversion: 1, defaultWarehouseId: null, minStock: 0, maxStock: null,
-    barcode: null, note: null, isActive: true,
-    productTypeId: "11111111-1111-4111-8111-111111111111",
-    vehicleLineId: "22222222-2222-4222-8222-222222222222",
-    directSale: false, shelfLocation: "A-01",
+    barcode: null, description: "Mô tả", isActive: true,
+    kind: "COMBO", directSale: false, shelfLocation: "A-01",
+    brandCode: "H", modelCode: null, partCode: "75", manualFields: ["linh_kien"],
   } satisfies ProductInput;
   const payload = toProductInsert(input);
   assert.ok(!("gia_ban" in payload), "payload ghi mã hàng không có gia_ban");
   assert.ok(!("gia_von" in payload), "payload ghi mã hàng không có gia_von");
-  // Phase 15 (IMP-05): ba trường mới + vị trí kệ đi đúng cột.
-  assert.equal(payload.loai_hang_id, input.productTypeId);
-  assert.equal(payload.dong_xe_id, input.vehicleLineId);
   assert.equal(payload.duoc_ban_truc_tiep, false);
   assert.equal(payload.vi_tri_ke, "A-01");
+  // Quy chuẩn mã (B): Loại hàng = HANG_HOA/COMBO; Mô tả vào mo_ta. Ghi chú do DB tự
+  // sinh — payload KHÔNG được mang ghi_chu (trigger sẽ đè, người dùng tưởng đã lưu).
+  assert.equal(payload.loai_hang, "COMBO");
+  assert.equal(payload.mo_ta, "Mô tả");
+  assert.ok(!("ghi_chu" in payload), "form không ghi ghi_chu");
+  // Phần A: form quản lý Hãng/Dòng/Linh kiện (mã) + danh sách ô chọn tay.
+  assert.equal(payload.hang_xe, "H");
+  assert.equal(payload.dong_xe, null);
+  assert.deepEqual(payload.truong_chon_tay, ["linh_kien"]);
   const keys = TEMPLATE_COLUMNS.map((c) => c.key as string);
   assert.ok(!keys.includes("gia_ban") && !keys.includes("gia_von"), "mẫu Excel không có cột giá");
 }
@@ -397,6 +407,7 @@ const sampleFilter: ProductFilter = {
   unitId: null,
   stockStatus: "duoi_dinh_muc",
   tradingStatus: "inactive",
+  standard: "thieu",
   hasImage: "without",
   sortBy: "totalStock",
   sortDir: "desc",
@@ -417,9 +428,13 @@ assert.equal(
   "lọc tất cả gửi null tường minh, không bỏ trống",
 );
 assert.equal(toListRpcArgs(DEFAULT_PRODUCT_FILTER).p_dang_kinh_doanh, true);
-// Phase 17 (TEN-05): bỏ "Cần rà" — bookmark cũ ?can_ra=1 bị bỏ qua, RPC không nhận p_can_ra.
-assert.deepEqual(readFilterFromUrl(new URLSearchParams("can_ra=1")), DEFAULT_PRODUCT_FILTER, "?can_ra=1 cũ bị bỏ qua");
-assert.ok(!("p_can_ra" in toListRpcArgs(DEFAULT_PRODUCT_FILTER)), "không gửi p_can_ra");
+// --- Bộ lọc "Quy chuẩn" (quy chuẩn mã phần A) thay nút "Cần rà" -------------
+assert.equal(toListRpcArgs(DEFAULT_PRODUCT_FILTER).p_quy_chuan, undefined, "không lọc quy chuẩn thì bỏ trống");
+assert.equal(toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, standard: "chon_tay" }).p_quy_chuan, "chon_tay");
+assert.equal(toListRpcArgs({ ...DEFAULT_PRODUCT_FILTER, standard: "du" }).p_can_ra, undefined, "không còn gửi p_can_ra");
+assert.equal(readFilterFromUrl(new URLSearchParams("quy_chuan=du")).standard, "du");
+assert.equal(readFilterFromUrl(new URLSearchParams("quy_chuan=xyz")).standard, null, "giá trị quy chuẩn lạ bị bỏ");
+assert.equal(readFilterFromUrl(new URLSearchParams("can_ra=1")).standard, null, "link cũ ?can_ra=1 không còn lọc");
 assert.ok(!("p_can_ra" in toListRpcArgs(sampleFilter)), "không gửi p_can_ra kể cả khi có lọc khác");
 
 // --- Bộ lọc "Hình ảnh" (Phase 9, 09-08, D-18, ANH-04) ----------------------
@@ -1193,10 +1208,10 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.equal(drafts[0].isActive && drafts[0].directSale, true, "mặc định đang KD + bán trực tiếp");
 
   // Áp hàng loạt chỉ đổi đúng dòng đã chọn, không đụng mảng gốc.
-  const applied = applyToRows(drafts, [2, 4], { productTypeId: lh, directSale: false });
-  assert.deepEqual(applied.map((r) => r.productTypeId), [lh, null, lh]);
+  const applied = applyToRows(drafts, [2, 4], { kind: "COMBO", directSale: false });
+  assert.deepEqual(applied.map((r) => r.kind), ["COMBO", "HANG_HOA", "COMBO"]);
   assert.deepEqual(applied.map((r) => r.directSale), [false, true, false]);
-  assert.equal(drafts[0].productTypeId, null, "không sửa mảng gốc");
+  assert.equal(drafts[0].kind, "HANG_HOA", "không sửa mảng gốc; mặc định Hàng hóa");
 
   // Lỗi của dòng = lỗi đọc file + trùng trong file + thiếu ĐVT + đã có trong danh mục.
   const catalog = catalogProblemsFrom([
@@ -1210,12 +1225,12 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.deepEqual(problems.get(4), [CATALOG_REASONS.name]);
 
   // Payload: chỉ dòng sạch, khóa jsonb đúng hợp đồng RPC nhap_ma_hang_moi.
-  const clean = applyToRows(drafts, [4], { vehicleLineId: lh, shelfLocation: " K-1 " });
+  const clean = applyToRows(drafts, [4], { categoryId: lh, shelfLocation: " K-1 " });
   const payload = toImportPayload(clean, new Map([[3, ["x"]]]));
   assert.deepEqual(payload.map((p) => p.dong), [2, 4], "bỏ dòng đang lỗi");
   assert.deepEqual(payload[1], {
-    dong: 4, ma_hang: "C", ten_hang: "Cá", ton_kho: 1, ghi_chu: "",
-    dvt_id: cai, nhom_hang_id: null, loai_hang_id: null, dong_xe_id: lh,
+    dong: 4, ma_hang: "C", ten_hang: "Cá", ton_kho: 1, mo_ta: "",
+    dvt_id: cai, nhom_hang_id: lh, loai_hang: "HANG_HOA",
     dang_kinh_doanh: true, duoc_ban_truc_tiep: true, vi_tri_ke: "K-1",
   });
 }
@@ -1247,21 +1262,18 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
 
 // --- Danh mục: chi tiết dạng dòng mở rộng (sửa PANEL-01, ảnh mẫu KiotViet) -
 {
-  assert.equal(stockLimitLabel(0, null), "0 – không giới hạn");
-  assert.equal(stockLimitLabel(5, 1200), "5 – 1.200");
-
   // Sao chép: giữ mọi trường, mã để trống để người dùng gõ mã mới.
   const copied = copyProductDefaults({
     code: "HA26-33K-PC", name: "Hộc chứa đồ", categoryId: "c", unitId: "u", stageId: "s",
     conversion: 2, defaultWarehouseId: "k", minStock: 1, maxStock: 9, barcode: "123",
-    note: "n", isActive: false, productTypeId: "t", vehicleLineId: "v", directSale: false,
-    shelfLocation: "A-1",
+    description: "n", isActive: false, kind: "COMBO", directSale: false,
+    shelfLocation: "A-1", brandCode: "H", modelCode: "A", partCode: "75", manualFields: [],
   });
   assert.equal(copied.code, "");
   assert.equal(copied.barcode, null, "barcode thường là duy nhất — không chép");
   assert.equal(copied.isActive, true, "mã mới luôn đang kinh doanh");
   assert.equal(copied.name, "Hộc chứa đồ");
-  assert.equal(copied.vehicleLineId, "v");
+  assert.equal(copied.kind, "COMBO");
 
   // Ghép số phân tích vào từng dòng bảng theo id sản phẩm.
   const map = forecastById([
@@ -1280,11 +1292,171 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   // Chi tiết mã → giá trị form: null thành giá trị rỗng form hiểu được.
   const form = toProductFormValues({
     code: "A", name: "B", categoryId: null, unitId: null, stageId: "s", conversion: 1,
-    defaultWarehouseId: null, minStock: 0, maxStock: null, barcode: null, note: null, isActive: true,
-    productTypeId: null, vehicleLineId: "v", directSale: true, shelfLocation: null,
+    defaultWarehouseId: null, minStock: 0, maxStock: null, barcode: null, description: "d", isActive: true,
+    kind: "HANG_HOA", directSale: true, shelfLocation: null,
+    brandCode: "H", modelCode: null, partCode: null, manualFields: ["dong_xe"],
   });
   assert.equal(form.unitId, "", "ĐVT null → chuỗi rỗng để Select hiện ô trống");
-  assert.equal(form.vehicleLineId, "v");
+  assert.deepEqual(form.manualFields, ["dong_xe"]);
+  assert.equal(form.description, "d");
+
+  assert.equal(standardFieldText("Air Blade", "A"), "Air Blade");
+  assert.equal(standardFieldText(null, "ZZ"), "ZZ (không có trong bộ mã hóa)", "mã bị bỏ khỏi bộ mã hóa vẫn hiện");
+  assert.equal(standardFieldText(null, null), null);
+}
+
+// --- Quy chuẩn mã hàng (C): tách mã như công thức TRA_CUU ---------------
+{
+  // Mảnh từ điển thật (sheet "Quy chuẩn mã", 10 cột) đủ cho 14 mã mẫu bên dưới.
+  const dict = buildCodeDictionary([
+    { brand: "HONDA", brandCode: "H", model: "Air Blade", modelCode: "A", part: "Mặt nạ", partCode: "75", finish: "xi", finishCode: "X", color: "đỏ bóng", colorCode: "ĐOB" },
+    { brand: "HONDA", brandCode: "H", model: "Click", modelCode: "CL", part: "Ốp tay dắt sau", partCode: "20", finish: "carbon", finishCode: "CB", color: "CTS1022", colorCode: "CTS1022" },
+    { brand: "HONDA", brandCode: "H", model: "PCX", modelCode: "P", part: "Ốp bầu lọc gió", partCode: "12", finish: "PC", finishCode: "PC", color: "CTS1024", colorCode: "CTS1024" },
+    { brand: "HONDA", brandCode: "H", model: "SH", modelCode: "S", part: "Thùng chứa đồ sau", partCode: "68D", finish: "phôi PP", finishCode: "PPH", color: "", colorCode: "" },
+    { brand: "YAMAHA", brandCode: "Y", model: "Exciter", modelCode: "E", part: "Ốp phuộc trước", partCode: "14", finish: "", finishCode: "", color: "", colorCode: "" },
+    { brand: "YAMAHA", brandCode: "Y", model: "NVX", modelCode: "NX", part: "Chắn bùn sau (theo xe)", partCode: "35B", finish: "", finishCode: "", color: "", colorCode: "" },
+    { brand: "VUTRU", brandCode: "VT", model: "Winner R", modelCode: "WNR", part: "Ốp chắn gió mặt đồng hồ", partCode: "03", finish: "inox", finishCode: "I", color: "", colorCode: "" },
+  ]);
+  // Mã | Hãng | Dòng | Linh kiện | Xử lý | Ghi chú. 12 mã đầu lấy nguyên từ file "Danh mục
+  // hàng hóa.xlsx" (sinh bằng công thức TRA_CUU); 2 mã cuối tự dựng để phủ đường xử lý 3 ký tự (PPH).
+  const cases: Array<[string, string, string, string, string, string]> = [
+    ["HA26-75-35-WRG-CB", "HONDA", "Air Blade", "Mặt nạ", "carbon", "OK"],
+    ["ha26-75-37-wrg-cb", "HONDA", "Air Blade", "Mặt nạ", "carbon", "OK"],
+    ["64200K57V50ZE", "", "", "", "", "Mã không theo quy chuẩn (không có dấu -)"],
+    ["VT-68DCTS1024-AS-PCĐO-CB", "VUTRU", "", "Thùng chứa đồ sau", "carbon", "Mã không ghi dòng xe."],
+    ["EXT-155", "", "", "", "", "Hãng/dòng [EXT] không có trong quy chuẩn. Phần [155] không tách được linh kiện+màu. Không tìm được mã xử lý trong [155]."],
+    ["YE15-03MLSĐOB", "YAMAHA", "Exciter", "", "", "Phần [03MLSĐOB] không tách được linh kiện+màu. Không tìm được mã xử lý trong [03MLSĐOB]."],
+    ["HCL15-20X", "HONDA", "Click", "Ốp tay dắt sau", "xi", "OK (xử lý lấy từ ký tự cuối [X])"],
+    ["HP18-12PCT", "HONDA", "PCX", "", "", "Phần [12PCT] không tách được linh kiện+màu. Không tìm được mã xử lý trong [12PCT]."],
+    ["YNX-14X", "YAMAHA", "NVX", "Ốp phuộc trước", "xi", "OK (xử lý lấy từ ký tự cuối [X])"],
+    ["YH-2-XC", "", "", "", "", "Hãng/dòng [YH] không có trong quy chuẩn. Phần [2] không tách được linh kiện+màu. Không tìm được mã xử lý trong [XC]."],
+    ["YE15-35B", "YAMAHA", "Exciter", "Chắn bùn sau (theo xe)", "", "Không tìm được mã xử lý trong [35B]."],
+    ["HS17-75-0201-K4", "HONDA", "SH", "Mặt nạ", "", "Không tìm được mã xử lý trong [K4]."],
+    ["HA26-75ĐOB-PPH", "HONDA", "Air Blade", "Mặt nạ", "phôi PP", "OK"],
+    // --RIGHT("N1.4",2) của Sheets coi ".4" là số → bỏ 2 ký tự "đời", khóa còn "N1".
+    ["N1.4-6.3UNI", "", "", "", "inox", "Hãng/dòng [N1] không có trong quy chuẩn. Phần [6.3UN] không tách được linh kiện+màu."],
+    ["HA-12CTS1024PPH", "HONDA", "Air Blade", "Ốp bầu lọc gió", "phôi PP", "OK (xử lý lấy từ ký tự cuối [PPH])"],
+  ];
+  for (const [code, brand, model, part, finish, note] of cases) {
+    const r = parseProductCode(code, dict);
+    assert.deepEqual([r.brand, r.model, r.part, r.finish, r.note], [brand, model, part, finish, note], code);
+  }
+  const ok = parseProductCode("HCL15-20X", dict);
+  assert.equal(ok.status, "ok");
+  assert.deepEqual([ok.brandCode, ok.modelCode, ok.partCode, ok.finishCode], ["H", "CL", "20", "X"]);
+  const bad = parseProductCode("YE15-35B", dict);
+  assert.equal(bad.status, "invalid");
+  assert.deepEqual(bad.issues.map((i) => i.field), ["finish"], "chỉ đoạn xử lý lệch — giao diện tô đúng ô đó");
+
+  // Sheet nguồn: đúng 10 tiêu đề mới đọc; ô có dấu phẩy trong ngoặc kép; dòng trống bỏ.
+  const header = "1.HÃNG XE,MÃ HÓA,2.DÒNG XE,MÃ HÓA,4.LINH KIỆN,MÃ HÓA,5.XỬ LÝ,MÃ HÓA,6.MÀU,MÃ HÓA";
+  const rows = readSourceSheet(`${header}\r\nHONDA,H,Air Blade,A,"Ốp, chắn bùn",01,xi,X,đỏ bóng,ĐOB\r\n,,,,,,,,,\r\n,,,,Mặt nạ,75,,,,\r\n`);
+  assert.equal(rows.length, 2);
+  assert.equal(rows[0].part, "Ốp, chắn bùn");
+  assert.equal(rows[1].partCode, "75");
+  assert.throws(() => readSourceSheet("1.HÃNG XE,MÃ HÓA,2.DÒNG XE\nHONDA,H,A"), SourceSheetError, "thiếu cột: dừng, không đọc bừa");
+  assert.throws(
+    () => readSourceSheet(header.replace("5.XỬ LÝ", "5.MÀU") + "\nHONDA,H,A,A,x,1,y,2,z,3"),
+    /cột 7.*5\.XỬ LÝ/,
+    "đổi tên/đổi chỗ cột: báo đúng cột",
+  );
+
+  // Đồng bộ: dòng sheet → mục từ điển (mỗi mã giữ lần xuất hiện ĐẦU TIÊN, như MATCH).
+  const source = [
+    { brand: "HONDA", brandCode: "H", model: "Air Blade", modelCode: "A", part: "Mặt nạ", partCode: "75", finish: "xi", finishCode: "X", color: "đỏ bóng", colorCode: "ĐOB" },
+    { brand: "HONDA", brandCode: "H", model: "SH", modelCode: "S", part: "Mặt nạ  trùng", partCode: "75", finish: "", finishCode: "", color: "", colorCode: "" },
+    { brand: "", brandCode: "", model: "Wave Thái", modelCode: "WT", part: "", partCode: "", finish: "", finishCode: "", color: "", colorCode: "" },
+  ];
+  const entries = toSyncEntries(source);
+  assert.deepEqual(
+    entries.map((e) => `${e.loai}:${e.ma_hang ?? ""}:${e.ma}:${e.ten}`),
+    ["hang::H:HONDA", "dong:H:A:Air Blade", "linh_kien::75:Mặt nạ", "xu_ly::X:xi", "mau::ĐOB:đỏ bóng", "dong:H:S:SH"],
+    "dòng thiếu mã hãng (Wave Thái) không tạo cặp — y như cột khóa của sheet CHUAN",
+  );
+  // Dựng lại từ điển từ DB phải tách mã y như dựng thẳng từ sheet.
+  const fromDb = dictionaryFromEntries(entries);
+  const fromSheet = buildCodeDictionary(source);
+  for (const code of ["HA26-75ĐOB-X", "HS-75X", "HWT-75-X"]) {
+    assert.deepEqual(parseProductCode(code, fromDb), parseProductCode(code, fromSheet), code);
+  }
+}
+
+// --- Quy chuẩn mã (A): gõ mã tự điền, giữ ô chọn tay -----------------------
+{
+  const dict = buildCodeDictionary([
+    { brand: "HONDA", brandCode: "H", model: "Air Blade", modelCode: "A", part: "Mặt nạ", partCode: "75", finish: "carbon", finishCode: "CB", color: "", colorCode: "" },
+    { brand: "YAMAHA", brandCode: "Y", model: "Exciter", modelCode: "E", part: "Ốp bầu lọc gió", partCode: "12", finish: "xi", finishCode: "X", color: "", colorCode: "" },
+  ]);
+  const stages = [
+    { id: "st-cb", standardCode: "CB" }, { id: "st-x", standardCode: "X" }, { id: "st-mn", standardCode: null },
+  ];
+  const empty = { brandCode: null, modelCode: null, partCode: null, stageId: "st-mn", manualFields: [] as string[] };
+
+  // Mã đúng chuẩn: điền đủ 4 ô, cả 4 đánh dấu "tự điền".
+  const r1 = applyCodeToStandardFields(parseProductCode("HA26-75-35-WRG-CB", dict), empty, stages, "st-mn");
+  assert.deepEqual(
+    [r1.brandCode, r1.modelCode, r1.partCode, r1.stageId, r1.autoFields],
+    ["H", "A", "75", "st-cb", ["hang_xe", "dong_xe", "linh_kien", "xu_ly"]],
+  );
+
+  // Đổi sang mã khác: ô tự điền đi theo mã mới; ô CHỌN TAY giữ nguyên.
+  const manual = { ...r1, partCode: "12", manualFields: ["linh_kien"] };
+  const r2 = applyCodeToStandardFields(parseProductCode("YE15-75-X", dict), manual, stages, "st-mn");
+  assert.deepEqual([r2.brandCode, r2.modelCode, r2.partCode, r2.stageId], ["Y", "E", "12", "st-x"], "linh kiện chọn tay giữ 12");
+  assert.ok(!r2.autoFields.includes("linh_kien"));
+
+  // Mã không tách được xử lý: công đoạn (bắt buộc) về "ngoài quy chuẩn" (Mua ngoài),
+  // KHÔNG giữ xử lý tự điền của mã gõ trước — lưu sẽ ghi sai.
+  const r3 = applyCodeToStandardFields(parseProductCode("YE15-12Z", dict), { ...r1, manualFields: [] }, stages, "st-mn");
+  assert.equal(r3.stageId, "st-mn", "carbon của mã trước không được giữ lại");
+  assert.ok(!r3.autoFields.includes("xu_ly"));
+  assert.equal(r3.partCode, null, "phần [12Z] không tách được → linh kiện trống để chọn tay");
+
+  // Chọn tay / bỏ chọn tay một ô.
+  // Xử lý chọn tay thì mã không tách được vẫn giữ nguyên.
+  const r4 = applyCodeToStandardFields(parseProductCode("YE15-12Z", dict), { ...r1, manualFields: ["xu_ly"] }, stages, "st-mn");
+  assert.equal(r4.stageId, "st-cb");
+
+  assert.deepEqual(toggleManual(["hang_xe"], "linh_kien", true), ["hang_xe", "linh_kien"]);
+  assert.deepEqual(toggleManual(["hang_xe", "linh_kien"], "hang_xe", false), ["linh_kien"]);
+  assert.deepEqual(toggleManual(["hang_xe"], "hang_xe", true), ["hang_xe"], "không trùng");
+
+  // Bảng danh mục lưu mã → tra tên; dòng xe tra theo cặp hãng + dòng, không phân biệt hoa thường.
+  assert.deepEqual(standardNames(dict, { brandCode: "h", modelCode: "a", partCode: "75" }), {
+    brandName: "HONDA", modelName: "Air Blade", partName: "Mặt nạ",
+  });
+  assert.equal(standardNames(dict, { brandCode: "Y", modelCode: "A", partCode: null }).modelName, null, "A là dòng của Honda, không phải Yamaha");
+  assert.deepEqual(standardNames(dict, { brandCode: null, modelCode: null, partCode: "ZZ" }), {
+    brandName: null, modelName: null, partName: null,
+  });
+
+  // Điền quy chuẩn từ mã cho mã cũ: chỉ ô trống, không đụng ô chọn tay.
+  const base = { name: "x", brandCode: null, modelCode: null, partCode: null, finishCode: null, manualFields: [] as string[] };
+  const plan = planStandardFill(
+    [
+      { ...base, id: "1", code: "HA26-75-35-WRG-CB" }, // trống hết → điền 4 ô
+      { ...base, id: "2", code: "HA26-75-CB", brandCode: "Y", finishCode: "X" }, // hãng + xử lý đã có → giữ
+      { ...base, id: "3", code: "HA26-75-CB", manualFields: ["linh_kien", "xu_ly"] }, // chọn tay → bỏ qua
+      { ...base, id: "4", code: "06410KFL850" }, // sai chuẩn, không tách được gì
+      { ...base, id: "5", code: "HA26-75-CB", brandCode: "H", modelCode: "A", partCode: "75", finishCode: "CB" }, // đủ → không đổi
+    ],
+    dict,
+    new Set(["CB", "X"]),
+  );
+  assert.equal(plan.total, 5);
+  assert.equal(plan.validCount, 4);
+  assert.deepEqual(plan.invalid.map((i) => i.code), ["06410KFL850"]);
+  assert.equal(plan.invalid[0].reason, "Mã không theo quy chuẩn (không có dấu -)");
+  assert.deepEqual(plan.changes, [
+    { id: "1", brandCode: "H", modelCode: "A", partCode: "75", finishCode: "CB" },
+    { id: "2", modelCode: "A", partCode: "75" },
+    { id: "3", brandCode: "H", modelCode: "A" },
+  ]);
+  assert.deepEqual(plan.fieldCounts, { hang_xe: 2, dong_xe: 3, linh_kien: 2, xu_ly: 1 });
+  // Mã xử lý chưa có công đoạn tương ứng → không gửi (RPC không gán được).
+  const unknown = planStandardFill([{ ...base, id: "6", code: "HA26-75-CB" }], dict, new Set(["X"]));
+  assert.equal(unknown.changes[0].finishCode, undefined);
+  assert.deepEqual(chunk([1, 2, 3, 4, 5], 2), [[1, 2], [3, 4], [5]]);
 }
 
 async function kiemTaiTheoTrang() {

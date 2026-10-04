@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     return Response.json(
       {
         title: `Kết quả có ${total.toLocaleString("vi-VN")} mã`,
-        action: `Xuất tối đa ${MAX_EXPORT_ROWS.toLocaleString("vi-VN")} mã một lần — lọc hẹp lại (theo nhóm hàng hoặc công đoạn) rồi xuất.`,
+        action: `Xuất tối đa ${MAX_EXPORT_ROWS.toLocaleString("vi-VN")} mã một lần — lọc hẹp lại (theo nhóm hàng hoặc xử lý) rồi xuất.`,
       },
       { status: 422 },
     );
@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
     ton_toi_thieu: row.ton_toi_thieu === null ? null : Number(row.ton_toi_thieu),
     ton_toi_da: row.ton_toi_da === null ? null : Number(row.ton_toi_da),
     dang_kinh_doanh: row.dang_kinh_doanh,
-    ghi_chu: null,
+    mo_ta: null,
     tong_ton: row.tong_ton === null ? null : Number(row.tong_ton),
   }));
 

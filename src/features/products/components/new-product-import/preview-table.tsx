@@ -1,10 +1,10 @@
 "use client";
 
-import { Input, Switch, Table, Tag, Tooltip } from "antd";
+import { Input, Select, Switch, Table, Tag, Tooltip } from "antd";
 import type { TableColumnsType } from "antd";
 
 import type { DraftFields, DraftRow } from "../../lib/new-product-import";
-import type { Lookups } from "../../types";
+import { PRODUCT_KIND_LABELS, type Lookups, type ProductKind } from "../../types";
 import { LookupSelect } from "../lookup-select";
 
 type Props = {
@@ -16,15 +16,23 @@ type Props = {
   onChange: (row: number, patch: Partial<DraftFields>) => void;
 };
 
+const KIND_OPTIONS = (Object.keys(PRODUCT_KIND_LABELS) as ProductKind[]).map((kind) => ({
+  value: kind,
+  label: PRODUCT_KIND_LABELS[kind],
+}));
+
 const toOptions = (items: { id: string; name: string }[] | undefined) =>
   (items ?? []).map((item) => ({ value: item.id, label: item.name }));
 
-/** Bảng xem trước đủ cột theo thứ tự IMP-02: cột từ file chỉ đọc, cột còn lại chọn tại chỗ. */
+/**
+ * Bảng xem trước: cột từ file chỉ đọc, cột còn lại chọn tại chỗ. Hãng xe / Dòng
+ * xe / Linh kiện / Xử lý tự điền từ mã theo quy chuẩn (phần A) — không chọn tay ở đây.
+ */
 export function PreviewTable({ rows, problems, lookups, selected, onSelect, onChange }: Props) {
   const lookupColumn = (
     title: string,
-    field: "productTypeId" | "categoryId" | "vehicleLineId" | "unitId",
-    table: "loai_hang" | "nhom_hang" | "dong_xe" | "don_vi_tinh",
+    field: "categoryId" | "unitId",
+    table: "nhom_hang" | "don_vi_tinh",
     label: string,
     items: { id: string; name: string }[] | undefined,
   ) => ({
@@ -63,11 +71,23 @@ export function PreviewTable({ rows, problems, lookups, selected, onSelect, onCh
         );
       },
     },
-    lookupColumn("Loại hàng", "productTypeId", "loai_hang", "loại hàng", lookups?.productTypes),
+    {
+      title: "Loại hàng",
+      key: "kind",
+      width: 130,
+      render: (_: unknown, row: DraftRow) => (
+        <Select
+          size="small"
+          className="w-full"
+          value={row.kind}
+          options={KIND_OPTIONS}
+          onChange={(kind: ProductKind) => onChange(row.row, { kind })}
+        />
+      ),
+    },
     lookupColumn("Nhóm hàng", "categoryId", "nhom_hang", "nhóm hàng", lookups?.categories),
     { title: "Mã hàng", dataIndex: "code", width: 140, render: (code: string) => <span className="font-mono">{code || "—"}</span> },
     { title: "Tên hàng", dataIndex: "name", width: 240, ellipsis: true },
-    lookupColumn("Dòng xe", "vehicleLineId", "dong_xe", "dòng xe", lookups?.vehicleLines),
     {
       title: "Tồn kho",
       dataIndex: "stock",
@@ -116,7 +136,7 @@ export function PreviewTable({ rows, problems, lookups, selected, onSelect, onCh
       sticky
       columns={columns}
       dataSource={rows}
-      scroll={{ x: 1700 }}
+      scroll={{ x: 1520 }}
       rowClassName={(row) => (problems.has(row.row) ? "[&>td]:bg-red-50" : "")}
       rowSelection={{
         selectedRowKeys: selected,

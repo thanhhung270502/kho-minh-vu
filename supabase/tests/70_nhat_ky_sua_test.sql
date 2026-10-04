@@ -66,14 +66,14 @@ select is(
 
 -- ─── Ghi (as vanphong) rồi quay lại postgres để kiểm ────────────────────────
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
-update public.san_pham set ten_hang = 'Tên mới', ghi_chu = 'gc' where ma_hang = 'NKS-ZQX-001';
+update public.san_pham set ten_hang = 'Tên mới', mo_ta = 'gc' where ma_hang = 'NKS-ZQX-001';
 select pg_temp.dang_xuat();
 
 -- ─── 2. Sửa hai trường sinh hai dòng ────────────────────────────────────────
 select is(
   (select count(*) from public.nhat_ky_sua
     where ban_ghi_id = (select id from public.san_pham where ma_hang = 'NKS-ZQX-001')
-      and truong in ('ten_hang', 'ghi_chu')),
+      and truong in ('ten_hang', 'mo_ta')),
   2::bigint,
   'sửa hai trường sinh hai dòng'
 );
@@ -111,7 +111,7 @@ update public.san_pham set ten_hang = 'Tên mới' where ma_hang = 'NKS-ZQX-001'
 select pg_temp.dang_xuat();
 
 -- ─── 6. Update không đổi giá trị không sinh nhật ký mới ────────────────────
--- Tổng lũy kế tới đây: 1 (_tao_moi) + 2 (ten_hang, ghi_chu) = 3, không đổi.
+-- Tổng lũy kế tới đây: 1 (_tao_moi) + 2 (ten_hang, mo_ta) = 3, không đổi.
 select is(
   (select count(*) from public.nhat_ky_sua
     where ban_ghi_id = (select id from public.san_pham where ma_hang = 'NKS-ZQX-001')),
@@ -122,7 +122,7 @@ select is(
 -- ─── Ghi với nguồn import, rồi kiểm ngay lớp REVOKE trong khi vẫn authenticated ──
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select set_config('app.nguon_sua', 'import', true);
-update public.san_pham set ghi_chu = 'gc2' where ma_hang = 'NKS-ZQX-001';
+update public.san_pham set mo_ta = 'gc2' where ma_hang = 'NKS-ZQX-001';
 
 -- ─── 8. authenticated không sửa được nhật ký (REVOKE — lớp 1) ──────────────
 -- Kiểm trong lúc CÒN authenticated — đúng đối tượng cần chứng minh.
@@ -142,7 +142,7 @@ select ok(
   exists (
     select 1 from public.nhat_ky_sua
     where ban_ghi_id = (select id from public.san_pham where ma_hang = 'NKS-ZQX-001')
-      and truong = 'ghi_chu'
+      and truong = 'mo_ta'
       and nguon = 'import'
       and gia_tri_moi = to_jsonb('gc2'::text)
   ),

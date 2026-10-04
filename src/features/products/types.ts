@@ -29,6 +29,14 @@ export type ProductRow = {
   maxStock: number | null;
   totalStock: number;
   isActive: boolean;
+  kind: ProductKind;
+  /** Mã trong bộ mã hóa (hãng / dòng / linh kiện) — tên tra bằng bộ mã hóa ở giao diện. */
+  brandCode: string | null;
+  modelCode: string | null;
+  partCode: string | null;
+  /** Ghi chú tự sinh: null = đủ quy chuẩn, có chữ = thiếu trường nào. */
+  note: string | null;
+  manualFields: string[];
   updatedAt: string;
   /** Tổng số dòng của cả bộ lọc — RPC nhét vào mọi dòng. */
   totalRows: number;
@@ -41,16 +49,18 @@ export type ProductRow = {
 
 export type ProductDetail = ProductRow & {
   barcode: string | null;
-  note: string | null;
   imageUrl: string | null;
   shelfLocation: string | null;
   defaultWarehouseName: string | null;
   createdAt: string;
-  productTypeId: string | null;
-  productTypeName: string | null;
-  vehicleLineId: string | null;
-  vehicleLineName: string | null;
   directSale: boolean;
+  description: string | null;
+  /** Tên tra được trong bộ mã hóa (null khi mã không còn trong bộ mã hóa). */
+  brandName: string | null;
+  modelName: string | null;
+  partName: string | null;
+  /** Mã xử lý quy chuẩn; null = xử lý ngoài quy chuẩn (Ép, Mua ngoài). */
+  finishCode: string | null;
 };
 
 export type StockCardRow = {
@@ -75,15 +85,25 @@ export type StockCardRow = {
 };
 
 export type LookupItem = { id: string; code: string; name: string };
-export type StageLookupItem = LookupItem & { color: string | null };
+export type StageLookupItem = LookupItem & {
+  color: string | null;
+  /** Mã xử lý quy chuẩn (0086); null = công đoạn ngoài quy chuẩn (Ép, Mua ngoài). */
+  standardCode: string | null;
+};
 
 export type Lookups = {
   categories: LookupItem[];
   units: LookupItem[];
   stages: StageLookupItem[];
   warehouses: LookupItem[];
-  productTypes: LookupItem[];
-  vehicleLines: LookupItem[];
+};
+
+/** Giá trị CHECK của san_pham.loai_hang (0086) — hợp đồng với database. */
+export type ProductKind = "HANG_HOA" | "COMBO";
+
+export const PRODUCT_KIND_LABELS: Record<ProductKind, string> = {
+  HANG_HOA: "Hàng hóa",
+  COMBO: "Combo",
 };
 
 export type WarehouseStock = {
@@ -92,8 +112,19 @@ export type WarehouseStock = {
   quantity: number;
 };
 
+/** Một mã thành phần của combo (0088) — xuất 1 combo trừ `quantity` mã này. */
+export type ComboComponent = {
+  productId: string;
+  code: string;
+  name: string;
+  unitName: string | null;
+  quantity: number;
+};
+
 export type CatalogPermissions = {
   canEdit: boolean;
+  /** "Điền quy chuẩn từ mã" cho cả danh mục — chỉ quản lý (RPC còn chặn bằng quyền Tạo mã hàng). */
+  canFillStandard: boolean;
 };
 
 /**
@@ -114,12 +145,18 @@ export type ProductInput = {
   minStock: number;
   maxStock: number | null;
   barcode: string | null;
-  note: string | null;
+  /** Mô tả sản phẩm (mo_ta). Ghi chú là cột tự sinh — form không ghi. */
+  description: string | null;
   isActive: boolean;
-  productTypeId: string | null;
-  vehicleLineId: string | null;
+  kind: ProductKind;
   directSale: boolean;
   shelfLocation: string | null;
+  /** Mã trong bộ mã hóa (quy chuẩn mã, 0086). */
+  brandCode: string | null;
+  modelCode: string | null;
+  partCode: string | null;
+  /** Ô quy chuẩn chọn tay — giá trị CHECK truong_chon_tay (0087). */
+  manualFields: string[];
 };
 
 /** Payload gửi thẳng vào `.insert()` / `.update()` của supabase-js. */
@@ -137,16 +174,24 @@ export function toProductInsert(input: ProductInput): ProductInsert {
     ton_toi_thieu: input.minStock,
     ton_toi_da: input.maxStock,
     barcode: input.barcode,
-    ghi_chu: input.note,
+    mo_ta: input.description,
     dang_kinh_doanh: input.isActive,
-    loai_hang_id: input.productTypeId,
-    dong_xe_id: input.vehicleLineId,
+    loai_hang: input.kind,
+    hang_xe: input.brandCode,
+    dong_xe: input.modelCode,
+    linh_kien: input.partCode,
+    truong_chon_tay: input.manualFields,
     duoc_ban_truc_tiep: input.directSale,
     vi_tri_ke: input.shelfLocation,
   };
 }
 
 // --- Mapper: database -> miền ----------------------------------------------
+
+/** Cột text có CHECK HANG_HOA/COMBO (0086) — kiểu sinh ra chỉ biết `string`. */
+function toProductKind(value: string): ProductKind {
+  return value === "COMBO" ? "COMBO" : "HANG_HOA";
+}
 
 export function toProductRow(row: ProductRowDb): ProductRow {
   return {
@@ -167,6 +212,13 @@ export function toProductRow(row: ProductRowDb): ProductRow {
     maxStock: row.ton_toi_da === null ? null : Number(row.ton_toi_da),
     totalStock: Number(row.tong_ton),
     isActive: row.dang_kinh_doanh,
+    kind: toProductKind(row.loai_hang),
+    brandCode: row.hang_xe,
+    modelCode: row.dong_xe,
+    partCode: row.linh_kien,
+    note: row.ghi_chu,
+    // Kiểu sinh ghi `string[]` nhưng cột text[] có thể null với dòng cũ.
+    manualFields: row.truong_chon_tay ?? [],
     updatedAt: row.updated_at,
     totalRows: Number(row.tong_so_dong),
     primaryImageId: null,
@@ -204,11 +256,17 @@ export function toProductDetail(row: ProductDetailDb): ProductDetail {
     shelfLocation: row.vi_tri_ke,
     defaultWarehouseName: row.ten_kho_mac_dinh,
     createdAt: row.created_at,
-    productTypeId: row.loai_hang_id,
-    productTypeName: row.ten_loai_hang,
-    vehicleLineId: row.dong_xe_id,
-    vehicleLineName: row.ten_dong_xe,
     directSale: row.duoc_ban_truc_tiep,
+    description: row.mo_ta,
+    kind: toProductKind(row.loai_hang),
+    brandCode: row.hang_xe,
+    brandName: row.ten_hang_xe,
+    modelCode: row.dong_xe,
+    modelName: row.ten_dong_xe,
+    partCode: row.linh_kien,
+    partName: row.ten_linh_kien,
+    finishCode: row.ma_xu_ly,
+    manualFields: row.truong_chon_tay ?? [],
   };
 }
 

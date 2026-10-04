@@ -454,6 +454,7 @@ export type Database = {
           created_at: string
           id: string
           ma: string
+          ma_quy_chuan: string | null
           mau_hien_thi: string | null
           ten: string
           updated_at: string
@@ -462,6 +463,7 @@ export type Database = {
           created_at?: string
           id?: string
           ma: string
+          ma_quy_chuan?: string | null
           mau_hien_thi?: string | null
           ten: string
           updated_at?: string
@@ -470,6 +472,7 @@ export type Database = {
           created_at?: string
           id?: string
           ma?: string
+          ma_quy_chuan?: string | null
           mau_hien_thi?: string | null
           ten?: string
           updated_at?: string
@@ -768,30 +771,6 @@ export type Database = {
         }
         Relationships: []
       }
-      dong_xe: {
-        Row: {
-          created_at: string
-          id: string
-          ma: string
-          ten: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          ma: string
-          ten: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          ma?: string
-          ten?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       hinh_anh: {
         Row: {
           created_at: string
@@ -960,30 +939,6 @@ export type Database = {
           },
         ]
       }
-      loai_hang: {
-        Row: {
-          created_at: string
-          id: string
-          ma: string
-          ten: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          ma: string
-          ten: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          ma?: string
-          ten?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       luu_tru_hoa_don_kiotviet: {
         Row: {
           don_gia: number | null
@@ -1071,6 +1026,69 @@ export type Database = {
           so_luong?: number | null
           ten_hang?: string | null
           thanh_tien?: number | null
+        }
+        Relationships: []
+      }
+      ma_hoa: {
+        Row: {
+          created_at: string
+          id: string
+          loai: string
+          ma: string
+          ma_hang: string | null
+          ten: string
+          thu_tu: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          loai: string
+          ma: string
+          ma_hang?: string | null
+          ten?: string
+          thu_tu?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          loai?: string
+          ma?: string
+          ma_hang?: string | null
+          ten?: string
+          thu_tu?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ma_hoa_dong_bo: {
+        Row: {
+          bat_dau: string
+          id: string
+          loi: string | null
+          nguoi_chay_id: string | null
+          nguon: string
+          so_muc: Json
+          trang_thai: string
+        }
+        Insert: {
+          bat_dau?: string
+          id?: string
+          loi?: string | null
+          nguoi_chay_id?: string | null
+          nguon: string
+          so_muc?: Json
+          trang_thai: string
+        }
+        Update: {
+          bat_dau?: string
+          id?: string
+          loi?: string | null
+          nguoi_chay_id?: string | null
+          nguon?: string
+          so_muc?: Json
+          trang_thai?: string
         }
         Relationships: []
       }
@@ -1308,23 +1326,27 @@ export type Database = {
           created_at: string
           da_xac_nhan_ra: boolean
           dang_kinh_doanh: boolean
-          dong_xe_id: string | null
+          dong_xe: string | null
           duoc_ban_truc_tiep: boolean
           dvt_id: string | null
           ghi_chu: string | null
           gia_ban: number
           gia_von: number
+          hang_xe: string | null
           hinh_anh_url: string | null
           id: string
           kho_mac_dinh_id: string | null
           lan_phat_sinh_cuoi: string | null
-          loai_hang_id: string | null
+          linh_kien: string | null
+          loai_hang: string
           ma_hang: string
+          mo_ta: string | null
           nhom_hang_id: string | null
           quy_doi: number
           ten_hang: string
           ton_toi_da: number | null
           ton_toi_thieu: number
+          truong_chon_tay: string[]
           updated_at: string
           vi_tri_ke: string | null
         }
@@ -1335,23 +1357,27 @@ export type Database = {
           created_at?: string
           da_xac_nhan_ra?: boolean
           dang_kinh_doanh?: boolean
-          dong_xe_id?: string | null
+          dong_xe?: string | null
           duoc_ban_truc_tiep?: boolean
           dvt_id?: string | null
           ghi_chu?: string | null
           gia_ban?: number
           gia_von?: number
+          hang_xe?: string | null
           hinh_anh_url?: string | null
           id?: string
           kho_mac_dinh_id?: string | null
           lan_phat_sinh_cuoi?: string | null
-          loai_hang_id?: string | null
+          linh_kien?: string | null
+          loai_hang?: string
           ma_hang: string
+          mo_ta?: string | null
           nhom_hang_id?: string | null
           quy_doi?: number
           ten_hang: string
           ton_toi_da?: number | null
           ton_toi_thieu?: number
+          truong_chon_tay?: string[]
           updated_at?: string
           vi_tri_ke?: string | null
         }
@@ -1362,23 +1388,27 @@ export type Database = {
           created_at?: string
           da_xac_nhan_ra?: boolean
           dang_kinh_doanh?: boolean
-          dong_xe_id?: string | null
+          dong_xe?: string | null
           duoc_ban_truc_tiep?: boolean
           dvt_id?: string | null
           ghi_chu?: string | null
           gia_ban?: number
           gia_von?: number
+          hang_xe?: string | null
           hinh_anh_url?: string | null
           id?: string
           kho_mac_dinh_id?: string | null
           lan_phat_sinh_cuoi?: string | null
-          loai_hang_id?: string | null
+          linh_kien?: string | null
+          loai_hang?: string
           ma_hang?: string
+          mo_ta?: string | null
           nhom_hang_id?: string | null
           quy_doi?: number
           ten_hang?: string
           ton_toi_da?: number | null
           ton_toi_thieu?: number
+          truong_chon_tay?: string[]
           updated_at?: string
           vi_tri_ke?: string | null
         }
@@ -1388,13 +1418,6 @@ export type Database = {
             columns: ["cong_doan_id"]
             isOneToOne: false
             referencedRelation: "cong_doan"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "san_pham_dong_xe_id_fkey"
-            columns: ["dong_xe_id"]
-            isOneToOne: false
-            referencedRelation: "dong_xe"
             referencedColumns: ["id"]
           },
           {
@@ -1412,17 +1435,52 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "san_pham_loai_hang_id_fkey"
-            columns: ["loai_hang_id"]
-            isOneToOne: false
-            referencedRelation: "loai_hang"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "san_pham_nhom_hang_id_fkey"
             columns: ["nhom_hang_id"]
             isOneToOne: false
             referencedRelation: "nhom_hang"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      thanh_phan_combo: {
+        Row: {
+          combo_id: string
+          created_at: string
+          id: string
+          so_luong: number
+          thanh_phan_id: string
+          updated_at: string
+        }
+        Insert: {
+          combo_id: string
+          created_at?: string
+          id?: string
+          so_luong: number
+          thanh_phan_id: string
+          updated_at?: string
+        }
+        Update: {
+          combo_id?: string
+          created_at?: string
+          id?: string
+          so_luong?: number
+          thanh_phan_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thanh_phan_combo_combo_id_fkey"
+            columns: ["combo_id"]
+            isOneToOne: false
+            referencedRelation: "san_pham"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "thanh_phan_combo_thanh_phan_id_fkey"
+            columns: ["thanh_phan_id"]
+            isOneToOne: false
+            referencedRelation: "san_pham"
             referencedColumns: ["id"]
           },
         ]
@@ -1546,6 +1604,13 @@ export type Database = {
           san_pham_id: string
         }[]
       }
+      _tach_combo: {
+        Args: { p_san_pham_id: string; p_so_luong: number }
+        Returns: {
+          san_pham_id: string
+          so_luong: number
+        }[]
+      }
       ap_dung_goi_y_cong_doan: { Args: { p_ids: string[] }; Returns: number }
       bang_dem_kiem_ke: {
         Args: { p_chung_tu_id: string; p_nhom_hang_id?: string }
@@ -1649,31 +1714,37 @@ export type Database = {
           cong_doan_id: string
           created_at: string
           dang_kinh_doanh: boolean
-          dong_xe_id: string
+          dong_xe: string
           duoc_ban_truc_tiep: boolean
           dvt_id: string
           ghi_chu: string
           gia_ban: number
           gia_von: number
+          hang_xe: string
           hinh_anh_url: string
           id: string
           kho_mac_dinh_id: string
-          loai_hang_id: string
+          linh_kien: string
+          loai_hang: string
           ma_cong_doan: string
           ma_hang: string
+          ma_xu_ly: string
           mau_cong_doan: string
+          mo_ta: string
           nhom_hang_id: string
           quy_doi: number
           ten_cong_doan: string
           ten_dong_xe: string
           ten_dvt: string
           ten_hang: string
+          ten_hang_xe: string
           ten_kho_mac_dinh: string
-          ten_loai_hang: string
+          ten_linh_kien: string
           ten_nhom_hang: string
           ton_toi_da: number
           ton_toi_thieu: number
           tong_ton: number
+          truong_chon_tay: string[]
           updated_at: string
           vi_tri_ke: string
         }[]
@@ -1848,6 +1919,7 @@ export type Database = {
           p_huong?: string
           p_kich_thuoc?: number
           p_nhom_hang_id?: string
+          p_quy_chuan?: string
           p_sap_xep?: string
           p_trang?: number
           p_trang_thai_ton?: string
@@ -1858,11 +1930,16 @@ export type Database = {
           can_ra_dvt: boolean
           cong_doan_id: string
           dang_kinh_doanh: boolean
+          dong_xe: string
           dvt_id: string
+          ghi_chu: string
           gia_ban: number
           gia_von: number
+          hang_xe: string
           id: string
           kho_mac_dinh_id: string
+          linh_kien: string
+          loai_hang: string
           ma_cong_doan: string
           ma_hang: string
           mau_cong_doan: string
@@ -1876,6 +1953,7 @@ export type Database = {
           ton_toi_thieu: number
           tong_so_dong: number
           tong_ton: number
+          truong_chon_tay: string[]
           updated_at: string
         }[]
       }
@@ -1950,6 +2028,7 @@ export type Database = {
           tong_so_dong: number
         }[]
       }
+      dien_quy_chuan: { Args: { p_dong: Json }; Returns: Json }
       doi_chieu_ton: {
         Args: never
         Returns: {
@@ -1959,6 +2038,10 @@ export type Database = {
           ton_theo_bang: number
           ton_theo_so_cai: number
         }[]
+      }
+      dong_bo_ma_hoa: {
+        Args: { p_ban_ghi: Json; p_nguon: string }
+        Returns: Json
       }
       dong_chung_tu: {
         Args: { p_id: string }
@@ -2056,6 +2139,15 @@ export type Database = {
       gan_hang_loat: {
         Args: { p_ids: string[]; p_nguon?: string; p_thay_doi: Json }
         Returns: number
+      }
+      ghi_chu_quy_chuan: {
+        Args: {
+          p_cong_doan_id: string
+          p_dong_xe: string
+          p_hang_xe: string
+          p_linh_kien: string
+        }
+        Returns: string
       }
       ghi_de_nghi_gop_ma: {
         Args: {
@@ -2338,6 +2430,10 @@ export type Database = {
           p_xem_lich_su_kiotviet?: boolean
         }
         Returns: undefined
+      }
+      luu_thanh_phan_combo: {
+        Args: { p_combo_id: string; p_thanh_phan: Json }
+        Returns: number
       }
       mo_khoa_don: {
         Args: { p_id: string; p_ly_do: string }

@@ -40,11 +40,12 @@ function docCo(v: unknown): boolean | null {
 function nhanDang(headers: string[]): DinhDangFile {
   const co = (k: string) => headers.includes(k);
 
-  if (co("ma_hang") && co("don_vi_tinh") && co("cong_doan")) return "mau_moi";
+  // Cột "Xử lý" từng tên "Công đoạn" — file tải về trước đó vẫn nhập được.
+  if (co("ma_hang") && co("don_vi_tinh") && (co("xu_ly") || co("cong_doan"))) return "mau_moi";
   if (co("ma_hang") && co("dvt") && co("nhom_hang_3_cap")) return "kiotviet";
 
   throw new Error(
-    "Không nhận ra mẫu file. Cần các cột: Mã hàng, Tên hàng, Đơn vị tính, Công đoạn — " +
+    "Không nhận ra mẫu file. Cần các cột: Mã hàng, Tên hàng, Đơn vị tính, Xử lý — " +
       "hoặc dùng thẳng file DanhSachSanPham xuất từ KiotViet.",
   );
 }
@@ -58,14 +59,15 @@ function parseTemplateRow(o: Record<string, unknown>, rowNumber: number): Import
     ten_hang: readString(o["ten_hang"]),
     nhom_hang: readString(o["nhom_hang"]),
     dvt: readString(o["don_vi_tinh"]),
-    cong_doan: readString(o["cong_doan"]),
+    cong_doan: readString(o["xu_ly"] ?? o["cong_doan"]),
     quy_doi: readNumber(o["quy_doi"]),
     kho_mac_dinh: readString(o["kho_mac_dinh"]),
     ton_toi_thieu: readNumber(o["ton_toi_thieu"]),
     ton_toi_da: toiDa,
     dang_kinh_doanh: docCo(o["dang_kinh_doanh"]),
     barcode: readString(o["barcode"]),
-    ghi_chu: readString(o["ghi_chu"]),
+    // Mẫu cũ có cột "Ghi chú" — vẫn nhận, vào Mô tả.
+    mo_ta: readString(o["mo_ta"]) ?? readString(o["ghi_chu"]),
   };
 }
 
@@ -90,7 +92,7 @@ function parseKiotVietRow(o: Record<string, unknown>, rowNumber: number): Import
     ton_toi_thieu: readNumber(o["ton_nho_nhat"]),
     ton_toi_da: toiDa === null || toiDa >= KHONG_GIOI_HAN ? null : toiDa,
     dang_kinh_doanh: readString(o["dang_kinh_doanh"]) !== "0",
-    ghi_chu: readString(o["mo_ta"]),
+    mo_ta: readString(o["mo_ta"]),
   };
 }
 
@@ -118,7 +120,7 @@ const HUONG_DAN: Array<[string, string]> = [
   ["Ô để trống", "Giữ nguyên giá trị đang có. Muốn xóa thì sửa trong app."],
   ["Mã hàng", "Khóa để đối chiếu. Mã chưa có thì thêm mới, mã đã có thì cập nhật."],
   [
-    "Nhóm hàng / Đơn vị tính / Công đoạn / Kho mặc định",
+    "Nhóm hàng / Đơn vị tính / Xử lý / Kho mặc định",
     "Phải là tên hoặc mã đã có (Danh sách hàng hóa → Danh mục phụ; kho ở Cài đặt). Chưa có thì tạo trước, file sẽ báo lỗi dòng.",
   ],
   ["Đang kinh doanh", "Ghi Có / Không (hoặc 1 / 0)."],

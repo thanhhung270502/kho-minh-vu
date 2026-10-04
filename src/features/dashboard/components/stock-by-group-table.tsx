@@ -41,9 +41,9 @@ function sumBy(rows: readonly StockByGroupRow[], key: CountKey): number {
 export function StockByGroupTable({ rows, groupBy }: Props) {
   const { token } = theme.useToken();
 
-  const groupTitle = groupBy === "category" ? "Nhóm hàng" : "Công đoạn";
+  const groupTitle = groupBy === "category" ? "Nhóm hàng" : "Xử lý";
   const unassignedLabel =
-    groupBy === "category" ? "Chưa phân nhóm" : "Chưa gán công đoạn";
+    groupBy === "category" ? "Chưa phân nhóm" : "Chưa gán xử lý";
 
   const columns: TableColumnsType<StockByGroupRow> = [
     {

@@ -108,7 +108,7 @@ select pg_temp.dang_xuat();
 -- ─── Tạo mã hàng (cả danh mục phụ) ─────────────────────────────────────────
 select pg_temp.dat_quyen('NHAN_VIEN', 'tao_ma_hang', false);
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
-select throws_ok($$ insert into public.dong_xe (ma, ten) values ('Q102', 'Dòng xe Q102') $$,
+select throws_ok($$ insert into public.nhom_hang (ma, ten) values ('Q102', 'Nhóm Q102') $$,
   '42501', null, 'tắt Tạo mã hàng: không thêm được danh mục phụ');
 select pg_temp.dang_xuat();
 

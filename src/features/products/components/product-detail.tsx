@@ -9,8 +9,9 @@ import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
 
 import { useLookups, useProductDetail } from "../hooks/useProducts";
-import type { Lookups } from "../types";
-import { formatNumber } from "./product-columns";
+import { standardFieldText } from "../lib/product-expanded";
+import { PRODUCT_KIND_LABELS, type Lookups } from "../types";
+import { ComboComponents } from "./combo-components";
 import { ProductDrawer } from "./product-drawer";
 import { StockCard } from "./stock-card";
 import { WarehouseStock } from "./warehouse-stock";
@@ -26,7 +27,7 @@ const FIELD_LABELS: Record<string, string> = {
   ten_hang: "Tên hàng",
   nhom_hang_id: "Nhóm hàng",
   dvt_id: "Đơn vị tính",
-  cong_doan_id: "Công đoạn",
+  cong_doan_id: "Xử lý",
   quy_doi: "Quy đổi",
   kho_mac_dinh_id: "Kho mặc định",
   ton_toi_thieu: "Tồn tối thiểu",
@@ -35,9 +36,15 @@ const FIELD_LABELS: Record<string, string> = {
   gia_ban: "Giá bán",
   dang_kinh_doanh: "Đang kinh doanh",
   barcode: "Barcode",
-  ghi_chu: "Ghi chú",
-  loai_hang_id: "Loại hàng",
-  dong_xe_id: "Dòng xe",
+  ghi_chu: "Ghi chú (tự sinh)",
+  mo_ta: "Mô tả",
+  loai_hang: "Loại hàng",
+  hang_xe: "Hãng xe",
+  dong_xe: "Dòng xe",
+  linh_kien: "Linh kiện",
+  // Cột Phase 15 đã bỏ (0086) — giữ nhãn để đọc nhật ký sửa cũ.
+  loai_hang_id: "Loại hàng (cũ)",
+  dong_xe_id: "Dòng xe (cũ)",
   duoc_ban_truc_tiep: "Được bán trực tiếp",
   vi_tri_ke: "Vị trí kệ",
   can_ra_dvt: "Cờ ĐVT mâu thuẫn",
@@ -58,11 +65,7 @@ function buildRenderValue(lookups: Lookups | undefined) {
             ? lookups.stages
             : field === "kho_mac_dinh_id"
               ? lookups.warehouses
-              : field === "loai_hang_id"
-                ? lookups.productTypes
-                : field === "dong_xe_id"
-                  ? lookups.vehicleLines
-                  : null;
+              : null;
 
     return items?.find((item) => item.id === value)?.name;
   };
@@ -129,12 +132,14 @@ export function ProductDetailView({
                   label: "Nhóm hàng",
                   children: product.categoryName ?? "—",
                 },
-                { key: "type", label: "Loại hàng", children: product.productTypeName ?? "—" },
-                { key: "vehicle", label: "Dòng xe", children: product.vehicleLineName ?? "—" },
+                { key: "kind", label: "Loại hàng", children: PRODUCT_KIND_LABELS[product.kind] },
+                { key: "brand", label: "Hãng xe", children: standardFieldText(product.brandName, product.brandCode) ?? "—" },
+                { key: "model", label: "Dòng xe", children: standardFieldText(product.modelName, product.modelCode) ?? "—" },
+                { key: "part", label: "Linh kiện", children: standardFieldText(product.partName, product.partCode) ?? "—" },
                 { key: "unit", label: "Đơn vị tính", children: product.unitName },
                 {
                   key: "stage",
-                  label: "Công đoạn",
+                  label: "Xử lý",
                   children: (
                     <Tag color={product.stageColor || undefined}>
                       {product.stageName}
@@ -142,26 +147,11 @@ export function ProductDetailView({
                   ),
                 },
                 {
-                  key: "conversion",
-                  label: "Quy đổi",
-                  children: formatNumber(product.conversion),
-                },
-                {
                   key: "warehouse",
                   label: "Kho mặc định",
                   children: product.defaultWarehouseName ?? "—",
                 },
-                {
-                  key: "limits",
-                  label: "Tồn tối thiểu / tối đa",
-                  children: `${formatNumber(product.minStock)} / ${
-                    product.maxStock === null
-                      ? "không giới hạn"
-                      : formatNumber(product.maxStock)
-                  }`,
-                },
                 { key: "shelf", label: "Vị trí kệ", children: product.shelfLocation ?? "—" },
-                { key: "barcode", label: "Barcode", children: product.barcode ?? "—" },
                 {
                   key: "status",
                   label: "Trạng thái",
@@ -172,13 +162,24 @@ export function ProductDetailView({
                       ) : (
                         <Tag>Ngừng kinh doanh</Tag>
                       )}
-                      {product.directSale ? null : <Tag>Không bán trực tiếp</Tag>}
                     </span>
                   ),
                 },
-                { key: "note", label: "Ghi chú", children: product.note ?? "—" },
+                { key: "description", label: "Mô tả", children: product.description ?? "—" },
+                {
+                  key: "note",
+                  label: "Ghi chú",
+                  children: product.note ?? <Tag color="green" className="m-0">Đủ quy chuẩn</Tag>,
+                },
               ]}
             />
+
+            {product.kind === "COMBO" ? (
+              <div className="mt-4">
+                <h3 className="mb-2 text-sm font-medium">Thành phần combo</h3>
+                <ComboComponents comboId={id} canEdit={permissions.canEdit} />
+              </div>
+            ) : null}
 
             {imagesSection ? <div className="mt-4">{imagesSection}</div> : null}
 
