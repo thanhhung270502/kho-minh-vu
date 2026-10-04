@@ -19,9 +19,20 @@ export const antdTheme: ThemeConfig = {
     colorPrimary: INK,
     colorPrimaryHover: "#262626",
     colorPrimaryActive: "#000000",
+    // antd tự sinh các bậc nhạt (nền thông báo, nền ngày được chọn, option
+    // đang chọn…) từ màu seed. Seed là đen thì các bậc "nhạt" ra xám đậm —
+    // Alert info thành dải đen. Khai báo tường minh để giữ nền sáng.
+    colorPrimaryBg: "#F3F3F3",
+    colorPrimaryBgHover: "#EBEBEB",
+    colorPrimaryBorder: "#D4D4D4",
+    colorPrimaryBorderHover: "#A3A3A3",
     colorLink: INK,
     colorLinkHover: "#404040",
     colorInfo: INK,
+    colorInfoBg: "#F5F5F5",
+    colorInfoBgHover: "#EBEBEB",
+    colorInfoBorder: "#E5E5E5",
+    colorInfoBorderHover: "#D4D4D4",
     colorSuccess: SUCCESS,
     colorWarning: WARNING,
     colorError: DANGER,
