@@ -51,17 +51,28 @@ export function buildOrderLineColumns({
 }: Params): TableColumnsType<OrderLine> {
   return [
     {
+      title: "#",
+      key: "index",
+      width: 40,
+      render: (_: unknown, __: OrderLine, index: number) => (
+        <span className="tabular-nums text-trung-tinh-300">{index + 1}</span>
+      ),
+    },
+    {
       title: "Mã hàng",
       dataIndex: "productCode",
       key: "productCode",
-      width: 160,
-      render: (code: string) => <span className="font-mono">{code}</span>,
+      width: 150,
+      render: (code: string) => (
+        <span className="font-mono text-[12.5px] font-medium">{code}</span>
+      ),
     },
     {
       title: "Tên hàng",
       dataIndex: "productName",
       key: "productName",
       ellipsis: true,
+      render: (name: string) => <span className="font-semibold">{name}</span>,
     },
     { title: "ĐVT", dataIndex: "unitName", key: "unitName", width: 90 },
     ...(showRecipient

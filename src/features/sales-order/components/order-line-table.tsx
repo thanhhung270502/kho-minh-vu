@@ -78,11 +78,14 @@ export function OrderLineTable({ orderId, lines, editable, staff }: Props) {
       return;
     }
 
-    const saved = await actions.addLine({
-      productId: draft.product.id,
-      quantity: draft.quantity,
-      recipientId: showRecipient ? effectiveRecipientId : null,
-    });
+    const saved = await actions.addLine(
+      {
+        productId: draft.product.id,
+        quantity: draft.quantity,
+        recipientId: showRecipient ? effectiveRecipientId : null,
+      },
+      draft.product.code,
+    );
     if (!saved) return;
     setDraft(EMPTY_DRAFT);
     // Hẹn sang lượt sau: focus ngay lúc này bị chính vòng render dọn bảng
@@ -108,30 +111,14 @@ export function OrderLineTable({ orderId, lines, editable, staff }: Props) {
   );
 
   return (
-    <>
-      <div className="overflow-x-auto">
-        <Table<OrderLine>
-          rowKey="id"
-          size="small"
-          columns={columns}
-          dataSource={lines}
-          pagination={false}
-          scroll={{ x: 760 }}
-          locale={{ emptyText: "Chưa có dòng nào. Gõ mã hàng ở ô bên dưới để thêm." }}
-          summary={() =>
-            lines.length > 0 ? (
-              <SummaryRow
-                columns={columns}
-                hasSelection={false}
-                label={`Tổng cộng — ${lines.length} dòng`}
-                totals={{ orderedQuantity: totalQuantity }}
-              />
-            ) : null
-          }
-        />
+    <section className="min-w-0 overflow-hidden rounded-the border border-vien">
+      <div className="px-5 py-4 text-[15px] font-extrabold">
+        Hàng đặt{" "}
+        <span className="font-semibold text-trung-tinh-300">· {lines.length} dòng</span>
       </div>
 
       {editable ? (
+        <div className="border-t border-vien bg-nen-tong p-4 [&>div]:mt-0 [&>div]:rounded-none [&>div]:border-0 [&>div]:bg-transparent [&>div]:p-0">
         <OrderLineEntryRow
           codeInputRef={codeInput}
           quantityInputRef={quantityInput}
@@ -151,7 +138,33 @@ export function OrderLineTable({ orderId, lines, editable, staff }: Props) {
           }
           onSubmit={() => void saveDraftLine()}
         />
+        <p className="m-0 mt-2 text-xs text-trung-tinh-350">
+          Enter sang ô số lượng · Enter thêm dòng, con trỏ quay về ô mã
+        </p>
+        </div>
       ) : null}
-    </>
+
+      <div className="overflow-x-auto">
+        <Table<OrderLine>
+          rowKey="id"
+          size="small"
+          columns={columns}
+          dataSource={lines}
+          pagination={false}
+          scroll={{ x: 760 }}
+          locale={{ emptyText: "Chưa có dòng nào. Gõ mã hàng ở ô phía trên để thêm." }}
+          summary={() =>
+            lines.length > 0 ? (
+              <SummaryRow
+                columns={columns}
+                hasSelection={false}
+                label={`Tổng cộng — ${lines.length} dòng`}
+                totals={{ orderedQuantity: totalQuantity }}
+              />
+            ) : null
+          }
+        />
+      </div>
+    </section>
   );
 }
