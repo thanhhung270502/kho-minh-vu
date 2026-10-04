@@ -47,8 +47,13 @@ export function ListLayout({
             <div className="min-w-0 flex-1">{toolbar}</div>
           </div>
 
-          {/* Bảng cuộn ngang TRONG khung này, không để cả page tràn ngang. */}
-          <div className="overflow-x-auto">{children}</div>
+          {/*
+            Bảng tự cuộn ngang bằng `scroll={{ x }}` của antd nên page không
+            tràn ngang. KHÔNG bọc `overflow-x-auto` ở đây: nó biến khung này
+            thành vùng cuộn riêng, tiêu đề bảng dính (`sticky.offsetHeader`)
+            tính top theo khung thay vì theo cửa sổ và rơi vào giữa các dòng.
+          */}
+          <div className="min-w-0">{children}</div>
         </section>
 
         {detailPanel}
