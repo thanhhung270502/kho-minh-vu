@@ -19,8 +19,8 @@ type Props = {
 
 /**
  * Giá trị luôn lấy từ server: lưu lỗi thì ô quay về người nhận đã lưu. Mỗi lần
- * đổi gửi cả tập (dat_nguoi_nhan_don); bỏ hết người nhận thì không lưu — CHECK
- * database cấm đơn không có người nhận.
+ * đổi gửi cả tập (dat_nguoi_nhan_don). Đơn tạm được để trống (0094) — chỉ lúc
+ * Xác nhận đơn database mới đòi có người nhận.
  */
 export function OrderRecipientField({ recipients, onSave }: Props) {
   const [localError, setLocalError] = useState<string | null>(null);

@@ -59,7 +59,8 @@ export function formatOrderRecipients(recipients: OrderRecipients): string {
       ? `${partnerLabel(partner)} · ${staffNames(staff)}`
       : partnerLabel(partner);
   }
-  return staff.length > 0 ? `Nội bộ — ${staffNames(staff)}` : "—";
+  // 0094: đơn tạm được tạo trước, người nhận chọn sau trong trang đơn.
+  return staff.length > 0 ? `Nội bộ — ${staffNames(staff)}` : "Chưa chọn người nhận";
 }
 
 export function lineRecipientLabel(

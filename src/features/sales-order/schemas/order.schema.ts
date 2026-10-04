@@ -12,20 +12,11 @@ import { ORDER_STATUSES, type OrderStatus } from "../lib/order-status";
 // bộ (không đối tác) phải có ít nhất một nhân viên — database cũng ép (D3).
 // Đơn KHÔNG mang giá (chốt 19/09 câu 7): không có trường giá ở đây.
 
-export const orderRecipientsSchema = z
-  .object({
-    partnerId: z.string().uuid("Chọn đối tác").nullable(),
-    staffIds: z.array(z.string().uuid()),
-  })
-  .superRefine((value, ctx) => {
-    if (value.partnerId === null && value.staffIds.length === 0) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["staffIds"],
-        message: "Đơn nội bộ phải có ít nhất một người nhận",
-      });
-    }
-  });
+// 0094: đơn tạm được trống người nhận — database chỉ đòi người nhận lúc xác nhận đơn.
+export const orderRecipientsSchema = z.object({
+  partnerId: z.string().uuid("Chọn đối tác").nullable(),
+  staffIds: z.array(z.string().uuid()),
+});
 
 export type OrderRecipientsInput = z.infer<typeof orderRecipientsSchema>;
 

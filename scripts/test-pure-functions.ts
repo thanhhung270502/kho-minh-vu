@@ -646,7 +646,7 @@ assert.equal(partnerLabel(partnerLienHoa), "KH01 Liên Hoa");
 assert.equal(partnerLabel({ ...partnerLienHoa, code: null }), "Liên Hoa");
 assert.equal(partnerLabel({ id: "d", code: null, name: null }), "—");
 assert.equal(formatOrderRecipients({ partner: null, staff: [staffAn, staffBinh] }), "Nội bộ — An, Bình");
-assert.equal(formatOrderRecipients({ partner: null, staff: [] }), "—");
+assert.equal(formatOrderRecipients({ partner: null, staff: [] }), "Chưa chọn người nhận");
 assert.equal(formatOrderRecipients({ partner: partnerLienHoa, staff: [] }), "KH01 Liên Hoa");
 assert.equal(formatOrderRecipients({ partner: partnerLienHoa, staff: [staffAn] }), "KH01 Liên Hoa · An");
 assert.equal(recipientKindOf({ partner: null, staff: [staffAn] }), "internal");
@@ -761,12 +761,8 @@ const orderLineRow = {
 {
   const uuid1 = "11111111-1111-4111-8111-111111111111";
   const uuid2 = "22222222-2222-4222-8222-222222222222";
-  const noOne = orderRecipientsSchema.safeParse({ partnerId: null, staffIds: [] });
-  assert.equal(noOne.success, false);
-  if (!noOne.success) {
-    assert.deepEqual(noOne.error.issues[0].path, ["staffIds"]);
-    assert.equal(noOne.error.issues[0].message, "Đơn nội bộ phải có ít nhất một người nhận");
-  }
+  // 0094: đơn tạm được trống người nhận — database đòi người nhận lúc xác nhận.
+  assert.equal(orderRecipientsSchema.safeParse({ partnerId: null, staffIds: [] }).success, true);
   assert.equal(orderRecipientsSchema.safeParse({ partnerId: uuid1, staffIds: [] }).success, true);
   assert.equal(orderRecipientsSchema.safeParse({ partnerId: null, staffIds: [uuid2] }).success, true);
   assert.deepEqual(toCreateOrderRpcArgs({ partnerId: null, staffIds: ["u1"] }), {
