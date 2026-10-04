@@ -5,7 +5,6 @@ import { App, Table } from "antd";
 import type { RefSelectProps } from "antd/es/select";
 import { useRef, useState } from "react";
 
-import { useLookups } from "@/features/products/hooks/useProducts";
 import type { ProductSearchResult } from "@/shared/components/product-search-input";
 import { SummaryRow } from "@/shared/components/summary-row";
 import { useFocusOnOpen } from "@/shared/hooks/use-focus-on-open";
@@ -36,12 +35,14 @@ const EMPTY_DRAFT: DraftLine = { product: null, quantity: null, warehouseId: nul
  * ô số lượng → Enter → lưu dòng → `setTimeout(..., 0)` đưa con trỏ về ô mã
  * (bẫy 14b). Không có cột nào về tiền — phiếu xuất không mang giá bán.
  *
+ * Kho ẩn trên hóa đơn (04/10/2026): mỗi dòng vẫn ghi kho — kho mặc định của
+ * mã, mã chưa gán thì kho đầu phiếu — nhưng không hiện, không cho chọn.
+ *
  * D-12 lớp 1: `currentStock` là ảnh chụp lúc tải dòng, KHÔNG phải số thời
  * gian thực. So với số đang gõ dở (chưa lưu) để dòng đổi màu NGAY.
  */
 export function IssueLineTable({ issue, lines, editable }: Props) {
   const { message } = App.useApp();
-  const lookups = useLookups();
   const addLine = useAddIssueLine(issue.id);
   const updateLine = useUpdateIssueLine(issue.id);
   const deleteLine = useDeleteIssueLine(issue.id);
@@ -54,9 +55,6 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
   const quantityInput = useRef<InputNumberRef>(null);
 
   useFocusOnOpen(codeInput, editable);
-
-  const warehouses = lookups.data?.warehouses ?? [];
-  const hasMultipleWarehouses = warehouses.length > 1;
 
   function currentQuantity(line: IssueLine): number {
     return pendingQuantities[line.id] ?? Number(line.quantity);
@@ -87,15 +85,8 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
   }
 
   function handleSelectProduct(product: ProductSearchResult) {
-    // 4/3.270 mã chưa gán kho mặc định — không đoán kho, không rơi về kho đầu
-    // phiếu (Claude's Discretion, 04-CONTEXT.md). Con trỏ ở lại ô mã.
-    if (product.defaultWarehouseId === null) {
-      message.error(
-        `Mã ${product.code} chưa gán kho mặc định. Sửa ở Danh mục → mở mã hàng → Kho mặc định, rồi quay lại.`,
-      );
-      return;
-    }
-    setDraft({ product, quantity: null, warehouseId: product.defaultWarehouseId });
+    // Kho không còn hiện để chọn — mã chưa gán kho mặc định rơi về kho đầu phiếu.
+    setDraft({ product, quantity: null, warehouseId: product.defaultWarehouseId ?? issue.warehouseId });
     setTimeout(() => quantityInput.current?.focus(), 0);
   }
 
@@ -112,30 +103,24 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
     });
   }
 
-  function editCell(id: string, patch: { quantity?: number; warehouseId?: string }) {
+  function editQuantity(id: string, quantity: number) {
     const current = lines.find((line) => line.id === id);
     return runMutation(() =>
       updateLine.mutateAsync({
         id,
-        values: {
-          quantity: patch.quantity ?? Number(current?.quantity ?? 0),
-          warehouseId: patch.warehouseId ?? current?.warehouseId ?? null,
-        },
+        values: { quantity, warehouseId: current?.warehouseId ?? null },
       }),
     );
   }
 
   const columns = buildIssueLineColumns({
     editable,
-    hasMultipleWarehouses,
     showRecipient: lines.some((line) => line.recipientId !== null),
     staffCount: issue.staffRecipients.length,
-    warehouses,
     isOverStock,
     currentQuantity,
     onQuantityInput: handleQuantityInput,
-    onEditQuantity: (id, quantity) => void editCell(id, { quantity }),
-    onEditWarehouse: (id, warehouseId) => void editCell(id, { warehouseId }),
+    onEditQuantity: (id, quantity) => void editQuantity(id, quantity),
     onDelete: (id) => void runMutation(() => deleteLine.mutateAsync(id)),
   });
 
@@ -174,16 +159,10 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
           quantityInputRef={quantityInput}
           quantity={draft.quantity}
           selectedProduct={draft.product}
-          warehouseId={draft.warehouseId}
-          warehouses={warehouses}
-          hasMultipleWarehouses={hasMultipleWarehouses}
           pending={addLine.isPending}
           onSelectProduct={handleSelectProduct}
           onQuantityChange={(value) =>
             setDraft((current) => ({ ...current, quantity: value }))
-          }
-          onWarehouseChange={(warehouseId) =>
-            setDraft((current) => ({ ...current, warehouseId }))
           }
           onSubmit={() => void saveDraftLine()}
         />

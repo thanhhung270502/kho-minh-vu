@@ -1,11 +1,10 @@
 "use client";
 
-import { App, Descriptions, Input, Select, Tag, Typography } from "antd";
+import { App, Descriptions, Input, Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import Link from "next/link";
 import { useState } from "react";
 
-import { useLookups } from "@/features/products/hooks/useProducts";
 import { PartnerSearchInput } from "@/shared/components/partner-search-input";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 
@@ -26,7 +25,6 @@ type Props = { issue: IssueDetail; canEdit: boolean };
 export function IssueHeader({ issue, canEdit }: Props) {
   const { message } = App.useApp();
   const update = useUpdateIssueHeader(issue.id);
-  const lookups = useLookups();
   const [justSaved, setJustSaved] = useState<string | null>(null);
 
   const editable = issue.status === "NHAP_LIEU" && canEdit;
@@ -145,30 +143,6 @@ export function IssueHeader({ issue, canEdit }: Props) {
             : "—",
         },
         ...recipientItems,
-        {
-          key: "warehouse",
-          label: fieldLabel("warehouseId", "Kho đầu phiếu"),
-          children: editable ? (
-            <div className="flex flex-col gap-1">
-              <Select
-                className="w-full"
-                value={issue.warehouseId}
-                options={(lookups.data?.warehouses ?? []).map((warehouse) => ({
-                  value: warehouse.id,
-                  label: warehouse.name,
-                }))}
-                onChange={(value) =>
-                  void save("warehouseId", { warehouseId: value })
-                }
-              />
-              <Typography.Text type="secondary" className="text-xs">
-                Dòng nào chọn kho riêng thì theo kho đó.
-              </Typography.Text>
-            </div>
-          ) : (
-            (issue.warehouseName ?? "—")
-          ),
-        },
         {
           key: "order",
           label: "Đơn gốc",

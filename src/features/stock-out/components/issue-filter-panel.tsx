@@ -5,7 +5,6 @@ import dayjs from "dayjs";
 import type { ReactNode } from "react";
 
 import { PartnerSearchInput } from "@/shared/components/partner-search-input";
-import { useLookups } from "@/features/products/hooks/useProducts";
 
 import {
   DEFAULT_ISSUE_FILTER,
@@ -36,7 +35,6 @@ export function IssueFilterPanel({
   filter: IssueFilter;
   onChange: (filter: IssueFilter) => void;
 }) {
-  const lookups = useLookups();
 
   /** Đổi điều kiện nào cũng về trang 1 — giữ trang cũ dễ rơi vào trang trống. */
   function change(patch: Partial<IssueFilter>) {
@@ -68,20 +66,6 @@ export function IssueFilterPanel({
         <PartnerSearchInput
           value={filter.partnerId ?? undefined}
           onChange={(id) => change({ partnerId: id ?? null })}
-        />
-      </FilterGroup>
-
-      <FilterGroup label="Kho">
-        <Select
-          allowClear
-          className="w-full"
-          placeholder="Tất cả"
-          value={filter.warehouseId}
-          options={(lookups.data?.warehouses ?? []).map((warehouse) => ({
-            value: warehouse.id,
-            label: warehouse.name,
-          }))}
-          onChange={(value) => change({ warehouseId: value ?? null })}
         />
       </FilterGroup>
 

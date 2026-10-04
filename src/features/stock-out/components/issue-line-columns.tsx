@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, InputNumber, Select, Tooltip } from "antd";
+import { Button, InputNumber, Tooltip } from "antd";
 import type { TableColumnsType } from "antd";
 
 import { lineRecipientLabel } from "@/shared/lib/recipient";
@@ -11,38 +11,31 @@ function formatNumber(value: number | string | null): string {
   return value === null ? "" : Number(value).toLocaleString("vi-VN");
 }
 
-type Warehouse = { id: string; name: string };
-
 type Params = {
   editable: boolean;
-  hasMultipleWarehouses: boolean;
   showRecipient: boolean;
   staffCount: number;
-  warehouses: Warehouse[];
   isOverStock: (line: IssueLine) => boolean;
   currentQuantity: (line: IssueLine) => number;
   onQuantityInput: (id: string, value: number | null, fallback: number) => void;
   onEditQuantity: (id: string, quantity: number) => void;
-  onEditWarehouse: (id: string, warehouseId: string) => void;
   onDelete: (id: string) => void;
 };
 
 /**
  * Cấu hình cột thuần, tách khỏi `issue-line-table.tsx` để file đó không vượt
  * 200 dòng (CLAUDE.md Bước 6) — không giữ state riêng, chỉ nhận callback.
- * Không có cột nào về tiền — phiếu xuất không mang giá bán.
+ * Không có cột nào về tiền — phiếu xuất không mang giá bán. Không có cột Kho —
+ * kho ẩn trên hóa đơn (04/10/2026).
  */
 export function buildIssueLineColumns({
   editable,
-  hasMultipleWarehouses,
   showRecipient,
   staffCount,
-  warehouses,
   isOverStock,
   currentQuantity,
   onQuantityInput,
   onEditQuantity,
-  onEditWarehouse,
   onDelete,
 }: Params): TableColumnsType<IssueLine> {
   return [
@@ -68,31 +61,6 @@ export function buildIssueLineColumns({
             width: 160,
             render: (_: unknown, line: IssueLine) =>
               lineRecipientLabel(line.recipientName, staffCount),
-          },
-        ]
-      : []),
-    ...(hasMultipleWarehouses
-      ? [
-          {
-            title: "Kho",
-            dataIndex: "warehouseName",
-            key: "warehouseName",
-            width: 130,
-            render: (name: string, line: IssueLine) =>
-              editable ? (
-                <Select
-                  size="small"
-                  className="w-full"
-                  value={line.warehouseId}
-                  options={warehouses.map((warehouse) => ({
-                    value: warehouse.id,
-                    label: warehouse.name,
-                  }))}
-                  onChange={(value) => onEditWarehouse(line.id, value)}
-                />
-              ) : (
-                name
-              ),
           },
         ]
       : []),

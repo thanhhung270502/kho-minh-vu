@@ -32,20 +32,21 @@ type Props = {
 type DraftLine = {
   product: ProductSearchResult | null;
   quantity: number | null;
-  unitPrice: number | null;
   warehouseId: string | null;
 };
 
 const EMPTY_DRAFT: DraftLine = {
   product: null,
   quantity: null,
-  unitPrice: null,
   warehouseId: null,
 };
 
 /**
- * Luồng bàn phím (D-07): gõ mã → Enter → ô số lượng → Enter → ô đơn giá →
- * Enter là lưu dòng và quay về ô mã. 7,6 dòng mỗi phiếu, phiếu lớn nhất 48 dòng.
+ * Luồng bàn phím (D-07): gõ mã → Enter → ô số lượng → Enter là lưu dòng và quay
+ * về ô mã. 7,6 dòng mỗi phiếu, phiếu lớn nhất 48 dòng.
+ *
+ * Không hiện giá (04/10/2026: hệ thống bỏ giá ở mọi màn) — dòng mới ghi đơn giá 0,
+ * dòng cũ giữ nguyên đơn giá đã có khi sửa số lượng.
  */
 export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
   const { message } = App.useApp();
@@ -58,7 +59,6 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
 
   const codeInput = useRef<RefSelectProps>(null);
   const quantityInput = useRef<InputNumberRef>(null);
-  const priceInput = useRef<InputNumberRef>(null);
 
   const editable = receipt.status === "NHAP_LIEU" && canEdit;
   useFocusOnOpen(codeInput, editable);
@@ -75,12 +75,12 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
       await addLine.mutateAsync({
         productId: draft.product.id,
         quantity: draft.quantity,
-        unitPrice: draft.unitPrice ?? 0,
+        unitPrice: 0,
         warehouseId: draft.warehouseId,
       });
       setDraft(EMPTY_DRAFT);
       // Hẹn sang lượt sau: focus ngay lúc này sẽ bị chính vòng render dọn bảng
-      // xoá đi, con trỏ rơi về ô đơn giá và mã kế tiếp gõ vào nhầm chỗ.
+      // xoá đi, con trỏ rơi về ô số lượng và mã kế tiếp gõ vào nhầm chỗ.
       setTimeout(() => codeInput.current?.focus(), 0);
     } catch (error) {
       const explained = explainError(error);
@@ -90,7 +90,7 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
 
   async function editCell(
     id: string,
-    patch: { quantity?: number; unitPrice?: number; warehouseId?: string | null },
+    patch: { quantity?: number; warehouseId?: string | null },
   ) {
     try {
       const current = lines.find((line) => line.id === id);
@@ -98,7 +98,7 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
         id,
         values: {
           quantity: patch.quantity ?? Number(current?.quantity ?? 0),
-          unitPrice: patch.unitPrice ?? Number(current?.unitPrice ?? 0),
+          unitPrice: Number(current?.unitPrice ?? 0),
           ...(patch.warehouseId !== undefined
             ? { warehouseId: patch.warehouseId }
             : {}),
@@ -174,42 +174,6 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
           formatNumber(value)
         ),
     },
-    {
-      title: "Đơn giá",
-      dataIndex: "unitPrice",
-      key: "unitPrice",
-      width: 140,
-      align: "right",
-      render: (value: number, line: DocumentLine) =>
-        editable ? (
-          <InputNumber
-            size="small"
-            className="w-full"
-            min={0}
-            defaultValue={Number(value)}
-            formatter={(input) => (input === undefined ? "" : formatNumber(input))}
-            parser={(input) => Number((input ?? "").replace(/\D/g, ""))}
-            onBlur={(event) => {
-              const parsed = Number(event.target.value.replace(/\D/g, ""));
-              if (Number.isFinite(parsed) && parsed !== Number(value)) {
-                void editCell(line.id, { unitPrice: parsed });
-              }
-            }}
-          />
-        ) : (
-          formatNumber(value)
-        ),
-    },
-    {
-      title: "Thành tiền",
-      key: "amount",
-      dataIndex: "amount",
-      width: 140,
-      align: "right",
-      // Tính khi render, KHÔNG giữ state (CLAUDE.md Bước 6).
-      render: (_: unknown, line: DocumentLine) =>
-        formatNumber(Number(line.quantity) * Number(line.unitPrice)),
-    },
     ...(editable
       ? [
           {
@@ -234,10 +198,6 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
   ];
 
   const totalQuantity = lines.reduce((sum, line) => sum + Number(line.quantity), 0);
-  const totalAmount = lines.reduce(
-    (sum, line) => sum + Number(line.quantity) * Number(line.unitPrice),
-    0,
-  );
 
   return (
     <>
@@ -256,7 +216,7 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
                 columns={columns}
                 hasSelection={false}
                 label={`Tổng cộng — ${lines.length} dòng`}
-                totals={{ quantity: totalQuantity, amount: totalAmount }}
+                totals={{ quantity: totalQuantity }}
               />
             ) : null
           }
@@ -313,25 +273,6 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
               }
               onPressEnter={(event) => {
                 event.preventDefault();
-                priceInput.current?.focus();
-              }}
-            />
-          </div>
-
-          <div className="w-36">
-            <label className="mb-1 block text-[13px] text-chu-phu">Đơn giá</label>
-            <InputNumber
-              ref={priceInput}
-              className="w-full"
-              min={0}
-              value={draft.unitPrice}
-              formatter={(input) => (input === undefined ? "" : formatNumber(input))}
-              parser={(input) => Number((input ?? "").replace(/\D/g, ""))}
-              onChange={(value) =>
-                setDraft((current) => ({ ...current, unitPrice: value }))
-              }
-              onPressEnter={(event) => {
-                event.preventDefault();
                 void saveDraftLine();
               }}
             />
@@ -346,7 +287,7 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
           </Button>
 
           <Typography.Text type="secondary" className="w-full text-xs">
-            Gõ mã → Enter → số lượng → Enter → đơn giá → Enter là xong một dòng.
+            Gõ mã → Enter → số lượng → Enter là xong một dòng.
           </Typography.Text>
         </div>
       ) : null}

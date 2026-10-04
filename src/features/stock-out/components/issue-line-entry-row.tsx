@@ -1,7 +1,7 @@
 "use client";
 
 import type { InputNumberRef } from "@rc-component/input-number";
-import { Button, InputNumber, Select, Typography } from "antd";
+import { Button, InputNumber, Typography } from "antd";
 import type { RefSelectProps } from "antd/es/select";
 import type { Ref } from "react";
 
@@ -10,20 +10,14 @@ import {
   type ProductSearchResult,
 } from "@/shared/components/product-search-input";
 
-type Warehouse = { id: string; name: string };
-
 type Props = {
   codeInputRef: Ref<RefSelectProps>;
   quantityInputRef: Ref<InputNumberRef>;
   quantity: number | null;
   selectedProduct: ProductSearchResult | null;
-  warehouseId: string | null;
-  warehouses: Warehouse[];
-  hasMultipleWarehouses: boolean;
   pending: boolean;
   onSelectProduct: (product: ProductSearchResult) => void;
   onQuantityChange: (value: number | null) => void;
-  onWarehouseChange: (warehouseId: string | null) => void;
   onSubmit: () => void;
 };
 
@@ -38,13 +32,9 @@ export function IssueLineEntryRow({
   quantityInputRef,
   quantity,
   selectedProduct,
-  warehouseId,
-  warehouses,
-  hasMultipleWarehouses,
   pending,
   onSelectProduct,
   onQuantityChange,
-  onWarehouseChange,
   onSubmit,
 }: Props) {
   return (
@@ -59,20 +49,6 @@ export function IssueLineEntryRow({
         />
       </div>
 
-      {hasMultipleWarehouses ? (
-        <div className="w-36">
-          <label className="mb-1 block text-[13px] text-chu-phu">Kho</label>
-          <Select
-            className="w-full"
-            value={warehouseId}
-            options={warehouses.map((warehouse) => ({
-              value: warehouse.id,
-              label: warehouse.name,
-            }))}
-            onChange={onWarehouseChange}
-          />
-        </div>
-      ) : null}
 
       <div className="w-28">
         <label className="mb-1 block text-[13px] text-chu-phu">Số lượng</label>
