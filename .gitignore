@@ -50,3 +50,4 @@ next-env.d.ts
 
 # dữ liệu mẫu sinh tự động cho script import
 /scripts/import-kiotviet/du-lieu-mau/
+/data/backup-*/
