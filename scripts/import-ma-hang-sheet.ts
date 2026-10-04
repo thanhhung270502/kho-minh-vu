@@ -92,17 +92,14 @@ async function main() {
     const dvtId = dvtByName.get(key(r["Đơn vị tính"] || "Cái"));
     if (!dvtId) miss("Đơn vị tính", r["Đơn vị tính"]);
 
-    let hang: string | undefined;
-    let dong: string | undefined;
-    let linhKien: string | undefined;
-    let xuLy: string | undefined;
-    if (r["Hãng xe"]) (hang = lookup("hang", r["Hãng xe"])) ?? miss("Hãng xe", r["Hãng xe"]);
-    if (r["Dòng xe"]) {
-      dong = hang ? lookup("dong", r["Dòng xe"], hang) : undefined;
-      if (!dong) miss("Dòng xe", `${r["Hãng xe"]} / ${r["Dòng xe"]}`);
-    }
-    if (r["Nhóm linh kiện"]) (linhKien = lookup("linh_kien", r["Nhóm linh kiện"])) ?? miss("Nhóm linh kiện", r["Nhóm linh kiện"]);
-    if (r["Nhóm xử lý"]) (xuLy = xuLyCode(r["Nhóm xử lý"])) ?? miss("Nhóm xử lý", r["Nhóm xử lý"]);
+    const hang = r["Hãng xe"] ? lookup("hang", r["Hãng xe"]) : undefined;
+    if (r["Hãng xe"] && !hang) miss("Hãng xe", r["Hãng xe"]);
+    const dong = r["Dòng xe"] && hang ? lookup("dong", r["Dòng xe"], hang) : undefined;
+    if (r["Dòng xe"] && !dong) miss("Dòng xe", `${r["Hãng xe"]} / ${r["Dòng xe"]}`);
+    const linhKien = r["Nhóm linh kiện"] ? lookup("linh_kien", r["Nhóm linh kiện"]) : undefined;
+    if (r["Nhóm linh kiện"] && !linhKien) miss("Nhóm linh kiện", r["Nhóm linh kiện"]);
+    const xuLy = r["Nhóm xử lý"] ? xuLyCode(r["Nhóm xử lý"]) : undefined;
+    if (r["Nhóm xử lý"] && !xuLy) miss("Nhóm xử lý", r["Nhóm xử lý"]);
 
     const tonText = r["Tồn hiện tại"].replace(/\./g, "").replace(",", ".");
     const ton = Number(tonText || "0");
