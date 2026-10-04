@@ -241,6 +241,11 @@ function kiemTraThietLap() {
  * sang thư mục 'anh-nhap' cạnh 'san-pham', để script nạp ảnh đọc riêng và không
  * lẫn với ảnh web tự lưu.
  *
+ * Dùng ID thư mục cố định, KHÔNG dùng getFolder_(): hàm này hay được dán vào một
+ * dự án Apps Script mới (chưa có ROOT_FOLDER_ID), khi đó getFolder_() tự tạo một
+ * cây thư mục rỗng mới và không thấy ảnh nào (đã gặp 04/10/2026). Tự đủ — dán
+ * riêng hàm này vào dự án nào cũng chạy.
+ *
  * CHỈ chuyển file đúng mẫu "<mã hàng>_<số>.jpg|jpeg|png" (một dấu '_'). Ảnh web
  * tự lưu tên "<mã>__<uuid>.webp" (hai dấu '_', đuôi webp) KHÔNG khớp nên đứng
  * yên — chuyển chúng đi là ảnh trên web hỏng.
@@ -249,14 +254,15 @@ function kiemTraThietLap() {
  * Chạy lại cho tới khi log báo "Còn lại: 0" — file đã chuyển không bị chuyển lại.
  */
 function chuyenAnhNhap() {
+  // [APP][Kho Minh Vu]/Kho Minh Vu - Anh/san-pham/goc → .../Kho Minh Vu - Anh/anh-nhap
+  var NGUON_ID = '1c_Ic40A3MqbyffpyggOUg9-PFLKLvdEe';
+  var DICH_ID = '1rsUaOpFmNW3kbJcax9FrEhdAOedx1361';
   var MAU_TEN = /^[^_]+_\d+\.(jpe?g|png)$/i;
   var HAN_MS = 5 * 60 * 1000;
   var batDau = Date.now();
 
-  var goc = getFolder_('san-pham/goc');
-  var root = getRootFolder_();
-  var tim = root.getFoldersByName('anh-nhap');
-  var dich = tim.hasNext() ? tim.next() : root.createFolder('anh-nhap');
+  var goc = DriveApp.getFolderById(NGUON_ID);
+  var dich = DriveApp.getFolderById(DICH_ID);
 
   var daChuyen = 0;
   var conLai = 0;
@@ -276,6 +282,7 @@ function chuyenAnhNhap() {
     daChuyen++;
   }
 
+  Logger.log('Nguồn: ' + goc.getName() + ' — ' + goc.getUrl());
   Logger.log('Đã chuyển: ' + daChuyen + ' file sang ' + dich.getUrl());
   Logger.log('Còn lại: ' + conLai + (conLai > 0 ? ' — bấm Chạy lại hàm này' : ' — xong'));
   Logger.log('Giữ nguyên (ảnh web / tên không đúng mẫu): ' + boQua);
