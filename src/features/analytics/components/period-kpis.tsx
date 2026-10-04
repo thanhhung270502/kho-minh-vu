@@ -1,70 +1,49 @@
 "use client";
 
-import { Card, Statistic, Tooltip } from "antd";
+import { AppstoreOutlined, ExclamationCircleOutlined, ImportOutlined, ShoppingCartOutlined } from "@ant-design/icons";
 
 import { changeRatio, type PeriodKpis } from "../lib/period-analysis";
+import { ChangePill, StatCard } from "./stat-card";
 
 const n = (v: number) => v.toLocaleString("vi-VN", { maximumFractionDigits: 0 });
 
-function Change({ current, previous }: { current: number; previous: number }) {
-  const ratio = changeRatio(current, previous);
-  if (ratio === null) return <span className="text-chu-phu">kỳ trước: {n(previous)}</span>;
-  const up = ratio >= 0;
-  return (
-    <Tooltip title={`Kỳ trước: ${n(previous)}`}>
-      <span className={up ? "text-green-600" : "text-red-600"}>
-        {up ? "▲" : "▼"} {Math.abs(ratio * 100).toLocaleString("vi-VN", { maximumFractionDigits: 1 })}% so với kỳ trước
-      </span>
-    </Tooltip>
-  );
-}
+type Props = {
+  kpis: PeriodKpis;
+  /** Mã cần nhập ngay bây giờ (nhịp bán 30 ngày) + tổng số lượng đề nghị. */
+  reorder: { products: number; quantity: number };
+};
 
-/** KPI trong kỳ — mỗi thẻ so với kỳ trước cùng số ngày. */
-export function PeriodKpiCards({ kpis }: { kpis: PeriodKpis }) {
-  const cards = [
-    {
-      title: "Xuất bán",
-      value: kpis.sold,
-      note: (
-        <>
-          <Change current={kpis.sold} previous={kpis.soldPrev} />
-          <div className="text-chu-phu">{n(kpis.invoiceCount)} hóa đơn</div>
-        </>
-      ),
-    },
-    {
-      title: "Nhập hàng",
-      value: kpis.received,
-      note: (
-        <>
-          <Change current={kpis.received} previous={kpis.receivedPrev} />
-          <div className="text-chu-phu">{n(kpis.receiptCount)} phiếu nhập</div>
-        </>
-      ),
-    },
-    {
-      title: "Mã có bán",
-      value: kpis.sellingProducts,
-      note: <Change current={kpis.sellingProducts} previous={kpis.sellingProductsPrev} />,
-    },
-    {
-      title: "Vòng quay tồn",
-      value: kpis.turnover === null ? "—" : kpis.turnover.toLocaleString("vi-VN", { maximumFractionDigits: 2 }),
-      note: (
-        <span className="text-chu-phu">
-          Xuất bán ÷ tồn bình quân (đầu + cuối kỳ) · tồn cuối {n(kpis.closingStock)}
-        </span>
-      ),
-    },
-  ];
+/** Hàng 4 thẻ KPI đầu tab Phân tích — 3 thẻ trong kỳ (so kỳ trước) + 1 thẻ cần nhập. */
+export function PeriodKpiCards({ kpis, reorder }: Props) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      {cards.map((c) => (
-        <Card key={c.title} size="small">
-          <Statistic title={c.title} value={c.value} groupSeparator="." />
-          <div className="mt-1 text-xs">{c.note}</div>
-        </Card>
-      ))}
+      <StatCard
+        icon={<ShoppingCartOutlined />}
+        label="Xuất bán"
+        value={n(kpis.sold)}
+        change={<ChangePill ratio={changeRatio(kpis.sold, kpis.soldPrev)} previous={n(kpis.soldPrev)} />}
+        footnote={`${n(kpis.invoiceCount)} hóa đơn`}
+      />
+      <StatCard
+        icon={<ImportOutlined />}
+        label="Nhập hàng"
+        value={n(kpis.received)}
+        change={<ChangePill ratio={changeRatio(kpis.received, kpis.receivedPrev)} previous={n(kpis.receivedPrev)} />}
+        footnote={`${n(kpis.receiptCount)} phiếu nhập`}
+      />
+      <StatCard
+        icon={<AppstoreOutlined />}
+        label="Mã có bán"
+        value={n(kpis.sellingProducts)}
+        change={<ChangePill ratio={changeRatio(kpis.sellingProducts, kpis.sellingProductsPrev)} previous={n(kpis.sellingProductsPrev)} />}
+        footnote="số mã có hóa đơn trong kỳ"
+      />
+      <StatCard
+        icon={<ExclamationCircleOutlined />}
+        label="Mã cần nhập"
+        value={n(reorder.products)}
+        footnote={`tổng ${n(reorder.quantity)} cần nhập · tính tại hôm nay`}
+      />
     </div>
   );
 }

@@ -72,16 +72,10 @@ import {
 import { toAnalysisRow, type AnalysisRow, type AnalysisSettings } from "../src/features/analytics/types";
 import {
   buildReorderCsv,
-  coverBucket,
   finishOf,
-  visibleCoverBuckets,
-  kpisOf,
   reorderTabs,
-  slowMoving,
   stockStatus,
   suggestedOrder,
-  topGroups,
-  topSellers,
 } from "../src/features/analytics/lib/analysis";
 import { toProductInsert, type ProductInput } from "../src/features/products/types";
 import { TEMPLATE_COLUMNS } from "../src/features/products/lib/excel-template";
@@ -1099,22 +1093,6 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.equal(st({ stock: 5, avgDailySales: null }), "no-sales", "còn tồn, không bán: Không bán");
   assert.equal(st({ stock: 0, avgDailySales: null }), "stopped", "hết tồn, không bán: Ngừng bán?");
 
-  const b = (o: Partial<AnalysisRow>) => coverBucket(arow(o), ANALYSIS_SETTINGS);
-  assert.equal(b({ avgDailySales: null }), "no-data", "còn tồn, không bán: chưa đủ dữ liệu");
-  assert.equal(b({ stock: 0, avgDailySales: null }), null, "không tồn, không bán: không đưa vào biểu đồ");
-  assert.equal(b({ stock: 0, avgDailySales: 1, daysOfCover: 0 }), "out");
-  assert.equal(b({ avgDailySales: 1, daysOfCover: 14 }), "le-x", "<= X (ngưỡng vàng)");
-  assert.equal(b({ avgDailySales: 1, daysOfCover: 30 }), "x-30");
-  assert.deepEqual(
-    visibleCoverBuckets({ ...ANALYSIS_SETTINGS, yellowDays: 30 }).includes("x-30"),
-    false,
-    "ngưỡng vàng >= 30: không còn khoảng X+1..30, bỏ cột đó (tránh nhãn '31–30')",
-  );
-  assert.equal(visibleCoverBuckets(ANALYSIS_SETTINGS).length, 7);
-  assert.equal(b({ avgDailySales: 1, daysOfCover: 90 }), "31-90");
-  assert.equal(b({ avgDailySales: 1, daysOfCover: 364 }), "91-364");
-  assert.equal(b({ avgDailySales: 1, daysOfCover: 365 }), "ge-365");
-
   assert.equal(finishOf("XI_MA"), "XI_MA");
   assert.equal(finishOf(null), "KHAC");
 
@@ -1129,25 +1107,11 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
     arow({ code: "B1", stock: 400, avgDailySales: 1, daysOfCover: 400, soldInPeriod: 30, categoryId: "g3", categoryName: "Nhóm 3" }),
   ];
 
-  const k = kpisOf(rows, ANALYSIS_SETTINGS);
-  assert.deepEqual(k.needSoon, { count: 2, total: 8 }, "cần nhập trong X ngày: S1, S2 (còn hàng, <= 14 ngày)");
-  assert.deepEqual(k.outWithDemand, { count: 1, outTotal: 2 }, "hết hàng vẫn có khách mua: O1 / 2 mã hết");
-  assert.deepEqual(k.totalStock, { quantity: 545, productsInStock: 6 }, "Σ tồn của mã còn hàng");
-  assert.deepEqual(k.noSalesStock, { quantity: 110, products: 2, share: 110 / 545 }, "tồn không có tín hiệu bán: N1 + N2");
-
   const tabs = reorderTabs(rows, ANALYSIS_SETTINGS);
   assert.deepEqual(tabs.soon.map((r) => r.code), ["S1", "S2"], "sắp hết, ít ngày nhất lên đầu");
   assert.deepEqual(tabs.outWithDemand.map((r) => r.code), ["O1"]);
   assert.deepEqual(tabs.later.map((r) => r.code), ["L1"], "còn X+1..30 ngày");
 
-  assert.deepEqual(topSellers(rows, 2).map((r) => r.code), ["O1", "B1"], "bán chạy: bán nhiều nhất, hòa thì theo mã");
-  const groups = topGroups(rows, 15);
-  assert.equal(groups[0]?.categoryId, "g2", "nhóm bán nhiều nhất trước (90)");
-  assert.equal(groups[0]?.daysOfCover, 20 / (90 / 30), "số ngày tồn nhóm = Σ tồn / (Σ bán / số ngày)");
-
-  const slow = slowMoving(rows);
-  assert.deepEqual(slow.noSales.map((r) => r.code), ["N2", "N1"], "không bán: tồn nhiều nhất trước, chỉ mã còn tồn");
-  assert.deepEqual(slow.overstock.map((r) => r.code), ["B1"], "đủ bán >= 365 ngày");
 
 }
 
@@ -1643,10 +1607,9 @@ async function kiemCsvPhanTich() {
     ANALYSIS_SETTINGS,
   ).text();
   const header = csv.split("\r\n")[0] ?? "";
-  assert.ok(header.includes("Đề nghị nhập") && header.includes("Mã hàng"), "CSV đề nghị nhập có tiêu đề tiếng Việt");
-  assert.ok(!/giá|vốn/i.test(header), "CSV đề nghị nhập không có cột giá");
-  assert.ok(header.includes("Đơn đặt") && !header.includes("Khách đặt"), "TEN-03: CSV ghi Đơn đặt thay Khách đặt");
-  assert.ok(csv.includes("RWT") && csv.includes(",65"), "dòng RWT đề nghị 65");
+  // Excel danh sách cần nhập: đúng 3 cột theo yêu cầu.
+  assert.equal(header.replace(/^﻿/, ""), "Mã hàng,Tên hàng,Số lượng cần nhập");
+  assert.ok(csv.includes("RWT,Hàng RWT,65"), "dòng RWT đề nghị 65");
 }
 
 // --- Phase 20 — tìm kiếm toàn cục (UI3B-02) ---------------------------------

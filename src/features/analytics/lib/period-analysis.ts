@@ -3,7 +3,7 @@
 import { buildCsv } from "@/shared/lib/csv";
 
 import type { PeriodFilter } from "./period";
-import type { FlowPoint, PeriodRow } from "../types";
+import type { AnalysisSettings, FlowPoint, PeriodRow } from "../types";
 
 const upper = (v: string | null | undefined) => (v ?? "").trim().toUpperCase();
 
@@ -138,12 +138,34 @@ export function hasActivity(r: PeriodRow): boolean {
   );
 }
 
-export function buildPeriodCsv(rows: PeriodRow[], periodText: string): Blob {
+export type StockOutlook = { level: "out" | "red" | "yellow" | "ok" | "no-sales"; label: string; days: number | null };
+
+/**
+ * Trạng thái của mã theo nhịp bán TRONG KỲ: còn bao nhiêu ngày hàng = tồn cuối kỳ ÷
+ * xuất TB/ngày. Ngưỡng đỏ / vàng lấy cài đặt Phân tích (như cột Còn (ngày) cũ).
+ */
+export function stockOutlook(row: PeriodRow, days: number, settings: AnalysisSettings): StockOutlook {
+  if (row.closingStock <= 0) return { level: "out", label: "Hết hàng", days: 0 };
+  const perDay = days > 0 ? row.sold / days : 0;
+  if (perDay <= 0) return { level: "no-sales", label: "Không bán", days: null };
+  const left = Math.floor(row.closingStock / perDay);
+  const label = left < 1 ? "Còn dưới 1 ngày" : `Còn ${left.toLocaleString("vi-VN")} ngày`;
+  if (left <= settings.redDays) return { level: "red", label, days: left };
+  if (left <= settings.yellowDays) return { level: "yellow", label, days: left };
+  return { level: "ok", label, days: left };
+}
+
+/** Cùng cột với bảng trên màn: mã, tên, nhập, xuất, tồn, xuất kỳ trước, %, TB/ngày, trạng thái. */
+export function buildPeriodCsv(rows: PeriodRow[], periodText: string, days: number, settings: AnalysisSettings): Blob {
+  const pct = (r: PeriodRow) => {
+    const ratio = changeRatio(r.sold, r.soldPrev);
+    return ratio === null ? "" : `${Math.round(ratio * 100)}%`;
+  };
   return buildCsv(
-    ["Kỳ", "Mã hàng", "Tên hàng", "Nhóm hàng", "ĐVT", "Tồn đầu", "Nhập", "Xuất bán", "Xuất nội bộ", "Trả", "Điều chỉnh", "Tồn cuối", "Xuất bán kỳ trước"],
+    ["Kỳ", "Mã hàng", "Tên hàng", "Nhập", "Xuất", "Tồn", "Xuất kỳ trước", "Tăng/giảm", "Xuất TB/ngày", "Trạng thái"],
     rows.map((r) => [
-      periodText, r.code, r.name, r.categoryName, r.unitName, r.openingStock, r.received, r.sold,
-      r.internalOut, r.returned, r.adjusted, r.closingStock, r.soldPrev,
+      periodText, r.code, r.name, r.received, r.sold, r.closingStock, r.soldPrev, pct(r),
+      days > 0 ? Math.round((r.sold / days) * 100) / 100 : 0, stockOutlook(r, days, settings).label,
     ]),
   );
 }

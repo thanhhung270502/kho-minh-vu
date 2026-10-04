@@ -14,7 +14,7 @@ import { StatusTag, formatQty } from "./status-tag";
 
 type TabKey = "soon" | "outWithDemand" | "later";
 
-/** Bảng "Danh sách cần nhập hàng" — 3 tab, tìm, lọc loại hoàn thiện, xuất CSV. */
+/** Bảng "Danh sách cần nhập hàng" — 3 tab, tìm, lọc loại hoàn thiện; Xuất Excel: mã, tên, số lượng cần nhập. */
 export function ReorderTable({ rows, settings }: { rows: AnalysisRow[]; settings: AnalysisSettings }) {
   const [tab, setTab] = useState<TabKey>("soon");
   const [query, setQuery] = useState("");
@@ -71,9 +71,10 @@ export function ReorderTable({ rows, settings }: { rows: AnalysisRow[]; settings
   return (
     <Card
       size="small"
+      className="rounded-xl"
       title="Danh sách cần nhập hàng"
       extra={
-        <Button onClick={() => downloadBlob(buildReorderCsv(rows, settings), "de-nghi-nhap.csv")}>Xuất CSV</Button>
+        <Button size="small" onClick={() => downloadBlob(buildReorderCsv(rows, settings), "danh-sach-can-nhap.csv")}>Xuất Excel</Button>
       }
     >
       <div className="mb-3 flex flex-wrap gap-2">
