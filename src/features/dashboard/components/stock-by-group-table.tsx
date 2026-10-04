@@ -7,6 +7,7 @@ import Link from "next/link";
 import type { StockStatus } from "@/features/products/schemas/filter.schema";
 
 import { buildCatalogDrilldownUrl, type StockGroupBy } from "../lib/stock-drilldown";
+import { groupShare } from "../lib/overview-format";
 import type { StockByGroupRow } from "../types";
 
 type Props = {
@@ -45,6 +46,9 @@ export function StockByGroupTable({ rows, groupBy }: Props) {
   const unassignedLabel =
     groupBy === "category" ? "Chưa phân nhóm" : "Chưa gán công đoạn";
 
+  const share = groupShare(rows);
+  const percentOf = (row: StockByGroupRow) => share.get(row.key) ?? 0;
+
   const columns: TableColumnsType<StockByGroupRow> = [
     {
       title: groupTitle,
@@ -53,6 +57,36 @@ export function StockByGroupTable({ rows, groupBy }: Props) {
       sorter: (a, b) =>
         (a.groupName ?? unassignedLabel).localeCompare(b.groupName ?? unassignedLabel, "vi"),
       render: (_: string | null, row) => row.groupName ?? unassignedLabel,
+    },
+    {
+      title: "Tỷ trọng",
+      key: "share",
+      width: 200,
+      render: (_: unknown, row) => (
+        <div className="h-1.5 w-full rounded-full bg-trung-tinh-75">
+          <div
+            className="h-1.5 rounded-full bg-chu-chinh"
+            style={{ width: `${Math.min(100, Math.max(0, percentOf(row)))}%` }}
+          />
+        </div>
+      ),
+    },
+    {
+      title: "SL tồn",
+      dataIndex: "totalQuantity",
+      key: "totalQuantity",
+      align: "right",
+      className: "tabular-nums",
+      sorter: (a, b) => a.totalQuantity - b.totalQuantity,
+      render: (value: number) => value.toLocaleString("vi-VN"),
+    },
+    {
+      title: "%",
+      key: "percent",
+      align: "right",
+      className: "tabular-nums text-trung-tinh-350",
+      sorter: (a, b) => percentOf(a) - percentOf(b),
+      render: (_: unknown, row) => `${percentOf(row).toLocaleString("vi-VN")}%`,
     },
     ...COUNT_COLUMNS.map(({ key, title, stockStatus }) => ({
       title,
@@ -103,8 +137,15 @@ export function StockByGroupTable({ rows, groupBy }: Props) {
             <Table.Summary.Cell index={0}>
               <strong>Tổng</strong>
             </Table.Summary.Cell>
+            <Table.Summary.Cell index={1} />
+            <Table.Summary.Cell index={2} align="right">
+              <strong>
+                {pageData.reduce((total, row) => total + row.totalQuantity, 0).toLocaleString("vi-VN")}
+              </strong>
+            </Table.Summary.Cell>
+            <Table.Summary.Cell index={3} />
             {COUNT_COLUMNS.map(({ key }, index) => (
-              <Table.Summary.Cell key={key} index={index + 1} align="right">
+              <Table.Summary.Cell key={key} index={index + 4} align="right">
                 <strong>{sumBy(pageData, key).toLocaleString("vi-VN")}</strong>
               </Table.Summary.Cell>
             ))}
