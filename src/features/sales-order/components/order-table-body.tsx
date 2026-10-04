@@ -11,6 +11,7 @@ import { partnerLabel } from "@/shared/lib/recipient";
 import { ORDER_STATUS_TONES, ORDER_STATUS_LABELS } from "../lib/order-status";
 import { ORDER_PAGE_SIZE, type OrderFilter } from "../schemas/order.schema";
 import type { OrderRow } from "../types";
+import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
 
 function formatQuantity(value: number): string {
   return value.toLocaleString("vi-VN");
@@ -82,11 +83,12 @@ type Props = {
 };
 
 export function OrderTableBody({ rows, total, filter, loading, onFilterChange }: Props) {
+  const offsetHeader = useStickyTableOffset();
   return (
     <Table<OrderRow>
       rowKey="id"
       size="small"
-      sticky
+      sticky={{ offsetHeader }}
       columns={COLUMNS}
       dataSource={rows}
       loading={loading}

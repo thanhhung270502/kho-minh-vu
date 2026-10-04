@@ -17,6 +17,7 @@ import {
 } from "../lib/session-status";
 import type { StocktakeSession, StocktakeSessionState } from "../types";
 import { OpenSessionDrawer } from "./open-session-drawer";
+import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
 
 const PAGE_SIZE = 20;
 
@@ -94,6 +95,7 @@ export function SessionList({
   canOpen: boolean;
   isStorekeeper: boolean;
 }) {
+  const offsetHeader = useStickyTableOffset();
   const [warehouseId, setWarehouseId] = useState("");
   const [status, setStatus] = useState<StocktakeSessionState | "">("");
   const [page, setPage] = useState(1);
@@ -158,7 +160,7 @@ export function SessionList({
             <Table<StocktakeSession>
               rowKey="id"
               size="small"
-              sticky
+              sticky={{ offsetHeader }}
               columns={COLUMNS}
               dataSource={rows}
               loading={sessions.isFetching && !sessions.isPending}
