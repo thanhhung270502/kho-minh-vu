@@ -4,7 +4,17 @@
  */
 import assert from "node:assert/strict";
 import { periodRange, shiftPeriod, readPeriodFilter, writePeriodFilter, periodLabel, seriesStep, isCurrentPeriod } from "../src/features/analytics/lib/period";
-import { matchesPeriodFilter, periodKpis, breakdown, changeRatio, hasActivity } from "../src/features/analytics/lib/period-analysis";
+import {
+  matchesPeriodFilter,
+  periodKpis,
+  breakdown,
+  changeRatio,
+  hasActivity,
+  salesMovers,
+  slowStock,
+  topCategories,
+  topProducts,
+} from "../src/features/analytics/lib/period-analysis";
 import { toAddOrderLineResult, toOrderStatusCounts } from "../src/features/sales-order/types";
 import { statusCountKeyOf, toAddOrderLineRpcArgs, toOrderStatusCountRpcArgs } from "../src/features/sales-order/schemas/order.schema";
 import { DATE_PRESET_LABELS, activeDatePreset, datePresetRange, todayInVietnam } from "../src/features/sales-order/lib/date-presets";
@@ -1354,6 +1364,25 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   // Cơ cấu theo hãng chỉ tính cặp chính (không đếm một lần bán hai lần).
   const namer = { brand: (b: string) => (b === "H" ? "HONDA" : b), model: (_b: string, m: string) => m, part: (p: string) => p };
   assert.deepEqual(breakdown([base], "hang", namer), [{ key: "H", label: "HONDA", sold: 8, soldPrev: 4 }]);
+
+  // Bảng xếp hạng theo kỳ.
+  const r = (id: string, o: Partial<typeof base>) => ({ ...base, productId: id, code: id, ...o });
+  const ranked = [
+    r("B1", { sold: 50, soldPrev: 10, categoryId: "c1" }),
+    r("B2", { sold: 30, soldPrev: 60, categoryId: "c2", categoryName: "M" }),
+    r("B3", { sold: 0, soldPrev: 0, closingStock: 90 }),
+    r("B4", { sold: 1, soldPrev: 1, closingStock: 400 }),
+  ];
+  assert.deepEqual(topProducts(ranked, 2).map((x) => x.code), ["B1", "B2"]);
+  const cats = topCategories(ranked, 5);
+  assert.equal(cats[0]?.sold, 51, "nhóm c1 = B1 + B4");
+  assert.equal(cats[0]?.share, 51 / 81, "tỉ trọng trong tổng xuất bán");
+  const mv = salesMovers(ranked, 5);
+  assert.deepEqual(mv.up.map((x) => x.code), ["B1"]);
+  assert.deepEqual(mv.down.map((x) => x.code), ["B2"]);
+  const slow = slowStock(ranked, 30, 10);
+  assert.deepEqual(slow.noSales.map((x) => x.code), ["B3"], "còn tồn, kỳ này không bán");
+  assert.deepEqual(slow.overstock.map((x) => x.row.code), ["B4"], "400 ÷ (1/30) = 12.000 ngày ≥ 365");
 }
 
 // --- Phase 16: chức vụ & quyền (QUYEN-01/02) ------------------------------

@@ -169,3 +169,58 @@ export function buildPeriodCsv(rows: PeriodRow[], periodText: string, days: numb
     ]),
   );
 }
+
+const bySold = (a: PeriodRow, b: PeriodRow) => b.sold - a.sold || a.code.localeCompare(b.code);
+const byClosingDesc = (a: PeriodRow, b: PeriodRow) => b.closingStock - a.closingStock || a.code.localeCompare(b.code);
+
+/** Mã bán nhiều nhất trong kỳ. */
+export function topProducts(rows: PeriodRow[], limit: number): PeriodRow[] {
+  return rows.filter((r) => r.sold > 0).sort(bySold).slice(0, limit);
+}
+
+export type CategoryRank = { key: string; name: string; products: number; sold: number; soldPrev: number; share: number };
+
+/** Nhóm hàng bán nhiều nhất; share = phần của nhóm trong tổng xuất bán của kỳ. */
+export function topCategories(rows: PeriodRow[], limit: number): CategoryRank[] {
+  const total = rows.reduce((s, r) => s + r.sold, 0);
+  const map = new Map<string, CategoryRank>();
+  for (const r of rows) {
+    if (r.sold === 0 && r.soldPrev === 0) continue;
+    const key = r.categoryId ?? "";
+    const g = map.get(key) ?? { key: key || "(trống)", name: r.categoryName ?? "Chưa phân nhóm", products: 0, sold: 0, soldPrev: 0, share: 0 };
+    if (r.sold > 0) g.products += 1;
+    g.sold += r.sold;
+    g.soldPrev += r.soldPrev;
+    map.set(key, g);
+  }
+  return [...map.values()]
+    .filter((g) => g.sold > 0)
+    .map((g) => ({ ...g, share: total > 0 ? g.sold / total : 0 }))
+    .sort((a, b) => b.sold - a.sold || a.name.localeCompare(b.name, "vi"))
+    .slice(0, limit);
+}
+
+/** Tăng / giảm mạnh nhất so với kỳ trước, xếp theo chênh lệch số lượng (không theo %, để mã bán lẻ tẻ không chiếm chỗ). */
+export function salesMovers(rows: PeriodRow[], limit: number) {
+  const delta = (r: PeriodRow) => r.sold - r.soldPrev;
+  return {
+    up: rows.filter((r) => delta(r) > 0).sort((a, b) => delta(b) - delta(a) || a.code.localeCompare(b.code)).slice(0, limit),
+    down: rows.filter((r) => delta(r) < 0).sort((a, b) => delta(a) - delta(b) || a.code.localeCompare(b.code)).slice(0, limit),
+  };
+}
+
+/**
+ * Tồn chậm theo nhịp bán của kỳ: "Không bán" = còn tồn mà kỳ này không xuất bán;
+ * "Tồn quá 1 năm" = tồn cuối kỳ đủ bán ≥ 365 ngày. Cả hai xếp theo tồn nhiều nhất.
+ */
+export function slowStock(rows: PeriodRow[], days: number, limit: number) {
+  const coverDays = (r: PeriodRow) => (days > 0 && r.sold > 0 ? r.closingStock / (r.sold / days) : null);
+  return {
+    noSales: rows.filter((r) => r.closingStock > 0 && r.sold <= 0).sort(byClosingDesc).slice(0, limit),
+    overstock: rows
+      .filter((r) => r.closingStock > 0 && (coverDays(r) ?? 0) >= 365)
+      .sort(byClosingDesc)
+      .slice(0, limit)
+      .map((r) => ({ row: r, coverDays: coverDays(r) ?? 0 })),
+  };
+}

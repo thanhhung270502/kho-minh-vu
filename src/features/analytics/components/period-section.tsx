@@ -9,6 +9,7 @@ import { periodLabel, seriesStep, type DateRange, type PeriodFilter } from "../l
 import type { AnalysisRow, AnalysisSettings, PeriodRow } from "../types";
 import { BreakdownChart } from "./breakdown-chart";
 import { PeriodKpiCards } from "./period-kpis";
+import { PeriodRankings } from "./period-rankings";
 import { PeriodTable } from "./period-table";
 import { ReorderTable } from "./reorder-table";
 import { TrendChart } from "./trend-chart";
@@ -27,7 +28,7 @@ type Props = {
 
 const dayCount = (r: DateRange) => Math.round((Date.parse(r.to) - Date.parse(r.from)) / 86_400_000) + 1;
 
-/** Bố cục tab Phân tích: 4 KPI → 2 biểu đồ → bảng XNT → danh sách cần nhập. */
+/** Bố cục tab Phân tích: 4 KPI → 2 biểu đồ → 4 bảng xếp hạng → bảng XNT → danh sách cần nhập. */
 export function PeriodSection({ filter, range, rows, productIds, current, settings }: Props) {
   const step = seriesStep(filter.unit);
   const series = useFlowSeries(range, step, filter.warehouseId, productIds);
@@ -65,6 +66,8 @@ export function PeriodSection({ filter, range, rows, productIds, current, settin
           )}
         </div>
       </div>
+
+      <PeriodRankings rows={rows} days={dayCount(range)} />
 
       <PeriodTable rows={rows} periodText={label} days={dayCount(range)} settings={settings} />
       <ReorderTable rows={current} settings={settings} />
