@@ -5,7 +5,7 @@
 -- nên phiếu "kho kia" là K2.
 -- =============================================================================
 begin;
-select plan(14);
+select plan(13);
 
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
@@ -60,9 +60,9 @@ select
 grant select on t_tk to authenticated, anon;
 
 insert into public.chung_tu (so_ct, loai_ct, kho_id, kho_den_id, ngay_ct)
-select 'ZQX-TK-PN-1', 'NHAP', k1, null, date '2092-01-05' from t_tk
-union all select 'ZQX-TK-PN-2', 'NHAP', k2, null, date '2092-01-05' from t_tk
-union all select 'ZQX-TK-CK-1', 'CHUYEN_KHO', k1, k2, date '2092-01-05' from t_tk;
+select 'ZQX-TK-PN-1', 'NHAP'::public.loai_ct, k1, null::uuid, date '2092-01-05' from t_tk
+union all select 'ZQX-TK-PN-2', 'NHAP'::public.loai_ct, k2, null::uuid, date '2092-01-05' from t_tk
+union all select 'ZQX-TK-CK-1', 'CHUYEN_KHO'::public.loai_ct, k1, k2, date '2092-01-05' from t_tk;
 
 insert into public.doi_tac (ma, ten, loai)
 values ('ZQX-TK-DT', 'ZQX Đối Tác Tìm', 'NCC');
