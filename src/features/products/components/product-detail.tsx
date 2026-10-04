@@ -9,6 +9,7 @@ import { QueryState } from "@/shared/components/query-state";
 
 import { useLookups, useProductDetail } from "../hooks/useProducts";
 import { FIELD_LABELS, buildRenderValue } from "../lib/product-audit-labels";
+import { ComboComponents } from "./combo-components";
 import { ProductDetailHeader } from "./product-detail-header";
 import { ProductDrawer } from "./product-drawer";
 import { ProductInfoCard } from "./product-info-card";
@@ -65,6 +66,12 @@ export function ProductDetailView({
             <div className="mt-5 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
               <div className="flex min-w-0 flex-col gap-5">
                 <ProductInfoCard product={product} />
+                {product.kind === "COMBO" ? (
+                  <section className="rounded-the border border-vien px-5 py-4">
+                    <h2 className="m-0 mb-3 text-[15px] font-extrabold">Thành phần combo</h2>
+                    <ComboComponents comboId={id} canEdit={permissions.canEdit} />
+                  </section>
+                ) : null}
                 <WarehouseStockTable
                   productId={id}
                   unitName={product.unitName}

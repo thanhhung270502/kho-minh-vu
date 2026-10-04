@@ -17,7 +17,7 @@ export default async function PartnersPage() {
     <>
       <PageHeader
         title="Đối tác"
-        description="Nhà cung cấp và khách hàng trong một danh sách."
+        description="Danh sách nhà cung cấp."
         actions={
           canEdit ? <Link href="/doi-tac/ra-ghi-chu">Rà ghi chú KiotViet</Link> : null
         }

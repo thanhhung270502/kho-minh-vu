@@ -47,7 +47,6 @@ const COLUMNS: TableColumnsType<IssueRow> = [
         "—"
       ),
   },
-  { title: "Kho", dataIndex: "warehouseName", width: 110 },
   {
     title: "Số dòng",
     dataIndex: "lineCount",

@@ -10,6 +10,7 @@ import {
   countActiveFilters,
   type ImageFilter,
   type ProductFilter,
+  type StandardFilter,
   type StockStatus,
   type TradingStatus,
 } from "../schemas/filter.schema";
@@ -26,6 +27,12 @@ const STOCK_STATUS_OPTIONS: Array<{ value: StockStatus; label: string }> = [
   { value: "het_hang", label: "Hết hàng" },
   { value: "am", label: "Tồn âm" },
   { value: "duoi_dinh_muc", label: "Dưới định mức" },
+];
+
+const STANDARD_FILTER_OPTIONS: Array<{ value: StandardFilter; label: string }> = [
+  { value: "du", label: "Đủ quy chuẩn" },
+  { value: "thieu", label: "Thiếu quy chuẩn" },
+  { value: "chon_tay", label: "Có trường chọn tay" },
 ];
 
 const IMAGE_FILTER_OPTIONS: Array<{ value: ImageFilter; label: string }> = [
@@ -72,13 +79,24 @@ export function ProductFilterPanel({ filter, lookups, onChange }: Props) {
         />
       </FilterGroup>
 
-      <FilterGroup label="Công đoạn">
+      <FilterGroup label="Quy chuẩn">
+        <Select
+          allowClear
+          className="w-full"
+          placeholder="Tất cả"
+          value={filter.standard}
+          options={STANDARD_FILTER_OPTIONS}
+          onChange={(value) => change({ standard: value ?? null })}
+        />
+      </FilterGroup>
+
+      <FilterGroup label="Xử lý">
         <Select
           allowClear
           showSearch
           filterOption={filterByLabel}
           className="w-full"
-          placeholder="Công đoạn"
+          placeholder="Xử lý"
           value={filter.stageId}
           options={(lookups?.stages ?? []).map((stage) => ({
             value: stage.id,

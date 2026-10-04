@@ -15,7 +15,7 @@ import { StockByGroupTable } from "./stock-by-group-table";
 
 const TABS: Array<{ key: StockGroupBy; label: string }> = [
   { key: "category", label: "Nhóm hàng" },
-  { key: "stage", label: "Công đoạn" },
+  { key: "stage", label: "Xử lý" },
 ];
 
 /**

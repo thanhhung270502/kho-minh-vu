@@ -17,6 +17,8 @@ export type NewProductFileRow = {
   row: number;
   code: string;
   name: string;
+  /** Tên lấy từ sheet tên hàng chuẩn vì ô tên trong file để trống. */
+  nameFromSheet: boolean;
   stock: number;
   description: string;
   problems: string[];

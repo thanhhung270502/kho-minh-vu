@@ -11,6 +11,7 @@ export const runtime = "nodejs";
 
 /** Quá số này thì file nặng và trình duyệt chờ lâu — bắt lọc hẹp lại. */
 const MAX_EXPORT_ROWS = 5000;
+const DESCRIPTION_BATCH = 150;
 
 function tenFile(): string {
   // Giờ Việt Nam, không phải giờ máy chủ (Vercel chạy UTC).
@@ -65,7 +66,7 @@ export async function GET(request: NextRequest) {
     return Response.json(
       {
         title: `Kết quả có ${total.toLocaleString("vi-VN")} mã`,
-        action: `Xuất tối đa ${MAX_EXPORT_ROWS.toLocaleString("vi-VN")} mã một lần — lọc hẹp lại (theo nhóm hàng hoặc công đoạn) rồi xuất.`,
+        action: `Xuất tối đa ${MAX_EXPORT_ROWS.toLocaleString("vi-VN")} mã một lần — lọc hẹp lại (theo nhóm hàng hoặc xử lý) rồi xuất.`,
       },
       { status: 422 },
     );
@@ -79,6 +80,29 @@ export async function GET(request: NextRequest) {
 
   const warehouseName = new Map((warehouseRows ?? []).map((w) => [w.id, w.ten]));
 
+  // danh_sach_san_pham không trả mo_ta (cột thêm ở 0086, đã grant select theo cột)
+  // nên đọc riêng theo id. Lô 150 id để URL của `.in()` không quá dài.
+  const ids = rows.map((row) => row.id);
+  const descriptionBatches = await Promise.all(
+    Array.from({ length: Math.ceil(ids.length / DESCRIPTION_BATCH) }, (_, i) =>
+      supabase
+        .from("san_pham")
+        .select("id, mo_ta")
+        .in("id", ids.slice(i * DESCRIPTION_BATCH, (i + 1) * DESCRIPTION_BATCH)),
+    ),
+  );
+  const descriptionError = descriptionBatches.find((batch) => batch.error)?.error;
+  if (descriptionError) {
+    const explained = explainError(descriptionError);
+    return Response.json(
+      { title: explained.title, action: explained.action },
+      { status: explained.kind === "forbidden" ? 403 : 500 },
+    );
+  }
+  const description = new Map(
+    descriptionBatches.flatMap((batch) => (batch.data ?? []).map((p) => [p.id, p.mo_ta] as const)),
+  );
+
   const exportRows: ExportRowPayload[] = rows.map((row, index) => ({
     dong: index + 2,
     ma_hang: row.ma_hang,
@@ -91,7 +115,7 @@ export async function GET(request: NextRequest) {
     ton_toi_thieu: row.ton_toi_thieu === null ? null : Number(row.ton_toi_thieu),
     ton_toi_da: row.ton_toi_da === null ? null : Number(row.ton_toi_da),
     dang_kinh_doanh: row.dang_kinh_doanh,
-    ghi_chu: null,
+    mo_ta: description.get(row.id) ?? null,
     tong_ton: row.tong_ton === null ? null : Number(row.tong_ton),
   }));
 

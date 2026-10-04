@@ -2,12 +2,6 @@
 // và scripts/test-pure-functions.ts cùng import.
 import type { ProductFormValues } from "../schemas/product.schema";
 
-const formatQty = (n: number) => n.toLocaleString("vi-VN");
-
-export function stockLimitLabel(min: number, max: number | null): string {
-  return `${formatQty(min)} – ${max === null ? "không giới hạn" : formatQty(max)}`;
-}
-
 /** "Sao chép": mọi trường giữ nguyên, mã để trống, barcode bỏ (thường riêng cho từng mã). */
 export function copyProductDefaults(source: ProductFormValues): ProductFormValues {
   return { ...source, code: "", barcode: null, isActive: true };
@@ -53,9 +47,10 @@ export function expandedActions({ canEdit, isActive }: { canEdit: boolean; isAct
 }
 
 /** Phần chi tiết mã hàng mà form cần — khớp `ProductDetail`. */
-type ProductFormSource = Omit<ProductFormValues, "unitId" | "stageId"> & {
+type ProductFormSource = Omit<ProductFormValues, "unitId" | "stageId" | "manualFields"> & {
   unitId: string | null;
   stageId: string | null;
+  manualFields: string[];
 };
 
 /** Chi tiết mã → giá trị form (Sửa và Sao chép dùng chung). */
@@ -71,11 +66,26 @@ export function toProductFormValues(product: ProductFormSource): ProductFormValu
     minStock: product.minStock,
     maxStock: product.maxStock,
     barcode: product.barcode ?? null,
-    note: product.note ?? null,
+    description: product.description ?? null,
     isActive: product.isActive,
-    productTypeId: product.productTypeId,
-    vehicleLineId: product.vehicleLineId,
+    kind: product.kind,
     directSale: product.directSale,
+    brandCode: product.brandCode,
+    modelCode: product.modelCode,
+    partCode: product.partCode,
+    sharedVehicles: product.sharedVehicles,
+    // Cột text[] có CHECK 4 giá trị (0087) — kiểu sinh ra chỉ biết string[].
+    manualFields: product.manualFields as ProductFormValues["manualFields"],
     shelfLocation: product.shelfLocation,
   };
+}
+
+/**
+ * Hãng / Dòng / Linh kiện lưu MÃ (0086), tên tra bộ mã hóa. Mã không còn trong
+ * bộ mã hóa (bên làm mã đổi/bỏ) vẫn hiện mã để người dùng thấy và sửa.
+ */
+export function standardFieldText(name: string | null, code: string | null): string | null {
+  if (name) return name;
+  if (code) return `${code} (không có trong bộ mã hóa)`;
+  return null;
 }

@@ -1,38 +1,41 @@
 // File thuần (bẫy 9): logic màn xem trước "Nhập mã hàng mới" (IMP-02/03) —
 // component và scripts/test-pure-functions.ts cùng import.
+import type { ProductKind } from "../types";
 import { duplicateProblemsInFile, type NewProductFileRow } from "./new-product-file";
 
 /** Một dòng trên màn xem trước: cột từ file + các trường người dùng chọn. */
 export type DraftRow = {
   row: number;
   code: string;
+  /** Sửa được trên màn xem trước — ô tên trống trong file được tự điền từ sheet tên hàng chuẩn. */
   name: string;
+  /** Tên đang hiện là tên tự điền từ sheet; người dùng gõ lại thì thành false. */
+  nameFromSheet: boolean;
   stock: number;
   description: string;
   /** Lỗi đọc file (tồn không phải số…) — không sửa được trên màn, phải sửa file. */
   fileProblems: string[];
-  productTypeId: string | null;
+  kind: ProductKind;
   categoryId: string | null;
-  vehicleLineId: string | null;
   unitId: string | null;
   isActive: boolean;
   directSale: boolean;
   shelfLocation: string;
 };
 
-export type DraftFields = Omit<DraftRow, "row" | "code" | "name" | "stock" | "description" | "fileProblems">;
+export type DraftFields = Omit<DraftRow, "row" | "code" | "stock" | "description" | "fileProblems">;
 
 export function toDraftRows(rows: NewProductFileRow[], defaults: { unitId: string | null }): DraftRow[] {
   return rows.map((r) => ({
     row: r.row,
     code: r.code,
     name: r.name,
+    nameFromSheet: r.nameFromSheet,
     stock: r.stock,
     description: r.description,
     fileProblems: r.problems,
-    productTypeId: null,
+    kind: "HANG_HOA",
     categoryId: null,
-    vehicleLineId: null,
     unitId: defaults.unitId,
     isActive: true,
     directSale: true,
@@ -75,7 +78,7 @@ export function draftProblems(rows: DraftRow[], catalog: Map<number, string[]>):
   for (const r of rows) {
     const problems = [
       ...(r.code === "" ? ["Thiếu mã hàng"] : []),
-      ...(r.name === "" ? ["Thiếu tên hàng"] : []),
+      ...(r.name.trim() === "" ? ["Thiếu tên hàng"] : []),
       ...r.fileProblems,
       ...(inFile.get(r.row) ?? []),
       ...(r.unitId ? [] : ["Chưa chọn đơn vị tính"]),
@@ -95,11 +98,11 @@ export type ImportPayloadRow = {
   ma_hang: string;
   ten_hang: string;
   ton_kho: number;
-  ghi_chu: string;
+  /** "Mô tả" trong file → san_pham.mo_ta (0086); ghi_chu do DB tự sinh. */
+  mo_ta: string;
   dvt_id: string | null;
   nhom_hang_id: string | null;
-  loai_hang_id: string | null;
-  dong_xe_id: string | null;
+  loai_hang: ProductKind;
   dang_kinh_doanh: boolean;
   duoc_ban_truc_tiep: boolean;
   vi_tri_ke: string;
@@ -109,13 +112,13 @@ function toPayloadRow(r: DraftRow): ImportPayloadRow {
   return {
     dong: r.row,
     ma_hang: r.code,
-    ten_hang: r.name,
+    // Tên sửa tay trên màn xem trước: gộp khoảng trắng như bộ đọc file.
+    ten_hang: r.name.trim().replace(/\s+/g, " "),
     ton_kho: r.stock,
-    ghi_chu: r.description,
+    mo_ta: r.description,
     dvt_id: r.unitId,
     nhom_hang_id: r.categoryId,
-    loai_hang_id: r.productTypeId,
-    dong_xe_id: r.vehicleLineId,
+    loai_hang: r.kind,
     dang_kinh_doanh: r.isActive,
     duoc_ban_truc_tiep: r.directSale,
     vi_tri_ke: r.shelfLocation.trim(),

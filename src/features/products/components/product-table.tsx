@@ -8,15 +8,12 @@ import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
 
 import { useAnalysisRows } from "@/features/analytics/hooks/useAnalytics";
+import { useCodeDictionary } from "@/features/product-codes/hooks/useCodeDictionary";
 
 import { useLookups, useProducts } from "../hooks/useProducts";
 import { useProductTableUrl } from "../hooks/useProductTableUrl";
 import { forecastById } from "../lib/product-expanded";
-import {
-  DEFAULT_PRODUCT_FILTER,
-  countActiveFilters,
-  type ProductFilter,
-} from "../schemas/filter.schema";
+import { DEFAULT_PRODUCT_FILTER, countActiveFilters, type ProductFilter } from "../schemas/filter.schema";
 import type { CatalogPermissions } from "../types";
 import { BulkAssignBar } from "./bulk-assign-bar";
 import type { ImportKind } from "./excel-button";
@@ -25,21 +22,11 @@ import { ProductFilterPanel } from "./product-filter-panel";
 import { ProductModals } from "./product-modals";
 import { ProductRowDetail } from "./product-row-detail";
 import { ProductTableBody } from "./product-table-body";
+import { ProductTableEmpty } from "./product-table-empty";
 import { ProductToolbar } from "./product-toolbar";
-import { ProductSecondaryActions } from "./product-secondary-actions";
+import { ToolbarActions } from "./toolbar-actions";
 
 export type { CatalogPermissions };
-
-function hasActiveFilter(filter: ProductFilter): boolean {
-  return (
-    filter.categoryId !== null ||
-    filter.stageId !== null ||
-    filter.unitId !== null ||
-    filter.stockStatus !== null ||
-    filter.hasImage !== null ||
-    filter.tradingStatus !== DEFAULT_PRODUCT_FILTER.tradingStatus
-  );
-}
 
 export function ProductTable({
   permissions,
@@ -65,6 +52,9 @@ export function ProductTable({
   const [selected, setSelected] = useState<string[]>([]);
   const [importOpen, setImportOpen] = useState<ImportKind | null>(null);
 
+  // Bảng lưu MÃ hãng / dòng / linh kiện — tên tra bộ mã hóa ngay trên trình duyệt.
+  const { dictionary } = useCodeDictionary();
+
   // Từ 768px chi tiết mở ngay dưới dòng; điện thoại quá chật cho dòng mở rộng.
   const wide = Grid.useBreakpoint().md ?? false;
   const renderDetail = (id: string) => (
@@ -76,7 +66,6 @@ export function ProductTable({
       onCopy={(fromId) => setDrawer({ open: true, id: null, copyFromId: fromId })}
     />
   );
-
 
   /**
    * Người dùng đổi bộ lọc thì tập đang chọn không còn nghĩa — bỏ chọn để không
@@ -110,6 +99,7 @@ export function ProductTable({
     filter,
     canEdit: permissions.canEdit,
     lookups: lookups.data,
+    dictionary,
     onEdit: (id) => setDrawer({ open: true, id }),
     forecasts: showForecast ? { byId: forecastMap, loading: analysis.isPending } : null,
   });
@@ -117,32 +107,24 @@ export function ProductTable({
   return (
     <>
       <ListLayout
-        filterPanel={
-          <ProductFilterPanel
-            filter={filter}
-            lookups={lookups.data}
-            onChange={changeFilter}
-          />
-        }
+        filterPanel={<ProductFilterPanel filter={filter} lookups={lookups.data} onChange={changeFilter} />}
         toolbar={
           <ProductToolbar
             filter={filter}
             onChange={changeFilter}
             secondaryActions={
-              <ProductSecondaryActions
+              <ToolbarActions
                 filter={filter}
                 total={total}
                 canEdit={permissions.canEdit}
+                canFillStandard={permissions.canFillStandard}
                 extraActions={extraActions}
                 onOpenImport={setImportOpen}
               />
             }
             addButton={
               permissions.canEdit ? (
-                <Button
-                  type="primary"
-                  onClick={() => setDrawer({ open: true, id: null })}
-                >
+                <Button type="primary" onClick={() => setDrawer({ open: true, id: null })}>
                   Thêm mã hàng
                 </Button>
               ) : null
@@ -159,29 +141,14 @@ export function ProductTable({
         }
       >
         {permissions.canEdit ? (
-          <BulkAssignBar
-            ids={selected}
-            lookups={lookups.data}
-            onDone={() => setSelected([])}
-          />
+          <BulkAssignBar ids={selected} lookups={lookups.data} onDone={() => setSelected([])} />
         ) : null}
 
         <QueryState
           query={products}
           isEmpty={(page) => page.rows.length === 0}
           emptyDescription={
-            filter.q ? (
-              `Không có mã khớp “${filter.q}”. Thử gõ ít chữ hơn hoặc bỏ dấu.`
-            ) : hasActiveFilter(filter) ? (
-              <div className="flex flex-col items-center gap-3">
-                <span>Không có mã nào khớp bộ lọc. Xóa bớt điều kiện.</span>
-                <Button size="small" onClick={() => changeFilter(DEFAULT_PRODUCT_FILTER)}>
-                  Xóa bộ lọc
-                </Button>
-              </div>
-            ) : (
-              "Chưa có mã hàng nào. Bấm “Thêm mã hàng” hoặc nhập từ Excel."
-            )
+            <ProductTableEmpty filter={filter} onClearFilter={() => changeFilter(DEFAULT_PRODUCT_FILTER)} />
           }
         >
           {(page) => (

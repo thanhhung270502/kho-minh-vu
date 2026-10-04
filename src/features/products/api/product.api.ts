@@ -105,20 +105,18 @@ export async function fetchProductCost(productId: string): Promise<number | null
 export async function fetchLookups(): Promise<Lookups> {
   const supabase = getSupabaseBrowserClient();
 
-  const [categories, units, stages, warehouses, productTypes, vehicleLines] = await Promise.all([
+  const [categories, units, stages, warehouses] = await Promise.all([
     supabase.from("nhom_hang").select("id, ma, ten").order("ten"),
     supabase.from("don_vi_tinh").select("id, ma, ten").order("ten"),
-    supabase.from("cong_doan").select("id, ma, ten, mau_hien_thi").order("ten"),
+    supabase.from("cong_doan").select("id, ma, ten, mau_hien_thi, ma_quy_chuan").order("ten"),
     supabase
       .from("kho")
       .select("id, ma, ten")
       .eq("dang_hoat_dong", true)
       .order("ma"),
-    supabase.from("loai_hang").select("id, ma, ten").order("ten"),
-    supabase.from("dong_xe").select("id, ma, ten").order("ten"),
   ]);
 
-  for (const result of [categories, units, stages, warehouses, productTypes, vehicleLines]) {
+  for (const result of [categories, units, stages, warehouses]) {
     if (result.error) throw result.error;
   }
 
@@ -134,10 +132,9 @@ export async function fetchLookups(): Promise<Lookups> {
     stages: (stages.data ?? []).map((row) => ({
       ...toItem(row),
       color: row.mau_hien_thi,
+      standardCode: row.ma_quy_chuan,
     })),
     warehouses: (warehouses.data ?? []).map(toItem),
-    productTypes: (productTypes.data ?? []).map(toItem),
-    vehicleLines: (vehicleLines.data ?? []).map(toItem),
   };
 }
 
@@ -188,3 +185,4 @@ export async function bulkAssign(
   if (error) throw error;
   return data ?? 0;
 }
+

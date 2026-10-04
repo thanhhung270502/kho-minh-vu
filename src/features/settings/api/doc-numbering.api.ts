@@ -12,6 +12,8 @@ export type DocNumberingRow = {
   source: string;
   prefix: string;
   digits: number;
+  /** false = kiểu KiotViet {tiền tố}{số} đếm liên tục; true = {tiền tố}{YY}-{số} theo năm (0095). */
+  withYear: boolean;
   current: number;
   example: string;
 };
@@ -39,6 +41,7 @@ function toDocNumberingRow(row: DocNumberingRowDb): DocNumberingRow {
     source: row.nguon,
     prefix: row.tien_to,
     digits: Number(row.so_chu_so),
+    withYear: row.theo_nam,
     current: Number(row.so_hien_tai),
     example: row.vi_du,
   };
@@ -80,7 +83,10 @@ export function nextDocNoExample(
   prefix: string,
   digits: number,
   current: number,
+  withYear: boolean,
 ): string {
+  const number = String(current + 1).padStart(digits, "0");
+  if (!withYear) return `${prefix}${number}`;
   const year = String(new Date().getFullYear() % 100).padStart(2, "0");
-  return `${prefix}${year}-${String(current + 1).padStart(digits, "0")}`;
+  return `${prefix}${year}-${number}`;
 }

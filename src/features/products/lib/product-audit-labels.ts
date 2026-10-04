@@ -6,7 +6,7 @@ export const FIELD_LABELS: Record<string, string> = {
   ten_hang: "Tên hàng",
   nhom_hang_id: "Nhóm hàng",
   dvt_id: "Đơn vị tính",
-  cong_doan_id: "Công đoạn",
+  cong_doan_id: "Xử lý",
   quy_doi: "Quy đổi",
   kho_mac_dinh_id: "Kho mặc định",
   ton_toi_thieu: "Tồn tối thiểu",
@@ -15,9 +15,16 @@ export const FIELD_LABELS: Record<string, string> = {
   gia_ban: "Giá bán",
   dang_kinh_doanh: "Đang kinh doanh",
   barcode: "Barcode",
-  ghi_chu: "Ghi chú",
-  loai_hang_id: "Loại hàng",
-  dong_xe_id: "Dòng xe",
+  ghi_chu: "Ghi chú (tự sinh)",
+  mo_ta: "Mô tả",
+  loai_hang: "Loại hàng",
+  hang_xe: "Hãng xe",
+  dong_xe: "Dòng xe",
+  linh_kien: "Linh kiện",
+  xe_dung_chung: "Xe dùng chung",
+  // Cột Phase 15 đã bỏ (0086) — giữ nhãn để đọc nhật ký sửa cũ.
+  loai_hang_id: "Loại hàng (cũ)",
+  dong_xe_id: "Dòng xe (cũ)",
   duoc_ban_truc_tiep: "Được bán trực tiếp",
   vi_tri_ke: "Vị trí kệ",
   can_ra_dvt: "Cờ ĐVT mâu thuẫn",
@@ -38,11 +45,7 @@ export function buildRenderValue(lookups: Lookups | undefined) {
             ? lookups.stages
             : field === "kho_mac_dinh_id"
               ? lookups.warehouses
-              : field === "loai_hang_id"
-                ? lookups.productTypes
-                : field === "dong_xe_id"
-                  ? lookups.vehicleLines
-                  : null;
+              : null;
 
     return items?.find((item) => item.id === value)?.name;
   };

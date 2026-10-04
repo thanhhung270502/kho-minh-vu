@@ -159,3 +159,32 @@ export async function proposeMerge(
   if (error) throw error;
   return { id: data.id, createdAt: data.created_at };
 }
+
+export type WarehouseWithStock = { warehouseId: string; warehouseName: string; quantity: number };
+
+/**
+ * Kho đang còn nhiều hàng nhất của một mã — để dòng hóa đơn của mã chưa gán kho
+ * mặc định không rơi vào kho trống (kho bị ẩn trên hóa đơn, người dùng không
+ * tự sửa được). `ton_kho` có quyền SELECT mức bảng (khác san_pham, bẫy 5);
+ * RLS tự giới hạn thủ kho vào kho được phân. Không kho nào còn hàng → null.
+ */
+export async function fetchWarehouseWithMostStock(
+  productId: string,
+): Promise<WarehouseWithStock | null> {
+  const { data, error } = await getSupabaseBrowserClient()
+    .from("ton_kho")
+    .select("kho_id, so_luong, kho:kho_id(ten)")
+    .eq("san_pham_id", productId)
+    .gt("so_luong", 0)
+    .order("so_luong", { ascending: false })
+    .limit(1);
+  if (error) throw error;
+  const row = data?.[0];
+  return row
+    ? {
+        warehouseId: row.kho_id,
+        warehouseName: row.kho?.ten ?? "(không rõ kho)",
+        quantity: Number(row.so_luong),
+      }
+    : null;
+}

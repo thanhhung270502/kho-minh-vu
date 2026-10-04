@@ -12,12 +12,6 @@ export const RECIPIENT_KIND_LABELS: Record<RecipientKind, string> = {
   partner: "Đối tác",
 };
 
-/** Thứ tự trên công tắc chọn chế độ — Nội bộ trước (yêu cầu 02/10/2026). */
-export const RECIPIENT_KIND_ORDER: RecipientKind[] = ["internal", "partner"];
-
-/** Tạo đơn mới mặc định Nội bộ (NVPT-02). */
-export const DEFAULT_RECIPIENT_KIND: RecipientKind = "internal";
-
 export type StaffRef = { id: string; name: string };
 export type PartnerRef = { id: string; code: string | null; name: string | null };
 export type OrderRecipients = { partner: PartnerRef | null; staff: StaffRef[] };
@@ -65,7 +59,8 @@ export function formatOrderRecipients(recipients: OrderRecipients): string {
       ? `${partnerLabel(partner)} · ${staffNames(staff)}`
       : partnerLabel(partner);
   }
-  return staff.length > 0 ? `Nội bộ — ${staffNames(staff)}` : "—";
+  // 0097: đơn tạm được tạo trước, người nhận chọn sau trong trang đơn.
+  return staff.length > 0 ? `Nội bộ — ${staffNames(staff)}` : "Chưa chọn người nhận";
 }
 
 export function lineRecipientLabel(

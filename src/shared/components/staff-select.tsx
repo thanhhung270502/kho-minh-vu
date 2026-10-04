@@ -1,7 +1,9 @@
 "use client";
 
 import { Button, Select } from "antd";
+import { useState } from "react";
 
+import { QuickStaffModal } from "@/shared/components/quick-staff-modal";
 import { useInternalRecipients } from "@/shared/hooks/use-internal-recipients";
 import { explainError } from "@/shared/lib/errors";
 import type { StaffRef } from "@/shared/lib/recipient";
@@ -16,6 +18,8 @@ type Props = {
   size?: "small" | "middle";
   /** Người đã ngừng dùng nhưng vẫn đang là giá trị — để còn hiện được tên. */
   extraOptions?: StaffRef[];
+  /** Cho thêm nhanh nhân viên ngay trong ô. Tắt ở bộ lọc và ở từng dòng bảng. */
+  allowQuickAdd?: boolean;
 };
 
 /**
@@ -30,8 +34,11 @@ export function StaffSelect({
   placeholder = "Gõ tên nhân viên nhận hàng",
   size,
   extraOptions,
+  allowQuickAdd = false,
 }: Props) {
   const staff = useInternalRecipients();
+  const [search, setSearch] = useState("");
+  const [createName, setCreateName] = useState<string | null>(null);
 
   // Hiển thị tên đầy đủ (đã chốt 02/10), nhưng gõ tên viết tắt cũng phải ra.
   const options = (staff.data ?? []).map((person) => ({
@@ -47,43 +54,80 @@ export function StaffSelect({
   }
 
   return (
-    <Select
-      showSearch
-      allowClear
-      autoFocus={autoFocus}
-      disabled={disabled}
-      size={size}
-      className="w-full"
-      placeholder={placeholder}
-      value={value}
-      // Bẫy 21: gõ không dấu vẫn phải ra tên có dấu.
-      filterOption={(input, option) => labelMatches(input, option?.search ?? "")}
-      loading={staff.isLoading}
-      onChange={(selected) =>
-        onChange(
-          selected ?? undefined,
-          options.find((option) => option.value === selected)?.label,
-        )
-      }
-      options={options}
-      notFoundContent={
-        staff.isError ? (
-          <div className="flex flex-col items-start gap-1 px-1 py-1">
-            <span className="text-xs text-chu-phu">
-              {`${explainError(staff.error).title}.`}
-            </span>
-            <Button size="small" onClick={() => void staff.refetch()}>
-              Thử lại
-            </Button>
-          </div>
-        ) : staff.isLoading ? (
-          "Đang tải danh sách nhân viên…"
-        ) : (
-          <span className="text-xs text-chu-phu">
-            Không có nhân viên nào khớp. Thêm hoặc bật lại nhân viên ở Cài đặt → Nhân viên phụ trách.
-          </span>
-        )
-      }
-    />
+    <>
+      <Select
+        showSearch
+        allowClear
+        autoFocus={autoFocus}
+        disabled={disabled}
+        size={size}
+        className="w-full"
+        placeholder={placeholder}
+        value={value}
+        searchValue={search}
+        onSearch={setSearch}
+        // Bẫy 21: gõ không dấu vẫn phải ra tên có dấu.
+        filterOption={(input, option) =>
+          labelMatches(input, option?.search ?? "")
+        }
+        loading={staff.isLoading}
+        onChange={(selected) => {
+          setSearch("");
+          onChange(
+            selected ?? undefined,
+            options.find((option) => option.value === selected)?.label,
+          );
+        }}
+        options={options}
+        notFoundContent={
+          staff.isError ? (
+            <div className="flex flex-col items-start gap-1 px-1 py-1">
+              <span className="text-xs text-chu-phu">
+                {`${explainError(staff.error).title}.`}
+              </span>
+              <Button size="small" onClick={() => void staff.refetch()}>
+                Thử lại
+              </Button>
+            </div>
+          ) : staff.isLoading ? (
+            "Đang tải danh sách nhân viên…"
+          ) : (
+            <div className="flex flex-col items-start gap-1 px-1 py-1">
+              <span className="text-xs text-chu-phu">
+                {allowQuickAdd
+                  ? search.trim()
+                    ? `Chưa có nhân viên "${search.trim()}".`
+                    : "Chưa có nhân viên phụ trách nào."
+                  : "Không có nhân viên nào khớp. Thêm hoặc bật lại nhân viên ở Cài đặt → Nhân viên phụ trách."}
+              </span>
+              {allowQuickAdd ? (
+                <Button
+                  size="small"
+                  type="link"
+                  className="h-auto px-0"
+                  // Giữ dropdown và chữ đang gõ cho tới khi modal mở.
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => setCreateName(search)}
+                >
+                  + Thêm nhân viên phụ trách
+                </Button>
+              ) : null}
+            </div>
+          )
+        }
+      />
+      {allowQuickAdd ? (
+        <QuickStaffModal
+          open={createName !== null}
+          initialName={createName ?? ""}
+          onClose={() => setCreateName(null)}
+          onCreated={(person) => {
+            setCreateName(null);
+            setSearch("");
+            onChange(person.id, person.name);
+          }}
+        />
+      ) : null}
+    </>
   );
 }

@@ -52,7 +52,7 @@ create temp table t_im as select pg_temp.sp_test('IM-ZQX-001') as sp1;
 grant select on t_im to authenticated;
 
 update public.san_pham
-   set ghi_chu = 'giữ',
+   set mo_ta = 'giữ',
        cong_doan_id = (select id from public.cong_doan where ma = 'CARBON')
  where ma_hang = 'IM-ZQX-001';
 
@@ -125,7 +125,7 @@ select is(
 );
 
 select is(
-  (select ghi_chu from public.san_pham where ma_hang = 'IM-ZQX-001'),
+  (select mo_ta from public.san_pham where ma_hang = 'IM-ZQX-001'),
   'giữ',
   'ô trống trong file giữ nguyên giá trị cũ'
 );

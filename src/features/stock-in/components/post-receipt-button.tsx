@@ -30,10 +30,6 @@ export function PostReceiptButton({ receipt, lines, canEdit }: Props) {
 
   function confirmThenPost() {
     const totalQuantity = lines.reduce((sum, line) => sum + Number(line.quantity), 0);
-    const totalAmount = lines.reduce(
-      (sum, line) => sum + Number(line.quantity) * Number(line.unitPrice),
-      0,
-    );
     const affectedWarehouses = [
       ...new Set(lines.map((line) => line.warehouseName).filter(Boolean)),
     ];
@@ -46,13 +42,7 @@ export function PostReceiptButton({ receipt, lines, canEdit }: Props) {
           docNo={receipt.docNo}
           headline={
             <>
-              {lines.length} dòng, tổng số lượng <strong>{formatNumber(totalQuantity)}</strong>
-              {totalAmount > 0 ? (
-                <>
-                  , tổng tiền <strong>{formatNumber(totalAmount)}</strong>
-                </>
-              ) : null}
-              .
+              {lines.length} dòng, tổng số lượng <strong>{formatNumber(totalQuantity)}</strong>.
             </>
           }
           warningTitle="Ghi sổ xong không sửa được"

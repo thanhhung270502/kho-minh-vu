@@ -18,7 +18,7 @@ export const productSchema = z
     // ĐVT và công đoạn là HAI trường riêng — đây chính là lỗi dữ liệu số 1 của
     // hệ cũ (KiotViet nhét công đoạn vào ô ĐVT). Cả hai đều bắt buộc.
     unitId: z.string({ message: "Chọn đơn vị tính" }).uuid("Chọn đơn vị tính"),
-    stageId: z.string({ message: "Chọn công đoạn" }).uuid("Chọn công đoạn"),
+    stageId: z.string({ message: "Chọn xử lý" }).uuid("Chọn xử lý"),
     conversion: z
       .number({ message: "Quy đổi phải là số" })
       .gt(0, "Quy đổi phải lớn hơn 0"),
@@ -31,14 +31,24 @@ export const productSchema = z
       .max(64, "Barcode tối đa 64 ký tự")
       .nullable()
       .transform((value) => value || null),
-    note: z
+    description: z
       .string()
       .trim()
       .nullable()
       .transform((value) => value || null),
     isActive: z.boolean(),
-    productTypeId: z.string().uuid().nullable(),
-    vehicleLineId: z.string().uuid().nullable(),
+    kind: z.enum(["HANG_HOA", "COMBO"]),
+    brandCode: z.string().nullable(),
+    modelCode: z.string().nullable(),
+    partCode: z.string().nullable(),
+    // Xe dùng chung (0096): mỗi dòng phải đủ cặp hãng + dòng xe.
+    sharedVehicles: z.array(
+      z.object({
+        brandCode: z.string().nullable().refine((value) => Boolean(value), "Chọn hãng xe"),
+        modelCode: z.string().nullable().refine((value) => Boolean(value), "Chọn dòng xe"),
+      }),
+    ),
+    manualFields: z.array(z.enum(["hang_xe", "dong_xe", "linh_kien", "xu_ly"])),
     directSale: z.boolean(),
     shelfLocation: z
       .string()

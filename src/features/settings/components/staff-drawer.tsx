@@ -10,7 +10,7 @@ import { errorCode, explainError } from "@/shared/lib/errors";
 
 import type { StaffRow } from "../api/staff.api";
 import { useSaveStaff } from "../hooks/useStaff";
-import { staffSchema, type StaffFormValues } from "../schemas/staff.schema";
+import { staffSchema, type StaffFormValues } from "@/shared/schemas/staff.schema";
 
 const EMPTY_FORM: StaffFormValues = { shortName: "", fullName: "", isActive: true };
 

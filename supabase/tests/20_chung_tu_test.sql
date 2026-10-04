@@ -3,7 +3,7 @@
 -- Ghi sổ atomic · hủy sinh bút toán đảo · đánh số không trùng
 -- =============================================================================
 begin;
-select plan(20);
+select plan(22);
 
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
@@ -70,9 +70,13 @@ update t_id set dt = (select id from public.doi_tac where ma = 'NCC-TEST');
 -- Dùng năm 2092/2093 chứ KHÔNG dùng năm hiện hành: `chuoi_so_ct` là bộ đếm
 -- sống, phiếu thật đầu tiên của năm nay làm mọi assertion neo vào '-000001'
 -- đỏ vĩnh viễn. Đã đỏ thật một lần sau UAT Phase 3.
+--
+-- 0095: cấu hình thật đánh số kiểu KiotViet (không năm). Bật lại theo_nam trong
+-- transaction test để vẫn kiểm dạng có năm; rollback cuối file trả về như cũ.
+update public.cau_hinh_so_ct set theo_nam = true;
 select is(public.sinh_so_ct('NHAP', 2092::smallint), 'PN92-000001', 'số phiếu nhập đầu tiên đúng định dạng PN92-000001');
 select is(public.sinh_so_ct('NHAP', 2092::smallint), 'PN92-000002', 'gọi lần hai cho số kế tiếp');
-select is(public.sinh_so_ct('XUAT', 2092::smallint), 'PX92-000001', 'chuỗi số độc lập theo từng loại chứng từ');
+select is(public.sinh_so_ct('XUAT', 2092::smallint), 'HD92-000001', 'chuỗi số độc lập theo từng loại chứng từ (hóa đơn tiền tố HD, 0095)');
 select is(public.sinh_so_ct('NHAP', 2093::smallint), 'PN93-000001', 'reset theo năm');
 select is(
   array[
@@ -85,6 +89,13 @@ select is(
   array['TN','TK','CK','KK','DC'],
   'đủ tiền tố cho cả bảy loại chứng từ'
 );
+
+-- Kiểu KiotViet (theo_nam = false): {tiền tố}{6 số}, đếm liên tục. Chỉ so tương
+-- đối — dòng nam = 0 là bộ đếm sống (bẫy 16).
+update public.cau_hinh_so_ct set theo_nam = false where loai_ct = 'NHAP' and nguon = '';
+create temp table t_so_kv as select public.sinh_so_ct('NHAP') as a, public.sinh_so_ct('NHAP') as b;
+select matches((select a from t_so_kv), '^PN\d{6}$', 'không theo năm: dạng PN + 6 chữ số, không có năm');
+select is(substr((select b from t_so_kv), 3)::int, substr((select a from t_so_kv), 3)::int + 1, 'không theo năm: số sau bằng số trước + 1');
 
 -- ─── DATA-05: ghi sổ happy path ──────────────────────────────────────────
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');

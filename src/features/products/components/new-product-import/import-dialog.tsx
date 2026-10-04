@@ -48,7 +48,7 @@ export function NewProductImportDialog({ open, onClose }: { open: boolean; onClo
     const defaultUnitId = lookups.data?.units.find((u) => u.code === "CAI")?.id ?? null;
     read.mutate(
       { file, defaultUnitId },
-      { onSuccess: ({ drafts, catalog }) => dispatch({ type: "loaded", drafts, catalog }) },
+      { onSuccess: (loaded) => dispatch({ type: "loaded", ...loaded }) },
     );
   }
 
@@ -132,6 +132,7 @@ export function NewProductImportDialog({ open, onClose }: { open: boolean; onClo
             </span>
           </div>
 
+          {state.nameSheetError ? <Alert type="warning" showIcon title={state.nameSheetError} /> : null}
           {saveError ? <Alert type="error" showIcon title={saveError.title} description={saveError.action} /> : null}
           {downloadError ? (
             <Alert type="error" showIcon title={downloadError.title} description={downloadError.action} />

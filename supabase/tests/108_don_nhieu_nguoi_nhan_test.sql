@@ -62,6 +62,8 @@ create temp table t18_don (id uuid);
 grant select, insert on t18_don to authenticated;
 create temp table t18_dt (id uuid);
 grant select, insert on t18_dt to authenticated;
+create temp table t18_trong (id uuid);
+grant select, insert on t18_trong to authenticated;
 
 -- ─── 1–10: cấu trúc, RLS, quyền ─────────────────────────────────────────────
 select has_table('public', 'don_dat_hang_nguoi_nhan', 'có bảng nối đơn ↔ người nhận');
@@ -132,9 +134,11 @@ select ok(
 
 -- ─── 16–17: từ chối ─────────────────────────────────────────────────────────
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
-select throws_ok(
-  $$ select public.tao_don(null, '{}') $$,
-  '23514', 'Đơn nội bộ phải có ít nhất một người nhận', 'tao_don nội bộ không người nhận bị từ chối'
+-- 0097: đơn tạm được tạo trống người nhận. 0098: bấm lại thì dùng lại đơn trống đó.
+insert into t18_trong select public.tao_don(null, '{}');
+select is(
+  public.tao_don(null, '{}'), (select id from t18_trong),
+  'tao_don trống: lần bấm sau dùng lại đơn tạm trống, không cấp số mới'
 );
 select throws_ok(
   $$ select public.tao_don(null, array[(select n from t18)]) $$,
@@ -226,9 +230,9 @@ select is(
   (select count(*)::int from public.don_dat_hang_nguoi_nhan where don_dat_hang_id = (select id from t18_don)),
   2, 'Bảng nối còn đúng 2 người'
 );
-select throws_ok(
-  $$ select public.dat_nguoi_nhan_don((select id from t18_don), null, '{}') $$,
-  '23514', 'Đơn nội bộ phải có ít nhất một người nhận', 'Đơn nội bộ đặt về rỗng bị từ chối'
+select lives_ok(
+  $$ select public.dat_nguoi_nhan_don((select id from t18_trong), null, '{}') $$,
+  'Đơn tạm đặt người nhận rỗng được (0097 — chọn sau trong trang đơn)'
 );
 
 -- ─── 33–35: người đã ngừng dùng ─────────────────────────────────────────────
@@ -291,12 +295,12 @@ select throws_ok(
 -- ─── 41: D3 — constraint trigger hoãn (đặt cuối để không kéo sự kiện khác) ──
 create function pg_temp.don_noi_bo_rong() returns void language plpgsql as $h$
 begin
-  insert into public.don_dat_hang (so_dh) values ('ZQX18-RONG');
+  insert into public.don_dat_hang (so_dh, trang_thai) values ('ZQX18-RONG', 'DA_XAC_NHAN');
   set constraints public.kiem_don_noi_bo_co_nguoi_nhan immediate;
 end $h$;
 select throws_ok(
   'select pg_temp.don_noi_bo_rong()',
-  '23514', 'Đơn nội bộ phải có ít nhất một người nhận', 'D3: đơn nội bộ rỗng không commit được'
+  '23514', 'Chọn người nhận (nhân viên hoặc khách hàng) trước khi xác nhận đơn', 'D3: đơn nội bộ đã xác nhận mà rỗng không commit được'
 );
 set constraints all deferred;
 

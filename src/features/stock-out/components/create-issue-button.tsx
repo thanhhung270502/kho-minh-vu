@@ -1,6 +1,6 @@
 "use client";
 
-import { Alert, Button, DatePicker, Form, Modal, Select, Typography } from "antd";
+import { Alert, Button, DatePicker, Form, Modal, Typography } from "antd";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -23,18 +23,17 @@ export function CreateIssueButton({ label = "Tạo hóa đơn" }: Props) {
 
   const [open, setOpen] = useState(false);
   const [partnerId, setPartnerId] = useState<string | undefined>();
-  const [warehouseId, setWarehouseId] = useState<string | undefined>();
   const [docDate, setDocDate] = useState<string | null>(null);
   const [partnerError, setPartnerError] = useState<string | null>(null);
-  const [warehouseError, setWarehouseError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Kho ẩn trên hóa đơn (04/10/2026): phiếu lấy kho đang hoạt động đầu tiên (K1);
+  // từng dòng vẫn theo kho mặc định của mã.
+  const warehouseId = lookups.data?.warehouses[0]?.id;
 
   function reset() {
     setPartnerId(undefined);
-    setWarehouseId(undefined);
     setDocDate(null);
     setPartnerError(null);
-    setWarehouseError(null);
     setError(null);
   }
 
@@ -45,19 +44,16 @@ export function CreateIssueButton({ label = "Tạo hóa đơn" }: Props) {
   }
 
   async function create() {
-    let hasError = false;
     if (!partnerId) {
       setPartnerError("Chọn người nhận trước khi tạo phiếu");
-      hasError = true;
+      return;
     }
     if (!warehouseId) {
-      setWarehouseError("Chọn kho trước khi tạo phiếu");
-      hasError = true;
+      setError("Chưa tải được danh sách kho. Đóng hộp này rồi mở lại.");
+      return;
     }
-    if (hasError || !partnerId || !warehouseId) return;
 
     setPartnerError(null);
-    setWarehouseError(null);
     setError(null);
 
     try {
@@ -123,25 +119,6 @@ export function CreateIssueButton({ label = "Tạo hóa đơn" }: Props) {
               onChange={(id) => {
                 setPartnerId(id);
                 setPartnerError(null);
-              }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            label="Kho xuất"
-            validateStatus={warehouseError ? "error" : undefined}
-            help={warehouseError ?? "Kho từng dòng sửa được sau khi mở phiếu."}
-          >
-            <Select
-              placeholder="Chọn kho"
-              value={warehouseId}
-              options={(lookups.data?.warehouses ?? []).map((warehouse) => ({
-                value: warehouse.id,
-                label: warehouse.name,
-              }))}
-              onChange={(value) => {
-                setWarehouseId(value);
-                setWarehouseError(null);
               }}
             />
           </Form.Item>

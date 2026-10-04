@@ -18,7 +18,7 @@ const SOURCE_LABELS: Record<string, string> = {
   form: "Sửa tay",
   sua_o: "Sửa trên bảng",
   hang_loat: "Sửa hàng loạt",
-  goi_y_duoi: "Gợi ý công đoạn",
+  goi_y_duoi: "Gợi ý xử lý",
   import: "Nhập Excel",
   ra_ghi_chu: "Rà ghi chú",
   cai_dat: "Cài đặt",

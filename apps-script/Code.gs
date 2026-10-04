@@ -12,18 +12,29 @@
  *     { secret, action: "put",    folder, fileName, mimeType: "image/webp" | "image/jpeg" | "image/png", base64Data }
  *     { secret, action: "get",    fileId }
  *     { secret, action: "remove", fileId }
+ *     { secret, action: "list",   folder: "anh-nhap" }   (04/10/2026 — script nạp ảnh)
  *   Response LUÔN HTTP 200 (Apps Script không set được status tùy ý — xem "Điểm phải
  *   biết" #1 trong 09-RESEARCH.md), JSON:
  *     put    → { ok: true, fileId }
  *     get    → { ok: true, mimeType, base64Data }
  *     remove → { ok: true }
+ *     list   → { ok: true, files: [{ id, name, size }] }
  *     lỗi    → { ok: false, error: "forbidden" | "bad_request" | "not_found" | "internal", message }
  */
 
-var ROOT_FOLDER_NAME = 'Kho Minh Vu - Anh';
+// NƠI LƯU ẢNH DUY NHẤT (chuẩn hóa 04/10/2026):
+//   My Drive / [APP][Kho Minh Vu] / Kho Minh Vu - Anh / san-pham / goc | thumb
+// ID cố định để dán code này vào dự án Apps Script NÀO cũng ghi đúng chỗ. Trước
+// đây thiếu Script Property ROOT_FOLDER_ID là tự tạo cây thư mục mới rỗng — ảnh
+// rơi vào chỗ khác mà không ai biết (đã xảy ra 04/10/2026). Muốn dời nơi lưu thì
+// đặt ROOT_FOLDER_ID trong Script Properties; property luôn thắng hằng số này.
+var ROOT_FOLDER_ID_CHUAN = '1kWvuYpdIMZwO91yjvGh3hD2Rcaq_47TN';
 
 // Nhánh 'chung-tu/...' để dành cho phase ảnh chứng từ sau này (D-08) — CHƯA mở ở đây.
 var ALLOWED_FOLDERS = ['san-pham/goc', 'san-pham/thumb'];
+
+// Chỉ đọc danh sách — ảnh văn phòng đặt tên mã_số chờ script nạp (scripts/import-anh-nhap.ts).
+var LIST_FOLDERS = ['anh-nhap'];
 
 var FILE_NAME_PATTERN = /^[A-Za-z0-9._-]{1,120}\.(webp|jpe?g|png)$/;
 
@@ -77,6 +88,8 @@ function doPost(e) {
         return get_(body);
       case 'remove':
         return remove_(body);
+      case 'list':
+        return list_(body);
       default:
         return fail_('bad_request', 'action không hợp lệ: ' + body.action);
     }
@@ -135,6 +148,19 @@ function get_(body) {
   });
 }
 
+function list_(body) {
+  if (LIST_FOLDERS.indexOf(body.folder) < 0) {
+    return fail_('bad_request', 'folder không được liệt kê: ' + body.folder);
+  }
+  var files = getFolder_(body.folder).getFiles();
+  var out = [];
+  while (files.hasNext()) {
+    var file = files.next();
+    if (!file.isTrashed()) out.push({ id: file.getId(), name: file.getName(), size: file.getSize() });
+  }
+  return json_({ ok: true, files: out });
+}
+
 function remove_(body) {
   if (typeof body.fileId !== 'string' || body.fileId.length === 0) {
     return fail_('bad_request', 'Thiếu fileId');
@@ -153,22 +179,22 @@ function remove_(body) {
   return json_({ ok: true });
 }
 
+/**
+ * Thư mục gốc chứa ảnh. KHÔNG bao giờ tự tạo mới: không mở được thì báo lỗi để
+ * người dùng thấy ngay, thay vì âm thầm lưu ảnh sang một cây thư mục khác.
+ */
 function getRootFolder_() {
-  var props = PropertiesService.getScriptProperties();
-  var rootId = props.getProperty('ROOT_FOLDER_ID');
-  if (rootId) {
-    try {
-      var existing = DriveApp.getFolderById(rootId);
-      if (!existing.isTrashed()) {
-        return existing;
-      }
-    } catch (notFoundErr) {
-      // rơi xuống tạo mới
-    }
+  var rootId = PropertiesService.getScriptProperties().getProperty('ROOT_FOLDER_ID') || ROOT_FOLDER_ID_CHUAN;
+  var root;
+  try {
+    root = DriveApp.getFolderById(rootId);
+  } catch (notFoundErr) {
+    throw new Error('Không mở được thư mục ảnh gốc ' + rootId + ' — tài khoản chạy Apps Script phải có quyền sửa thư mục này.');
   }
-  var created = DriveApp.createFolder(ROOT_FOLDER_NAME);
-  props.setProperty('ROOT_FOLDER_ID', created.getId());
-  return created;
+  if (root.isTrashed()) {
+    throw new Error('Thư mục ảnh gốc ' + rootId + ' đang nằm trong thùng rác — khôi phục lại trên Drive.');
+  }
+  return root;
 }
 
 /**
@@ -177,7 +203,9 @@ function getRootFolder_() {
  */
 function getFolder_(path) {
   var props = PropertiesService.getScriptProperties();
-  var cacheKey = 'FOLDER_' + path;
+  // Khóa cache gắn với thư mục gốc: đổi gốc thì cache cũ (trỏ sang cây khác) tự bị bỏ qua.
+  var rootId = props.getProperty('ROOT_FOLDER_ID') || ROOT_FOLDER_ID_CHUAN;
+  var cacheKey = 'FOLDER_' + rootId + '_' + path;
   var cachedId = props.getProperty(cacheKey);
   if (cachedId) {
     try {
@@ -234,4 +262,56 @@ function kiemTraThietLap() {
   Logger.log('san-pham/goc: ' + gocFolder.getUrl());
   Logger.log('san-pham/thumb: ' + thumbFolder.getUrl());
   Logger.log('SECRET đã đặt: ' + (secretDaDat ? 'CÓ' : 'CHƯA — vào Project Settings > Script Properties để thêm'));
+}
+
+/**
+ * Chạy TAY một lần (04/10/2026): chuyển ảnh văn phòng chép tay vào san-pham/goc
+ * sang thư mục 'anh-nhap' cạnh 'san-pham', để script nạp ảnh đọc riêng và không
+ * lẫn với ảnh web tự lưu.
+ *
+ * Dùng ID thư mục cố định, KHÔNG dùng getFolder_(): hàm này hay được dán vào một
+ * dự án Apps Script mới (chưa có ROOT_FOLDER_ID), khi đó getFolder_() tự tạo một
+ * cây thư mục rỗng mới và không thấy ảnh nào (đã gặp 04/10/2026). Tự đủ — dán
+ * riêng hàm này vào dự án nào cũng chạy.
+ *
+ * CHỈ chuyển file đúng mẫu "<mã hàng>_<số>.jpg|jpeg|png" (một dấu '_'). Ảnh web
+ * tự lưu tên "<mã>__<uuid>.webp" (hai dấu '_', đuôi webp) KHÔNG khớp nên đứng
+ * yên — chuyển chúng đi là ảnh trên web hỏng.
+ *
+ * Apps Script dừng sau ~6 phút: hàm tự ngắt ở 5 phút và báo còn bao nhiêu file.
+ * Chạy lại cho tới khi log báo "Còn lại: 0" — file đã chuyển không bị chuyển lại.
+ */
+function chuyenAnhNhap() {
+  // [APP][Kho Minh Vu]/Kho Minh Vu - Anh/san-pham/goc → .../Kho Minh Vu - Anh/anh-nhap
+  var NGUON_ID = '1c_Ic40A3MqbyffpyggOUg9-PFLKLvdEe';
+  var DICH_ID = '1rsUaOpFmNW3kbJcax9FrEhdAOedx1361';
+  var MAU_TEN = /^[^_]+_\d+\.(jpe?g|png)$/i;
+  var HAN_MS = 5 * 60 * 1000;
+  var batDau = Date.now();
+
+  var goc = DriveApp.getFolderById(NGUON_ID);
+  var dich = DriveApp.getFolderById(DICH_ID);
+
+  var daChuyen = 0;
+  var conLai = 0;
+  var boQua = 0;
+  var files = goc.getFiles();
+  while (files.hasNext()) {
+    var file = files.next();
+    if (!MAU_TEN.test(file.getName())) {
+      boQua++;
+      continue;
+    }
+    if (Date.now() - batDau > HAN_MS) {
+      conLai++;
+      continue;
+    }
+    file.moveTo(dich);
+    daChuyen++;
+  }
+
+  Logger.log('Nguồn: ' + goc.getName() + ' — ' + goc.getUrl());
+  Logger.log('Đã chuyển: ' + daChuyen + ' file sang ' + dich.getUrl());
+  Logger.log('Còn lại: ' + conLai + (conLai > 0 ? ' — bấm Chạy lại hàm này' : ' — xong'));
+  Logger.log('Giữ nguyên (ảnh web / tên không đúng mẫu): ' + boQua);
 }

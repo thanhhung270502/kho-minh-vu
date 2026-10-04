@@ -113,13 +113,13 @@ export function BulkAssignBar({ ids, lookups, onDone }: Props) {
 
       <AssignSelect
         className="w-44"
-        placeholder="Gán công đoạn"
+        placeholder="Gán xử lý"
         disabled={running}
         options={(lookups?.stages ?? []).map((stage) => ({
           value: stage.id,
           label: stage.name,
         }))}
-        onSelect={(id, name) => assignField("stageId", id, name, "công đoạn")}
+        onSelect={(id, name) => assignField("stageId", id, name, "xử lý")}
       />
 
       <AssignSelect

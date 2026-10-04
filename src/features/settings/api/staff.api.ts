@@ -1,7 +1,7 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Database } from "@/types/database.types";
 
-import type { StaffFormValues } from "../schemas/staff.schema";
+import type { StaffFormValues } from "@/shared/schemas/staff.schema";
 
 type StaffRowDb = Database["public"]["Tables"]["nhan_vien_phu_trach"]["Row"];
 type StaffWrite = Database["public"]["Tables"]["nhan_vien_phu_trach"]["Insert"];

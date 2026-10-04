@@ -2,9 +2,9 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 import { toQuickLookupInsert, type QuickLookupValues } from "../schemas/quick-lookup.schema";
 
-export type QuickLookupTable = "nhom_hang" | "don_vi_tinh" | "cong_doan" | "loai_hang" | "dong_xe";
+export type QuickLookupTable = "nhom_hang" | "don_vi_tinh" | "cong_doan";
 
-/** Ghi thẳng qua RLS 0015/0081 (quản lý + văn phòng) — cùng quyền với sửa mã hàng. */
+/** Ghi thẳng qua RLS (quyền Tạo mã hàng, 0083) — cùng quyền với sửa mã hàng. */
 export async function createQuickLookup(
   table: QuickLookupTable,
   values: QuickLookupValues,

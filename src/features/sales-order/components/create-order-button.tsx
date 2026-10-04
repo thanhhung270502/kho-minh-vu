@@ -1,9 +1,11 @@
 "use client";
 
-import { Button, Modal } from "antd";
-import { useState } from "react";
+import { App, Button } from "antd";
+import { useRouter } from "next/navigation";
 
-import { NewOrderForm } from "./new-order-form";
+import { errorCode, explainError } from "@/shared/lib/errors";
+
+import { useCreateOrder } from "../hooks/useOrders";
 
 type Props = {
   /** Nhãn nút — trạng thái rỗng dùng câu khác toolbar để rõ đây là bước tiếp theo. */
@@ -11,37 +13,34 @@ type Props = {
 };
 
 /**
- * Mở dialog chọn người nhận ngay trên danh sách — bấm "Tạo" là đơn tạm được
- * tạo và chuyển sang trang chi tiết để gõ dòng.
+ * Bấm là tạo ngay một đơn tạm (chưa có người nhận) rồi sang trang đơn — người
+ * nhận, dòng hàng, ghi chú điền hết ở đó (0097). Không còn hộp thoại hỏi trước
+ * Nội bộ hay Đối tác.
  */
 export function CreateOrderButton({ label = "Tạo đơn" }: Props) {
-  const [open, setOpen] = useState(false);
-  const [pending, setPending] = useState(false);
+  const router = useRouter();
+  const { message } = App.useApp();
+  const createOrder = useCreateOrder();
 
-  function close() {
-    // Đang tạo đơn thì không cho đóng — đóng giữa chừng vẫn ra đơn nhưng người dùng tưởng đã hủy.
-    if (pending) return;
-    setOpen(false);
+  async function create() {
+    // Nút loading chặn bấm lặp: bấm 5 lần không được ra 5 đơn.
+    if (createOrder.isPending) return;
+    try {
+      const id = await createOrder.mutateAsync({ partnerId: null, staffIds: [] });
+      router.push(`/don-dat/${id}`);
+    } catch (caught) {
+      if (errorCode(caught) === "42501") {
+        message.error("Tài khoản không có quyền tạo đơn. Nhờ quản lý hoặc văn phòng.");
+        return;
+      }
+      const explained = explainError(caught);
+      message.error(`${explained.title}. ${explained.action}`);
+    }
   }
 
   return (
-    <>
-      <Button type="primary" onClick={() => setOpen(true)}>
-        {label}
-      </Button>
-      <Modal
-        title="Tạo đơn đặt"
-        open={open}
-        onCancel={close}
-        footer={null}
-        mask={{ closable: !pending }}
-        keyboard={!pending}
-        closable={!pending}
-        destroyOnHidden
-      >
-        <p className="mb-3 text-sm text-gray-500">Mặc định nhận Nội bộ — đổi sang Đối tác nếu giao cho khách.</p>
-        <NewOrderForm onPendingChange={setPending} onCancel={close} />
-      </Modal>
-    </>
+    <Button type="primary" loading={createOrder.isPending} onClick={() => void create()}>
+      {label}
+    </Button>
   );
 }

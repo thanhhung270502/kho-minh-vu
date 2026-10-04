@@ -1,81 +1,127 @@
 "use client";
 
-import { Segmented } from "antd";
+import { Select } from "antd";
+import { useState } from "react";
 
-import { PartnerSearchInput } from "@/shared/components/partner-search-input";
-import { StaffMultiSelect } from "@/shared/components/staff-multi-select";
-import {
-  RECIPIENT_KIND_LABELS,
-  RECIPIENT_KIND_ORDER,
-  type RecipientKind,
-  type StaffRef,
-} from "@/shared/lib/recipient";
+import { CreatePartnerModal } from "@/shared/components/partner-search-input";
+import { QuickStaffModal } from "@/shared/components/quick-staff-modal";
+import type { StaffRef } from "@/shared/lib/recipient";
+import { labelMatches } from "@/shared/lib/text";
 
-type Props = {
-  kind: RecipientKind;
+import { CUSTOMER_PREFIX, useRecipientOptions } from "../hooks/use-recipient-options";
+import { RecipientCreateActions } from "./recipient-create-actions";
+
+export type RecipientValue = {
   partnerId: string | undefined;
   staffIds: string[];
+};
+
+type Props = RecipientValue & {
   extraStaff?: StaffRef[];
-  onKindChange: (kind: RecipientKind) => void;
-  onPartnerChange: (id: string | undefined) => void;
-  onStaffChange: (ids: string[]) => void;
-  onEnterWhenEmpty?: () => void;
+  /** Luôn gửi cả tập: có partnerId = đơn "Đối tác", không có = "Nội bộ". */
+  onChange: (next: RecipientValue) => void;
   autoFocus?: boolean;
 };
 
-const KIND_OPTIONS = RECIPIENT_KIND_ORDER.map((kind) => ({
-  value: kind,
-  label: RECIPIENT_KIND_LABELS[kind],
-}));
-
 /**
- * Chọn chế độ rồi chọn người (D3). Nội bộ: một hoặc nhiều nhân viên. Đối tác:
- * một đối tác + nhân viên phụ trách không bắt buộc. Đổi chế độ không xóa
- * `staffIds` — nhân viên nội bộ thành nhân viên phụ trách; chỉ cha xóa
- * `partnerId` khi về nội bộ.
+ * Một ô cho mọi người nhận (yêu cầu 04/10/2026): mặc định chỉ có nhân viên phụ
+ * trách — đơn chủ yếu giao nội bộ. Khách chỉ hiện khi đã gõ chữ, tối đa một khách;
+ * có khách thì đơn là "Đối tác", nhân viên đi kèm thành nhân viên phụ trách.
+ * Gõ tên chưa có thì thêm ngay nhân viên hoặc khách — để sau thống kê theo người.
  */
 export function RecipientPicker({
-  kind,
   partnerId,
   staffIds,
   extraStaff,
-  onKindChange,
-  onPartnerChange,
-  onStaffChange,
-  onEnterWhenEmpty,
+  onChange,
   autoFocus,
 }: Props) {
+  const [search, setSearch] = useState("");
+  const [creating, setCreating] = useState<"staff" | "customer" | null>(null);
+  const [typedName, setTypedName] = useState("");
+  const typed = search.trim();
+
+  const { options, exactStaff, loading } = useRecipientOptions(
+    typed,
+    partnerId,
+    extraStaff,
+  );
+
+  const value = [
+    ...staffIds,
+    ...(partnerId ? [CUSTOMER_PREFIX + partnerId] : []),
+  ];
+
+  function handleChange(next: string[]) {
+    setSearch("");
+    const picked = next.filter((id) => id.startsWith(CUSTOMER_PREFIX));
+    // Chọn khách thứ hai thì thay khách cũ — một đơn chỉ một khách.
+    onChange({
+      partnerId: picked.at(-1)?.slice(CUSTOMER_PREFIX.length),
+      staffIds: next.filter((id) => !id.startsWith(CUSTOMER_PREFIX)),
+    });
+  }
+
+  function openCreate(target: "staff" | "customer") {
+    setTypedName(typed);
+    setCreating(target);
+  }
+
   return (
-    <div className="flex flex-col gap-2">
-      <Segmented
-        block
-        value={kind}
-        options={KIND_OPTIONS}
-        onChange={(value) => onKindChange(value as RecipientKind)}
+    <>
+      <Select
+        mode="multiple"
+        showSearch
+        allowClear
+        maxTagCount="responsive"
+        autoFocus={autoFocus}
+        className="w-full"
+        placeholder="Gõ tên nhân viên nhận hàng"
+        value={value}
+        searchValue={search}
+        onSearch={setSearch}
+        // Bẫy 21: gõ không dấu vẫn phải ra tên có dấu.
+        filterOption={(input, option) =>
+          labelMatches(input, option?.search ?? "")
+        }
+        loading={loading}
+        onChange={handleChange}
+        options={options}
+        notFoundContent={
+          typed ? (
+            <span className="text-xs text-chu-phu">{`Chưa có ai tên "${typed}".`}</span>
+          ) : null
+        }
+        popupRender={(menu) => (
+          <>
+            {menu}
+            {typed && !exactStaff ? (
+              <RecipientCreateActions typed={typed} onCreate={openCreate} />
+            ) : null}
+          </>
+        )}
       />
-      {kind === "partner" ? (
-        <>
-          <PartnerSearchInput value={partnerId} onChange={onPartnerChange} autoFocus={autoFocus} />
-          <label className="mt-1 block text-[13px] text-chu-phu">
-            Nhân viên phụ trách (không bắt buộc)
-          </label>
-          <StaffMultiSelect
-            value={staffIds}
-            onChange={onStaffChange}
-            extraOptions={extraStaff}
-            placeholder="Chọn nhân viên phụ trách"
-            onEnterWhenEmpty={onEnterWhenEmpty}
-          />
-        </>
-      ) : (
-        <StaffMultiSelect
-          autoFocus={autoFocus}
-          value={staffIds}
-          onChange={onStaffChange}
-          extraOptions={extraStaff}
-          onEnterWhenEmpty={onEnterWhenEmpty}
-        />
-      )}
-    </div>
+
+      <QuickStaffModal
+        open={creating === "staff"}
+        initialName={typedName}
+        onClose={() => setCreating(null)}
+        onCreated={(person) => {
+          setCreating(null);
+          setSearch("");
+          onChange({ partnerId, staffIds: [...staffIds, person.id] });
+        }}
+      />
+      <CreatePartnerModal
+        open={creating === "customer"}
+        initialName={typedName}
+        onClose={() => setCreating(null)}
+        onCreated={(id) => {
+          setCreating(null);
+          setSearch("");
+          onChange({ partnerId: id, staffIds });
+        }}
+      />
+    </>
   );
 }

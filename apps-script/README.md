@@ -13,6 +13,27 @@ biết Drive tồn tại. Nếu sau này có kinh phí chuyển sang cloud thậ
 implementation `ImageStorage` mới (`src/features/images/lib/storage/`) và một script
 migrate — không sửa component, không sửa schema `hinh_anh`.
 
+### Nơi lưu ảnh — chuẩn hóa 04/10/2026
+
+Mọi ảnh (tải lên từ web, script `import-anh-nhap`, `copy-kiotviet-images`) vào **một
+chỗ duy nhất** trên Drive của tài khoản hệ thống:
+
+```
+My Drive / [APP][Kho Minh Vu] / Kho Minh Vu - Anh      ← ID 1kWvuYpdIMZwO91yjvGh3hD2Rcaq_47TN
+  ├─ san-pham / goc     ← ảnh gốc đã nén WebP, tên <MÃ>__<uuid>.webp
+  ├─ san-pham / thumb   ← ảnh thu nhỏ cùng tên
+  └─ anh-nhap           ← ảnh văn phòng đặt tên <mã>_<số>.jpg chờ nạp (web không đọc)
+```
+
+- ID gốc nằm cứng trong `Code.gs` (`ROOT_FOLDER_ID_CHUAN`), nên dán code vào dự án
+  Apps Script nào cũng ghi đúng chỗ. Script Property `ROOT_FOLDER_ID` (nếu có) thắng
+  hằng số — chỉ đặt khi thật sự muốn dời nơi lưu.
+- Code **không bao giờ tự tạo thư mục gốc mới**: không mở được thư mục gốc thì báo lỗi.
+  Bản cũ tự tạo cây rỗng `My Drive/Kho Minh Vu - Anh` khi thiếu property — ảnh rơi
+  nhầm chỗ mà không ai biết.
+- Web chạy ở môi trường nào (máy, Vercel) cũng phải trỏ `APPS_SCRIPT_URL` về cùng
+  một bản deploy, hoặc các bản deploy dùng cùng code này.
+
 ## 2. Tạo tài khoản Google riêng cho hệ thống
 
 Tạo một tài khoản Google mới dành riêng cho Kho Minh Vũ, ví dụ `kho.minhvu.anh@gmail.com`
@@ -64,7 +85,7 @@ Giữ giá trị này lại — dùng ở bước 8.
 
 Trong trình soạn thảo, chọn hàm `kiemTraThietLap` ở thanh chọn hàm phía trên, bấm
 **Run**. Google sẽ hỏi xác nhận quyền truy cập Drive — đồng ý. Sau khi chạy xong, mở
-**Execution log**: sẽ thấy link tới ba folder (`Kho Minh Vu - Anh`, `san-pham/goc`,
+**Execution log**: sẽ thấy link tới ba folder (`Kho Minh Vu - Anh` — phải là thư mục ID `1kWvuYpd…` trong `[APP][Kho Minh Vu]`, `san-pham/goc`,
 `san-pham/thumb`) và dòng báo SECRET đã đặt hay chưa.
 
 ## 7. Deploy

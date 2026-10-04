@@ -1,12 +1,14 @@
 // File thuần (bẫy 9): trạng thái hộp thoại "Nhập mã hàng mới" — tách khỏi
 // component cho gọn; không JSX, không hook.
 import type { NewProductImportResult } from "../api/new-product-import.api";
-import { applyToRows, type DraftFields, type DraftRow } from "./new-product-import";
+import { applyToRows, CATALOG_REASONS, type DraftFields, type DraftRow } from "./new-product-import";
 
 export type ImportState = {
   step: "pick" | "preview" | "done";
   drafts: DraftRow[];
   catalog: Map<number, string[]>;
+  /** Sheet tên hàng chuẩn không tải được — ô tên trống chưa được tự điền. */
+  nameSheetError: string | null;
   selected: number[];
   /** null = chưa chọn: lấy kho đầu tiên (Kho 1) khi danh mục về. */
   warehouseId: string | null;
@@ -16,7 +18,7 @@ export type ImportState = {
 };
 
 export type ImportAction =
-  | { type: "loaded"; drafts: DraftRow[]; catalog: Map<number, string[]> }
+  | { type: "loaded"; drafts: DraftRow[]; catalog: Map<number, string[]>; nameSheetError: string | null }
   | { type: "edit"; rows: number[]; patch: Partial<DraftFields> }
   | { type: "select"; rows: number[] }
   | { type: "warehouse"; id: string }
@@ -27,6 +29,7 @@ export const INITIAL_IMPORT_STATE: ImportState = {
   step: "pick",
   drafts: [],
   catalog: new Map(),
+  nameSheetError: null,
   selected: [],
   warehouseId: null,
   result: null,
@@ -36,9 +39,20 @@ export const INITIAL_IMPORT_STATE: ImportState = {
 export function importReducer(state: ImportState, action: ImportAction): ImportState {
   switch (action.type) {
     case "loaded":
-      return { ...INITIAL_IMPORT_STATE, warehouseId: state.warehouseId, step: "preview", drafts: action.drafts, catalog: action.catalog };
+      return {
+        ...INITIAL_IMPORT_STATE,
+        warehouseId: state.warehouseId,
+        step: "preview",
+        drafts: action.drafts,
+        catalog: action.catalog,
+        nameSheetError: action.nameSheetError,
+      };
     case "edit":
-      return { ...state, drafts: applyToRows(state.drafts, action.rows, action.patch) };
+      return {
+        ...state,
+        drafts: applyToRows(state.drafts, action.rows, action.patch),
+        catalog: action.patch.name === undefined ? state.catalog : dropNameClash(state.catalog, action.rows),
+      };
     case "select":
       return { ...state, selected: action.rows };
     case "warehouse":
@@ -51,4 +65,18 @@ export function importReducer(state: ImportState, action: ImportAction): ImportS
     case "reset":
       return { ...INITIAL_IMPORT_STATE, warehouseId: state.warehouseId };
   }
+}
+
+/**
+ * Lỗi "tên đã có trong danh mục" chỉ đúng với tên lúc đọc file. Người dùng sửa tên
+ * thì bỏ lỗi đó đi; tên mới vẫn trùng thì RPC nạp sẽ trả lại đúng dòng đó.
+ */
+function dropNameClash(catalog: Map<number, string[]>, rows: number[]): Map<number, string[]> {
+  const next = new Map(catalog);
+  for (const row of rows) {
+    const rest = (next.get(row) ?? []).filter((reason) => reason !== CATALOG_REASONS.name);
+    if (rest.length > 0) next.set(row, rest);
+    else next.delete(row);
+  }
+  return next;
 }

@@ -50,6 +50,13 @@ export type ImageFilter = "with" | "without";
 const IMAGE_FILTER_TO_URL: Record<ImageFilter, string> = { with: "co", without: "chua" };
 const URL_TO_IMAGE_FILTER: Record<string, ImageFilter> = { co: "with", chua: "without" };
 
+/**
+ * Giá trị đi THẲNG xuống RPC `p_quy_chuan` và cũng là tham số URL `quy_chuan`
+ * (0087) — hợp đồng với database, giữ tiếng Việt không dấu.
+ */
+export const STANDARD_FILTERS = ["du", "thieu", "chon_tay"] as const;
+export type StandardFilter = (typeof STANDARD_FILTERS)[number];
+
 export type ProductFilter = {
   q: string;
   categoryId: string | null;
@@ -57,6 +64,7 @@ export type ProductFilter = {
   unitId: string | null;
   stockStatus: StockStatus | null;
   tradingStatus: TradingStatus;
+  standard: StandardFilter | null;
   hasImage: ImageFilter | null;
   sortBy: SortField | null;
   sortDir: "asc" | "desc";
@@ -71,6 +79,7 @@ export const DEFAULT_PRODUCT_FILTER: ProductFilter = {
   unitId: null,
   stockStatus: null,
   tradingStatus: "active",
+  standard: null,
   hasImage: null,
   sortBy: null,
   sortDir: "asc",
@@ -87,6 +96,7 @@ export function countActiveFilters(filter: ProductFilter): number {
   if (filter.stageId !== null) count++;
   if (filter.unitId !== null) count++;
   if (filter.stockStatus !== null) count++;
+  if (filter.standard !== null) count++;
   if (filter.hasImage !== null) count++;
   if (filter.tradingStatus !== DEFAULT_PRODUCT_FILTER.tradingStatus) count++;
   return count;
@@ -119,6 +129,7 @@ export function readFilterFromUrl(
   const trading = params.get("kinh_doanh");
   const direction = params.get("sortDir");
   const image = params.get("anh");
+  const standard = params.get("quy_chuan");
 
   return {
     q: params.get("q")?.trim() ?? "",
@@ -131,6 +142,9 @@ export function readFilterFromUrl(
     tradingStatus:
       (trading ? URL_TO_TRADING_STATUS[trading] : undefined) ??
       DEFAULT_PRODUCT_FILTER.tradingStatus,
+    standard: STANDARD_FILTERS.includes(standard as StandardFilter)
+      ? (standard as StandardFilter)
+      : null,
     hasImage: (image ? URL_TO_IMAGE_FILTER[image] : undefined) ?? null,
     sortBy: (sort ? COLUMN_TO_SORT_FIELD[sort] : undefined) ?? null,
     sortDir: direction === "desc" ? "desc" : "asc",
@@ -150,6 +164,7 @@ export function writeFilterToUrl(filter: ProductFilter): URLSearchParams {
   if (filter.tradingStatus !== DEFAULT_PRODUCT_FILTER.tradingStatus) {
     params.set("kinh_doanh", TRADING_STATUS_TO_URL[filter.tradingStatus]);
   }
+  if (filter.standard) params.set("quy_chuan", filter.standard);
   if (filter.hasImage) params.set("anh", IMAGE_FILTER_TO_URL[filter.hasImage]);
   if (filter.sortBy) params.set("sap_xep", SORT_FIELD_TO_COLUMN[filter.sortBy]);
   if (filter.sortDir !== DEFAULT_PRODUCT_FILTER.sortDir) {
@@ -174,6 +189,7 @@ export function toListRpcArgs(filter: ProductFilter): ListArgs {
     p_dvt_id: filter.unitId ?? undefined,
     p_trang_thai_ton: filter.stockStatus ?? undefined,
     p_dang_kinh_doanh: filter.tradingStatus === "active",
+    p_quy_chuan: filter.standard ?? undefined,
     p_co_anh: filter.hasImage === null ? undefined : filter.hasImage === "with",
     p_sap_xep: filter.sortBy ? SORT_FIELD_TO_COLUMN[filter.sortBy] : undefined,
     p_huong: filter.sortDir,

@@ -3,19 +3,30 @@
 import { Tag } from "antd";
 import type { ReactNode } from "react";
 
-import type { ProductDetail } from "../types";
-import { formatNumber } from "./product-columns";
+import { formatNumber } from "../lib/format";
+import { standardFieldText } from "../lib/product-expanded";
+import { PRODUCT_KIND_LABELS, type ProductDetail } from "../types";
+import { SharedVehiclesText } from "./shared-vehicles-text";
 
 export function ProductInfoCard({ product }: { product: ProductDetail }) {
   const fields: { label: string; value: ReactNode }[] = [
     { label: "Nhóm hàng", value: product.categoryName },
-    { label: "Loại hàng", value: product.productTypeName },
-    { label: "Dòng xe", value: product.vehicleLineName },
+    { label: "Loại hàng", value: PRODUCT_KIND_LABELS[product.kind] },
+    { label: "Hãng xe", value: standardFieldText(product.brandName, product.brandCode) },
+    { label: "Dòng xe", value: standardFieldText(product.modelName, product.modelCode) },
+    {
+      label: "Xe dùng chung",
+      value:
+        product.sharedVehicles.length > 0 ? (
+          <SharedVehiclesText vehicles={product.sharedVehicles} />
+        ) : null,
+    },
+    { label: "Linh kiện", value: standardFieldText(product.partName, product.partCode) },
     { label: "Barcode", value: product.barcode },
     { label: "Đơn vị tính", value: product.unitName },
     { label: "Quy đổi", value: formatNumber(product.conversion) },
     {
-      label: "Công đoạn",
+      label: "Xử lý",
       value: product.stageName ? (
         <Tag color={product.stageColor || undefined}>{product.stageName}</Tag>
       ) : null,
@@ -28,7 +39,11 @@ export function ProductInfoCard({ product }: { product: ProductDetail }) {
       }`,
     },
     { label: "Vị trí kệ", value: product.shelfLocation },
-    { label: "Ghi chú", value: product.note },
+    { label: "Mô tả", value: product.description },
+    {
+      label: "Ghi chú",
+      value: product.note ?? <Tag color="green" className="m-0">Đủ quy chuẩn</Tag>,
+    },
     {
       label: "Trạng thái",
       value: (

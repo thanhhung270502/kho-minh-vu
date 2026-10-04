@@ -19,6 +19,7 @@ export function ProductRowDetail({ productId, forecast, canEdit, onEdit, onCopy 
     <ProductExpandedDetail
       productId={productId}
       forecast={forecast}
+      canEdit={canEdit}
       renderActions={(product) => (
         <ProductRowActions product={product} canEdit={canEdit} onEdit={onEdit} onCopy={onCopy} />
       )}

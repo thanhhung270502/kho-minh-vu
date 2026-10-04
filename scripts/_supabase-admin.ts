@@ -60,3 +60,27 @@ export const SAMPLE_ACCOUNTS = [
 export function samplePassword(): string {
   return process.env.SEED_USER_PASSWORD ?? "MatKhauDemo123!";
 }
+
+/**
+ * Đăng nhập tài khoản chạy script NẠP DỮ LIỆU (chứng từ, mã hàng). Bắt buộc khai
+ * IMPORT_USER_EMAIL / IMPORT_USER_PASSWORD — KHÔNG rơi về mật khẩu demo của
+ * samplePassword(): mật khẩu đó nằm trong repo, còn script nạp chạy trên cloud thật.
+ * Tài khoản phải có quyền ghi chứng từ / tạo mã hàng (thường là quản lý).
+ */
+export async function dangNhapTaiKhoanNap(client: SupabaseClient<Database>): Promise<void> {
+  const email = process.env.IMPORT_USER_EMAIL?.trim();
+  const password = process.env.IMPORT_USER_PASSWORD;
+  if (!email || !password) {
+    console.error(
+      "Thiếu IMPORT_USER_EMAIL hoặc IMPORT_USER_PASSWORD.\n" +
+        "Cách xử lý: khai hai biến này (tài khoản quản lý thật, có quyền ghi chứng từ / tạo mã hàng)\n" +
+        "trong .env.local hoặc ngay trên dòng lệnh, rồi chạy lại. Script nạp không dùng mật khẩu demo.",
+    );
+    process.exit(1);
+  }
+  const { error } = await client.auth.signInWithPassword({ email, password });
+  if (error) {
+    console.error(`Không đăng nhập được bằng ${email}: ${error.message}. Kiểm lại IMPORT_USER_EMAIL / IMPORT_USER_PASSWORD.`);
+    process.exit(1);
+  }
+}

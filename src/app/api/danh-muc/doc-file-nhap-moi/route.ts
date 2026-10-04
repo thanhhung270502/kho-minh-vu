@@ -1,5 +1,7 @@
 import { getCurrentUser } from "@/features/auth/api/current-user.server";
+import { loadProductNameSheet } from "@/features/products/api/product-name-sheet.server";
 import { MAX_FILE_MB } from "@/features/products/lib/excel-template";
+import { fillNamesFromSheet } from "@/features/products/lib/product-name-sheet";
 import { readNewProductFile } from "@/features/products/lib/read-new-product-file.server";
 import { can } from "@/shared/lib/permissions";
 
@@ -13,7 +15,8 @@ function errorResponse(title: string, action: string, status: number) {
 }
 
 /**
- * Chỉ ĐỌC file rồi trả các dòng về client (bẫy 7: đọc Excel chỉ ở server).
+ * Chỉ ĐỌC file rồi trả các dòng về client (bẫy 7: đọc Excel chỉ ở server). Ô tên
+ * trống được tự điền từ sheet tên hàng chuẩn — người dùng sửa lại được ở màn xem trước.
  * Chọn trường, kiểm trùng và nạp diễn ra sau, qua RPC nhap_ma_hang_moi.
  */
 export async function POST(request: Request) {
@@ -61,5 +64,8 @@ export async function POST(request: Request) {
     return errorResponse("File quá 10.000 dòng", "Chia nhỏ file rồi nhập từng phần.", 413);
   }
 
-  return Response.json({ rows });
+  if (!rows.some((r) => r.name === "")) return Response.json({ rows, nameSheetError: null });
+
+  const sheet = await loadProductNameSheet();
+  return Response.json({ rows: fillNamesFromSheet(rows, sheet.names), nameSheetError: sheet.error });
 }

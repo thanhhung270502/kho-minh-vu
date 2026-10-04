@@ -17,12 +17,13 @@ export {
 } from "@/features/documents/schemas/document.schema";
 
 // --- Bộ lọc trên URL (`/duyet-don`) -------------------------------------------
+// Không lọc theo kho: kho ẩn trên hóa đơn (04/10/2026). `?kho=` của bookmark cũ
+// bị bỏ qua — giữ lại thì danh sách lọc ngầm mà không có ô nào để gỡ.
 
 export type IssueFilter = {
   q: string;
   status: DocStatus | null;
   partnerId: string | null;
-  warehouseId: string | null;
   fromDate: string | null;
   toDate: string | null;
   page: number;
@@ -32,7 +33,6 @@ export const DEFAULT_ISSUE_FILTER: IssueFilter = {
   q: "",
   status: null,
   partnerId: null,
-  warehouseId: null,
   fromDate: null,
   toDate: null,
   page: 1,
@@ -47,7 +47,6 @@ export function countActiveIssueFilters(filter: IssueFilter): number {
   let count = 0;
   if (filter.status !== null) count++;
   if (filter.partnerId !== null) count++;
-  if (filter.warehouseId !== null) count++;
   if (filter.fromDate !== null || filter.toDate !== null) count++;
   return count;
 }
@@ -64,7 +63,6 @@ export function readIssueFilterFromUrl(params: {
     q: params.get("q")?.trim() ?? "",
     status: STATUSES.includes(status as DocStatus) ? (status as DocStatus) : null,
     partnerId: readUuid(params.get("doi_tac")),
-    warehouseId: readUuid(params.get("kho")),
     fromDate: readDate(params.get("tu_ngay")),
     toDate: readDate(params.get("den_ngay")),
     page: Number.isFinite(page) && page >= 1 ? Math.trunc(page) : 1,
@@ -76,7 +74,6 @@ export function writeIssueFilterToUrl(filter: IssueFilter): URLSearchParams {
   if (filter.q) params.set("q", filter.q);
   if (filter.status) params.set("trang_thai", filter.status);
   if (filter.partnerId) params.set("doi_tac", filter.partnerId);
-  if (filter.warehouseId) params.set("kho", filter.warehouseId);
   if (filter.fromDate) params.set("tu_ngay", filter.fromDate);
   if (filter.toDate) params.set("den_ngay", filter.toDate);
   if (filter.page !== 1) params.set("trang", String(filter.page));
@@ -91,7 +88,6 @@ export function toIssueListRpcArgs(filter: IssueFilter): ListArgs {
     p_loai_ct: "XUAT",
     p_trang_thai: filter.status ?? undefined,
     p_doi_tac_id: filter.partnerId ?? undefined,
-    p_kho_id: filter.warehouseId ?? undefined,
     p_tu_ngay: filter.fromDate ?? undefined,
     p_den_ngay: filter.toDate ?? undefined,
     p_tu_khoa: filter.q || undefined,

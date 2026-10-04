@@ -6,7 +6,7 @@ import { useState } from "react";
 import { LookupTable } from "./lookup-table";
 
 /**
- * Nhóm hàng / ĐVT / Công đoạn / Loại hàng / Dòng xe rời Cài đặt (Phase 11, NVPT-04) nhưng vẫn cần
+ * Nhóm hàng / ĐVT / Công đoạn rời Cài đặt (Phase 11, NVPT-04) nhưng vẫn cần
  * chỗ đổi tên, xóa, đổi màu công đoạn, đặt nhóm cha — form mã hàng chỉ thêm
  * nhanh mã + tên. Route `/danh-muc` ghép nút này vào thanh công cụ, nên feature
  * products không phải import gì từ settings.
@@ -29,9 +29,7 @@ export function LookupManagerButton() {
           items={[
             { key: "nhom_hang", label: "Nhóm hàng", children: <LookupTable table="nhom_hang" /> },
             { key: "don_vi_tinh", label: "Đơn vị tính", children: <LookupTable table="don_vi_tinh" /> },
-            { key: "cong_doan", label: "Công đoạn", children: <LookupTable table="cong_doan" /> },
-            { key: "loai_hang", label: "Loại hàng", children: <LookupTable table="loai_hang" /> },
-            { key: "dong_xe", label: "Dòng xe", children: <LookupTable table="dong_xe" /> },
+            { key: "cong_doan", label: "Xử lý", children: <LookupTable table="cong_doan" /> },
           ]}
         />
       </Modal>

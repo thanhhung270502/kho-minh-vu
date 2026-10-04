@@ -1,10 +1,10 @@
 "use client";
 
-import { Input, Switch, Table, Tag, Tooltip } from "antd";
+import { Input, Select, Switch, Table, Tag, Tooltip } from "antd";
 import type { TableColumnsType } from "antd";
 
 import type { DraftFields, DraftRow } from "../../lib/new-product-import";
-import type { Lookups } from "../../types";
+import { PRODUCT_KIND_LABELS, type Lookups, type ProductKind } from "../../types";
 import { LookupSelect } from "../lookup-select";
 import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
 
@@ -17,16 +17,25 @@ type Props = {
   onChange: (row: number, patch: Partial<DraftFields>) => void;
 };
 
+const KIND_OPTIONS = (Object.keys(PRODUCT_KIND_LABELS) as ProductKind[]).map((kind) => ({
+  value: kind,
+  label: PRODUCT_KIND_LABELS[kind],
+}));
+
 const toOptions = (items: { id: string; name: string }[] | undefined) =>
   (items ?? []).map((item) => ({ value: item.id, label: item.name }));
 
-/** Bảng xem trước đủ cột theo thứ tự IMP-02: cột từ file chỉ đọc, cột còn lại chọn tại chỗ. */
+/**
+ * Bảng xem trước: mã, tồn, mô tả từ file chỉ đọc; tên hàng (có thể tự điền từ
+ * sheet tên hàng chuẩn) và các cột còn lại sửa tại chỗ. Hãng xe / Dòng
+ * xe / Linh kiện / Xử lý tự điền từ mã theo quy chuẩn (phần A) — không chọn tay ở đây.
+ */
 export function PreviewTable({ rows, problems, lookups, selected, onSelect, onChange }: Props) {
   const offsetHeader = useStickyTableOffset();
   const lookupColumn = (
     title: string,
-    field: "productTypeId" | "categoryId" | "vehicleLineId" | "unitId",
-    table: "loai_hang" | "nhom_hang" | "dong_xe" | "don_vi_tinh",
+    field: "categoryId" | "unitId",
+    table: "nhom_hang" | "don_vi_tinh",
     label: string,
     items: { id: string; name: string }[] | undefined,
   ) => ({
@@ -65,11 +74,48 @@ export function PreviewTable({ rows, problems, lookups, selected, onSelect, onCh
         );
       },
     },
-    lookupColumn("Loại hàng", "productTypeId", "loai_hang", "loại hàng", lookups?.productTypes),
+    {
+      title: "Loại hàng",
+      key: "kind",
+      width: 130,
+      render: (_: unknown, row: DraftRow) => (
+        <Select
+          size="small"
+          className="w-full"
+          value={row.kind}
+          options={KIND_OPTIONS}
+          onChange={(kind: ProductKind) => onChange(row.row, { kind })}
+        />
+      ),
+    },
     lookupColumn("Nhóm hàng", "categoryId", "nhom_hang", "nhóm hàng", lookups?.categories),
     { title: "Mã hàng", dataIndex: "code", width: 140, render: (code: string) => <span className="font-mono">{code || "—"}</span> },
-    { title: "Tên hàng", dataIndex: "name", width: 240, ellipsis: true },
-    lookupColumn("Dòng xe", "vehicleLineId", "dong_xe", "dòng xe", lookups?.vehicleLines),
+    {
+      title: "Tên hàng",
+      key: "name",
+      width: 280,
+      render: (_: unknown, row) => (
+        <Input
+          size="small"
+          value={row.name}
+          placeholder="Nhập tên hàng"
+          status={row.name.trim() === "" ? "error" : undefined}
+          // suffix luôn có mặt (bẫy 20): bỏ suffix khi gõ sẽ dựng lại ô và mất focus.
+          suffix={
+            <span>
+              {row.nameFromSheet ? (
+                <Tooltip title="Tự điền từ sheet tên hàng chuẩn — sửa được">
+                  <Tag color="blue" className="m-0">
+                    tự điền
+                  </Tag>
+                </Tooltip>
+              ) : null}
+            </span>
+          }
+          onChange={(event) => onChange(row.row, { name: event.target.value, nameFromSheet: false })}
+        />
+      ),
+    },
     {
       title: "Tồn kho",
       dataIndex: "stock",
@@ -118,7 +164,7 @@ export function PreviewTable({ rows, problems, lookups, selected, onSelect, onCh
       sticky={{ offsetHeader }}
       columns={columns}
       dataSource={rows}
-      scroll={{ x: 1700 }}
+      scroll={{ x: 1560 }}
       rowClassName={(row) => (problems.has(row.row) ? "[&>td]:bg-red-50" : "")}
       rowSelection={{
         selectedRowKeys: selected,
