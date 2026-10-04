@@ -726,8 +726,23 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
   5. Chi tiết đơn: nội dung hai cột — dòng hàng bên trái, aside "Thông tin đơn" (người nhận, ghi chú, số đơn/ngày/người tạo/trạng thái) bên phải; gõ lại mã đã có với cùng người nhận thì cộng dồn số lượng
   6. Chi tiết hàng hóa: badge trạng thái cạnh mã, nút Ngừng/Mở lại kinh doanh; "Tồn theo kho" là bảng Tồn · Tối thiểu · Giá trị (ẩn với người không có quyền giá vốn) + Tổng tồn; ảnh nằm ở aside (ảnh chính lớn + dải ảnh nhỏ)
 
-**Plans**: 0 plans
+**Plans**: 16 plans (5 waves)
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 20 to break down)
+- [ ] 20-01-PLAN.md — W1: RPC tìm kiếm toàn cục `tim_kiem_toan_cuc` (0092, invoker) + pgTAP 110
+- [ ] 20-02-PLAN.md — W1: RPC Tổng quan (`tong_quan_chi_so`, `nhap_xuat_theo_ngay`, `khong_luan_chuyen`, `ton_theo_nhom` + SL) (0093) + pgTAP 111/93
+- [ ] 20-03-PLAN.md — W1: RPC đơn đặt (`dem_don_theo_trang_thai`, `them_dong_don` cộng dồn) (0094) + pgTAP 113
+- [ ] 20-04-PLAN.md — W1: Token design system 3b (Manrope, antd pill/bo 16, biến CSS, chip trạng thái, tiêu đề trang)
+- [ ] 20-05-PLAN.md — W1: Bảng Tồn theo kho có giá trị theo quyền + khung ảnh aside
+- [ ] 20-06-PLAN.md — W2: Đồng bộ migration + database.types + mapper/hàm thuần có test cho 3 feature
+- [ ] 20-07-PLAN.md — W2: Header hai tầng + slot ô tìm + offsetHeader 6 bảng dính (D-10)
+- [ ] 20-08-PLAN.md — W2: Chi tiết hàng hóa hai cột — badge, Ngừng/Mở lại KD, ghép bảng tồn + ảnh aside
+- [ ] 20-09-PLAN.md — W3: Ô tìm kiếm ⌘K (feature global-search) ghép vào header
+- [ ] 20-10-PLAN.md — W3: Tổng quan A — 4 KPI + sparkline + biểu đồ Nhập–Xuất 7N/30N/90N
+- [ ] 20-11-PLAN.md — W3: Đơn đặt — panel lọc có số đếm trạng thái, preset ngày
+- [ ] 20-12-PLAN.md — W3: Đơn đặt — cột Tiến độ dạng thanh, chip trạng thái, số kết quả
+- [ ] 20-13-PLAN.md — W3: Xuất Excel danh sách đơn theo bộ lọc
+- [ ] 20-14-PLAN.md — W4: Tổng quan B — Cần xử lý, Không luân chuyển, Tồn theo nhóm có SL + tỷ trọng, lưới 1fr 300px
+- [ ] 20-15-PLAN.md — W4: Chi tiết đơn hai cột + thêm dòng cộng dồn qua RPC
+- [ ] 20-16-PLAN.md — W5: Ma trận quyền route, cổng kiểm toàn bộ, UAT trình duyệt (checkpoint)
 **UI hint**: yes
