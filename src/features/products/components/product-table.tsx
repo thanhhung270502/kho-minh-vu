@@ -7,8 +7,7 @@ import { DetailPanel } from "@/shared/components/detail-panel";
 import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
 
-import { useAnalysisRows } from "@/features/analytics/hooks/useAnalytics";
-import { useCodeDictionary } from "@/features/product-codes/hooks/useCodeDictionary";
+import { useAnalysisRows, useAnalysisSettings } from "@/features/analytics/hooks/useAnalytics";
 
 import { useLookups, useProducts } from "../hooks/useProducts";
 import { useProductTableUrl } from "../hooks/useProductTableUrl";
@@ -36,7 +35,7 @@ export function ProductTable({
   permissions: CatalogPermissions;
   /** Nút do route ghép vào thanh công cụ — xem `danh-muc/page.tsx`. */
   extraActions?: ReactNode;
-  /** Quản lý + văn phòng (view-analysis): hai cột Đơn đặt / Dự kiến hết hàng. */
+  /** Quản lý + văn phòng (view-analysis): cột Đơn đặt / Dự kiến hết hàng / Cần đặt. */
   showForecast?: boolean;
 }) {
   const { filter, selectedId, navigate, selectProduct, toggleProduct } = useProductTableUrl();
@@ -44,7 +43,13 @@ export function ProductTable({
   const lookups = useLookups();
   // RPC phân tích chặn thủ kho / chỉ xem (0079) — không gọi khi không có quyền.
   const analysis = useAnalysisRows(30, { enabled: showForecast });
-  const forecastMap = useMemo(() => forecastById(analysis.data ?? []), [analysis.data]);
+  // Cần đặt dùng số ngày dự trữ trong cài đặt Phân tích — cùng số trang Phân tích.
+  const settings = useAnalysisSettings({ enabled: showForecast });
+  const coverDays = settings.data?.coverDays;
+  const forecastMap = useMemo(
+    () => (coverDays === undefined ? new Map() : forecastById(analysis.data ?? [], coverDays)),
+    [analysis.data, coverDays],
+  );
   const [drawer, setDrawer] = useState<{ open: boolean; id: string | null; copyFromId?: string | null }>({
     open: false,
     id: null,
@@ -52,8 +57,6 @@ export function ProductTable({
   const [selected, setSelected] = useState<string[]>([]);
   const [importOpen, setImportOpen] = useState<ImportKind | null>(null);
 
-  // Bảng lưu MÃ hãng / dòng / linh kiện — tên tra bộ mã hóa ngay trên trình duyệt.
-  const { dictionary } = useCodeDictionary();
 
   // Từ 768px chi tiết mở ngay dưới dòng; điện thoại quá chật cho dòng mở rộng.
   const wide = Grid.useBreakpoint().md ?? false;
@@ -97,11 +100,7 @@ export function ProductTable({
 
   const columns = buildProductColumns({
     filter,
-    canEdit: permissions.canEdit,
-    lookups: lookups.data,
-    dictionary,
-    onEdit: (id) => setDrawer({ open: true, id }),
-    forecasts: showForecast ? { byId: forecastMap, loading: analysis.isPending } : null,
+    forecasts: showForecast ? { byId: forecastMap, loading: analysis.isPending || settings.isPending } : null,
   });
 
   return (

@@ -11,7 +11,6 @@ import type { ProductDetail } from "../types";
 import { ComboComponents } from "./combo-components";
 import { ProductInfoTab } from "./product-info-tab";
 import { StockCard } from "./stock-card";
-import { WarehouseStock } from "./warehouse-stock";
 
 type Props = {
   productId: string;
@@ -52,25 +51,15 @@ export function ProductExpandedDetail({ productId, forecast, canEdit, renderActi
             : []),
           {
             key: "note",
-            label: "Mô tả, ghi chú",
-            children: (
-              <div className="flex flex-col gap-3">
-                {product.description ? (
-                  <p className="m-0 whitespace-pre-wrap">{product.description}</p>
-                ) : (
-                  <Typography.Text type="secondary">Chưa có mô tả.</Typography.Text>
-                )}
-                {/* Ghi chú do hệ thống tự sinh — liệt kê trường quy chuẩn còn thiếu. */}
-                {product.note ? <Typography.Text type="warning">{product.note}</Typography.Text> : null}
-              </div>
+            label: "Mô tả",
+            // Ghi chú tự sinh (trường quy chuẩn còn thiếu) đã nằm ở tab Thông tin.
+            children: product.description ? (
+              <p className="m-0 whitespace-pre-wrap">{product.description}</p>
+            ) : (
+              <Typography.Text type="secondary">Chưa có mô tả.</Typography.Text>
             ),
           },
           { key: "stock-card", label: "Thẻ kho", children: <StockCard productId={productId} /> },
-          {
-            key: "stock",
-            label: "Tồn kho",
-            children: <WarehouseStock productId={productId} unitName={product.unitName} />,
-          },
         ]}
       />
       {renderActions ? (

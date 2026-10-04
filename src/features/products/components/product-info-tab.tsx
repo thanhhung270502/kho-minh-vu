@@ -5,15 +5,16 @@ import dayjs from "dayjs";
 import type { ReactNode } from "react";
 
 import { ProductImagePreview } from "@/features/images/components/product-image-preview";
+import { useCodeDictionary } from "@/features/product-codes/hooks/useCodeDictionary";
 
-import { standardFieldText, type ProductForecast } from "../lib/product-expanded";
-import { PRODUCT_KIND_LABELS, type ProductDetail } from "../types";
 import { formatNumber } from "../lib/format";
-import { SharedVehiclesText } from "./shared-vehicles-text";
+import { standardFieldText, type ProductForecast } from "../lib/product-expanded";
+import { vehicleColumns } from "../lib/shared-vehicles";
+import { PRODUCT_KIND_LABELS, type ProductDetail } from "../types";
 
 type Props = {
   product: ProductDetail;
-  /** undefined = người xem không có quyền xem phân tích → ẩn hai ô dự báo. */
+  /** undefined = người xem không có quyền xem phân tích → ẩn các ô dự báo. */
   forecast: ProductForecast | null | undefined;
 };
 
@@ -42,8 +43,26 @@ function stockoutText(forecast: ProductForecast | null) {
   );
 }
 
-/** Tab "Thông tin" của dòng mở rộng — bố cục theo ảnh mẫu KiotViet, không có giá. */
+/**
+ * Hãng xe / Dòng xe gộp cả xe dùng chung (0096): hãng không lặp — cùng hãng thì
+ * chỉ thêm dòng ("HONDA" · "Vision, Wave"), khác hãng mới thêm "," ở Hãng xe.
+ */
+function useVehicleText(product: ProductDetail) {
+  const { dictionary } = useCodeDictionary();
+  if (product.sharedVehicles.length === 0) {
+    return {
+      brands: standardFieldText(product.brandName, product.brandCode),
+      models: standardFieldText(product.modelName, product.modelCode),
+    };
+  }
+  const { brands, models } = vehicleColumns(dictionary, product, product.sharedVehicles);
+  return { brands: brands.join(", ") || null, models: models.join(", ") || null };
+}
+
+/** Tab "Thông tin" của dòng mở rộng — không có giá. */
 export function ProductInfoTab({ product, forecast }: Props) {
+  const vehicles = useVehicleText(product);
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-4">
@@ -68,30 +87,31 @@ export function ProductInfoTab({ product, forecast }: Props) {
           {product.kind === "COMBO" ? (
             <span className="text-chu-phu">Theo thành phần</span>
           ) : (
-            <span className="tabular-nums">{formatNumber(product.totalStock)} {product.unitName ?? ""}</span>
+            <span className="tabular-nums">{formatNumber(product.totalStock)}</span>
           )}
         </Field>
-        <Field label="Vị trí kệ">{product.shelfLocation ?? empty}</Field>
-        <Field label="Kho mặc định">{product.defaultWarehouseName ?? empty}</Field>
-        <Field label="Hãng xe">{standardFieldText(product.brandName, product.brandCode) ?? empty}</Field>
-        <Field label="Dòng xe">{standardFieldText(product.modelName, product.modelCode) ?? empty}</Field>
-        {product.sharedVehicles.length > 0 ? (
-          <Field label="Xe dùng chung"><SharedVehiclesText vehicles={product.sharedVehicles} /></Field>
-        ) : null}
-        <Field label="Linh kiện">{standardFieldText(product.partName, product.partCode) ?? empty}</Field>
-        <Field label="Ghi chú">
-          {product.note ?? <Tag className="m-0" color="green">Đủ quy chuẩn</Tag>}
-        </Field>
         <Field label="Đơn vị tính">{product.unitName ?? empty}</Field>
+        <Field label="Vị trí kho">{product.shelfLocation ?? empty}</Field>
+
+        <Field label="Hãng xe">{vehicles.brands ?? empty}</Field>
+        <Field label="Dòng xe">{vehicles.models ?? empty}</Field>
+        <Field label="Linh kiện">{standardFieldText(product.partName, product.partCode) ?? empty}</Field>
         <Field label="Xử lý">
           {product.stageName ? <Tag className="m-0" color={product.stageColor || undefined}>{product.stageName}</Tag> : empty}
         </Field>
+
         {forecast !== undefined ? (
           <>
             <Field label="Đơn đặt">{forecast ? formatNumber(forecast.customerOrdered) : "—"}</Field>
             <Field label="Dự kiến hết hàng">{stockoutText(forecast)}</Field>
+            <Field label="Cần đặt">
+              {forecast ? <span className="font-semibold tabular-nums">{formatNumber(forecast.toOrder)}</span> : "—"}
+            </Field>
           </>
         ) : null}
+        <Field label="Ghi chú">
+          {product.note ?? <Tag className="m-0" color="green">Đủ quy chuẩn</Tag>}
+        </Field>
       </div>
     </div>
   );

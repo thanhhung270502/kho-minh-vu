@@ -107,8 +107,8 @@ export function ProductTableBody({
           },
         })}
         loading={loading}
-        // +240px cho hai cột dự báo của quản lý / văn phòng.
-        scroll={{ x: 1340 }}
+        // Ảnh + mã + tên + tồn + 3 cột dự báo (quản lý / văn phòng) ≈ 1.040px.
+        scroll={{ x: 1040 }}
         onChange={(pagination, _filters, sorter) =>
           handleTableChange(pagination, sorter)
         }
