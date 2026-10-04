@@ -1609,6 +1609,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      _ma_ban_ra: {
+        Args: { p_san_pham_id: string; p_so_luong: number }
+        Returns: {
+          san_pham_id: string
+          so_luong: number
+        }[]
+      }
       _pham_vi_kiem_ke: {
         Args: { p_chung_tu_id: string }
         Returns: {
