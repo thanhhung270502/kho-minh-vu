@@ -22,6 +22,7 @@ import {
   type StandardFieldKey,
 } from "../lib/standard-fields";
 import type { Lookups } from "../types";
+import { SharedVehiclesField } from "./shared-vehicles-field";
 
 type Props = {
   control: Control<ProductFormValues>;
@@ -169,6 +170,13 @@ export function StandardFieldsSection({ control, setValue, getValues, lookups }:
           );
         })}
       </div>
+      <SharedVehiclesField
+        control={control}
+        setValue={setValue}
+        getValues={getValues}
+        entries={entries}
+        dictionary={dictionary}
+      />
     </div>
   );
 }

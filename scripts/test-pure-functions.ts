@@ -18,6 +18,7 @@ import { jobTitleSchema, titleCodeFromName } from "../src/features/settings/sche
 import { editUserFormSchema } from "../src/features/settings/schemas/user.schema";
 import { duplicateProblemsInFile } from "../src/features/products/lib/new-product-file";
 import { fillNamesFromSheet, readProductNameSheet } from "../src/features/products/lib/product-name-sheet";
+import { fromSharedVehiclesDb, toSharedVehiclesDb, usageLine, vehicleColumns, vehicleLabels, withUsageLine } from "../src/features/products/lib/shared-vehicles";
 import { INITIAL_IMPORT_STATE, importReducer } from "../src/features/products/lib/new-product-import-state";
 import { buildCodeDictionary, parseProductCode } from "../src/features/product-codes/lib/parse-product-code";
 import { SourceSheetError, readSourceSheet } from "../src/features/product-codes/lib/source-sheet";
@@ -224,7 +225,7 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
     conversion: 1, defaultWarehouseId: null, minStock: 0, maxStock: null,
     barcode: null, description: "Mô tả", isActive: true,
     kind: "COMBO", directSale: false, shelfLocation: "A-01",
-    brandCode: "H", modelCode: null, partCode: "75", manualFields: ["linh_kien"],
+    brandCode: "H", modelCode: null, partCode: "75", sharedVehicles: [], manualFields: ["linh_kien"],
   } satisfies ProductInput;
   const payload = toProductInsert(input);
   assert.ok(!("gia_ban" in payload), "payload ghi mã hàng không có gia_ban");
@@ -1277,6 +1278,47 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.deepEqual(draftProblems(edited.drafts, edited.catalog).get(4), ["Thiếu tên hàng"], "mã không có trong sheet vẫn báo thiếu tên");
 }
 
+// --- Xe dùng chung nhiều hãng / dòng (0093) --------------------------------
+{
+  const dict = dictionaryFromEntries([
+    { loai: "hang", ma: "H", ten: "HONDA", ma_hang: null, thu_tu: 1 },
+    { loai: "hang", ma: "Y", ten: "YAMAHA", ma_hang: null, thu_tu: 2 },
+    { loai: "dong", ma: "A", ten: "Air Blade", ma_hang: "H", thu_tu: 3 },
+    { loai: "dong", ma: "V", ten: "Vision", ma_hang: "H", thu_tu: 4 },
+    { loai: "dong", ma: "AC", ten: "Acruzo", ma_hang: "Y", thu_tu: 5 },
+  ]);
+  // Đọc: bỏ phần tử sai dạng; khóa "hang"/"dong" là hợp đồng jsonb.
+  assert.deepEqual(fromSharedVehiclesDb([{ hang: "Y", dong: "AC" }, { hang: "" }, "rác", { hang: "H", dong: "" }]), [
+    { brandCode: "Y", modelCode: "AC" },
+    { brandCode: "H", modelCode: null },
+  ]);
+  assert.deepEqual(fromSharedVehiclesDb(null), []);
+  // Ghi: bỏ dòng chưa chọn hãng, bỏ trùng và bỏ cặp trùng xe chính.
+  assert.deepEqual(
+    toSharedVehiclesDb(
+      [{ brandCode: "Y", modelCode: "AC" }, { brandCode: "y", modelCode: "ac" }, { brandCode: "H", modelCode: "A" }, { brandCode: null, modelCode: null }],
+      { brandCode: "H", modelCode: "A" },
+    ),
+    [{ hang: "Y", dong: "AC" }],
+  );
+  const labels = vehicleLabels(dict, { brandCode: "H", modelCode: "A" }, [{ brandCode: "Y", modelCode: "AC" }, { brandCode: "H", modelCode: "V" }]);
+  assert.deepEqual(labels, ["HONDA Air Blade", "YAMAHA Acruzo", "HONDA Vision"]);
+  assert.equal(usageLine(labels.slice(0, 2)), "Dùng cho xe HONDA Air Blade và YAMAHA Acruzo");
+  assert.equal(usageLine(labels), "Dùng cho xe HONDA Air Blade, YAMAHA Acruzo và HONDA Vision");
+  assert.equal(usageLine(["HONDA Air Blade"]), null, "một xe không cần câu dùng chung");
+  // Mô tả: thay dòng đầu do hệ thống quản lý, giữ phần người dùng viết.
+  assert.equal(withUsageLine("Hàng loại 1", "Dùng cho xe A và B"), "Dùng cho xe A và B\nHàng loại 1");
+  assert.equal(withUsageLine("Dùng cho xe A và B\nHàng loại 1", "Dùng cho xe A, B và C"), "Dùng cho xe A, B và C\nHàng loại 1");
+  assert.equal(withUsageLine("Dùng cho xe A và B\nHàng loại 1", null), "Hàng loại 1");
+  assert.equal(withUsageLine("Dùng cho xe A và B", null), null);
+  assert.equal(withUsageLine(null, "Dùng cho xe A và B"), "Dùng cho xe A và B");
+  // Cột bảng: hãng không lặp, dòng theo thứ tự.
+  assert.deepEqual(vehicleColumns(dict, { brandCode: "H", modelCode: "A" }, [{ brandCode: "H", modelCode: "V" }, { brandCode: "Y", modelCode: "AC" }]), {
+    brands: ["HONDA", "YAMAHA"],
+    models: ["Air Blade", "Vision", "Acruzo"],
+  });
+}
+
 // --- Phase 16: chức vụ & quyền (QUYEN-01/02) ------------------------------
 {
   // Khóa = giá trị CHECK của chuc_vu_quyen.quyen (0082) — đúng 9, đúng thứ tự yêu cầu.
@@ -1309,7 +1351,7 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
     code: "HA26-33K-PC", name: "Hộc chứa đồ", categoryId: "c", unitId: "u", stageId: "s",
     conversion: 2, defaultWarehouseId: "k", minStock: 1, maxStock: 9, barcode: "123",
     description: "n", isActive: false, kind: "COMBO", directSale: false,
-    shelfLocation: "A-1", brandCode: "H", modelCode: "A", partCode: "75", manualFields: [],
+    shelfLocation: "A-1", brandCode: "H", modelCode: "A", partCode: "75", sharedVehicles: [], manualFields: [],
   });
   assert.equal(copied.code, "");
   assert.equal(copied.barcode, null, "barcode thường là duy nhất — không chép");
@@ -1336,7 +1378,7 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
     code: "A", name: "B", categoryId: null, unitId: null, stageId: "s", conversion: 1,
     defaultWarehouseId: null, minStock: 0, maxStock: null, barcode: null, description: "d", isActive: true,
     kind: "HANG_HOA", directSale: true, shelfLocation: null,
-    brandCode: "H", modelCode: null, partCode: null, manualFields: ["dong_xe"],
+    brandCode: "H", modelCode: null, partCode: null, sharedVehicles: [], manualFields: ["dong_xe"],
   });
   assert.equal(form.unitId, "", "ĐVT null → chuỗi rỗng để Select hiện ô trống");
   assert.deepEqual(form.manualFields, ["dong_xe"]);

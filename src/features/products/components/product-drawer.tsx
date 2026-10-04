@@ -41,6 +41,7 @@ const EMPTY_FORM: ProductFormValues = {
   brandCode: null,
   modelCode: null,
   partCode: null,
+  sharedVehicles: [],
   manualFields: [],
 };
 
@@ -133,6 +134,7 @@ export function ProductDrawer({ id, open, onClose, copyFromId = null }: Props) {
       brandCode: values.brandCode,
       modelCode: values.modelCode,
       partCode: values.partCode,
+      sharedVehicles: values.sharedVehicles,
       manualFields: values.manualFields,
     };
 

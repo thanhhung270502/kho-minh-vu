@@ -1,5 +1,7 @@
 import type { Database } from "@/types/database.types";
 
+import { fromSharedVehiclesDb, toSharedVehiclesDb, type SharedVehicle } from "./lib/shared-vehicles";
+
 type Fn = Database["public"]["Functions"];
 
 // --- Hàng thô từ database (khóa snake_case tiếng Việt) ----------------------
@@ -34,6 +36,8 @@ export type ProductRow = {
   brandCode: string | null;
   modelCode: string | null;
   partCode: string | null;
+  /** Hãng / dòng xe dùng chung ngoài cặp chính (0093). */
+  sharedVehicles: SharedVehicle[];
   /** Ghi chú tự sinh: null = đủ quy chuẩn, có chữ = thiếu trường nào. */
   note: string | null;
   manualFields: string[];
@@ -155,6 +159,7 @@ export type ProductInput = {
   brandCode: string | null;
   modelCode: string | null;
   partCode: string | null;
+  sharedVehicles: Array<{ brandCode: string | null; modelCode: string | null }>;
   /** Ô quy chuẩn chọn tay — giá trị CHECK truong_chon_tay (0087). */
   manualFields: string[];
 };
@@ -180,6 +185,7 @@ export function toProductInsert(input: ProductInput): ProductInsert {
     hang_xe: input.brandCode,
     dong_xe: input.modelCode,
     linh_kien: input.partCode,
+    xe_dung_chung: toSharedVehiclesDb(input.sharedVehicles, input),
     truong_chon_tay: input.manualFields,
     duoc_ban_truc_tiep: input.directSale,
     vi_tri_ke: input.shelfLocation,
@@ -216,6 +222,7 @@ export function toProductRow(row: ProductRowDb): ProductRow {
     brandCode: row.hang_xe,
     modelCode: row.dong_xe,
     partCode: row.linh_kien,
+    sharedVehicles: fromSharedVehiclesDb(row.xe_dung_chung),
     note: row.ghi_chu,
     // Kiểu sinh ghi `string[]` nhưng cột text[] có thể null với dòng cũ.
     manualFields: row.truong_chon_tay ?? [],
@@ -265,6 +272,7 @@ export function toProductDetail(row: ProductDetailDb): ProductDetail {
     modelName: row.ten_dong_xe,
     partCode: row.linh_kien,
     partName: row.ten_linh_kien,
+    sharedVehicles: fromSharedVehiclesDb(row.xe_dung_chung),
     finishCode: row.ma_xu_ly,
     manualFields: row.truong_chon_tay ?? [],
   };

@@ -15,6 +15,7 @@ import { ComboComponents } from "./combo-components";
 import { ProductDrawer } from "./product-drawer";
 import { StockCard } from "./stock-card";
 import { WarehouseStock } from "./warehouse-stock";
+import { SharedVehiclesText } from "./shared-vehicles-text";
 
 export type ProductDetailPermissions = {
   canEdit: boolean;
@@ -42,6 +43,7 @@ const FIELD_LABELS: Record<string, string> = {
   hang_xe: "Hãng xe",
   dong_xe: "Dòng xe",
   linh_kien: "Linh kiện",
+  xe_dung_chung: "Xe dùng chung",
   // Cột Phase 15 đã bỏ (0086) — giữ nhãn để đọc nhật ký sửa cũ.
   loai_hang_id: "Loại hàng (cũ)",
   dong_xe_id: "Dòng xe (cũ)",
@@ -135,6 +137,7 @@ export function ProductDetailView({
                 { key: "kind", label: "Loại hàng", children: PRODUCT_KIND_LABELS[product.kind] },
                 { key: "brand", label: "Hãng xe", children: standardFieldText(product.brandName, product.brandCode) ?? "—" },
                 { key: "model", label: "Dòng xe", children: standardFieldText(product.modelName, product.modelCode) ?? "—" },
+                { key: "shared", label: "Xe dùng chung", children: <SharedVehiclesText vehicles={product.sharedVehicles} /> },
                 { key: "part", label: "Linh kiện", children: standardFieldText(product.partName, product.partCode) ?? "—" },
                 { key: "unit", label: "Đơn vị tính", children: product.unitName },
                 {

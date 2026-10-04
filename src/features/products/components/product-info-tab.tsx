@@ -9,6 +9,7 @@ import { ProductImagePreview } from "@/features/images/components/product-image-
 import { standardFieldText, type ProductForecast } from "../lib/product-expanded";
 import { PRODUCT_KIND_LABELS, type ProductDetail } from "../types";
 import { formatNumber } from "../lib/format";
+import { SharedVehiclesText } from "./shared-vehicles-text";
 
 type Props = {
   product: ProductDetail;
@@ -74,6 +75,9 @@ export function ProductInfoTab({ product, forecast }: Props) {
         <Field label="Kho mặc định">{product.defaultWarehouseName ?? empty}</Field>
         <Field label="Hãng xe">{standardFieldText(product.brandName, product.brandCode) ?? empty}</Field>
         <Field label="Dòng xe">{standardFieldText(product.modelName, product.modelCode) ?? empty}</Field>
+        {product.sharedVehicles.length > 0 ? (
+          <Field label="Xe dùng chung"><SharedVehiclesText vehicles={product.sharedVehicles} /></Field>
+        ) : null}
         <Field label="Linh kiện">{standardFieldText(product.partName, product.partCode) ?? empty}</Field>
         <Field label="Ghi chú">
           {product.note ?? <Tag className="m-0" color="green">Đủ quy chuẩn</Tag>}

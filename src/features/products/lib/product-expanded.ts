@@ -73,6 +73,7 @@ export function toProductFormValues(product: ProductFormSource): ProductFormValu
     brandCode: product.brandCode,
     modelCode: product.modelCode,
     partCode: product.partCode,
+    sharedVehicles: product.sharedVehicles,
     // Cột text[] có CHECK 4 giá trị (0087) — kiểu sinh ra chỉ biết string[].
     manualFields: product.manualFields as ProductFormValues["manualFields"],
     shelfLocation: product.shelfLocation,

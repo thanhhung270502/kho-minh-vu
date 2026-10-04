@@ -8,6 +8,7 @@ import type { CodeDictionary } from "@/features/product-codes/lib/parse-product-
 
 import { formatNumber } from "../lib/format";
 import type { ProductForecast } from "../lib/product-expanded";
+import { vehicleColumns } from "../lib/shared-vehicles";
 import { standardNames } from "../lib/standard-fields";
 import type { ProductRow } from "../types";
 
@@ -30,20 +31,26 @@ export function standardColumns(dictionary: CodeDictionary): TableColumnsType<Pr
     );
   };
   const names = (row: ProductRow) => standardNames(dictionary, row);
+  // Hàng dùng chung nhiều xe (0093): "HONDA, YAMAHA" / "Air Blade, Acruzo".
+  const shared = (row: ProductRow, key: "brands" | "models") => {
+    if (row.sharedVehicles.length === 0) return null;
+    const text = vehicleColumns(dictionary, row, row.sharedVehicles)[key].join(", ");
+    return text ? <Tooltip title={text}>{text}</Tooltip> : null;
+  };
   return [
     {
       title: "Hãng xe",
       key: "brand",
       width: 110,
       ellipsis: true,
-      render: (_: unknown, row) => cell(names(row).brandName, row.brandCode),
+      render: (_: unknown, row) => shared(row, "brands") ?? cell(names(row).brandName, row.brandCode),
     },
     {
       title: "Dòng xe",
       key: "model",
       width: 130,
       ellipsis: true,
-      render: (_: unknown, row) => cell(names(row).modelName, row.modelCode),
+      render: (_: unknown, row) => shared(row, "models") ?? cell(names(row).modelName, row.modelCode),
     },
     {
       title: "Linh kiện",
