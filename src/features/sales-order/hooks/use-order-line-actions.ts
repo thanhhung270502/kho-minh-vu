@@ -33,9 +33,14 @@ export function useOrderLineActions(orderId: string, staff: StaffRef[]) {
     }
   }
 
-  async function addLine(line: OrderLineInput): Promise<boolean> {
+  async function addLine(line: OrderLineInput, productCode?: string): Promise<boolean> {
     try {
-      await add.mutateAsync(line);
+      const result = await add.mutateAsync(line);
+      if (result.merged) {
+        message.info(
+          `Đã cộng thêm ${line.quantity.toLocaleString("vi-VN")} vào dòng ${productCode ?? "đã có"} — nay ${result.quantity.toLocaleString("vi-VN")}.`,
+        );
+      }
     } catch (error) {
       fail(error);
       return false;
