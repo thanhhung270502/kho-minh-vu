@@ -1,15 +1,12 @@
 "use client";
 
-import { Tag, Typography } from "antd";
-import { useState } from "react";
+import { Tag } from "antd";
 
 import { partnerLabel, type OrderRecipients } from "@/shared/lib/recipient";
 
-import {
-  orderRecipientsSchema,
-  type OrderRecipientsInput,
-} from "../schemas/order.schema";
-import { RecipientPicker, type RecipientValue } from "./recipient-picker";
+import { useRecipientSaveQueue } from "../hooks/use-recipient-save-queue";
+import type { OrderRecipientsInput } from "../schemas/order.schema";
+import { RecipientPicker } from "./recipient-picker";
 
 type Props = {
   recipients: OrderRecipients;
@@ -18,40 +15,27 @@ type Props = {
 };
 
 /**
- * Giá trị luôn lấy từ server: lưu lỗi thì ô quay về người nhận đã lưu. Mỗi lần
- * đổi gửi cả tập (dat_nguoi_nhan_don). Đơn tạm được để trống (0097) — chỉ lúc
- * Xác nhận đơn database mới đòi có người nhận.
+ * Mỗi lần đổi gửi cả tập (dat_nguoi_nhan_don), lần lượt từng lần. Đơn tạm được
+ * để trống (0097) — chỉ lúc Xác nhận đơn database mới đòi có người nhận.
  */
 export function OrderRecipientField({ recipients, onSave }: Props) {
-  const [localError, setLocalError] = useState<string | null>(null);
-
-  function change(next: RecipientValue) {
-    const parsed = orderRecipientsSchema.safeParse({
-      partnerId: next.partnerId ?? null,
-      staffIds: next.staffIds,
-    });
-    if (!parsed.success) {
-      setLocalError("Đơn phải có ít nhất một người nhận.");
-      return;
-    }
-    setLocalError(null);
-    void onSave(parsed.data);
-  }
+  const { value, change } = useRecipientSaveQueue(
+    {
+      partnerId: recipients.partner?.id ?? null,
+      staffIds: recipients.staff.map((person) => person.id),
+    },
+    onSave,
+  );
 
   return (
-    <div className="flex flex-col gap-1">
-      <RecipientPicker
-        partnerId={recipients.partner?.id}
-        staffIds={recipients.staff.map((person) => person.id)}
-        extraStaff={recipients.staff}
-        onChange={change}
-      />
-      {localError ? (
-        <Typography.Text type="danger" className="text-xs">
-          {localError}
-        </Typography.Text>
-      ) : null}
-    </div>
+    <RecipientPicker
+      partnerId={value.partnerId ?? undefined}
+      staffIds={value.staffIds}
+      extraStaff={recipients.staff}
+      onChange={(next) =>
+        change({ partnerId: next.partnerId ?? null, staffIds: next.staffIds })
+      }
+    />
   );
 }
 

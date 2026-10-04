@@ -18,6 +18,8 @@ type Props = {
   size?: "small" | "middle";
   /** Người đã ngừng dùng nhưng vẫn đang là giá trị — để còn hiện được tên. */
   extraOptions?: StaffRef[];
+  /** Cho thêm nhanh nhân viên ngay trong ô. Tắt ở bộ lọc và ở từng dòng bảng. */
+  allowQuickAdd?: boolean;
 };
 
 /**
@@ -32,6 +34,7 @@ export function StaffSelect({
   placeholder = "Gõ tên nhân viên nhận hàng",
   size,
   extraOptions,
+  allowQuickAdd = false,
 }: Props) {
   const staff = useInternalRecipients();
   const [search, setSearch] = useState("");
@@ -91,34 +94,40 @@ export function StaffSelect({
           ) : (
             <div className="flex flex-col items-start gap-1 px-1 py-1">
               <span className="text-xs text-chu-phu">
-                {search.trim()
-                  ? `Chưa có nhân viên "${search.trim()}".`
-                  : "Chưa có nhân viên phụ trách nào."}
+                {allowQuickAdd
+                  ? search.trim()
+                    ? `Chưa có nhân viên "${search.trim()}".`
+                    : "Chưa có nhân viên phụ trách nào."
+                  : "Không có nhân viên nào khớp. Thêm hoặc bật lại nhân viên ở Cài đặt → Nhân viên phụ trách."}
               </span>
-              <Button
-                size="small"
-                type="link"
-                className="h-auto px-0"
-                // Giữ dropdown và chữ đang gõ cho tới khi modal mở.
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => setCreateName(search)}
-              >
-                + Thêm nhân viên phụ trách
-              </Button>
+              {allowQuickAdd ? (
+                <Button
+                  size="small"
+                  type="link"
+                  className="h-auto px-0"
+                  // Giữ dropdown và chữ đang gõ cho tới khi modal mở.
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => setCreateName(search)}
+                >
+                  + Thêm nhân viên phụ trách
+                </Button>
+              ) : null}
             </div>
           )
         }
       />
-      <QuickStaffModal
-        open={createName !== null}
-        initialName={createName ?? ""}
-        onClose={() => setCreateName(null)}
-        onCreated={(person) => {
-          setCreateName(null);
-          setSearch("");
-          onChange(person.id, person.name);
-        }}
-      />
+      {allowQuickAdd ? (
+        <QuickStaffModal
+          open={createName !== null}
+          initialName={createName ?? ""}
+          onClose={() => setCreateName(null)}
+          onCreated={(person) => {
+            setCreateName(null);
+            setSearch("");
+            onChange(person.id, person.name);
+          }}
+        />
+      ) : null}
     </>
   );
 }

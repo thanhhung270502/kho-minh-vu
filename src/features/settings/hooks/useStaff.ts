@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { internalRecipientKeys } from "@/shared/api/internal-recipient.api";
 
 import { fetchStaff, saveStaff, staffKeys } from "../api/staff.api";
-import type { StaffFormValues } from "../schemas/staff.schema";
+import type { StaffFormValues } from "@/shared/schemas/staff.schema";
 
 export function useStaff() {
   return useQuery({ queryKey: staffKeys.all, queryFn: fetchStaff });

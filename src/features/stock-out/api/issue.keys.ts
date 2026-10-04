@@ -12,4 +12,7 @@ export const issueKeys = {
   /** Gợi ý mã gần giống (D-14) — theo mã hàng và kho đang xuất âm. */
   similar: (productId: string, warehouseId: string) =>
     ["documents", "similar-codes", productId, warehouseId] as const,
+  /** Kho còn nhiều hàng nhất của một mã — chọn kho cho dòng khi mã chưa gán kho. */
+  stockedWarehouse: (productId: string) =>
+    ["documents", "stocked-warehouse", productId] as const,
 };

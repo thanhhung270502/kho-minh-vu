@@ -40,6 +40,10 @@ const COLUMNS: TableColumnsType<OrderRow> = [
     width: 260,
     render: (recipients: OrderRow["recipients"]) => {
       const [first, ...rest] = recipients.staff;
+      // Đơn tạm được tạo trống người nhận (0097) — không phải đơn "Nội bộ".
+      if (!recipients.partner && !first) {
+        return <span className="text-chu-phu">Chưa chọn người nhận</span>;
+      }
       return (
         <span className="flex flex-wrap items-center gap-1.5">
           {recipients.partner ? (

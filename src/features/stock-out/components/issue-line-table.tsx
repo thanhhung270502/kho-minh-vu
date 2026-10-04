@@ -10,6 +10,7 @@ import { SummaryRow } from "@/shared/components/summary-row";
 import { useFocusOnOpen } from "@/shared/hooks/use-focus-on-open";
 import { explainError } from "@/shared/lib/errors";
 
+import { useLineWarehouse } from "../hooks/use-line-warehouse";
 import {
   useAddIssueLine,
   useDeleteIssueLine,
@@ -24,10 +25,9 @@ type Props = { issue: IssueDetail; lines: IssueLine[]; editable: boolean };
 type DraftLine = {
   product: ProductSearchResult | null;
   quantity: number | null;
-  warehouseId: string | null;
 };
 
-const EMPTY_DRAFT: DraftLine = { product: null, quantity: null, warehouseId: null };
+const EMPTY_DRAFT: DraftLine = { product: null, quantity: null };
 
 /**
  * Bảng dòng phiếu xuất (XUAT-07): gõ mã → Enter (bắt ở `onKeyDownCapture`
@@ -36,7 +36,8 @@ const EMPTY_DRAFT: DraftLine = { product: null, quantity: null, warehouseId: nul
  * (bẫy 14b). Không có cột nào về tiền — phiếu xuất không mang giá bán.
  *
  * Kho ẩn trên hóa đơn (04/10/2026): mỗi dòng vẫn ghi kho — kho mặc định của
- * mã, mã chưa gán thì kho đầu phiếu — nhưng không hiện, không cho chọn.
+ * mã, mã chưa gán thì kho đang còn hàng (xem useLineWarehouse) — nhưng không
+ * hiện, không cho chọn.
  *
  * D-12 lớp 1: `currentStock` là ảnh chụp lúc tải dòng, KHÔNG phải số thời
  * gian thực. So với số đang gõ dở (chưa lưu) để dòng đổi màu NGAY.
@@ -46,8 +47,11 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
   const addLine = useAddIssueLine(issue.id);
   const updateLine = useUpdateIssueLine(issue.id);
   const deleteLine = useDeleteIssueLine(issue.id);
+  const lineWarehouse = useLineWarehouse();
 
   const [draft, setDraft] = useState<DraftLine>(EMPTY_DRAFT);
+  // Tìm kho theo tồn chạy TRƯỚC mutation — khóa cả khoảng đó để Enter 2 lần không thành 2 dòng.
+  const [savingDraft, setSavingDraft] = useState(false);
   // Số đang gõ dở theo từng dòng (chưa lưu) — dùng để tô màu NGAY.
   const [pendingQuantities, setPendingQuantities] = useState<Record<string, number>>({});
 
@@ -85,22 +89,36 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
   }
 
   function handleSelectProduct(product: ProductSearchResult) {
-    // Kho không còn hiện để chọn — mã chưa gán kho mặc định rơi về kho đầu phiếu.
-    setDraft({ product, quantity: null, warehouseId: product.defaultWarehouseId ?? issue.warehouseId });
+    setDraft({ product, quantity: null });
+    lineWarehouse.prefetch(product);
     setTimeout(() => quantityInput.current?.focus(), 0);
   }
 
   async function saveDraftLine() {
-    const { product, quantity, warehouseId } = draft;
-    if (!product || !quantity || quantity <= 0 || !warehouseId) {
+    const { product, quantity } = draft;
+    if (savingDraft) return;
+    if (!product || !quantity || quantity <= 0) {
       message.warning("Nhập mã hàng và số lượng lớn hơn 0.");
       return;
     }
+    setSavingDraft(true);
     await runMutation(async () => {
+      const { warehouseId, stockedWarehouseName } = await lineWarehouse.resolve(
+        product,
+        issue.warehouseId,
+      );
+      if (!warehouseId) {
+        message.warning(`Mã ${product.code} chưa gán kho mặc định và không kho nào còn hàng. Gán kho cho mã ở Danh mục rồi thêm lại.`);
+        return;
+      }
       await addLine.mutateAsync({ productId: product.id, quantity, warehouseId });
+      if (stockedWarehouseName && warehouseId !== issue.warehouseId) {
+        message.info(`Mã ${product.code} chưa gán kho — xuất từ ${stockedWarehouseName}, nơi đang còn hàng.`);
+      }
       setDraft(EMPTY_DRAFT);
       setTimeout(() => codeInput.current?.focus(), 0);
     });
+    setSavingDraft(false);
   }
 
   function editQuantity(id: string, quantity: number) {
@@ -159,7 +177,7 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
           quantityInputRef={quantityInput}
           quantity={draft.quantity}
           selectedProduct={draft.product}
-          pending={addLine.isPending}
+          pending={savingDraft || addLine.isPending}
           onSelectProduct={handleSelectProduct}
           onQuantityChange={(value) =>
             setDraft((current) => ({ ...current, quantity: value }))

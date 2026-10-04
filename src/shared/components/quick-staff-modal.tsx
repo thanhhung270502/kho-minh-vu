@@ -8,7 +8,7 @@ import { Controller, useForm } from "react-hook-form";
 import {
   staffSchema,
   type StaffFormValues,
-} from "@/features/settings/schemas/staff.schema";
+} from "@/shared/schemas/staff.schema";
 import type { InternalRecipientOption } from "@/shared/api/internal-recipient.api";
 import { useCreateInternalRecipient } from "@/shared/hooks/use-create-internal-recipient";
 import { errorCode, explainError } from "@/shared/lib/errors";

@@ -137,7 +137,7 @@ import {
   toStaffRefs,
 } from "../src/shared/lib/recipient";
 import { SETTINGS_TABS, firstTabFor, tabsFor } from "../src/features/settings/lib/settings-tabs";
-import { staffSchema } from "../src/features/settings/schemas/staff.schema";
+import { staffSchema } from "../src/shared/schemas/staff.schema";
 import { toDocumentDetail, toDocumentLineRecipient, withLineRecipients } from "../src/features/documents/types";
 import { toDocumentUpdate } from "../src/features/documents/schemas/document.schema";
 import {
@@ -1331,9 +1331,17 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.equal(usageLine(["HONDA Air Blade"]), null, "một xe không cần câu dùng chung");
   // Mô tả: thay dòng đầu do hệ thống quản lý, giữ phần người dùng viết.
   assert.equal(withUsageLine("Hàng loại 1", "Dùng cho xe A và B"), "Dùng cho xe A và B\nHàng loại 1");
-  assert.equal(withUsageLine("Dùng cho xe A và B\nHàng loại 1", "Dùng cho xe A, B và C"), "Dùng cho xe A, B và C\nHàng loại 1");
-  assert.equal(withUsageLine("Dùng cho xe A và B\nHàng loại 1", null), "Hàng loại 1");
-  assert.equal(withUsageLine("Dùng cho xe A và B", null), null);
+  const A = "Dùng cho xe A và B";
+  const C = "Dùng cho xe A, B và C";
+  // Chỉ thay/bỏ dòng đầu khi nó đúng là dòng hệ thống sinh lần trước.
+  assert.equal(withUsageLine(`${A}\nHàng loại 1`, C, A), `${C}\nHàng loại 1`);
+  assert.equal(withUsageLine(`${A}\nHàng loại 1`, null, A), "Hàng loại 1");
+  assert.equal(withUsageLine(A, null, A), null);
+  // Dòng "Dùng cho xe …" do người dùng / KiotViet viết thì giữ nguyên.
+  assert.equal(withUsageLine("Dùng cho xe Wave\nx", null, null), "Dùng cho xe Wave\nx");
+  assert.equal(withUsageLine("Dùng cho xe Wave\nx", A, null), `${A}\nDùng cho xe Wave\nx`);
+  assert.equal(withUsageLine("Dùng cho xe Wave", null, A), "Dùng cho xe Wave");
+  assert.equal(withUsageLine(`${A}\nx`, A, null), `${A}\nx`);
   assert.equal(withUsageLine(null, "Dùng cho xe A và B"), "Dùng cho xe A và B");
   // Cột bảng: hãng không lặp, dòng theo thứ tự.
   assert.deepEqual(vehicleColumns(dict, { brandCode: "H", modelCode: "A" }, [{ brandCode: "H", modelCode: "V" }, { brandCode: "Y", modelCode: "AC" }]), {
