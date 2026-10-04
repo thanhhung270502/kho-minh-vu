@@ -23,7 +23,7 @@ import { PARTNER_KIND_LABELS, type PartnerKind } from "../types";
 const EMPTY_FORM: PartnerFormValues = {
   code: "",
   name: "",
-  kind: "KHACH",
+  kind: "NCC",
   phone: "",
   email: "",
   address: "",
@@ -32,6 +32,8 @@ const EMPTY_FORM: PartnerFormValues = {
   note: "",
   isActive: true,
 };
+
+const SUPPLIER_KINDS: PartnerKind[] = ["NCC", "CA_HAI"];
 
 type Props = { id: string | null; open: boolean; onClose: () => void };
 
@@ -126,7 +128,9 @@ export function PartnerDrawer({ id, open, onClose }: Props) {
               control={control}
               render={({ field }) => (
                 <Radio.Group {...field} optionType="button" buttonStyle="solid">
-                  {(Object.keys(PARTNER_KIND_LABELS) as PartnerKind[]).map(
+                  {/* Thêm mới từ trang Đối tác chỉ ra nhà cung cấp; sửa một khách
+                      (mở qua ?chon= từ màn rà ghi chú) vẫn giữ đủ ba loại. */}
+                  {(isNew ? SUPPLIER_KINDS : (Object.keys(PARTNER_KIND_LABELS) as PartnerKind[])).map(
                     (option) => (
                       <Radio.Button key={option} value={option}>
                         {PARTNER_KIND_LABELS[option]}

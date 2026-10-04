@@ -61,7 +61,7 @@ export function PartnerToolbar({ filter, canEdit, onChange, onAdd }: Props) {
 
       {canEdit ? (
         <Button type="primary" className="ms-auto" onClick={onAdd}>
-          Thêm đối tác
+          Thêm nhà cung cấp
         </Button>
       ) : null}
     </div>

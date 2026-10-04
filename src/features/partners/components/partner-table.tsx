@@ -28,11 +28,7 @@ import { PartnerToolbar } from "./partner-toolbar";
 const PAGE_SIZE = 50;
 
 function hasActiveFilter(filter: PartnerFilter): boolean {
-  return (
-    filter.q !== "" ||
-    filter.kind !== null ||
-    filter.activeStatus !== DEFAULT_PARTNER_FILTER.activeStatus
-  );
+  return filter.q !== "" || filter.activeStatus !== DEFAULT_PARTNER_FILTER.activeStatus;
 }
 
 export function PartnerTable({ canEdit }: { canEdit: boolean }) {
@@ -40,9 +36,12 @@ export function PartnerTable({ canEdit }: { canEdit: boolean }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const filter = readPartnerFilterFromUrl(searchParams);
+  // Bỏ `?loai=` của link cũ — trang này không còn lọc theo loại.
+  const filter: PartnerFilter = { ...readPartnerFilterFromUrl(searchParams), kind: null };
   const selectedId = readSelectedId(searchParams);
-  const partners = usePartners(filter);
+  // Trang Đối tác chỉ còn nhà cung cấp — RPC lọc "NCC" trả cả đối tác "Cả hai".
+  // Khách hàng vẫn chọn được khi tạo đơn đặt, chỉ không liệt kê ở đây.
+  const partners = usePartners({ ...filter, kind: "NCC" });
   // Sửa đối tác nằm trong panel chi tiết — ngăn kéo ở đây chỉ còn để thêm mới.
   const [addOpen, setAddOpen] = useState(false);
 
@@ -150,7 +149,7 @@ export function PartnerTable({ canEdit }: { canEdit: boolean }) {
                 </Button>
               </div>
             ) : (
-              "Chưa có đối tác nào. Bấm “Thêm đối tác” để tạo nhà cung cấp hoặc khách hàng đầu tiên."
+              "Chưa có nhà cung cấp nào. Bấm “Thêm nhà cung cấp” để tạo nhà cung cấp đầu tiên."
             )
           }
         >
