@@ -235,3 +235,48 @@ function kiemTraThietLap() {
   Logger.log('san-pham/thumb: ' + thumbFolder.getUrl());
   Logger.log('SECRET đã đặt: ' + (secretDaDat ? 'CÓ' : 'CHƯA — vào Project Settings > Script Properties để thêm'));
 }
+
+/**
+ * Chạy TAY một lần (04/10/2026): chuyển ảnh văn phòng chép tay vào san-pham/goc
+ * sang thư mục 'anh-nhap' cạnh 'san-pham', để script nạp ảnh đọc riêng và không
+ * lẫn với ảnh web tự lưu.
+ *
+ * CHỈ chuyển file đúng mẫu "<mã hàng>_<số>.jpg|jpeg|png" (một dấu '_'). Ảnh web
+ * tự lưu tên "<mã>__<uuid>.webp" (hai dấu '_', đuôi webp) KHÔNG khớp nên đứng
+ * yên — chuyển chúng đi là ảnh trên web hỏng.
+ *
+ * Apps Script dừng sau ~6 phút: hàm tự ngắt ở 5 phút và báo còn bao nhiêu file.
+ * Chạy lại cho tới khi log báo "Còn lại: 0" — file đã chuyển không bị chuyển lại.
+ */
+function chuyenAnhNhap() {
+  var MAU_TEN = /^[^_]+_\d+\.(jpe?g|png)$/i;
+  var HAN_MS = 5 * 60 * 1000;
+  var batDau = Date.now();
+
+  var goc = getFolder_('san-pham/goc');
+  var root = getRootFolder_();
+  var tim = root.getFoldersByName('anh-nhap');
+  var dich = tim.hasNext() ? tim.next() : root.createFolder('anh-nhap');
+
+  var daChuyen = 0;
+  var conLai = 0;
+  var boQua = 0;
+  var files = goc.getFiles();
+  while (files.hasNext()) {
+    var file = files.next();
+    if (!MAU_TEN.test(file.getName())) {
+      boQua++;
+      continue;
+    }
+    if (Date.now() - batDau > HAN_MS) {
+      conLai++;
+      continue;
+    }
+    file.moveTo(dich);
+    daChuyen++;
+  }
+
+  Logger.log('Đã chuyển: ' + daChuyen + ' file sang ' + dich.getUrl());
+  Logger.log('Còn lại: ' + conLai + (conLai > 0 ? ' — bấm Chạy lại hàm này' : ' — xong'));
+  Logger.log('Giữ nguyên (ảnh web / tên không đúng mẫu): ' + boQua);
+}
