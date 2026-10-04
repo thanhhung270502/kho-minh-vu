@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="e1dbc291-7aa1-4419-a1a8-bcfce0458d52"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics=""><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.googleapis.com"><style></style><style>body{margin:0;background:#ecebe8;font-family:system-ui,sans-serif}a{color:#0A0A0A;text-decoration:none}a:hover{color:#0A0A0A;text-decoration:underline}.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}.dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}.dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}.dv-next{margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}</style></helmet>
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">3b</a><span class="dv-tname">Kho Minh Vũ · hướng 3b — Tổng quan · Đơn đặt · Chi tiết đơn · Hàng hóa chi tiết</span></div>
+<div class="dv-opts">
+<div class="dv-opt" id="3b"><div class="dv-olabel"><a class="dv-oid" href="#3b">3b</a>Tổng quan</div>
+<div class="dv-card" style="width:1280px">
+<div style="background:#fff;font-family:'Manrope',sans-serif;color:#0A0A0A;font-size:14px;line-height:1.45">
+  <header style="height:60px;display:flex;align-items:center;gap:16px;padding:0 24px">
+    <div style="display:flex;align-items:center;gap:10px;width:260px">
+      <div style="width:28px;height:28px;border-radius:50%;background:#0A0A0A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800">MV</div>
+      <span style="font-weight:800;font-size:15px;letter-spacing:-.02em">Kho Minh Vũ</span>
+      <span style="color:#D4D4D4">/</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;padding:4px 8px;border-radius:8px;background:#F5F5F5">Tất cả kho<span style="font-size:9px;color:#8C8C8C">▼</span></span>
+    </div>
+    <div style="flex:1;display:flex;justify-content:center">
+      <div style="width:440px;height:38px;border-radius:10px;background:#F5F5F5;display:flex;align-items:center;gap:10px;padding:0 12px;color:#8C8C8C;font-size:13.5px">
+        <svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+        <span style="flex:1">Tìm mã hàng, số phiếu, đối tác…</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:#fff;border-radius:5px;padding:1px 6px;box-shadow:0 0 0 1px #E5E5E5">⌘ K</span>
+      </div>
+    </div>
+    <div style="width:260px;display:flex;justify-content:flex-end;align-items:center;gap:12px">
+      <span style="font-size:13px;font-weight:600;white-space:nowrap">Quản lý demo</span>
+      <div style="width:32px;height:32px;border-radius:50%;background:#E5E5E5;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700">QD</div>
+    </div>
+  </header>
+  <nav style="display:flex;gap:4px;padding:0 24px;border-bottom:1px solid #EDEDED">
+    <sc-for list="{{ nav3b }}" as="n" hint-placeholder-count="7">
+      <a style="display:flex;align-items:center;gap:6px;padding:10px 10px 12px;font-size:13.5px;font-weight:{{ n.fw }};color:{{ n.color }};border-bottom:2px solid {{ n.line }};margin-bottom:-1px;white-space:nowrap;text-decoration:none">{{ n.label }}<span style="font-size:9px;color:#A3A3A3">{{ n.caret }}</span></a>
+    </sc-for>
+  </nav>
+
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;padding:28px 24px 32px">
+    <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
+        <div><h1 style="margin:0;font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1.1">Tổng quan</h1><div style="font-size:13.5px;color:#8C8C8C;margin-top:4px">Cập nhật 08:42 · 19/09/2026</div></div>
+        <div style="display:flex;gap:8px">
+          <span style="flex:none;white-space:nowrap;height:36px;padding:0 14px;border-radius:9999px;border:1px solid #E5E5E5;display:flex;align-items:center;font-size:13px;font-weight:600">Xuất báo cáo</span>
+          <span style="flex:none;white-space:nowrap;height:36px;padding:0 14px;border-radius:9999px;background:#0A0A0A;color:#fff;display:flex;align-items:center;font-size:13px;font-weight:600">+ Tạo phiếu</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid #EDEDED;border-radius:16px;overflow:hidden">
+        <sc-for list="{{ kpiB }}" as="k" hint-placeholder-count="4">
+          <div style="padding:18px 20px;border-left:{{ k.bl }};display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:12.5px;color:#737373;font-weight:500">{{ k.label }}</span>
+            <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px">
+              <span style="white-space:nowrap;font-size:28px;font-weight:800;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums">{{ k.value }}<span style="font-size:14px;color:#A3A3A3;margin-left:3px;letter-spacing:0">{{ k.unit }}</span></span>
+              <svg sc-camel-view-box="0 0 80 28" sc-camel-preserve-aspect-ratio="none" style="width:56px;height:28px;flex:none"><path d="{{ k.spark }}" fill="none" stroke="#0A0A0A" stroke-width="1.5" stroke-linecap="round"></path></svg>
+            </div>
+            <span style="font-size:12px;font-weight:600;color:#525252">{{ k.delta }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="border:1px solid #EDEDED;border-radius:16px;padding:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+          <div style="display:flex;align-items:baseline;gap:14px"><span style="font-size:15px;font-weight:800;letter-spacing:-.01em">Nhập – Xuất</span><span style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#525252"><span style="width:8px;height:8px;border-radius:2px;background:#0A0A0A"></span>Nhập</span><span style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#525252"><span style="width:8px;height:8px;border-radius:2px;background:#D4D4D4"></span>Xuất</span></div>
+          <div style="display:flex;padding:3px;border-radius:9px;background:#F5F5F5;gap:2px;font-size:12.5px;font-weight:600"><span style="padding:3px 10px;color:#737373">7N</span><span style="padding:3px 10px;border-radius:7px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.08)">30N</span><span style="padding:3px 10px;color:#737373">90N</span></div>
+        </div>
+        <div style="height:170px;display:flex;align-items:flex-end;gap:5px;border-bottom:1px solid #E5E5E5">
+          <sc-for list="{{ days30 }}" as="d" hint-placeholder-count="30">
+            <div style="flex:1;display:flex;align-items:flex-end;gap:1px;height:100%"><div style="flex:1;background:#0A0A0A;border-radius:2px 2px 0 0;height:{{ d.nH }}px"></div><div style="flex:1;background:#D4D4D4;border-radius:2px 2px 0 0;height:{{ d.xH }}px"></div></div>
+          </sc-for>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11.5px;color:#A3A3A3"><span>21/8</span><span>28/8</span><span>4/9</span><span>11/9</span><span>19/9</span></div>
+      </div>
+
+      <div style="border:1px solid #EDEDED;border-radius:16px;overflow:hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px">
+          <span style="font-size:15px;font-weight:800;letter-spacing:-.01em">Tồn theo nhóm hàng</span>
+          <div style="display:flex;gap:16px;font-size:13px;font-weight:600"><span style="border-bottom:1.5px solid #0A0A0A">Nhóm hàng</span><span style="color:#A3A3A3">Công đoạn</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 240px 80px 60px;gap:16px;padding:8px 20px;font-size:12px;color:#8C8C8C;border-top:1px solid #EDEDED;background:#FAFAFA"><span>Nhóm</span><span>Tỷ trọng</span><span style="text-align:right">SL tồn</span><span style="text-align:right">%</span></div>
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="8">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 240px 80px 60px;gap:16px;padding:10px 20px;border-top:1px solid #F3F3F3;font-size:13.5px;align-items:center">
+            <span style="font-weight:600">{{ g.name }}</span>
+            <div style="height:6px;border-radius:99px;background:#F3F3F3"><div style="height:100%;border-radius:99px;background:#0A0A0A;width:{{ g.pct }}"></div></div>
+            <span style="text-align:right;font-variant-numeric:tabular-nums">{{ g.val }}</span>
+            <span style="text-align:right;color:#8C8C8C;font-variant-numeric:tabular-nums">{{ g.share }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <aside style="display:flex;flex-direction:column;gap:16px">
+      <div style="background:#F5F5F5;color:#0A0A0A;border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px"><span style="font-size:15px;font-weight:800">Cần xử lý</span><span style="font-size:12.5px;color:#8C8C8C">4 việc</span></div>
+        <sc-for list="{{ todoB }}" as="t" hint-placeholder-count="4">
+          <div style="display:flex;gap:12px;padding:12px 0;border-top:1px solid #E5E5E5">
+            <span style="font-size:22px;font-weight:800;letter-spacing:-.03em;width:30px;line-height:1.1">{{ t.n }}</span>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+              <div><div style="font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:{{ t.dot }}"></span>{{ t.title }}</div><div style="font-size:12.5px;color:#737373">{{ t.sub }}</div></div>
+              <span style="align-self:flex-start;font-size:12.5px;font-weight:700;padding:5px 10px;border-radius:9999px;background:#fff;color:#0A0A0A;box-shadow:0 0 0 1px #E5E5E5">{{ t.cta }} →</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border:1px solid #EDEDED;border-radius:18px;padding:18px 20px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px"><span style="font-size:14.5px;font-weight:800">Không luân chuyển</span><span style="font-size:12px;color:#8C8C8C">&gt; 30 ngày</span></div>
+        <sc-for list="{{ stale }}" as="r" hint-placeholder-count="5">
+          <div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid #F3F3F3">
+            <div style="min-width:0"><div style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500">{{ r.code }}</div><div style="font-size:12.5px;color:#737373;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div></div>
+            <span style="font-size:12.5px;font-weight:700;white-space:nowrap">{{ r.days }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </aside>
+  </div>
+</div>
+</div></div>
+
+<div class="dv-opt" id="5a"><div class="dv-olabel"><a class="dv-oid" href="#5a">5a</a>Danh sách đơn đặt</div>
+<div class="dv-card" style="width:1440px">
+<div style="background:#fff;font-family:'Manrope',sans-serif;color:#0A0A0A;font-size:14px;line-height:1.45;min-height:860px">
+  <header style="height:60px;display:flex;align-items:center;gap:16px;padding:0 24px">
+    <div style="display:flex;align-items:center;gap:10px;width:300px">
+      <div style="width:28px;height:28px;border-radius:50%;background:#0A0A0A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800">MV</div>
+      <span style="font-weight:800;font-size:15px;letter-spacing:-.02em">Kho Minh Vũ</span><span style="color:#D4D4D4">/</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;padding:4px 8px;border-radius:8px;background:#F5F5F5">Tất cả kho<span style="font-size:9px;color:#8C8C8C">▼</span></span>
+    </div>
+    <div style="flex:1;display:flex;justify-content:center">
+      <div style="width:460px;height:38px;border-radius:10px;background:#F5F5F5;display:flex;align-items:center;gap:10px;padding:0 12px;color:#8C8C8C;font-size:13.5px"><svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><span style="flex:1">Tìm mã hàng, số phiếu, đối tác…</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:#fff;border-radius:5px;padding:1px 6px;box-shadow:0 0 0 1px #E5E5E5">⌘ K</span></div>
+    </div>
+    <div style="width:300px;display:flex;justify-content:flex-end;align-items:center;gap:12px"><span style="font-size:13px;font-weight:600;white-space:nowrap">Quản lý demo</span><div style="width:32px;height:32px;border-radius:50%;background:#E5E5E5;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700">QD</div></div>
+  </header>
+  <nav style="display:flex;gap:4px;padding:0 24px;border-bottom:1px solid #EDEDED">
+    <sc-for list="{{ nav5 }}" as="n" hint-placeholder-count="7">
+      <a style="display:flex;align-items:center;gap:6px;padding:10px 10px 12px;font-size:13.5px;font-weight:{{ n.fw }};color:{{ n.color }};border-bottom:2px solid {{ n.line }};margin-bottom:-1px;white-space:nowrap;text-decoration:none">{{ n.label }}<span style="font-size:9px;color:#A3A3A3">{{ n.caret }}</span></a>
+    </sc-for>
+  </nav>
+  
+  <div style="padding:28px 24px 32px;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
+      <div><h1 style="margin:0;font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1.1">Đơn đặt</h1><div style="font-size:13.5px;color:#8C8C8C;margin-top:4px">Đơn tạm cho tới khi quản lý xác nhận, xác nhận xong mới in phiếu đi lấy hàng.</div></div>
+      <div style="display:flex;gap:8px">
+        <span style="flex:none;white-space:nowrap;height:36px;padding:0 14px;border-radius:9999px;border:1px solid #E5E5E5;display:flex;align-items:center;font-size:13px;font-weight:600">Xuất Excel</span>
+        <span style="flex:none;white-space:nowrap;height:36px;padding:0 14px;border-radius:9999px;background:#0A0A0A;color:#fff;display:flex;align-items:center;font-size:13px;font-weight:600">+ Tạo đơn</span>
+      </div>
+    </div>
+
+    
+    <div style="display:grid;grid-template-columns:240px minmax(0,1fr);gap:20px;align-items:start">
+      <div style="border:1px solid #EDEDED;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:14.5px;font-weight:800">Bộ lọc</span><span style="font-size:12.5px;font-weight:600;color:#8C8C8C">Xóa</span></div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <span style="font-size:12px;font-weight:700;color:#737373">Trạng thái</span>
+          <div style="display:flex;flex-direction:column;gap:2px;margin:0 -8px">
+            <sc-for list="{{ st5 }}" as="s" hint-placeholder-count="4">
+              <div sc-camel-on-click="{{ s.pick }}" style="cursor:pointer;display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:9px;background:{{ s.bg }};font-size:13.5px;font-weight:{{ s.fw }}" style-hover="background:#F5F5F5">
+                <span style="width:7px;height:7px;border-radius:50%;background:{{ s.dot }}"></span><span style="flex:1">{{ s.label }}</span><span style="font-size:12px;font-weight:600;color:#8C8C8C;font-variant-numeric:tabular-nums">{{ s.count }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <span style="font-size:12px;font-weight:700;color:#737373">Loại người nhận</span>
+          <div style="display:flex;padding:3px;border-radius:9px;background:#F5F5F5;gap:2px;font-size:12.5px;font-weight:600"><span style="flex:1;text-align:center;padding:4px 0;border-radius:7px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.08)">Tất cả</span><span style="flex:1;text-align:center;padding:4px 0;color:#737373">Nội bộ</span><span style="flex:1;text-align:center;padding:4px 0;color:#737373">Khách</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <span style="font-size:12px;font-weight:700;color:#737373">Đối tác nhận</span>
+          <div style="height:36px;border:1px solid #E5E5E5;border-radius:9px;display:flex;align-items:center;padding:0 11px;font-size:13px;color:#A3A3A3">Tìm đối tác…</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <span style="font-size:12px;font-weight:700;color:#737373">Người nhận</span>
+          <div style="height:36px;border:1px solid #E5E5E5;border-radius:9px;display:flex;align-items:center;padding:0 11px;font-size:13px;color:#A3A3A3">Tìm nhân viên…</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <span style="font-size:12px;font-weight:700;color:#737373">Khoảng ngày</span>
+          <div style="display:flex;padding:3px;border-radius:9px;background:#F5F5F5;gap:2px;font-size:12px;font-weight:600"><span style="flex:1;text-align:center;padding:4px 0;color:#737373">7N</span><span style="flex:1;text-align:center;padding:4px 0;border-radius:7px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.08)">30N</span><span style="flex:1;text-align:center;padding:4px 0;color:#737373">Tháng</span><span style="flex:1;text-align:center;padding:4px 0;color:#737373">Tùy</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <div style="border:1px solid #E5E5E5;border-radius:9px;padding:6px 10px"><div style="font-size:11px;color:#8C8C8C">Từ</div><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">04/09/26</div></div>
+            <div style="border:1px solid #E5E5E5;border-radius:9px;padding:6px 10px"><div style="font-size:11px;color:#8C8C8C">Đến</div><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">04/10/26</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="border:1px solid #EDEDED;border-radius:16px;overflow:hidden;min-width:0">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px 16px">
+          <div style="width:320px;height:36px;border-radius:9px;border:1px solid #E5E5E5;display:flex;align-items:center;gap:8px;padding:0 11px;color:#A3A3A3;font-size:13px"><svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>Số đơn hoặc tên người nhận</div>
+          <span style="margin-left:auto;font-size:13px;color:#8C8C8C">{{ count5 }}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:128px 96px minmax(0,1fr) 150px 128px 110px 20px;gap:14px;padding:9px 16px;font-size:12px;font-weight:600;color:#8C8C8C;border-top:1px solid #EDEDED;background:#FAFAFA;white-space:nowrap"><span>Số đơn</span><span>Ngày đơn</span><span>Người nhận</span><span>Tiến độ</span><span>Trạng thái</span><span>Người tạo</span><span></span></div>
+        <sc-for list="{{ orders5 }}" as="o" hint-placeholder-count="8">
+          <div style="display:grid;grid-template-columns:128px 96px minmax(0,1fr) 150px 128px 110px 20px;gap:14px;padding:0 16px;height:54px;border-top:1px solid #F3F3F3;font-size:13.5px;align-items:center;white-space:nowrap;cursor:pointer" style-hover="background:#FAFAFA">
+            <a href="#5b" style="font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:500;text-decoration:none">{{ o.so }}</a>
+            <span style="color:#525252;font-variant-numeric:tabular-nums">{{ o.ngay }}</span>
+            <span style="display:flex;align-items:center;gap:8px;min-width:0"><span style="font-weight:700;overflow:hidden;text-overflow:ellipsis">{{ o.nhan }}</span><sc-if value="{{ o.noiBo }}" hint-placeholder-val="{{ false }}"><span style="flex:none;font-size:11px;font-weight:700;padding:1px 7px;border-radius:6px;border:1px solid #E5E5E5;color:#737373">Nội bộ</span></sc-if></span>
+            <span style="display:flex;align-items:center;gap:10px"><span style="flex:1;height:4px;border-radius:99px;background:#F0F0F0;overflow:hidden"><span style="display:block;height:100%;background:#0A0A0A;width:{{ o.pct }}"></span></span><span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;min-width:56px;text-align:right">{{ o.tienDo }}</span></span>
+            <span style="display:flex"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;font-size:12.5px;font-weight:700;background:{{ o.sbg }};color:{{ o.scolor }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ o.sdot }}"></span>{{ o.st }}</span></span>
+            <span style="color:#737373">Quản lý demo</span>
+            <span style="color:#C7C7C7">›</span>
+          </div>
+        </sc-for>
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:6px;padding:12px 16px;border-top:1px solid #EDEDED;font-size:13px">
+          <span style="width:30px;height:30px;border-radius:9999px;display:flex;align-items:center;justify-content:center;color:#C7C7C7">‹</span><span style="width:30px;height:30px;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:#0A0A0A;color:#fff;font-weight:700">1</span><span style="width:30px;height:30px;border-radius:9999px;display:flex;align-items:center;justify-content:center;color:#C7C7C7">›</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div></div>
+
+<div class="dv-opt" id="5b"><div class="dv-olabel"><a class="dv-oid" href="#5b">5b</a>Chi tiết đơn DH26-000008</div>
+<div class="dv-card" style="width:1440px">
+<div style="background:#fff;font-family:'Manrope',sans-serif;color:#0A0A0A;font-size:14px;line-height:1.45;min-height:860px">
+  <header style="height:60px;display:flex;align-items:center;gap:16px;padding:0 24px">
+    <div style="display:flex;align-items:center;gap:10px;width:300px">
+      <div style="width:28px;height:28px;border-radius:50%;background:#0A0A0A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800">MV</div>
+      <span style="font-weight:800;font-size:15px;letter-spacing:-.02em">Kho Minh Vũ</span><span style="color:#D4D4D4">/</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;padding:4px 8px;border-radius:8px;background:#F5F5F5">Tất cả kho<span style="font-size:9px;color:#8C8C8C">▼</span></span>
+    </div>
+    <div style="flex:1;display:flex;justify-content:center">
+      <div style="width:460px;height:38px;border-radius:10px;background:#F5F5F5;display:flex;align-items:center;gap:10px;padding:0 12px;color:#8C8C8C;font-size:13.5px"><svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><span style="flex:1">Tìm mã hàng, số phiếu, đối tác…</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:#fff;border-radius:5px;padding:1px 6px;box-shadow:0 0 0 1px #E5E5E5">⌘ K</span></div>
+    </div>
+    <div style="width:300px;display:flex;justify-content:flex-end;align-items:center;gap:12px"><span style="font-size:13px;font-weight:600;white-space:nowrap">Quản lý demo</span><div style="width:32px;height:32px;border-radius:50%;background:#E5E5E5;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700">QD</div></div>
+  </header>
+  <nav style="display:flex;gap:4px;padding:0 24px;border-bottom:1px solid #EDEDED">
+    <sc-for list="{{ nav5 }}" as="n" hint-placeholder-count="7">
+      <a style="display:flex;align-items:center;gap:6px;padding:10px 10px 12px;font-size:13.5px;font-weight:{{ n.fw }};color:{{ n.color }};border-bottom:2px solid {{ n.line }};margin-bottom:-1px;white-space:nowrap;text-decoration:none">{{ n.label }}<span style="font-size:9px;color:#A3A3A3">{{ n.caret }}</span></a>
+    </sc-for>
+  </nav>
+
+  <div style="padding:24px 24px 32px;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <a href="#5a" style="font-size:13px;font-weight:600;color:#737373;text-decoration:none">← Đơn đặt</a>
+        <h1 style="margin:0;font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1.1;font-variant-numeric:tabular-nums">DH26-000008</h1>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;font-size:12.5px;font-weight:700;background:{{ d5.sbg }};color:{{ d5.scolor }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ d5.sdot }}"></span>{{ d5.st }}</span>
+          <span style="font-size:13.5px;color:#737373">{{ recip5.summary }}</span>
+        </div>
+      </div>
+      <sc-if value="{{ d5.canConfirm }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;gap:8px">
+          <span style="flex:none;white-space:nowrap;height:38px;padding:0 16px;border-radius:9999px;border:1px solid oklch(0.88 0.06 27);color:oklch(0.52 0.19 27);display:flex;align-items:center;font-size:13.5px;font-weight:700;cursor:pointer" style-hover="background:oklch(0.97 0.02 27)">Hủy đơn</span>
+          <span sc-camel-on-click="{{ confirm5 }}" style="flex:none;white-space:nowrap;height:38px;padding:0 18px;border-radius:9999px;background:#0A0A0A;color:#fff;display:flex;align-items:center;font-size:13.5px;font-weight:700;cursor:pointer">Xác nhận đơn</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ d5.confirmed }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span sc-camel-on-click="{{ undo5 }}" style="cursor:pointer;font-size:12.5px;color:#8C8C8C;text-decoration:underline;text-underline-offset:3px">Hoàn tác (bản demo)</span>
+          <span style="flex:none;white-space:nowrap;height:38px;padding:0 18px;border-radius:9999px;background:#0A0A0A;color:#fff;display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700"><svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"></path></svg>In phiếu lấy hàng</span>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start">
+      <div style="border:1px solid #EDEDED;border-radius:16px;overflow:hidden;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:16px 20px"><span style="font-size:15px;font-weight:800">Hàng đặt <span style="color:#A3A3A3;font-weight:600">· {{ lines5Count }}</span></span></div>
+        <sc-if value="{{ d5.canConfirm }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:14px 20px 12px;border-top:1px solid #EDEDED;background:#FAFAFA;display:flex;flex-direction:column;gap:8px">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 120px auto;gap:8px;align-items:end">
+              <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;color:#737373">Mã hàng</span>
+                <input ref="{{ codeRef5 }}" list="cat5" value="{{ code5 }}" sc-camel-on-change="{{ onCode5 }}" sc-camel-on-key-down="{{ codeKey5 }}" placeholder="Gõ mã hoặc tên hàng" style="height:40px;border:1px solid #E5E5E5;border-radius:10px;padding:0 12px;font:inherit;font-size:13.5px;background:#fff;outline:none;box-sizing:border-box;width:100%" style-focus="border-color:#0A0A0A;box-shadow:0 0 0 3px rgba(10,10,10,.08)"></label>
+              <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;color:#737373">Số lượng</span>
+                <input ref="{{ qtyRef5 }}" type="number" min="1" value="{{ qty5 }}" sc-camel-on-change="{{ onQty5 }}" sc-camel-on-key-down="{{ qtyKey5 }}" style="height:40px;border:1px solid #E5E5E5;border-radius:10px;padding:0 12px;font:inherit;font-size:13.5px;background:#fff;outline:none;box-sizing:border-box;width:100%;text-align:right" style-focus="border-color:#0A0A0A;box-shadow:0 0 0 3px rgba(10,10,10,.08)"></label>
+              <span sc-camel-on-click="{{ add5 }}" style="cursor:pointer;height:40px;padding:0 16px;border-radius:9999px;background:#0A0A0A;color:#fff;display:flex;align-items:center;font-size:13.5px;font-weight:700;white-space:nowrap">+ Thêm dòng</span>
+            </div>
+            <datalist id="cat5"><sc-for list="{{ cat5 }}" as="c" hint-placeholder-count="0"><option value="{{ c.code }}">{{ c.name }}</option></sc-for></datalist>
+            <span style="font-size:12px;color:#8C8C8C;display:flex;align-items:center;gap:6px">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:0 5px;border-radius:4px;background:#fff;box-shadow:0 0 0 1px #E5E5E5">Enter</span>sang ô số lượng
+              <span style="color:#D4D4D4">·</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:0 5px;border-radius:4px;background:#fff;box-shadow:0 0 0 1px #E5E5E5">Enter</span>thêm dòng, con trỏ quay về ô mã
+            </span>
+          </div>
+        </sc-if>
+        <div style="display:grid;grid-template-columns:32px 150px minmax(0,1fr) 70px 120px 44px;gap:14px;padding:9px 20px;font-size:12px;font-weight:600;color:#8C8C8C;border-top:1px solid #EDEDED;background:#FAFAFA;white-space:nowrap"><span>#</span><span>Mã hàng</span><span>Tên hàng</span><span>ĐVT</span><span style="text-align:right">SL đặt</span><span></span></div>
+        <sc-for list="{{ lines5 }}" as="l" hint-placeholder-count="2">
+          <div style="display:grid;grid-template-columns:32px 150px minmax(0,1fr) 70px 120px 44px;gap:14px;padding:0 20px;height:54px;border-top:1px solid #F3F3F3;font-size:13.5px;align-items:center;white-space:nowrap" style-hover="background:#FAFAFA">
+            <span style="color:#A3A3A3;font-variant-numeric:tabular-nums">{{ l.i }}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:500">{{ l.code }}</span>
+            <span style="font-weight:600;overflow:hidden;text-overflow:ellipsis">{{ l.name }}</span>
+            <span style="color:#737373">{{ l.dvt }}</span>
+            <sc-if value="{{ l.editable }}" hint-placeholder-val="{{ true }}"><input type="number" min="1" value="{{ l.sl }}" sc-camel-on-change="{{ l.onSl }}" style="height:34px;border:1px solid #E5E5E5;border-radius:8px;padding:0 10px;font:inherit;font-size:13.5px;font-weight:700;text-align:right;outline:none;box-sizing:border-box;width:100%" style-focus="border-color:#0A0A0A"></sc-if>
+            <sc-if value="{{ l.readonly }}" hint-placeholder-val="{{ false }}"><span style="text-align:right;font-weight:800;font-variant-numeric:tabular-nums">{{ l.sl }}</span></sc-if>
+            <sc-if value="{{ l.editable }}" hint-placeholder-val="{{ true }}"><span sc-camel-on-click="{{ l.del }}" title="Xóa dòng" style="cursor:pointer;width:32px;height:32px;border-radius:9999px;display:flex;align-items:center;justify-content:center;color:#A3A3A3" style-hover="background:oklch(0.97 0.02 27);color:oklch(0.52 0.19 27)"><svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"></path></svg></span></sc-if>
+          </div>
+        </sc-for>
+        <sc-if value="{{ lines5Empty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:32px 20px;border-top:1px solid #F3F3F3;text-align:center;font-size:13.5px;color:#8C8C8C">Chưa có dòng hàng nào. Gõ mã hàng ở trên để thêm.</div>
+        </sc-if>
+        <div style="display:grid;grid-template-columns:32px 150px minmax(0,1fr) 70px 120px 44px;gap:14px;padding:0 20px;height:52px;border-top:1px solid #EDEDED;background:#FAFAFA;font-size:13.5px;align-items:center">
+          <span></span><span style="font-weight:800;grid-column:span 3">Tổng cộng</span><span style="text-align:right;font-weight:800;font-variant-numeric:tabular-nums">{{ total5 }}</span><span></span>
+        </div>
+      </div>
+
+      <aside style="border:1px solid #EDEDED;border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:18px">
+        <span style="font-size:15px;font-weight:800">Thông tin đơn</span>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <span style="font-size:12px;font-weight:700;color:#737373">Người nhận</span>
+          <div style="display:flex;padding:3px;border-radius:9px;background:#F5F5F5;gap:2px;font-size:13px;font-weight:600">
+            <sc-for list="{{ recip5.types }}" as="t" hint-placeholder-count="2"><span sc-camel-on-click="{{ t.pick }}" style="cursor:pointer;flex:1;text-align:center;padding:5px 0;border-radius:7px;background:{{ t.bg }};color:{{ t.color }};box-shadow:{{ t.sh }}">{{ t.label }}</span></sc-for>
+          </div>
+          <div style="min-height:40px;border:1px solid #E5E5E5;border-radius:10px;display:flex;align-items:center;gap:6px;padding:0 10px 0 6px;box-sizing:border-box">
+            <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 6px 3px 10px;border-radius:7px;background:#F5F5F5;font-size:13px;font-weight:700">{{ recip5.name }}<span style="color:#A3A3A3;font-size:13px;padding:0 3px">×</span></span>
+            <span style="margin-left:auto;font-size:9px;color:#A3A3A3">▼</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <span style="font-size:12px;font-weight:700;color:#737373">Ghi chú</span>
+          <textarea placeholder="Ghi chú cho đơn này" rows="3" style="border:1px solid #E5E5E5;border-radius:10px;padding:10px 12px;font:inherit;font-size:13.5px;resize:vertical;outline:none;box-sizing:border-box;width:100%" style-focus="border-color:#0A0A0A"></textarea>
+        </div>
+        <div style="height:1px;background:#EDEDED"></div>
+        <div style="display:grid;grid-template-columns:96px minmax(0,1fr);row-gap:10px;font-size:13px;align-items:center">
+          <span style="color:#8C8C8C">Số đơn</span><span style="font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:500">DH26-000008</span>
+          <span style="color:#8C8C8C">Ngày đơn</span><span style="font-weight:600;font-variant-numeric:tabular-nums">03/10/2026</span>
+          <span style="color:#8C8C8C">Người tạo</span><span style="font-weight:600">Quản lý demo</span>
+          <span style="color:#8C8C8C">Trạng thái</span><span style="display:flex;align-items:center;gap:6px;font-weight:600"><span style="width:6px;height:6px;border-radius:50%;background:{{ d5.dot2 }}"></span>{{ d5.st }}</span>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+</div></div>
+
+<div class="dv-opt" id="5c"><div class="dv-olabel"><a class="dv-oid" href="#5c">5c</a>Chi tiết hàng hóa 06410KFL850</div>
+<div class="dv-card" style="width:1440px">
+<div style="background:#fff;font-family:'Manrope',sans-serif;color:#0A0A0A;font-size:14px;line-height:1.45;min-height:860px">
+  <header style="height:60px;display:flex;align-items:center;gap:16px;padding:0 24px">
+    <div style="display:flex;align-items:center;gap:10px;width:300px">
+      <div style="width:28px;height:28px;border-radius:50%;background:#0A0A0A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800">MV</div>
+      <span style="font-weight:800;font-size:15px;letter-spacing:-.02em">Kho Minh Vũ</span><span style="color:#D4D4D4">/</span>
+      <span style="display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;padding:4px 8px;border-radius:8px;background:#F5F5F5">Tất cả kho<span style="font-size:9px;color:#8C8C8C">▼</span></span>
+    </div>
+    <div style="flex:1;display:flex;justify-content:center">
+      <div style="width:460px;height:38px;border-radius:10px;background:#F5F5F5;display:flex;align-items:center;gap:10px;padding:0 12px;color:#8C8C8C;font-size:13.5px"><svg width="15" height="15" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><span style="flex:1">Tìm mã hàng, số phiếu, đối tác…</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;background:#fff;border-radius:5px;padding:1px 6px;box-shadow:0 0 0 1px #E5E5E5">⌘ K</span></div>
+    </div>
+    <div style="width:300px;display:flex;justify-content:flex-end;align-items:center;gap:12px"><span style="font-size:13px;font-weight:600;white-space:nowrap">Quản lý demo</span><div style="width:32px;height:32px;border-radius:50%;background:#E5E5E5;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700">QD</div></div>
+  </header>
+  <nav style="display:flex;gap:4px;padding:0 24px;border-bottom:1px solid #EDEDED">
+    <sc-for list="{{ nav5c }}" as="n" hint-placeholder-count="7">
+      <a style="display:flex;align-items:center;gap:6px;padding:10px 10px 12px;font-size:13.5px;font-weight:{{ n.fw }};color:{{ n.color }};border-bottom:2px solid {{ n.line }};margin-bottom:-1px;white-space:nowrap;text-decoration:none">{{ n.label }}<span style="font-size:9px;color:#A3A3A3">{{ n.caret }}</span></a>
+    </sc-for>
+  </nav>
+  <div style="padding:24px 24px 32px;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <a style="font-size:13px;font-weight:600;color:#737373;text-decoration:none">← Danh mục</a>
+        <div style="display:flex;align-items:center;gap:12px">
+          <h1 style="margin:0;font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:500;letter-spacing:-.03em;line-height:1.1">06410KFL850</h1>
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:99px;font-size:12.5px;font-weight:700;background:#0A0A0A;color:#fff"><span style="width:6px;height:6px;border-radius:50%;background:#fff"></span>Đang kinh doanh</span>
+        </div>
+        <div style="font-size:15px;font-weight:600;color:#525252">Test</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <span style="flex:none;white-space:nowrap;height:38px;padding:0 14px;border-radius:9999px;border:1px solid #E5E5E5;display:flex;align-items:center;font-size:13.5px;font-weight:600">Ngừng kinh doanh</span>
+        <span style="flex:none;white-space:nowrap;height:38px;padding:0 18px;border-radius:9999px;background:#0A0A0A;color:#fff;display:flex;align-items:center;font-size:13.5px;font-weight:700">Sửa</span>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:20px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+        <div style="border:1px solid #EDEDED;border-radius:16px;overflow:hidden">
+          <div style="padding:16px 20px;font-size:15px;font-weight:800">Thông tin hàng</div>
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid #EDEDED">
+            <sc-for list="{{ info5c }}" as="f" hint-placeholder-count="12">
+              <div style="padding:14px 20px;border-left:{{ f.bl }};border-top:{{ f.bt }};display:flex;flex-direction:column;gap:4px;min-width:0">
+                <span style="font-size:12px;font-weight:600;color:#8C8C8C">{{ f.label }}</span>
+                <span style="display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:{{ f.color }}"><sc-if value="{{ f.chip }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;background:oklch(0.97 0.035 75);color:oklch(0.45 0.12 55)">{{ f.value }}</span></sc-if><sc-if value="{{ f.plain }}" hint-placeholder-val="{{ true }}">{{ f.value }}</sc-if></span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="border:1px solid #EDEDED;border-radius:16px;overflow:hidden">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;padding:16px 20px"><span style="font-size:15px;font-weight:800">Tồn theo kho</span><span style="font-size:12.5px;color:#8C8C8C">Tổng tồn: <b style="color:#0A0A0A">0</b></span></div>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 120px 120px 120px;gap:14px;padding:9px 20px;font-size:12px;font-weight:600;color:#8C8C8C;border-top:1px solid #EDEDED;background:#FAFAFA"><span>Kho</span><span style="text-align:right">Tồn</span><span style="text-align:right">Tối thiểu</span><span style="text-align:right">Giá trị</span></div>
+          <div style="padding:36px 20px;border-top:1px solid #F3F3F3;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center">
+            <span style="width:40px;height:40px;border-radius:12px;background:#F5F5F5;display:flex;align-items:center;justify-content:center;color:#A3A3A3"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"></path></svg></span>
+            <span style="font-size:13.5px;font-weight:700">Chưa có tồn</span>
+            <span style="font-size:13px;color:#8C8C8C">Chưa có chứng từ nào cho mã này.</span>
+          </div>
+        </div>
+
+        <div style="border:1px solid #EDEDED;border-radius:16px;overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 20px;border-bottom:1px solid #EDEDED">
+            <div style="display:flex;gap:4px">
+              <sc-for list="{{ tabs5c }}" as="t" hint-placeholder-count="2">
+                <span sc-camel-on-click="{{ t.pick }}" style="cursor:pointer;padding:14px 10px 12px;font-size:14px;font-weight:{{ t.fw }};color:{{ t.color }};border-bottom:2px solid {{ t.line }};margin-bottom:-1px">{{ t.label }}</span>
+              </sc-for>
+            </div>
+            <sc-if value="{{ isCard5c }}" hint-placeholder-val="{{ true }}">
+              <span style="display:flex;align-items:center;gap:8px;height:32px;padding:0 10px;border:1px solid #E5E5E5;border-radius:9px;font-size:13px;font-weight:600">Tất cả kho<span style="font-size:9px;color:#A3A3A3">▼</span></span>
+            </sc-if>
+          </div>
+          <sc-if value="{{ isCard5c }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:100px 140px minmax(0,1fr) 90px 90px 90px;gap:14px;padding:9px 20px;font-size:12px;font-weight:600;color:#8C8C8C;background:#FAFAFA"><span>Ngày</span><span>Chứng từ</span><span>Diễn giải</span><span style="text-align:right">Nhập</span><span style="text-align:right">Xuất</span><span style="text-align:right">Tồn</span></div>
+            <div style="padding:36px 20px;border-top:1px solid #F3F3F3;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center">
+              <span style="font-size:13.5px;font-weight:700">Chưa có biến động nào</span>
+              <span style="font-size:13px;color:#8C8C8C">Thẻ kho ghi nhận từ phiếu nhập/xuất đầu tiên.</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{ isHist5c }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:8px 20px 12px">
+              <div style="display:flex;gap:12px;padding:12px 0">
+                <span style="width:8px;height:8px;border-radius:50%;background:#0A0A0A;margin-top:6px;flex:none"></span>
+                <div style="line-height:1.4"><div style="font-size:13.5px;font-weight:700">Tạo mã hàng</div><div style="font-size:12.5px;color:#8C8C8C">Quản lý demo</div></div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <aside style="border:1px solid #EDEDED;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 4px"><span style="font-size:15px;font-weight:800">Hình ảnh <span style="color:#A3A3A3;font-weight:600">· 3</span></span><span style="font-size:12.5px;font-weight:600;color:#737373">Quản lý</span></div>
+        <div style="position:relative;aspect-ratio:1/1;border-radius:12px;background:repeating-linear-gradient(135deg,#F5F5F5 0 10px,#EFEFEF 10px 20px);display:flex;align-items:center;justify-content:center">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#8C8C8C">{{ img5c.label }}</span>
+          <sc-if value="{{ img5c.isMain }}" hint-placeholder-val="{{ true }}"><span style="position:absolute;left:10px;top:10px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;background:#0A0A0A;color:#fff">★ Ảnh chính</span></sc-if>
+          <sc-if value="{{ img5c.notMain }}" hint-placeholder-val="{{ false }}"><span sc-camel-on-click="{{ img5c.makeMain }}" style="cursor:pointer;position:absolute;left:10px;top:10px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;background:#fff;box-shadow:0 0 0 1px #E5E5E5">Đặt làm ảnh chính</span></sc-if>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+          <sc-for list="{{ thumbs5c }}" as="t" hint-placeholder-count="3">
+            <div sc-camel-on-click="{{ t.pick }}" style="cursor:pointer;position:relative;aspect-ratio:1/1;border-radius:10px;background:repeating-linear-gradient(135deg,#F5F5F5 0 6px,#EFEFEF 6px 12px);box-shadow:{{ t.ring }};display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;color:#8C8C8C">{{ t.n }}<sc-if value="{{ t.isMain }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:4px;top:3px;font-size:10px;color:#0A0A0A">★</span></sc-if></div>
+          </sc-for>
+          <div style="cursor:pointer;aspect-ratio:1/1;border-radius:10px;border:1.5px dashed #D4D4D4;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#737373"><span style="font-size:18px;line-height:1">+</span><span style="font-size:11px;font-weight:700">Thêm</span></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+</div></div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script="">
+class Component extends DCLogic {
+  state = { tab: "low", kho: 0 };
+  path(arr, w, h, pad = 2) {
+    const max = Math.max(...arr), min = Math.min(...arr), r = max - min || 1;
+    return arr.map((v, i) => (i ? "L" : "M") + (i / (arr.length - 1) * w).toFixed(1) + " " + (h - pad - (v - min) / r * (h - pad * 2)).toFixed(1)).join(" ");
+  }
+  renderVals() {
+    const N = [], X = [];
+    for (let i = 0; i < 30; i++) { N.push(18 + Math.round(12 * Math.sin(i / 3.1) + 8 * Math.sin(i / 1.3) + i * 0.3)); X.push(20 + Math.round(10 * Math.sin(i / 2.6 + 1) + 6 * Math.cos(i / 1.7))); }
+    const top = 50;
+    const scale = (arr) => arr.map((v, i) => (i ? "L" : "M") + (i / 29 * 600).toFixed(1) + " " + (200 - v / top * 190).toFixed(1)).join(" ");
+    const chartN = scale(N), chartX = scale(X);
+    const heroData = [280, 284, 282, 290, 288, 295, 293, 298, 301, 299, 305, 308, 306, 312];
+    const heroLine = this.path(heroData, 300, 48, 4);
+    const days30 = N.map((n, i) => ({ nH: Math.round(n / top * 165), xH: Math.round(X[i] / top * 165) }));
+
+    const g = [["Nhông sên dĩa", 412], ["Phuộc – giảm xóc", 388], ["Vỏ – ruột xe", 351], ["Bố thắng", 330], ["Lọc gió", 296], ["Bugi", 270], ["Dây curoa", 241], ["Bạc đạn", 228]];
+    const total = g.reduce((s, x) => s + x[1], 0);
+    const shades = ["#0A0A0A", "#2B2B2B", "#4A4A4A", "#6B6B6B", "#8C8C8C", "#ADADAD", "#CFCFCF", "#E6E6E6"];
+    const groups = g.map(([name, v], i) => ({ name, val: v, pct: Math.round(v / 412 * 100) + "%", share: Math.round(v / total * 100) + "%", shade: shades[i] }));
+
+    const amber = "oklch(0.6 0.15 60)", red = "oklch(0.55 0.2 27)";
+    const data = {
+      low: { head: { c1: "Mã hàng", c2: "Tên hàng", c3: "Kho", c4: "Tồn / Định mức" }, rows: [
+        ["VOR-275-17", "Vỏ ruột sau 275-17 Michelin", "Kho 1", "10 / 14"], ["ACQ-GS-5A", "Bình ắc quy GS GTZ5S", "Kho 2", "14 / 18"],
+        ["DCR-751", "Dây curoa CVT 751 Vario", "Kho 1", "18 / 22"], ["BDN-6202", "Bạc đạn 6202 2RS", "Kho 1", "6 / 10"],
+        ["NHOT-CT-08", "Nhớt Castrol Power1 10W40 0.8L", "Kho 2", "10 / 14"]].map(r => ({ code: r[0], name: r[1], meta: r[2], val: r[3], tone: amber })) },
+      neg: { head: { c1: "Mã hàng", c2: "Tên hàng", c3: "Kho", c4: "Tồn" }, rows: [
+        ["BTH-SAU-AB", "Bố thắng sau Air Blade", "Kho 1", "−3"], ["LGI-VISION", "Lọc gió Vision 2018", "Kho 2", "−2"],
+        ["BUG-NGK-C7", "Bugi NGK C7HSA", "Kho 1", "−4"], ["NSD-WAVE", "Bộ nhông sên dĩa Wave", "Kho 1", "−1"], ["PXG-SAU-EX", "Phuộc sau Exciter 150", "Kho 2", "−2"]].map(r => ({ code: r[0], name: r[1], meta: r[2], val: r[3], tone: red })) },
+      stale: { head: { c1: "Mã hàng", c2: "Tên hàng", c3: "Xuất lần cuối", c4: "Số ngày" }, rows: [
+        ["GDX-WINKER-LED", "Đèn xi nhan LED phổ thông cặp", "12/08/2026", "38 ngày"], ["PXG-TRUOC-WAVE", "Phuộc trước Wave RSX", "05/08/2026", "45 ngày"],
+        ["OCV-M10X30", "Ốc vít M10x30 inox bộ 10", "28/07/2026", "53 ngày"], ["DDI-RL-24V", "Rơ le xi nhan 3 chân", "20/07/2026", "61 ngày"], ["YEM-VISION-SAU", "Yếm sau Vision đời 2018", "11/07/2026", "70 ngày"]].map(r => ({ code: r[0], name: r[1], meta: r[2], val: r[3], tone: "#0A0A0A" })) },
+      xa: { head: { c1: "Số phiếu", c2: "Người nhận", c3: "Lý do", c4: "SL âm" }, rows: [
+        ["PX26-000004", "Garage Anh Tuấn", "Hàng đã về, chưa nhập phiếu", "−2"], ["PX26-000007", "Cửa hàng Xe Máy Phát Đạt", "Hàng đã về, chưa nhập phiếu", "−1"]].map(r => ({ code: r[0], name: r[1], meta: r[2], val: r[3], tone: red })) }
+    };
+    const tabDefs = [["low", "Dưới định mức", 8], ["neg", "Tồn âm", 6], ["stale", "Không luân chuyển", 5], ["xa", "Xuất âm hôm nay", 2]];
+    const tab = this.state.tab, setTab = (k) => () => this.setState({ tab: k });
+    const tabsA = tabDefs.map(([k, label, count]) => { const on = k === tab; return { label, count, pick: setTab(k), color: on ? "#0A0A0A" : "#8C8C8C", bg: on ? "#F3F3F1" : "transparent", cbg: on ? "#0A0A0A" : "#F3F3F1", ccolor: on ? "#fff" : "#737373" }; });
+
+    const navLabels = ["Tổng quan", "Nhập kho", "Đặt hàng", "Xuất kho", "Tồn kho", "Danh mục hàng", "Đối tác", "Báo cáo", "Cài đặt"];
+    const counts = { "Nhập kho": "2", "Xuất kho": "3" };
+    const navA = navLabels.map((label, i) => ({ label, count: counts[label] || "", fw: i ? 500 : 600, color: i ? "#525252" : "#0A0A0A", bg: i ? "transparent" : "#fff", sh: i ? "none" : "0 1px 2px rgba(0,0,0,.06)", dot: i ? "#D4D4D4" : "#0A0A0A" }));
+    const navB = navLabels.map((label, i) => ({ label, count: counts[label] || "", fw: i ? 600 : 700, color: i ? "#737373" : "#0A0A0A", line: i ? "transparent" : "#0A0A0A" }));
+
+    const khoA = ["Tất cả kho", "Kho 1", "Kho 2"].map((label, i) => { const on = i === this.state.kho; return { label, pick: () => this.setState({ kho: i }), color: on ? "#0A0A0A" : "#8C8C8C", bg: on ? "#fff" : "transparent", sh: on ? "0 1px 2px rgba(0,0,0,.08)" : "none" }; });
+    const kpiA = [{ label: "Mã đang kinh doanh", value: "64", sub: "+3 mã mới tháng này" }, { label: "Phiếu xuất hôm nay", value: "3", sub: "2 phiếu xuất âm" }, { label: "Phiếu chờ ghi sổ", value: "5", sub: "Cũ nhất 2 ngày" }];
+    const alertsA = [
+      { n: "8", title: "Mã dưới định mức", sub: "Nên tạo đơn đặt hàng", tone: amber, go: setTab("low") },
+      { n: "6", title: "Mã tồn âm", sub: "Cần kiểm kê lại", tone: red, go: setTab("neg") },
+      { n: "2", title: "Phiếu xuất âm hôm nay", sub: "Hàng đã về, chưa nhập phiếu", tone: red, go: setTab("xa") }];
+
+    const sp = (a) => this.path(a, 80, 28, 3);
+    const kpiB = [
+      { label: "Giá trị tồn", value: "312,5", unit: "tr đ", delta: "↑ 2,4% so tháng 8", spark: sp(heroData) },
+      { label: "Mã đang kinh doanh", value: "64", unit: "", delta: "+3 mã tháng này", spark: sp([58, 59, 59, 60, 61, 61, 62, 63, 64]) },
+      { label: "Phiếu xuất hôm nay", value: "3", unit: "", delta: "TB 4,2 phiếu/ngày", spark: sp([5, 3, 6, 4, 2, 5, 4, 3]) },
+      { label: "Phiếu chờ ghi sổ", value: "5", unit: "", delta: "Cũ nhất 2 ngày", spark: sp([2, 3, 2, 4, 3, 5, 4, 5]) }
+    ].map((k, i) => ({ ...k, bl: i ? "1px solid #EDEDED" : "none" }));
+    const todoB = [
+      { n: "8", title: "Mã dưới định mức", sub: "VOR-275-17, ACQ-GS-5A và 6 mã khác", cta: "Tạo đơn đặt hàng", dot: amber },
+      { n: "6", title: "Mã tồn âm", sub: "Kho 1: 4 mã · Kho 2: 2 mã", cta: "Kiểm kê", dot: red },
+      { n: "2", title: "Phiếu xuất âm hôm nay", sub: "Hàng đã về, chưa nhập phiếu", cta: "Xem phiếu", dot: red },
+      { n: "5", title: "Phiếu chờ ghi sổ", sub: "3 phiếu nhập · 2 phiếu xuất", cta: "Ghi sổ", dot: "#737373" }];
+    const stale = data.stale.rows.map(r => ({ code: r.code, name: r.name, days: r.val }));
+
+    const ST = { tam: ["Đơn tạm", amber, "oklch(0.97 0.035 75)", "oklch(0.45 0.12 55)"], xn: ["Đã xác nhận", "#737373", "#F3F3F1", "#404040"], ht: ["Hoàn thành", "#0A0A0A", "#0A0A0A", "#fff"] };
+    const raw = [["DH26-000008", "03/10/2026", "Ngô Kiến Huy", 1, 0, 7, "tam"], ["DH26-000007", "03/10/2026", "Nguyễn Thanh Tùng", 1, 0, 0, "tam"], ["DH26-000006", "02/10/2026", "Ngô Kiến Huy", 1, 400, 400, "ht"], ["DH26-000005", "01/10/2026", "Lệ", 0, 0, 1000, "xn"], ["DH26-000004", "01/10/2026", "Khách lẻ", 0, 0, 200, "xn"], ["DH26-000003", "29/09/2026", "Khách lẻ", 0, 0, 200, "xn"], ["DH26-000002", "28/09/2026", "Khách lẻ", 0, 300, 300, "ht"], ["DH26-000001", "25/09/2026", "Khách lẻ", 0, 0, 0, "tam"]];
+    const fmt = (n) => n.toLocaleString("vi-VN");
+    const f4 = this.state.st4 || "all";
+    const all4 = raw.map(([so, ngay, nhan, nb, d, t, k]) => { const s = ST[k]; const ini = nhan.split(" ").map(w => w[0]).slice(-2).join("").toUpperCase(); return { so, ngay, nhan, noiBo: !!nb, loai: nb ? "Nội bộ" : "Khách hàng", ini, k, tienDo: fmt(d) + " / " + fmt(t), pct: t ? Math.round(d / t * 100) + "%" : "0%", st: s[0], sdot: k === "ht" ? "#fff" : s[1], sbg: s[2], scolor: s[3] }; });
+    const orders4 = all4.filter(o => f4 === "all" || o.k === f4);
+    const st4 = [["all", "Tất cả", "#0A0A0A"], ["tam", "Đơn tạm", amber], ["xn", "Đã xác nhận", "#737373"], ["ht", "Hoàn thành", "#0A0A0A"]].map(([k, label, dot]) => { const on = k === f4; return { label, dot: k === "all" ? "transparent" : dot, count: k === "all" ? all4.length : all4.filter(o => o.k === k).length, pick: () => this.setState({ st4: k }), bg: on ? "#F3F3F1" : "transparent", bg2: on ? "#fff" : "transparent", sh: on ? "0 1px 2px rgba(0,0,0,.06)" : "none", fw: on ? 600 : 500 }; });
+    const nav4L = [["Tổng quan", 0], ["Đơn hàng", 1], ["Nhập kho", 0], ["Hàng hóa", 0], ["Đối tác", 0], ["Phân tích", 0], ["Cài đặt", 0]];
+    const nav4 = nav4L.map(([label, on]) => ({ label, open: !!on, caret: label === "Đơn hàng" || label === "Hàng hóa" ? "▼" : "", fw: on ? 600 : 500, color: on ? "#0A0A0A" : "#525252", bg: "transparent", sh: "none", dot: on ? "#0A0A0A" : "#D4D4D4" }));
+    const icons = ["M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z", "M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4", "M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8", "M4 4h16v16H4zM4 9h16M9 4v16", "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.9", "M18 20V10M12 20V4M6 20v-6", "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19 12h2M3 12h2M12 3v2M12 19v2M17 7l1.4-1.4M5.6 18.4L7 17M17 17l1.4 1.4M5.6 5.6L7 7"];
+    const rail4 = nav4L.map(([label, on], i) => ({ label, icon: icons[i], color: on ? "#0A0A0A" : "#8C8C8C", bg: on ? "#fff" : "transparent", sh: on ? "0 1px 2px rgba(0,0,0,.08)" : "none" }));
+    const count4 = orders4.length + " đơn";
+    const f5 = this.state.st5 || "all";
+    const orders5 = all4.filter(o => f5 === "all" || o.k === f5);
+    const st5 = [["all", "Tất cả", "transparent"], ["tam", "Đơn tạm", amber], ["xn", "Đã xác nhận", "#737373"], ["ht", "Hoàn thành", "#0A0A0A"]].map(([k, label, dot], i) => { const on = k === f5; return { label, dot, count: k === "all" ? all4.length : all4.filter(o => o.k === k).length, pick: () => this.setState({ st5: k }), bg: on ? "#F0F0F0" : "transparent", fw: on ? 700 : 500 }; });
+    const nav5 = nav4L.map(([label, on]) => ({ label, caret: label === "Đơn hàng" || label === "Hàng hóa" ? "▼" : "", fw: on ? 700 : 600, color: on ? "#0A0A0A" : "#737373", line: on ? "#0A0A0A" : "transparent" }));
+    const ok = !!this.state.ok5, s5 = ok ? ST.xn : ST.tam;
+    const d5 = { st: s5[0], sdot: s5[1], sbg: s5[2], scolor: s5[3], canConfirm: !ok, confirmed: ok, stepTxt: ok ? "Bước 2/4" : "Bước 1/4",
+      printBg: ok ? "#0A0A0A" : "#F5F5F5", printColor: ok ? "#fff" : "#A3A3A3", printBd: ok ? "#0A0A0A" : "#F5F5F5" };
+    const cur = ok ? 1 : 0;
+    const steps5 = [["Đơn tạm", "Đã tạo 03/10 08:42"], ["Quản lý xác nhận", ok ? "Vừa xác nhận" : "Đang chờ"], ["Đi lấy hàng", "In phiếu, thủ kho lấy hàng"], ["Hoàn thành", "Đủ số lượng đặt"]].map(([label, sub], i) => {
+      const done = i < cur, now = i === cur;
+      return { label, sub, mark: done ? "✓" : String(i + 1), bg: done ? "#fff" : "transparent", color: done ? "#0A0A0A" : now ? "#fff" : "#525252", bd: done || now ? "#fff" : "#404040", line: i === 3 ? "transparent" : done ? "#fff" : "#333", tcolor: done || now ? "#fff" : "#737373" };
+    });
+    const items5 = [["BDN-6202", "Bạc đạn 6202 2RS", "Cái", 2, 6], ["VOR-275-17", "Vỏ ruột sau 275-17 Michelin", "Bộ", 2, 10], ["DCR-751", "Dây curoa CVT 751 Vario", "Sợi", 1, 18], ["NHOT-CT-08", "Nhớt Castrol Power1 10W40 0.8L", "Chai", 2, 1]]
+      .map(([code, name, dvt, sl, ton], i) => ({ i: i + 1, code, name, dvt, sl, lay: 0, ton, tone: ton < sl ? red : "#0A0A0A" }));
+    const log5 = [{ t: "Tạo đơn tạm", at: "Quản lý demo · 03/10 08:42" }].concat(ok ? [{ t: "Xác nhận đơn", at: "Quản lý demo · vừa xong" }] : []).reverse();
+    d5.dot2 = s5[1];
+    if (!this.codeRef5) { this.codeRef5 = React.createRef(); this.qtyRef5 = React.createRef(); }
+    const cat5 = [["06410KFL850", "Test", "Cái"], ["HA26-33Đ-ABS", "Hộc chứa đồ AIR BLADE 26 ABS đen", "Cái"], ["BDN-6202", "Bạc đạn 6202 2RS", "Cái"], ["VOR-275-17", "Vỏ ruột sau 275-17 Michelin", "Bộ"], ["DCR-751", "Dây curoa CVT 751 Vario", "Sợi"], ["NHOT-CT-08", "Nhớt Castrol Power1 10W40 0.8L", "Chai"]].map(([code, name, dvt]) => ({ code, name, dvt }));
+    const L = this.state.lines5 || [{ code: "06410KFL850", name: "Test", dvt: "Cái", sl: 2 }, { code: "HA26-33Đ-ABS", name: "Hộc chứa đồ AIR BLADE 26 ABS đen", dvt: "Cái", sl: 5 }];
+    const setL = (fn) => this.setState(st => ({ lines5: fn((st.lines5 || L).slice()) }));
+    const lines5 = L.map((l, i) => ({ ...l, i: i + 1, editable: !ok, readonly: ok,
+      onSl: (e) => { const v = Math.max(1, parseInt(e.target.value, 10) || 1); setL(a => { a[i] = { ...a[i], sl: v }; return a; }); },
+      del: () => setL(a => { a.splice(i, 1); return a; }) }));
+    const add5 = () => {
+      const raw = (this.state.code5 || "").trim(); if (!raw) { this.codeRef5.current && this.codeRef5.current.focus(); return; }
+      const q = Math.max(1, parseInt(this.state.qty5, 10) || 1);
+      const hit = cat5.find(c => c.code.toLowerCase() === raw.toLowerCase() || c.name.toLowerCase() === raw.toLowerCase()) || { code: raw.toUpperCase(), name: raw, dvt: "Cái" };
+      setL(a => { const j = a.findIndex(x => x.code === hit.code); if (j >= 0) a[j] = { ...a[j], sl: a[j].sl + q }; else a.push({ code: hit.code, name: hit.name, dvt: hit.dvt, sl: q }); return a; });
+      this.setState({ code5: "", qty5: "" }); setTimeout(() => this.codeRef5.current && this.codeRef5.current.focus(), 0);
+    };
+    const rt = this.state.rType5 || "nb";
+    const recip5 = { name: rt === "nb" ? "Ngô Kiến Huy" : "Garage Anh Tuấn", summary: rt === "nb" ? "Nội bộ — Ngô Kiến Huy" : "Đối tác — Garage Anh Tuấn",
+      types: [["nb", "Nội bộ"], ["dt", "Đối tác"]].map(([k, label]) => { const on = k === rt; return { label, pick: () => this.setState({ rType5: k }), bg: on ? "#fff" : "transparent", color: on ? "#0A0A0A" : "#737373", sh: on ? "0 1px 2px rgba(0,0,0,.08)" : "none" }; }) };
+    const extra5 = { cat5, lines5, lines5Count: L.length + " dòng", lines5Empty: L.length === 0, total5: L.reduce((t, l) => t + l.sl, 0).toLocaleString("vi-VN"), recip5,
+      codeRef5: this.codeRef5, qtyRef5: this.qtyRef5, code5: this.state.code5 || "", qty5: this.state.qty5 || "",
+      onCode5: (e) => this.setState({ code5: e.target.value }), onQty5: (e) => this.setState({ qty5: e.target.value }),
+      codeKey5: (e) => { if (e.key === "Enter") { e.preventDefault(); this.qtyRef5.current && this.qtyRef5.current.focus(); } },
+      qtyKey5: (e) => { if (e.key === "Enter") { e.preventDefault(); add5(); } }, add5 };
+    const nav5c = nav4L.map(([label]) => { const on = label === "Hàng hóa"; return { label, caret: label === "Đơn hàng" || label === "Hàng hóa" ? "▼" : "", fw: on ? 700 : 600, color: on ? "#0A0A0A" : "#737373", line: on ? "#0A0A0A" : "transparent" }; });
+    const info5c = [["Nhóm hàng", "HỘC - 33"], ["Loại hàng", "—"], ["Dòng xe", "—"], ["Barcode", "—"], ["Đơn vị tính", "Cái"], ["Quy đổi", "1"], ["Công đoạn", "Hàng ngoài", 1], ["Kho mặc định", "Kho 1"], ["Tồn tối thiểu / tối đa", "0 / không giới hạn"], ["Vị trí kệ", "—"], ["Ghi chú", "—"], ["Trạng thái", "Đang kinh doanh"]]
+      .map(([label, value, chip], i) => ({ label, value, chip: !!chip, plain: !chip, color: value === "—" ? "#C7C7C7" : "#0A0A0A", bl: i % 4 ? "1px solid #EDEDED" : "none", bt: i >= 4 ? "1px solid #EDEDED" : "none" }));
+    const tb = this.state.tab5c || "card";
+    const tabs5c = [["card", "Thẻ kho"], ["hist", "Lịch sử sửa"]].map(([k, label]) => { const on = k === tb; return { label, pick: () => this.setState({ tab5c: k }), fw: on ? 800 : 600, color: on ? "#0A0A0A" : "#8C8C8C", line: on ? "#0A0A0A" : "transparent" }; });
+    const sel = this.state.img5c || 0, main = this.state.main5c || 0;
+    const thumbs5c = [0, 1, 2].map(i => ({ n: "ảnh " + (i + 1), isMain: i === main, pick: () => this.setState({ img5c: i }), ring: i === sel ? "0 0 0 2px #0A0A0A" : "0 0 0 1px #EDEDED" }));
+    const img5c = { label: "ảnh " + (sel + 1), isMain: sel === main, notMain: sel !== main, makeMain: () => this.setState({ main5c: sel }) };
+    const nav3b = nav4L.map(([label]) => { const on = label === "Tổng quan"; return { label, caret: label === "Đơn hàng" || label === "Hàng hóa" ? "▼" : "", fw: on ? 700 : 600, color: on ? "#0A0A0A" : "#737373", line: on ? "#0A0A0A" : "transparent" }; });
+    return { nav3b, nav5c, info5c, tabs5c, isCard5c: tb === "card", isHist5c: tb === "hist", thumbs5c, img5c, ...extra5, orders5, st5, nav5, count5: orders5.length + " đơn", d5, steps5, items5, log5, confirm5: () => this.setState({ ok5: true }), undo5: () => this.setState({ ok5: false }),
+      orders4, st4, nav4, rail4, count4, chartN, chartX, chartArea: chartN + " L600 200 L0 200 Z", heroLine, heroArea: heroLine + " L300 48 L0 48 Z", days30, groups,
+      tabsA, rowsA: data[tab].rows, head: data[tab].head, navA, navB, khoA, kpiA, alertsA, kpiB, todoB, stale };
+  }
+}
+</script>
+
+
+

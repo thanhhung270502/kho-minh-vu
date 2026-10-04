@@ -895,6 +895,7 @@ Recent decisions affecting current work:
 ### Roadmap Evolution
 
 - Phase 9 added (2026-09-26): Quản lý hình ảnh — ảnh mã hàng lưu Google Drive qua Apps Script, lớp lưu trữ trừu tượng (`noi_luu`/`khoa_luu`, hiển thị qua `/anh/<id>` có cache) để sau chuyển cloud không đổi giao diện
+- Phase 20 added (2026-10-04): Giao diện 3b và tính năng còn thiếu — design system "hướng 3b" + tính năng thiếu ở Tổng quan, Đơn đặt, Chi tiết hàng hóa, tìm kiếm ⌘K
 
 ### Pending Todos
 

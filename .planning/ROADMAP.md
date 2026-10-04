@@ -54,8 +54,10 @@ sau cần dùng ngay.
 
 **v1.2 Phản hồi vận hành đợt 2** (chi tiết ở "## Milestone v1.2")
 
-- [x] **Phase 17: Đổi tên & gọn đơn đặt** - Menu Đơn đặt / Duyệt đơn (`/don-dat`, `/duyet-don`), "Khách đặt" → "Đơn đặt", "Mua ngoài" → "Hàng ngoài", bỏ "Cần rà" và Ngày giao dự kiến, phiếu lấy hàng ghi tên đầy đủ + giờ in + người đặt (completed 2026-10-03)
-- [x] **Phase 18: Đơn nhiều người nhận** - Đơn chọn nhiều người nhận, từng dòng gán người nhận riêng, lọc/in/hóa đơn mang theo cả hai cấp (completed 2026-10-03)
+- [x] **Phase 17: Đổi tên & gọn đơn đặt** - Menu Đơn đặt / Duyệt đơn (`/don-dat`, `/duyet-don`), "Khách đặt" → "Đơn đặt", "Mua ngoài" → "Hàng ngoài", bỏ "Cần rà" và Ngày giao dự kiến, phiếu lấy hàng ghi tên đầy đủ + giờ in + người đặt
+ (completed 2026-10-03)
+- [x] **Phase 18: Đơn nhiều người nhận** - Đơn chọn nhiều người nhận, từng dòng gán người nhận riêng, lọc/in/hóa đơn mang theo cả hai cấp
+ (completed 2026-10-03)
 - [ ] **Phase 19: Dòng xe dùng chung** - Một mã hàng thuộc nhiều dòng xe: chọn trong form, lọc theo dòng xe, import/xuất Excel nhiều dòng xe một ô
  (completed 2026-09-26)
 
@@ -709,3 +711,23 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 | 17. Đổi tên & gọn đơn đặt | 6/6 | Complete    | 2026-10-03 |
 | 18. Đơn nhiều người nhận | 8/8 | Complete    | 2026-10-03 |
 | 19. Dòng xe dùng chung | 0/TBD | Not started | - |
+
+### Phase 20: Giao diện 3b và tính năng còn thiếu
+
+**Goal**: Toàn app mang design system "hướng 3b" (artifact https://claude.ai/artifact/CmTtL7XqUnZzLSV54iE1ZC), và bốn màn có design — Tổng quan, Đơn đặt (danh sách + chi tiết), Chi tiết hàng hóa — có đủ tính năng design thể hiện mà hệ thống còn thiếu.
+**Depends on**: Phase 18 (dựng trên đơn nhiều người nhận). Độc lập với Phase 19.
+**Requirements**: UI3B-01 … UI3B-07 (chốt ở 20-CONTEXT.md)
+**Success Criteria** (what must be TRUE):
+
+  1. Mọi màn dùng chung design system 3b: font Manrope, header 2 tầng (logo · ô tìm ⌘K · tài khoản / menu tab gạch chân), nút bo tròn, thẻ viền mảnh bo 16 — bố cục nội dung từng màn không vỡ, mobile vẫn có thanh tab đáy
+  2. Ô tìm kiếm toàn cục (bấm hoặc ⌘K/Ctrl+K) tìm được mã hàng, số phiếu/số đơn và đối tác, Enter mở thẳng trang chi tiết; tôn trọng RLS/quyền xem
+  3. Tổng quan có 4 KPI kèm xu hướng (Giá trị tồn — người không có quyền giá vốn thấy Tổng SL tồn thay thế; Mã đang kinh doanh; Phiếu xuất hôm nay; Phiếu chờ ghi sổ), biểu đồ Nhập–Xuất 7N/30N/90N, Tồn theo nhóm có SL + tỷ trọng, panel "Cần xử lý" có nút dẫn tới đúng màn, "Không luân chuyển > 30 ngày" có số ngày; Nhịp bán và Xuất âm theo ngày vẫn còn
+  4. Danh sách Đơn đặt: lọc trạng thái có số đếm, khoảng ngày có preset 7N/30N/Tháng/Tùy, cột Tiến độ có thanh, nút Xuất Excel theo bộ lọc hiện tại
+  5. Chi tiết đơn: nội dung hai cột — dòng hàng bên trái, aside "Thông tin đơn" (người nhận, ghi chú, số đơn/ngày/người tạo/trạng thái) bên phải; gõ lại mã đã có với cùng người nhận thì cộng dồn số lượng
+  6. Chi tiết hàng hóa: badge trạng thái cạnh mã, nút Ngừng/Mở lại kinh doanh; "Tồn theo kho" là bảng Tồn · Tối thiểu · Giá trị (ẩn với người không có quyền giá vốn) + Tổng tồn; ảnh nằm ở aside (ảnh chính lớn + dải ảnh nhỏ)
+
+**Plans**: 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 20 to break down)
+**UI hint**: yes
