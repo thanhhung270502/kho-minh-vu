@@ -6,6 +6,7 @@ import type { TableColumnsType } from "antd";
 import type { DraftFields, DraftRow } from "../../lib/new-product-import";
 import type { Lookups } from "../../types";
 import { LookupSelect } from "../lookup-select";
+import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
 
 type Props = {
   rows: DraftRow[];
@@ -21,6 +22,7 @@ const toOptions = (items: { id: string; name: string }[] | undefined) =>
 
 /** Bảng xem trước đủ cột theo thứ tự IMP-02: cột từ file chỉ đọc, cột còn lại chọn tại chỗ. */
 export function PreviewTable({ rows, problems, lookups, selected, onSelect, onChange }: Props) {
+  const offsetHeader = useStickyTableOffset();
   const lookupColumn = (
     title: string,
     field: "productTypeId" | "categoryId" | "vehicleLineId" | "unitId",
@@ -113,7 +115,7 @@ export function PreviewTable({ rows, problems, lookups, selected, onSelect, onCh
     <Table<DraftRow>
       rowKey="row"
       size="small"
-      sticky
+      sticky={{ offsetHeader }}
       columns={columns}
       dataSource={rows}
       scroll={{ x: 1700 }}

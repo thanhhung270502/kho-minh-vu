@@ -20,6 +20,7 @@ import {
   deleteOrderLine,
   fetchOrderDetail,
   fetchOrderLines,
+  fetchOrderStatusCounts,
   fetchOrders,
   setOrderRecipients,
   unlockOrder,
@@ -27,11 +28,12 @@ import {
   updateOrderLine,
 } from "../api/order.api";
 import { orderKeys } from "../api/order.keys";
-import type {
-  OrderFilter,
-  OrderHeaderInput,
-  OrderLineInput,
-  OrderRecipientsInput,
+import {
+  statusCountKeyOf,
+  type OrderFilter,
+  type OrderHeaderInput,
+  type OrderLineInput,
+  type OrderRecipientsInput,
 } from "../schemas/order.schema";
 
 // --- Đọc ---------------------------------------------------------------------
@@ -40,6 +42,15 @@ export function useOrders(filter: OrderFilter) {
   return useQuery({
     queryKey: orderKeys.list(filter),
     queryFn: () => fetchOrders(filter),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useOrderStatusCounts(filter: OrderFilter) {
+  const key = statusCountKeyOf(filter);
+  return useQuery({
+    queryKey: orderKeys.statusCounts(key),
+    queryFn: () => fetchOrderStatusCounts(filter),
     placeholderData: keepPreviousData,
   });
 }

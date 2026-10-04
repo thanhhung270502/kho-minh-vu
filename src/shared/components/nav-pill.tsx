@@ -3,7 +3,7 @@
 import { DownOutlined } from "@ant-design/icons";
 import { Dropdown, type MenuProps } from "antd";
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 
 import type { NavEntry } from "@/shared/lib/navigation";
 
@@ -13,17 +13,16 @@ import { NAV_ICONS } from "./nav-icons";
 /**
  * Thanh điều hướng ngang — dựng bằng thẻ HTML thường + next/link, không dùng
  * antd Menu. Vì không phải component antd nên Tailwind ở đây là đúng chỗ,
- * không cần `!`. Kiểu design 1A: chữ xám trên nền trắng, mục đang chọn là
- * khối mực đen chữ trắng.
+ * không cần `!`. Kiểu 3b: tab chữ, mục đang chọn gạch chân 2px đen.
  */
 export const PILL_CLASS =
-  "flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-[7px] text-[13.5px] font-medium transition-colors duration-150";
+  "-mb-px flex h-full shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 text-[13.5px] transition-colors duration-150";
 
 /** Lớp màu theo trạng thái — tách khỏi PILL_CLASS để hàng đo ẩn dùng chung kích thước. */
 export function pillTone(active: boolean): string {
   return active
-    ? "bg-brand-500 text-white hover:text-white"
-    : "text-trung-tinh-500 hover:bg-trung-tinh-75 hover:text-chu-chinh";
+    ? "border-chu-chinh font-bold text-chu-chinh hover:text-chu-chinh"
+    : "border-transparent font-semibold text-chu-phu hover:text-chu-chinh";
 }
 
 export function PillLabel({ label }: { label: string }) {
@@ -34,7 +33,7 @@ export function DropdownLabel({ label }: { label: string }) {
   return (
     <>
       <PillLabel label={label} />
-      <DownOutlined className="text-[10px] opacity-70" />
+      <DownOutlined className="text-[9px] text-trung-tinh-300" />
     </>
   );
 }
@@ -62,13 +61,11 @@ export function linkItems(entry: Extract<NavEntry, { kind: "group" }>) {
 export function DropdownPill({
   label,
   active,
-  icon,
   items,
   activeHref,
 }: {
   label: string;
   active: boolean;
-  icon?: ReactNode;
   items: NonNullable<MenuProps["items"]>;
   activeHref: string;
 }) {
@@ -86,7 +83,6 @@ export function DropdownPill({
         aria-current={active ? "page" : undefined}
         className={cn(PILL_CLASS, "cursor-pointer border-0 bg-transparent", pillTone(active))}
       >
-        {icon}
         <DropdownLabel label={label} />
       </button>
     </Dropdown>

@@ -14,6 +14,7 @@ import {
   RECEIPT_SOURCE_LABELS,
   type DocumentRow,
 } from "../types";
+import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
 
 function formatNumber(value: number | string | null): string {
   return value === null ? "—" : Number(value).toLocaleString("vi-VN");
@@ -90,11 +91,12 @@ export function ReceiptTableBody({
   loading,
   onFilterChange,
 }: Props) {
+  const offsetHeader = useStickyTableOffset();
   return (
     <Table<DocumentRow>
       rowKey="id"
       size="small"
-      sticky
+      sticky={{ offsetHeader }}
       columns={COLUMNS}
       dataSource={rows}
       loading={loading}

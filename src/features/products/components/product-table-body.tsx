@@ -15,6 +15,7 @@ import {
   type SortField,
 } from "../schemas/filter.schema";
 import type { ProductRow } from "../types";
+import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
 
 type Props = {
   columns: TableColumnsType<ProductRow>;
@@ -47,6 +48,7 @@ export function ProductTableBody({
   onRowClick,
   renderExpanded,
 }: Props) {
+  const offsetHeader = useStickyTableOffset();
   const allStockIsZero =
     rows.length > 0 && rows.every((row) => Number(row.totalStock) === 0);
 
@@ -72,7 +74,7 @@ export function ProductTableBody({
       <Table<ProductRow>
         rowKey="id"
         size="small"
-        sticky
+        sticky={{ offsetHeader }}
         columns={columns}
         rowSelection={
           hasSelection

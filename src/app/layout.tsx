@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Be_Vietnam_Pro, JetBrains_Mono } from "next/font/google";
+import { JetBrains_Mono, Manrope } from "next/font/google";
 
 import { AppProviders } from "@/providers/app-providers";
 
 import "./globals.css";
 
-// Design system "Kho Minh Vu 1A": Be Vietnam Pro cho chữ (dấu tiếng Việt
-// cân hơn Inter), JetBrains Mono cho số phiếu và mã hàng.
-const fontSans = Be_Vietnam_Pro({
+// Design system 3b: Manrope cho chữ (có subset vietnamese, đậm 800 cho tiêu
+// đề), JetBrains Mono cho số phiếu và mã hàng.
+const fontSans = Manrope({
   subsets: ["latin", "vietnamese"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
   variable: "--font-app-sans",
 });

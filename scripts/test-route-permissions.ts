@@ -94,6 +94,8 @@ const MA_TRAN: Dong[] = [
   { route: "/api/danh-muc/mau-excel", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "401" } },
   // Phase 15 (IMP-01): file mẫu 4 cột — ai đăng nhập cũng tải được, như mẫu cũ.
   { route: "/api/danh-muc/mau-nhap-moi", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "401" } },
+  // Phase 20 (UI3B-05): xuất Excel danh sách đơn theo bộ lọc — ai đăng nhập cũng xem được đơn.
+  { route: "/api/don-dat/xuat-excel", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "401" } },
   // Mở /dang-nhap khi đã đăng nhập phải quay về page gốc, và `tiep_tuc` trỏ ra
   // ngoài miền thì bị vứt (safeRedirectPath) chứ không được chuyển hướng theo.
   { route: "/dang-nhap?tiep_tuc=//evil.com", ky_vong: { quanly: "goc", vanphong: "goc", thukho1: "goc", chixem: "goc", khach: "200" } },

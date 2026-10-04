@@ -2,23 +2,28 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 import {
   toCreateOrderRpcArgs,
-  toOrderLineInsert,
+  toAddOrderLineRpcArgs,
   toOrderLineUpdate,
   toSetOrderRecipientsRpcArgs,
   toOrderUpdate,
   toOrderListRpcArgs,
+  toOrderStatusCountRpcArgs,
   type OrderFilter,
   type OrderHeaderInput,
   type OrderLineInput,
   type OrderRecipientsInput,
 } from "../schemas/order.schema";
 import {
+  toAddOrderLineResult,
   toOrderDetail,
   toOrderLine,
   toOrderRow,
+  toOrderStatusCounts,
+  type AddOrderLineResult,
   type OrderDetail,
   type OrderLine,
   type OrderRow,
+  type OrderStatusCounts,
 } from "../types";
 
 // Hàm thuần — nhận tham số, trả dữ liệu đã có kiểu. Không JSX, không hook.
@@ -40,6 +45,15 @@ export async function fetchOrders(
     items: raw.map(toOrderRow),
     total: Number(raw[0]?.tong_so_dong ?? 0),
   };
+}
+
+export async function fetchOrderStatusCounts(filter: OrderFilter): Promise<OrderStatusCounts> {
+  const { data, error } = await getSupabaseBrowserClient().rpc(
+    "dem_don_theo_trang_thai",
+    toOrderStatusCountRpcArgs(filter),
+  );
+  if (error) throw error;
+  return toOrderStatusCounts(data ?? []);
 }
 
 export async function fetchOrderDetail(id: string): Promise<OrderDetail | null> {
@@ -106,20 +120,26 @@ export async function updateOrderHeader(
 }
 
 /**
- * `don_gia` KHÔNG được truyền — cột giữ mặc định 0 (đơn không mang giá,
- * chốt 19/09 câu 7).
+ * Thêm dòng qua RPC (0094): trùng mã + cùng người nhận dòng thì cộng dồn vào dòng
+ * cũ trong MỘT transaction (D-03). Không insert thẳng — select-rồi-update ở client
+ * là hai lệnh rời, hai lần gõ nhanh sẽ đua nhau.
  */
 export async function addOrderLine(
   orderId: string,
   line: OrderLineInput,
-): Promise<string> {
-  const { data, error } = await getSupabaseBrowserClient()
-    .from("don_dat_hang_dong")
-    .insert(toOrderLineInsert(orderId, line))
-    .select("id")
-    .single();
+): Promise<AddOrderLineResult> {
+  const { data, error } = await getSupabaseBrowserClient().rpc(
+    "them_dong_don",
+    toAddOrderLineRpcArgs(orderId, line),
+  );
   if (error) throw error;
-  return data.id;
+  const row = data?.[0];
+  if (!row) {
+    throw new Error(
+      "Không thêm được dòng — đơn đã xác nhận hoặc tài khoản không có quyền sửa.",
+    );
+  }
+  return toAddOrderLineResult(row);
 }
 
 export async function updateOrderLine(

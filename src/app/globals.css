@@ -22,7 +22,7 @@
   --font-mono: var(--font-app-mono), ui-monospace, Menlo, monospace;
 
   /*
-   * Design system đơn sắc "Kho Minh Vu 1A" (quick 261004-f2l). Giữ TÊN biến cũ
+   * Design system đơn sắc 3b (Phase 20, nối tiếp 1A của quick 261004-f2l). Giữ TÊN biến cũ
    * để mọi class đang dùng (`text-brand-600`, `bg-brand-25`…) tự đổi theo —
    * nay `brand` là thang mực đen, không còn là xanh KiotViet.
    * --color-brand-500 = colorPrimary của antd (src/providers/antd-theme.ts).
@@ -68,23 +68,25 @@
   --color-trung-tinh-950: #000000;
 
   /* Màu báo hiệu — chỉ dùng cho trạng thái, không trang trí. */
-  --color-canh-bao: oklch(0.68 0.16 60);
-  --color-canh-bao-chu: oklch(0.48 0.13 55);
-  --color-canh-bao-nen: oklch(0.96 0.04 70);
-  --color-nguy-hiem: oklch(0.58 0.2 27);
+  --color-canh-bao: oklch(0.6 0.15 60);
+  --color-canh-bao-chu: oklch(0.45 0.12 55);
+  --color-canh-bao-nen: oklch(0.97 0.035 75);
+  --color-nguy-hiem: oklch(0.55 0.2 27);
 
   /* Nền/chữ/viền dùng chung — khớp colorBgLayout/colorText/colorBorderSecondary ở antd-theme.ts */
-  --color-nen-trang: #FAFAFA;
+  --color-nen-trang: #FFFFFF;
+  --color-nen-phu: #F5F5F5;
+  --color-vien-input: #E5E5E5;
   --color-nen-the: #FFFFFF;
-  --color-vien: #EBEBEB;
+  --color-vien: #EDEDED;
   --color-chu-chinh: #0A0A0A;
   --color-chu-phu: #737373;
-  --color-header-bang: #FCFCFC;
+  --color-header-bang: #FAFAFA;
   --color-nen-tong: #FAFAFA;
 
   /* Thẻ chỉ có viền mảnh, không đổ bóng — giữ biến để class cũ không gãy. */
   --shadow-the: none;
-  --radius-the: 12px;
+  --radius-the: 16px;
 }
 
 html,
@@ -110,16 +112,16 @@ body {
 }
 
 /*
- * Tiêu đề cột bảng kiểu design: chữ hoa nhỏ, giãn chữ, màu xám. antd không có
+ * Tiêu đề cột bảng kiểu 3b: chữ thường 12/600, màu xám. antd không có
  * token cho text-transform/letter-spacing nên đặt ở đây, trong @layer
  * components (đứng sau @layer antd nên thắng mà không cần !important).
  */
 @layer components {
   .ant-table-wrapper .ant-table-thead > tr > th {
-    font-size: 11.5px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
   }
 
   /* Phím tắt gợi ý (Enter, Esc…) — viền mảnh, chữ đơn cách. */

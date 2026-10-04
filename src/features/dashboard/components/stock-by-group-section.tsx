@@ -14,8 +14,8 @@ import type { StockGroupBy } from "../lib/stock-drilldown";
 import { StockByGroupTable } from "./stock-by-group-table";
 
 const TABS: Array<{ key: StockGroupBy; label: string }> = [
-  { key: "category", label: "Theo nhóm hàng" },
-  { key: "stage", label: "Theo công đoạn" },
+  { key: "category", label: "Nhóm hàng" },
+  { key: "stage", label: "Công đoạn" },
 ];
 
 /**
@@ -32,7 +32,7 @@ export function StockByGroupSection() {
 
   return (
     <Card
-      title="Tồn theo nhóm hàng / công đoạn"
+      title="Tồn theo nhóm hàng"
       extra={
         <Select
           className="w-40"
@@ -62,7 +62,7 @@ export function StockByGroupSection() {
         )}
       </QueryState>
       <Typography.Text type="secondary" className="mt-3 block">
-        Chỉ đếm mã đang kinh doanh, giống mặc định màn Tồn kho. Bấm một con số để mở danh sách.
+        Đếm mã đang kinh doanh; SL tồn chỉ cộng phần dương. Bấm một con số để mở danh sách.
       </Typography.Text>
     </Card>
   );

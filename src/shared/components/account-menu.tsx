@@ -1,6 +1,6 @@
 "use client";
 
-import { DownOutlined, LockOutlined, LogoutOutlined } from "@ant-design/icons";
+import { LockOutlined, LogoutOutlined } from "@ant-design/icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dropdown } from "antd";
 import { useRouter } from "next/navigation";
@@ -39,6 +39,16 @@ export function AccountMenu({ user }: AccountMenuProps) {
       menu={{
         items: [
           {
+            key: "who",
+            label: (
+              <span>
+                {user.fullName} · {ROLE_LABELS[user.role]}
+              </span>
+            ),
+            disabled: true,
+          },
+          { type: "divider" },
+          {
             key: "change-password",
             icon: <LockOutlined />,
             label: "Đổi mật khẩu",
@@ -57,16 +67,14 @@ export function AccountMenu({ user }: AccountMenuProps) {
     >
       <button
         type="button"
-        className="flex cursor-pointer items-center gap-2.5 rounded-lg border-0 bg-transparent px-1.5 py-1 text-left hover:bg-trung-tinh-75"
+        className="flex cursor-pointer items-center gap-2.5 rounded-full border-0 bg-transparent py-1 ps-2 pe-1 text-left hover:bg-trung-tinh-75"
       >
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-trung-tinh-75 text-xs font-semibold text-chu-chinh">
+        <span className="hidden text-[13px] font-semibold whitespace-nowrap text-chu-chinh sm:inline">
+          {user.fullName}
+        </span>
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-trung-tinh-150 text-[11.5px] font-bold text-chu-chinh">
           {initials(user.fullName)}
         </span>
-        <span className="hidden flex-col leading-tight whitespace-nowrap sm:flex">
-          <span className="text-[13px] font-semibold text-chu-chinh">{user.fullName}</span>
-          <span className="text-xs text-trung-tinh-350">{ROLE_LABELS[user.role]}</span>
-        </span>
-        <DownOutlined className="text-[10px] text-trung-tinh-350" />
       </button>
     </Dropdown>
   );

@@ -11,7 +11,8 @@ export type Permission =
   | "manage-users"
   | "manage-warehouses"
   | "manage-doc-numbering"
-  | "view-analysis";
+  | "view-analysis"
+  | "view-cost";
 
 const PERMISSION_MATRIX: Record<Permission, readonly Role[]> = {
   "view-catalog": ["quan_ly", "van_phong", "thu_kho", "chi_xem"],
@@ -22,6 +23,9 @@ const PERMISSION_MATRIX: Record<Permission, readonly Role[]> = {
   // Trang Phân tích (Phase 13): văn phòng đi đặt hàng NCC nên cần xem. Tồn mọi
   // kho nên thủ kho không xem; chặn thật ở xem_duoc_phan_tich() (0079).
   "view-analysis": ["quan_ly", "van_phong"],
+  // Xem giá vốn/giá trị tồn — khớp co_quyen_xem_gia_von() (0029); chặn thật ở
+  // RPC gia_von_san_pham / tong_quan_chi_so, đây chỉ ẩn cột.
+  "view-cost": ["quan_ly", "van_phong"],
 };
 
 export function hasPermission(

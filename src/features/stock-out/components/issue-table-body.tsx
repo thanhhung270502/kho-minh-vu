@@ -9,6 +9,7 @@ import { StatusDot } from "@/shared/components/status-dot";
 
 import { DOC_STATUS_TONES, DOC_STATUS_LABELS, type IssueRow } from "../types";
 import { ISSUE_PAGE_SIZE, type IssueFilter } from "../schemas/issue.schema";
+import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
 
 function formatNumber(value: number | string | null): string {
   return value === null ? "—" : Number(value).toLocaleString("vi-VN");
@@ -87,11 +88,12 @@ export function IssueTableBody({
   loading,
   onFilterChange,
 }: Props) {
+  const offsetHeader = useStickyTableOffset();
   return (
     <Table<IssueRow>
       rowKey="id"
       size="small"
-      sticky
+      sticky={{ offsetHeader }}
       columns={COLUMNS}
       dataSource={rows}
       loading={loading}

@@ -1,29 +1,27 @@
 "use client";
 
-import { Button, DatePicker, Select } from "antd";
-import dayjs from "dayjs";
+import { Segmented } from "antd";
 import type { ReactNode } from "react";
 
 import { PartnerSearchInput } from "@/shared/components/partner-search-input";
 import { StaffSelect } from "@/shared/components/staff-select";
 import { RECIPIENT_KIND_LABELS, type RecipientKind } from "@/shared/lib/recipient";
 
-import { ORDER_STATUSES, ORDER_STATUS_LABELS, type OrderStatus } from "../lib/order-status";
 import {
   DEFAULT_ORDER_FILTER,
   countActiveOrderFilters,
   type OrderFilter,
 } from "../schemas/order.schema";
+import { DateRangeFilter } from "./date-range-filter";
+import { OrderStatusFilter } from "./order-status-filter";
 
-// Bẫy 4/11: mục "Tất cả" phải là một option với value "" — antd v6 bỏ hỗ trợ
-// option có value rỗng dạng null trong danh sách options.
-const ALL_STATUS = "";
+// Bẫy 11: "Tất cả" là option value "" — antd v6 không nhận value null.
 const ALL_KINDS = "";
 
 function FilterGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <label className="mb-1 block text-[13px] text-chu-phu">{label}</label>
+      <div className="mb-[7px] text-[12px] font-bold text-chu-phu">{label}</div>
       {children}
     </div>
   );
@@ -42,36 +40,33 @@ export function OrderFilterPanel({
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-[18px]">
+      <div className="flex items-baseline justify-between">
+        <span className="text-[14.5px] font-extrabold">Bộ lọc</span>
+        {countActiveOrderFilters(filter) > 0 ? (
+          <button
+            type="button"
+            className="cursor-pointer border-0 bg-transparent text-[12.5px] font-semibold text-trung-tinh-350 hover:text-chu-chinh"
+            onClick={() => onChange({ ...DEFAULT_ORDER_FILTER, q: filter.q })}
+          >
+            Xóa
+          </button>
+        ) : null}
+      </div>
+
       <FilterGroup label="Trạng thái">
-        <Select
-          className="w-full"
-          value={filter.status ?? ALL_STATUS}
-          options={[
-            { value: ALL_STATUS, label: "Tất cả" },
-            ...ORDER_STATUSES.map((status) => ({
-              value: status,
-              label: ORDER_STATUS_LABELS[status],
-            })),
-          ]}
-          onChange={(selected) =>
-            change({
-              status: selected === ALL_STATUS ? null : (selected as OrderStatus),
-            })
-          }
-        />
+        <OrderStatusFilter filter={filter} onSelect={(status) => change({ status })} />
       </FilterGroup>
 
       <FilterGroup label="Loại người nhận">
-        <Select
-          className="w-full"
+        <Segmented
+          block
+          size="small"
           value={filter.recipientKind ?? ALL_KINDS}
           options={[
-            { value: ALL_KINDS, label: "Tất cả" },
-            ...(Object.keys(RECIPIENT_KIND_LABELS) as RecipientKind[]).map((kind) => ({
-              value: kind,
-              label: RECIPIENT_KIND_LABELS[kind],
-            })),
+            { label: "Tất cả", value: ALL_KINDS },
+            { label: RECIPIENT_KIND_LABELS.internal, value: "internal" },
+            { label: RECIPIENT_KIND_LABELS.partner, value: "partner" },
           ]}
           onChange={(selected) => {
             const recipientKind =
@@ -103,28 +98,12 @@ export function OrderFilterPanel({
       </FilterGroup>
 
       <FilterGroup label="Khoảng ngày">
-        <DatePicker.RangePicker
-          className="w-full"
-          format="DD/MM/YYYY"
-          value={
-            filter.fromDate && filter.toDate
-              ? [dayjs(filter.fromDate), dayjs(filter.toDate)]
-              : null
-          }
-          onChange={(range) =>
-            change({
-              fromDate: range?.[0] ? range[0].format("YYYY-MM-DD") : null,
-              toDate: range?.[1] ? range[1].format("YYYY-MM-DD") : null,
-            })
-          }
+        <DateRangeFilter
+          fromDate={filter.fromDate}
+          toDate={filter.toDate}
+          onChange={(range) => change(range)}
         />
       </FilterGroup>
-
-      {countActiveOrderFilters(filter) > 0 ? (
-        <Button onClick={() => onChange({ ...DEFAULT_ORDER_FILTER, q: filter.q })}>
-          Xóa bộ lọc
-        </Button>
-      ) : null}
     </div>
   );
 }

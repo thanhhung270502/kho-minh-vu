@@ -9,21 +9,19 @@ import { StatusDot } from "@/shared/components/status-dot";
 import { partnerLabel } from "@/shared/lib/recipient";
 
 import { ORDER_STATUS_TONES, ORDER_STATUS_LABELS } from "../lib/order-status";
+import { OrderProgressBar } from "./order-progress-bar";
 import { ORDER_PAGE_SIZE, type OrderFilter } from "../schemas/order.schema";
 import type { OrderRow } from "../types";
-
-function formatQuantity(value: number): string {
-  return value.toLocaleString("vi-VN");
-}
+import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
 
 const COLUMNS: TableColumnsType<OrderRow> = [
   {
     title: "Số đơn",
     dataIndex: "orderNo",
-    width: 150,
+    width: 128,
     fixed: "left",
     render: (orderNo: string, row) => (
-      <Link href={`/don-dat/${row.id}`} className="font-mono">
+      <Link href={`/don-dat/${row.id}`} className="font-mono text-[12.5px] font-medium">
         {orderNo}
       </Link>
     ),
@@ -31,46 +29,81 @@ const COLUMNS: TableColumnsType<OrderRow> = [
   {
     title: "Ngày đơn",
     dataIndex: "orderDate",
-    width: 110,
-    render: (date: string) => dayjs(date).format("DD/MM/YYYY"),
+    width: 96,
+    render: (date: string) => (
+      <span className="text-trung-tinh-500 tabular-nums">{dayjs(date).format("DD/MM/YYYY")}</span>
+    ),
   },
   {
     title: "Người nhận",
     dataIndex: "recipients",
     width: 260,
-    render: (recipients: OrderRow["recipients"]) => (
-      <span className="flex flex-wrap items-center gap-1">
-        {recipients.partner ? (
-          <span>{partnerLabel(recipients.partner)}</span>
-        ) : (
-          <Tag>Nội bộ</Tag>
-        )}
-        {recipients.staff.map((person) => (
-          <Tag key={person.id} className="m-0">
-            {person.name}
-          </Tag>
-        ))}
-      </span>
-    ),
+    render: (recipients: OrderRow["recipients"]) => {
+      const [first, ...rest] = recipients.staff;
+      return (
+        <span className="flex flex-wrap items-center gap-1.5">
+          {recipients.partner ? (
+            <>
+              <span className="font-bold">{partnerLabel(recipients.partner)}</span>
+              {recipients.staff.map((person) => (
+                <Tag key={person.id} className="m-0">
+                  {person.name}
+                </Tag>
+              ))}
+            </>
+          ) : (
+            <>
+              {first ? <span className="font-bold">{first.name}</span> : null}
+              {rest.length > 0 ? <span className="text-chu-phu">+{rest.length}</span> : null}
+              <span className="shrink-0 rounded-md border border-vien px-[7px] text-[11px] font-bold">
+                Nội bộ
+              </span>
+            </>
+          )}
+        </span>
+      );
+    },
   },
   {
     title: "Tiến độ",
     key: "progress",
-    width: 100,
-    align: "right",
-    // D-04: trục giao tính khi đọc, không phải enum — hiện thẳng hai con số.
-    render: (_, row) =>
-      `${formatQuantity(row.shippedQuantity)}/${formatQuantity(row.orderedQuantity)}`,
+    width: 150,
+    // D-04: trục giao tính khi đọc, không phải enum.
+    render: (_, row) => (
+      <OrderProgressBar shipped={row.shippedQuantity} ordered={row.orderedQuantity} />
+    ),
   },
   {
     title: "Trạng thái",
     dataIndex: "status",
-    width: 140,
+    width: 128,
     render: (status: OrderRow["status"]) => (
-      <StatusDot tone={ORDER_STATUS_TONES[status]} strike={status === "DA_HUY"}>{ORDER_STATUS_LABELS[status]}</StatusDot>
+      <StatusDot
+        variant="badge"
+        tone={ORDER_STATUS_TONES[status]}
+        className={status === "DA_HUY" ? "line-through" : undefined}
+      >
+        {ORDER_STATUS_LABELS[status]}
+      </StatusDot>
     ),
   },
-  { title: "Người tạo", dataIndex: "createdByName", width: 160, ellipsis: true },
+  {
+    title: "Người tạo",
+    dataIndex: "createdByName",
+    width: 110,
+    ellipsis: true,
+    render: (name: string | null) => <span className="text-chu-phu">{name}</span>,
+  },
+  {
+    title: "",
+    key: "open",
+    width: 28,
+    render: (_, row) => (
+      <Link href={`/don-dat/${row.id}`} aria-label="Mở đơn" className="text-trung-tinh-250">
+        ›
+      </Link>
+    ),
+  },
 ];
 
 type Props = {
@@ -82,21 +115,21 @@ type Props = {
 };
 
 export function OrderTableBody({ rows, total, filter, loading, onFilterChange }: Props) {
+  const offsetHeader = useStickyTableOffset();
   return (
     <Table<OrderRow>
       rowKey="id"
       size="small"
-      sticky
+      sticky={{ offsetHeader }}
       columns={COLUMNS}
       dataSource={rows}
       loading={loading}
-      scroll={{ x: 1060 }}
+      scroll={{ x: 980 }}
       pagination={{
         current: filter.page,
         pageSize: ORDER_PAGE_SIZE,
         total,
         showSizeChanger: false,
-        showTotal: (count) => `${count.toLocaleString("vi-VN")} đơn`,
         onChange: (page) => onFilterChange({ ...filter, page }),
       }}
     />

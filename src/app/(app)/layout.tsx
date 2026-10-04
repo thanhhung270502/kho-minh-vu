@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { getCurrentUser } from "@/features/auth/api/current-user.server";
+import { GlobalSearch } from "@/features/global-search/components/global-search";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AppShell } from "@/shared/components/app-shell";
 
@@ -32,5 +33,9 @@ export default async function AppLayout({
   // Đọc cờ từ BẢNG chứ không từ claim: đổi xong là hết chặn ngay, không chờ token mới.
   if (user.mustChangePassword) redirect("/doi-mat-khau");
 
-  return <AppShell user={user}>{children}</AppShell>;
+  return (
+    <AppShell user={user} search={<GlobalSearch />}>
+      {children}
+    </AppShell>
+  );
 }

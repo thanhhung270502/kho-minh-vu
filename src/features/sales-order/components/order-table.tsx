@@ -56,6 +56,7 @@ export function OrderTable({ canCreate }: { canCreate: boolean }) {
         <OrderToolbar
           filter={filter}
           onChange={changeFilter}
+          total={orders.data ? total : null}
           addButton={canCreate ? <CreateOrderButton /> : null}
         />
       }
