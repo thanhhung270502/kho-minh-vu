@@ -105,6 +105,10 @@ export function buildOrderLineColumns({
       render: (value: number, line: OrderLine) =>
         editable ? (
           <InputNumber
+            // Ô không kiểm soát: khi server đổi số (cộng dồn từ hàng nhập,
+            // 20-15) phải dựng lại ô, không thì vẫn hiện số cũ. Số chỉ đổi
+            // sau khi lưu nên không cắt ngang lúc đang gõ (bẫy 20).
+            key={`${line.id}-${value}`}
             size="small"
             className="w-full"
             min={0}

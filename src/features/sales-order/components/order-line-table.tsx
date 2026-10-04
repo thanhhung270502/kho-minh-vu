@@ -138,9 +138,6 @@ export function OrderLineTable({ orderId, lines, editable, staff }: Props) {
           }
           onSubmit={() => void saveDraftLine()}
         />
-        <p className="m-0 mt-2 text-xs text-trung-tinh-350">
-          Enter sang ô số lượng · Enter thêm dòng, con trỏ quay về ô mã
-        </p>
         </div>
       ) : null}
 
@@ -159,6 +156,8 @@ export function OrderLineTable({ orderId, lines, editable, staff }: Props) {
                 columns={columns}
                 hasSelection={false}
                 label={`Tổng cộng — ${lines.length} dòng`}
+                // Cột # hẹp đứng đầu: nhãn trải qua #, Mã hàng, Tên hàng.
+                labelSpan={3}
                 totals={{ orderedQuantity: totalQuantity }}
               />
             ) : null
