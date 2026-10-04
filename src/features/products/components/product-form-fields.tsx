@@ -9,6 +9,7 @@ import {
   type UseFormSetValue,
 } from "react-hook-form";
 
+import { useAutoFillName } from "../hooks/useAutoFillName";
 import type { ProductFormValues } from "../schemas/product.schema";
 import { PRODUCT_KIND_LABELS, type Lookups, type ProductKind } from "../types";
 import { LookupSelect } from "./lookup-select";
@@ -36,6 +37,8 @@ const KIND_OPTIONS = (Object.keys(PRODUCT_KIND_LABELS) as ProductKind[]).map((ki
  * sửa ở Phân tích › Định mức).
  */
 export function ProductFormFields({ control, errors, setValue, getValues, lookups, isNew, note }: Props) {
+  const nameFromSheet = useAutoFillName({ control, setValue, getValues, enabled: isNew });
+
   return (
     <>
       <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
@@ -47,7 +50,11 @@ export function ProductFormFields({ control, errors, setValue, getValues, lookup
         </Form.Item>
       </div>
 
-      <Form.Item label="Tên hàng" validateStatus={errors.name ? "error" : undefined} help={errors.name?.message}>
+      <Form.Item
+        label="Tên hàng"
+        validateStatus={errors.name ? "error" : undefined}
+        help={errors.name?.message ?? (nameFromSheet ? "Tự điền từ sheet tên hàng chuẩn — sửa được." : undefined)}
+      >
         <Controller name="name" control={control} render={({ field }) => <Input {...field} />} />
       </Form.Item>
 

@@ -13,5 +13,7 @@ export const productKeys = {
   /** Toàn bộ mã cho "Điền quy chuẩn từ mã" — nằm dưới `all` để mọi mutation làm mới. */
   standardFillSources: ["products", "standard-fill-sources"] as const,
   comboComponents: (id: string) => ["products", "combo-components", id] as const,
+  /** Sheet tên hàng chuẩn — không nằm dưới `all`: lưu mã hàng không làm đổi sheet. */
+  nameSheet: ["product-name-sheet"] as const,
   lookups: ["lookups"] as const,
 };
