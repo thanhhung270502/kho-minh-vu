@@ -3,6 +3,10 @@
  * Chạy: npx tsx scripts/test-pure-functions.ts
  */
 import assert from "node:assert/strict";
+import { toAddOrderLineResult, toOrderStatusCounts } from "../src/features/sales-order/types";
+import { statusCountKeyOf, toAddOrderLineRpcArgs, toOrderStatusCountRpcArgs } from "../src/features/sales-order/schemas/order.schema";
+import { DATE_PRESET_LABELS, activeDatePreset, datePresetRange, todayInVietnam } from "../src/features/sales-order/lib/date-presets";
+import { orderProgress } from "../src/features/sales-order/lib/order-progress";
 import {
   toFlowDay,
   toIdleProduct,
@@ -1454,6 +1458,52 @@ async function kiemCsvPhanTich() {
   assert.equal(share.get("b"), 25);
   assert.equal(groupShare([{ key: "a", totalQuantity: 0 }]).get("a"), 0, "tổng 0 → 0%");
   assert.equal(formatUpdatedAt(Date.UTC(2026, 8, 19, 1, 42)), "Cập nhật 08:42 · 19/09/2026");
+}
+
+// --- Phase 20 — đơn đặt 3b (UI3B-05/06) -------------------------------------
+{
+  assert.deepEqual(
+    toOrderStatusCounts([{ trang_thai: "TAM", so_don: 2 }, { trang_thai: "HOAN_THANH", so_don: "5" }] as unknown as Parameters<typeof toOrderStatusCounts>[0]),
+    { byStatus: { TAM: 2, DA_XAC_NHAN: 0, HOAN_THANH: 5, DA_HUY: 0 }, total: 7 },
+  );
+  assert.deepEqual(
+    toAddOrderLineResult({ dong_id: "l1", da_cong_don: true, so_luong_moi: "5" } as unknown as Parameters<typeof toAddOrderLineResult>[0]),
+    { lineId: "l1", merged: true, quantity: 5 },
+  );
+
+  const staff = "11111111-1111-4111-8111-111111111111";
+  const countArgs = toOrderStatusCountRpcArgs({ ...DEFAULT_ORDER_FILTER, status: "TAM", page: 3, recipientKind: "internal", staffId: staff });
+  assert.deepEqual(countArgs, {
+    p_doi_tac_id: undefined, p_tu_ngay: undefined, p_den_ngay: undefined, p_tu_khoa: undefined,
+    p_loai_nhan: "NOI_BO", p_nguoi_nhan_id: staff,
+  });
+  assert.ok(!("p_trang_thai" in countArgs) && !("p_trang" in countArgs) && !("p_kich_thuoc" in countArgs));
+  assert.deepEqual(
+    statusCountKeyOf({ ...DEFAULT_ORDER_FILTER, status: "TAM", page: 3 }),
+    statusCountKeyOf({ ...DEFAULT_ORDER_FILTER, status: null, page: 1 }),
+    "đổi trạng thái/trang không đổi khóa đếm",
+  );
+  assert.deepEqual(toAddOrderLineRpcArgs("o1", { productId: "p1", quantity: 2, recipientId: null }), {
+    p_don_id: "o1", p_san_pham_id: "p1", p_so_luong: 2, p_nguoi_nhan_id: undefined,
+  });
+  assert.equal(toAddOrderLineRpcArgs("o1", { productId: "p1", quantity: 2, recipientId: "nv" }).p_nguoi_nhan_id, "nv");
+
+  assert.equal(todayInVietnam(new Date(Date.UTC(2026, 9, 3, 18, 30))), "2026-10-04", "01:30 sáng VN");
+  assert.deepEqual(datePresetRange("7d", "2026-10-04"), { fromDate: "2026-09-28", toDate: "2026-10-04" });
+  assert.deepEqual(datePresetRange("30d", "2026-10-04"), { fromDate: "2026-09-05", toDate: "2026-10-04" });
+  assert.deepEqual(datePresetRange("month", "2026-10-04"), { fromDate: "2026-10-01", toDate: "2026-10-04" });
+  assert.deepEqual(datePresetRange("7d", "2026-03-03"), { fromDate: "2026-02-25", toDate: "2026-03-03" });
+  assert.equal(activeDatePreset(null, null, "2026-10-04"), null);
+  assert.equal(activeDatePreset("2026-09-28", "2026-10-04", "2026-10-04"), "7d");
+  assert.equal(activeDatePreset("2026-10-01", "2026-10-04", "2026-10-04"), "month");
+  assert.equal(activeDatePreset("2026-09-01", "2026-09-15", "2026-10-04"), "custom");
+  assert.deepEqual(DATE_PRESET_LABELS, { "7d": "7N", "30d": "30N", month: "Tháng", custom: "Tùy" });
+
+  assert.deepEqual(orderProgress(0, 0), { percent: null, label: "—" });
+  assert.deepEqual(orderProgress(3, 7), { percent: 43, label: "3/7" });
+  assert.deepEqual(orderProgress(400, 400), { percent: 100, label: "400/400" });
+  assert.deepEqual(orderProgress(1500, 2000), { percent: 75, label: "1.500/2.000" });
+  assert.equal(orderProgress(9, 7).percent, 100);
 }
 
 void Promise.all([kiemCsvLoi(), kiemCsvPhanTich(), kiemTaiTheoTrang()]).then(() => {

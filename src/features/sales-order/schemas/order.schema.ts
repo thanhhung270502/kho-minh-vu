@@ -225,3 +225,46 @@ export function toOrderListRpcArgs(filter: OrderFilter): OrderListArgs {
       : undefined,
   };
 }
+
+/** Khóa đếm trạng thái: bỏ status và page — đổi tab/trang không đếm lại. */
+export type OrderStatusCountKey = Omit<OrderFilter, "status" | "page">;
+
+export function statusCountKeyOf(filter: OrderFilter): OrderStatusCountKey {
+  return {
+    q: filter.q,
+    recipientKind: filter.recipientKind,
+    partnerId: filter.partnerId,
+    staffId: filter.staffId,
+    fromDate: filter.fromDate,
+    toDate: filter.toDate,
+  };
+}
+
+/** Đếm theo trạng thái nên không có p_trang_thai / phân trang. */
+export function toOrderStatusCountRpcArgs(
+  filter: OrderFilter,
+): Fn["dem_don_theo_trang_thai"]["Args"] {
+  return {
+    p_doi_tac_id: filter.partnerId ?? undefined,
+    p_tu_ngay: filter.fromDate ?? undefined,
+    p_den_ngay: filter.toDate ?? undefined,
+    p_tu_khoa: filter.q || undefined,
+    p_loai_nhan: filter.recipientKind
+      ? RECIPIENT_KIND_TO_RPC[filter.recipientKind]
+      : undefined,
+    p_nguoi_nhan_id: filter.staffId ?? undefined,
+  };
+}
+
+/** Không có đơn giá — đơn không mang giá. */
+export function toAddOrderLineRpcArgs(
+  orderId: string,
+  line: OrderLineInput,
+): Fn["them_dong_don"]["Args"] {
+  return {
+    p_don_id: orderId,
+    p_san_pham_id: line.productId,
+    p_so_luong: line.quantity,
+    p_nguoi_nhan_id: line.recipientId ?? undefined,
+  };
+}
