@@ -737,11 +737,11 @@ Plans:
 - [x] 20-06-PLAN.md — W2: Đồng bộ migration + database.types + mapper/hàm thuần có test cho 3 feature
 - [x] 20-07-PLAN.md — W2: Header hai tầng + slot ô tìm + offsetHeader 6 bảng dính (D-10)
 - [x] 20-08-PLAN.md — W2: Chi tiết hàng hóa hai cột — badge, Ngừng/Mở lại KD, ghép bảng tồn + ảnh aside
-- [ ] 20-09-PLAN.md — W3: Ô tìm kiếm ⌘K (feature global-search) ghép vào header
-- [ ] 20-10-PLAN.md — W3: Tổng quan A — 4 KPI + sparkline + biểu đồ Nhập–Xuất 7N/30N/90N
-- [ ] 20-11-PLAN.md — W3: Đơn đặt — panel lọc có số đếm trạng thái, preset ngày
-- [ ] 20-12-PLAN.md — W3: Đơn đặt — cột Tiến độ dạng thanh, chip trạng thái, số kết quả
-- [ ] 20-13-PLAN.md — W3: Xuất Excel danh sách đơn theo bộ lọc
+- [x] 20-09-PLAN.md — W3: Ô tìm kiếm ⌘K (feature global-search) ghép vào header
+- [x] 20-10-PLAN.md — W3: Tổng quan A — 4 KPI + sparkline + biểu đồ Nhập–Xuất 7N/30N/90N
+- [x] 20-11-PLAN.md — W3: Đơn đặt — panel lọc có số đếm trạng thái, preset ngày
+- [x] 20-12-PLAN.md — W3: Đơn đặt — cột Tiến độ dạng thanh, chip trạng thái, số kết quả
+- [x] 20-13-PLAN.md — W3: Xuất Excel danh sách đơn theo bộ lọc
 - [ ] 20-14-PLAN.md — W4: Tổng quan B — Cần xử lý, Không luân chuyển, Tồn theo nhóm có SL + tỷ trọng, lưới 1fr 300px
 - [ ] 20-15-PLAN.md — W4: Chi tiết đơn hai cột + thêm dòng cộng dồn qua RPC
 - [ ] 20-16-PLAN.md — W5: Ma trận quyền route, cổng kiểm toàn bộ, UAT trình duyệt (checkpoint)
