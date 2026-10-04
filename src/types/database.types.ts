@@ -1950,6 +1950,20 @@ export type Database = {
           tong_so_dong: number
         }[]
       }
+      dem_don_theo_trang_thai: {
+        Args: {
+          p_den_ngay?: string
+          p_doi_tac_id?: string
+          p_loai_nhan?: string
+          p_nguoi_nhan_id?: string
+          p_tu_khoa?: string
+          p_tu_ngay?: string
+        }
+        Returns: {
+          so_don: number
+          trang_thai: Database["public"]["Enums"]["trang_thai_ddh"]
+        }[]
+      }
       doi_chieu_ton: {
         Args: never
         Returns: {
@@ -2246,6 +2260,16 @@ export type Database = {
       }
       huy_duoc_don: { Args: never; Returns: boolean }
       kho_hien_tai: { Args: never; Returns: string[] }
+      khong_luan_chuyen: {
+        Args: { p_gioi_han?: number; p_ngay?: string; p_so_ngay?: number }
+        Returns: {
+          ma_hang: string
+          san_pham_id: string
+          so_ngay: number
+          ten_hang: string
+          ton: number
+        }[]
+      }
       khop_danh_muc: {
         Args: { p_bang: string; p_gia_tri: string }
         Returns: string
@@ -2444,6 +2468,16 @@ export type Database = {
         }
         Returns: Json
       }
+      nhap_xuat_theo_ngay: {
+        Args: { p_ngay?: string; p_so_ngay: number }
+        Returns: {
+          ngay: string
+          sl_nhap: number
+          sl_xuat: number
+          so_phieu_nhap: number
+          so_phieu_xuat: number
+        }[]
+      }
       nhip_ban: {
         Args: { p_ngay?: string }
         Returns: {
@@ -2637,9 +2671,34 @@ export type Database = {
         }
         Returns: boolean
       }
+      them_dong_don: {
+        Args: {
+          p_don_id: string
+          p_nguoi_nhan_id?: string
+          p_san_pham_id: string
+          p_so_luong: number
+        }
+        Returns: {
+          da_cong_don: boolean
+          dong_id: string
+          so_luong_moi: number
+        }[]
+      }
       thu_hoi_phien_nguoi_dung: {
         Args: { p_nguoi_dung_id: string }
         Returns: number
+      }
+      tim_kiem_toan_cuc: {
+        Args: { p_gioi_han?: number; p_tu_khoa: string }
+        Returns: {
+          id: string
+          loai: string
+          loai_ct: string
+          nhan: string
+          phu: string
+          trang_thai: string
+          xep_hang: number
+        }[]
       }
       tim_san_pham: {
         Args: { p_gioi_han?: number; p_tu_khoa: string }
@@ -2668,6 +2727,29 @@ export type Database = {
           nhom_id: string
           ten_nhom: string
           tong_ma: number
+          tong_so_luong: number
+        }[]
+      }
+      tong_quan_chi_so: {
+        Args: { p_ngay?: string }
+        Returns: {
+          cho_ghi_so: number
+          cho_ghi_so_cu_nhat_ngay: number
+          cho_ghi_so_nhap: number
+          cho_ghi_so_xuat: number
+          gia_tri_ton: number
+          gia_tri_ton_thang_truoc: number
+          ma_kinh_doanh: number
+          ma_moi_thang: number
+          phieu_xuat_tb_ngay: number
+          ton_am_theo_kho: Json
+          tong_sl_ton: number
+          tong_sl_ton_thang_truoc: number
+          vi_du_duoi_dinh_muc: string[]
+          xem_gia_von: boolean
+          xu_huong_cho_ghi_so: number[]
+          xu_huong_ma_kd: number[]
+          xu_huong_ton: number[]
         }[]
       }
       tra_cuu_lich_su_kiotviet: {

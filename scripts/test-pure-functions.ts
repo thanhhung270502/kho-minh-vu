@@ -3,6 +3,8 @@
  * Chạy: npx tsx scripts/test-pure-functions.ts
  */
 import assert from "node:assert/strict";
+import { toGlobalSearchResult, type GlobalSearchResult } from "../src/features/global-search/types";
+import { defaultActiveIndex, groupSearchResults, searchResultHref } from "../src/features/global-search/lib/search-results";
 
 import { removeDiacritics, normalizeUsername, usernameToEmail, labelMatches } from "../src/shared/lib/text";
 import { hasPermission } from "../src/shared/lib/permissions";
@@ -1320,6 +1322,35 @@ async function kiemCsvPhanTich() {
   assert.ok(!/giá|vốn/i.test(header), "CSV đề nghị nhập không có cột giá");
   assert.ok(header.includes("Đơn đặt") && !header.includes("Khách đặt"), "TEN-03: CSV ghi Đơn đặt thay Khách đặt");
   assert.ok(csv.includes("RWT") && csv.includes(",65"), "dòng RWT đề nghị 65");
+}
+
+// --- Phase 20 — tìm kiếm toàn cục (UI3B-02) ---------------------------------
+{
+  const row = (loai: string, id: string, nhan: string) =>
+    ({ loai, id, nhan, phu: "Bạc đạn", loai_ct: null, trang_thai: null, xep_hang: 0 }) as unknown as Parameters<typeof toGlobalSearchResult>[0];
+  assert.deepEqual(toGlobalSearchResult(row("san_pham", "p1", "ABC")), {
+    key: "product:p1", kind: "product", id: "p1", label: "ABC", hint: "Bạc đạn", documentType: null, status: null, rank: 0,
+  });
+  assert.equal(toGlobalSearchResult(row("x", "p1", "ABC")), null, "loại lạ bị bỏ");
+
+  const r = (kind: GlobalSearchResult["kind"], id: string, label = "L", documentType: string | null = null): GlobalSearchResult => ({
+    key: `${kind}:${id}`, kind, id, label, hint: null, documentType, status: null, rank: 0,
+  });
+  assert.equal(searchResultHref(r("product", "p1")), "/danh-muc/p1");
+  assert.equal(searchResultHref(r("order", "o1")), "/don-dat/o1");
+  assert.equal(searchResultHref(r("partner", "x", "Liên Hoa")), "/doi-tac?q=Li%C3%AAn%20Hoa");
+  assert.equal(searchResultHref(r("document", "d1", "L", "NHAP")), "/nhap-kho/d1");
+  assert.equal(searchResultHref(r("document", "d1", "L", "XUAT")), "/duyet-don/d1");
+  assert.equal(searchResultHref(r("document", "d1", "L", "TRA_NCC")), "/tra-hang/d1");
+  assert.equal(searchResultHref(r("document", "d1", "L", "TRA_KHACH")), "/tra-hang/d1");
+  assert.equal(searchResultHref(r("document", "d1", "L", "KIEM_KE")), "/kiem-ke/d1");
+  assert.equal(searchResultHref(r("document", "d1", "L", "CHUYEN_KHO")), null);
+
+  const groups = groupSearchResults([r("order", "o"), r("product", "p"), r("partner", "t")]);
+  assert.deepEqual(groups.map((g) => g.title), ["Mã hàng", "Đơn đặt", "Đối tác"], "thứ tự nhóm, bỏ nhóm rỗng");
+  assert.equal(defaultActiveIndex([{ label: "ABC1" }, { label: "ABC" }], " abc "), 1);
+  assert.equal(defaultActiveIndex([{ label: "ABC1" }, { label: "ABD" }], "abc"), 0);
+  assert.equal(defaultActiveIndex([], "abc"), -1);
 }
 
 void Promise.all([kiemCsvLoi(), kiemCsvPhanTich(), kiemTaiTheoTrang()]).then(() => {
