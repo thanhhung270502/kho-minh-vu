@@ -27,7 +27,7 @@ export async function GET(request: Request) {
   if (result.ok) return Response.json({ thanh_cong: true, so_muc: result.counts });
 
   // Lỗi vẫn trả về để log Vercel ghi rõ lý do; từ điển cũ giữ nguyên.
-  const status = result.stage === "fetch" ? 502 : 422;
+  const status = result.stage === "config" ? 503 : result.stage === "fetch" ? 502 : 422;
   return Response.json({ thanh_cong: false, giai_doan: result.stage, loi: result.message }, { status });
 }
 
