@@ -9,6 +9,9 @@ type Fn = Database["public"]["Functions"];
 type SalesPaceRowDb = Fn["nhip_ban"]["Returns"][number];
 type NegativeStockRowDb = Fn["bao_cao_xuat_am"]["Returns"][number];
 type StockByGroupRowDb = Fn["ton_theo_nhom"]["Returns"][number];
+type OverviewRowDb = Fn["tong_quan_chi_so"]["Returns"][number];
+type FlowRowDb = Fn["nhap_xuat_theo_ngay"]["Returns"][number];
+type IdleRowDb = Fn["khong_luan_chuyen"]["Returns"][number];
 
 // --- Mô hình miền (khóa camelCase tiếng Anh) --------------------------------
 
@@ -57,6 +60,47 @@ export type StockByGroupRow = {
   outOfStock: number;
   negative: number;
   belowMinimum: number;
+  totalQuantity: number;
+};
+
+export type NegativeByWarehouse = { warehouseName: string; count: number };
+
+export type OverviewKpis = {
+  canViewCost: boolean;
+  inventoryValue: number | null;
+  inventoryValuePrevMonth: number | null;
+  totalQuantity: number;
+  totalQuantityPrevMonth: number;
+  /** 30 điểm cũ → mới: giá trị nếu canViewCost, ngược lại SL — ƯỚC TÍNH theo giá vốn hiện tại (D-09). */
+  inventoryTrend: number[];
+  activeProducts: number;
+  newProductsThisMonth: number;
+  activeProductsTrend: number[];
+  avgIssuesPerDay: number;
+  pendingDocs: number;
+  pendingReceipts: number;
+  pendingIssues: number;
+  oldestPendingDays: number | null;
+  pendingTrend: number[];
+  negativeByWarehouse: NegativeByWarehouse[];
+  belowMinimumExamples: string[];
+};
+
+export type FlowDay = {
+  date: string;
+  receiptCount: number;
+  issueCount: number;
+  receiptQuantity: number;
+  issueQuantity: number;
+};
+
+export type IdleProduct = {
+  key: string;
+  productId: string;
+  code: string;
+  name: string;
+  idleDays: number;
+  quantity: number;
 };
 
 // --- Mapper: database -> miền ----------------------------------------------
@@ -118,5 +162,66 @@ export function toStockByGroupRow(row: StockByGroupRowDb): StockByGroupRow {
     outOfStock: Number(row.het_hang),
     negative: Number(row.am),
     belowMinimum: Number(row.duoi_dinh_muc),
+    totalQuantity: Number(row.tong_so_luong),
+  };
+}
+
+// `ton_am_theo_kho` là jsonb [{ten_kho, so_ma}] — khóa là hợp đồng với RPC 0093.
+function parseNegativeByWarehouse(value: unknown): NegativeByWarehouse[] {
+  if (!Array.isArray(value)) return [];
+  const result: NegativeByWarehouse[] = [];
+  for (const item of value as unknown[]) {
+    if (typeof item !== "object" || item === null) continue;
+    const record = item as Record<string, unknown>;
+    if (typeof record.ten_kho !== "string") continue;
+    result.push({ warehouseName: record.ten_kho, count: Number(record.so_ma) });
+  }
+  return result;
+}
+
+const toNumbers = (values: unknown[] | null): number[] => (values ?? []).map(Number);
+
+export function toOverviewKpis(row: OverviewRowDb): OverviewKpis {
+  return {
+    canViewCost: row.xem_gia_von,
+    inventoryValue: row.gia_tri_ton == null ? null : Number(row.gia_tri_ton),
+    inventoryValuePrevMonth:
+      row.gia_tri_ton_thang_truoc == null ? null : Number(row.gia_tri_ton_thang_truoc),
+    totalQuantity: Number(row.tong_sl_ton),
+    totalQuantityPrevMonth: Number(row.tong_sl_ton_thang_truoc),
+    inventoryTrend: toNumbers(row.xu_huong_ton),
+    activeProducts: Number(row.ma_kinh_doanh),
+    newProductsThisMonth: Number(row.ma_moi_thang),
+    activeProductsTrend: toNumbers(row.xu_huong_ma_kd),
+    avgIssuesPerDay: Number(row.phieu_xuat_tb_ngay),
+    pendingDocs: Number(row.cho_ghi_so),
+    pendingReceipts: Number(row.cho_ghi_so_nhap),
+    pendingIssues: Number(row.cho_ghi_so_xuat),
+    oldestPendingDays:
+      row.cho_ghi_so_cu_nhat_ngay == null ? null : Number(row.cho_ghi_so_cu_nhat_ngay),
+    pendingTrend: toNumbers(row.xu_huong_cho_ghi_so),
+    negativeByWarehouse: parseNegativeByWarehouse(row.ton_am_theo_kho),
+    belowMinimumExamples: row.vi_du_duoi_dinh_muc ?? [],
+  };
+}
+
+export function toFlowDay(row: FlowRowDb): FlowDay {
+  return {
+    date: row.ngay,
+    receiptCount: Number(row.so_phieu_nhap),
+    issueCount: Number(row.so_phieu_xuat),
+    receiptQuantity: Number(row.sl_nhap),
+    issueQuantity: Number(row.sl_xuat),
+  };
+}
+
+export function toIdleProduct(row: IdleRowDb): IdleProduct {
+  return {
+    key: row.san_pham_id,
+    productId: row.san_pham_id,
+    code: row.ma_hang,
+    name: row.ten_hang,
+    idleDays: Number(row.so_ngay),
+    quantity: Number(row.ton),
   };
 }
