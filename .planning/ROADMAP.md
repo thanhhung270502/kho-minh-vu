@@ -716,7 +716,7 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 
 **Goal**: Toàn app mang design system "hướng 3b" (artifact https://claude.ai/artifact/CmTtL7XqUnZzLSV54iE1ZC), và bốn màn có design — Tổng quan, Đơn đặt (danh sách + chi tiết), Chi tiết hàng hóa — có đủ tính năng design thể hiện mà hệ thống còn thiếu.
 **Depends on**: Phase 18 (dựng trên đơn nhiều người nhận). Độc lập với Phase 19.
-**Requirements**: UI3B-01 … UI3B-07 (chốt ở 20-CONTEXT.md)
+**Requirements**: UI3B-01, UI3B-02, UI3B-03, UI3B-04, UI3B-05, UI3B-06, UI3B-07
 **Success Criteria** (what must be TRUE):
 
   1. Mọi màn dùng chung design system 3b: font Manrope, header 2 tầng (logo · ô tìm ⌘K · tài khoản / menu tab gạch chân), nút bo tròn, thẻ viền mảnh bo 16 — bố cục nội dung từng màn không vỡ, mobile vẫn có thanh tab đáy
