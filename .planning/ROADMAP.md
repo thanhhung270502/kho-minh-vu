@@ -729,11 +729,11 @@ Phases execute in numeric order: 1 → 2 → ... → 9 (v1.0, còn mở song son
 **Plans**: 16 plans (5 waves)
 
 Plans:
-- [ ] 20-01-PLAN.md — W1: RPC tìm kiếm toàn cục `tim_kiem_toan_cuc` (0092, invoker) + pgTAP 110
-- [ ] 20-02-PLAN.md — W1: RPC Tổng quan (`tong_quan_chi_so`, `nhap_xuat_theo_ngay`, `khong_luan_chuyen`, `ton_theo_nhom` + SL) (0093) + pgTAP 111/93
-- [ ] 20-03-PLAN.md — W1: RPC đơn đặt (`dem_don_theo_trang_thai`, `them_dong_don` cộng dồn) (0094) + pgTAP 113
-- [ ] 20-04-PLAN.md — W1: Token design system 3b (Manrope, antd pill/bo 16, biến CSS, chip trạng thái, tiêu đề trang)
-- [ ] 20-05-PLAN.md — W1: Bảng Tồn theo kho có giá trị theo quyền + khung ảnh aside
+- [x] 20-01-PLAN.md — W1: RPC tìm kiếm toàn cục `tim_kiem_toan_cuc` (0092, invoker) + pgTAP 110
+- [x] 20-02-PLAN.md — W1: RPC Tổng quan (`tong_quan_chi_so`, `nhap_xuat_theo_ngay`, `khong_luan_chuyen`, `ton_theo_nhom` + SL) (0093) + pgTAP 111/93
+- [x] 20-03-PLAN.md — W1: RPC đơn đặt (`dem_don_theo_trang_thai`, `them_dong_don` cộng dồn) (0094) + pgTAP 113
+- [x] 20-04-PLAN.md — W1: Token design system 3b (Manrope, antd pill/bo 16, biến CSS, chip trạng thái, tiêu đề trang)
+- [x] 20-05-PLAN.md — W1: Bảng Tồn theo kho có giá trị theo quyền + khung ảnh aside
 - [ ] 20-06-PLAN.md — W2: Đồng bộ migration + database.types + mapper/hàm thuần có test cho 3 feature
 - [ ] 20-07-PLAN.md — W2: Header hai tầng + slot ô tìm + offsetHeader 6 bảng dính (D-10)
 - [ ] 20-08-PLAN.md — W2: Chi tiết hàng hóa hai cột — badge, Ngừng/Mở lại KD, ghép bảng tồn + ảnh aside
