@@ -30,6 +30,21 @@ nghiệp vụ ngoài phần ghi rõ dưới đây.
 - **D-04 KPI Giá trị tồn:** người có quyền xem giá vốn (`co_quyen_xem_gia_von()`) thấy giá trị (đ); người không có
   quyền thấy **"Tổng SL tồn"** ở cùng ô — lưới vẫn 4 KPI, không lộ giá vốn ra client.
 
+### Chốt mặc định cho câu hỏi mở của research (Claude, 2026-10-04 — người dùng có thể đổi ở UAT)
+- **D-05 Không luân chuyển:** đo bằng `san_pham.lan_phat_sinh_cuoi` như design ("biến động"), loại mã tồn ≤ 0 và
+  mã ngừng KD; ghi caveat (nạp tồn/kiểm kê cũng đặt lại mốc) trong comment hàm. UAT thấy rỗng bất thường thì đổi
+  sang lần XUAT cuối.
+- **D-06 Phiếu chờ ghi sổ:** chỉ `NHAP` + `XUAT` (+ trả hàng) ở `NHAP_LIEU`, KHÔNG tính `KIEM_KE` (luồng duyệt riêng)
+  — khớp mô tả design "3 phiếu nhập · 2 phiếu xuất".
+- **D-07 ⌘K:** chỉ trả loại có trang chi tiết (mã hàng, phiếu nhập, phiếu xuất/hóa đơn, trả hàng, đơn đặt, đối
+  tác); bỏ `CHUYEN_KHO`/`DIEU_CHINH`.
+- **D-08 Biểu đồ Nhập–Xuất:** cột = số phiếu đã ghi sổ mỗi ngày; số lượng ở tooltip.
+- **D-09 Giá trị tồn quá khứ (delta tháng, sparkline):** tính lùi từ sổ cái × giá vốn HIỆN TẠI — là xấp xỉ, ghi rõ
+  "ước tính" ở tooltip; không thêm bảng snapshot.
+- **D-10 Header cao ~104px:** thêm `sticky={{ offsetHeader }}` cho các bảng đang dùng header dính để tiêu đề bảng
+  không bị che — trong phạm vi phase vì chính header 2 tầng gây ra.
+- **D-11 `editRecipient` tạo trùng mã+người nhận:** ngoài phạm vi, chỉ ghi nhận.
+
 ### Claude's Discretion
 - Cách gói RPC mới (một RPC tổng hợp dashboard hay nhiều RPC nhỏ), miễn kiểm quyền `xem_dashboard` ở database.
 - Sparkline: vẽ bằng Recharts hoặc SVG thuần — chọn cái nhẹ hơn, không thêm thư viện.
