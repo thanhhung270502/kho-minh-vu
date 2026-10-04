@@ -4,6 +4,7 @@ import { Button, Descriptions, Tabs, Tag } from "antd";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 
+import { StatusDot } from "@/shared/components/status-dot";
 import { AuditLog } from "@/shared/components/audit-log";
 import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
@@ -168,7 +169,7 @@ export function ProductDetailView({
                   children: (
                     <span className="flex flex-wrap gap-1">
                       {product.isActive ? (
-                        <Tag color="green">Đang kinh doanh</Tag>
+                        <StatusDot tone="done">Đang kinh doanh</StatusDot>
                       ) : (
                         <Tag>Ngừng kinh doanh</Tag>
                       )}

@@ -1,4 +1,5 @@
 import { toStaffRefs, type StaffRef } from "@/shared/lib/recipient";
+import type { StatusTone } from "@/shared/lib/status-tone";
 import type { Database } from "@/types/database.types";
 
 type Fn = Database["public"]["Functions"];
@@ -90,10 +91,10 @@ export const DOC_STATUS_LABELS: Record<DocStatus, string> = {
   DA_HUY: "Đã hủy",
 };
 
-export const DOC_STATUS_COLORS: Record<DocStatus, string | undefined> = {
-  NHAP_LIEU: "gold",
-  HOAN_THANH: "green",
-  DA_HUY: undefined,
+export const DOC_STATUS_TONES: Record<DocStatus, StatusTone> = {
+  NHAP_LIEU: "pending",
+  HOAN_THANH: "done",
+  DA_HUY: "muted",
 };
 
 export function toDocumentRow(row: DocumentRowDb): DocumentRow {

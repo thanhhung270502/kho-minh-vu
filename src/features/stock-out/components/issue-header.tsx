@@ -5,6 +5,7 @@ import dayjs from "dayjs";
 import Link from "next/link";
 import { useState } from "react";
 
+import { StatusDot } from "@/shared/components/status-dot";
 import { useLookups } from "@/features/products/hooks/useProducts";
 import { PartnerSearchInput } from "@/shared/components/partner-search-input";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
@@ -12,7 +13,7 @@ import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 import { useUpdateIssueHeader } from "../hooks/useIssues";
 import type { DocumentHeaderInput } from "../schemas/issue.schema";
 import {
-  DOC_STATUS_COLORS,
+  DOC_STATUS_TONES,
   DOC_STATUS_LABELS,
   type IssueDetail,
 } from "../types";
@@ -127,9 +128,9 @@ export function IssueHeader({ issue, canEdit }: Props) {
           key: "status",
           label: "Trạng thái",
           children: (
-            <Tag color={DOC_STATUS_COLORS[issue.status]}>
+            <StatusDot tone={DOC_STATUS_TONES[issue.status]} strike={issue.status === "DA_HUY"}>
               {DOC_STATUS_LABELS[issue.status]}
-            </Tag>
+            </StatusDot>
           ),
         },
         {

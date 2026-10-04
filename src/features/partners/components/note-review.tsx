@@ -152,7 +152,7 @@ export function NoteReview() {
             width: 220,
             render: (_: unknown, row: NoteRow) => (
               <span className="flex flex-wrap items-center gap-1">
-                <Tag color={row.kind === "BO_QUA" ? undefined : "blue"}>
+                <Tag>
                   {DECISION_LABELS[row.kind] ?? row.kind}
                 </Tag>
                 {row.partnerId ? (

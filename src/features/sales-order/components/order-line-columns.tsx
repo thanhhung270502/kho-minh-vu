@@ -1,8 +1,9 @@
 "use client";
 
-import { Button, InputNumber, Tag, Tooltip } from "antd";
+import { Button, InputNumber, Tooltip } from "antd";
 import type { TableColumnsType } from "antd";
 
+import { StatusDot } from "@/shared/components/status-dot";
 import { StaffSelect } from "@/shared/components/staff-select";
 import {
   COMMON_GOODS_LABEL,
@@ -132,7 +133,7 @@ export function buildOrderLineColumns({
             // tính sẵn trong toOrderLine của plan 04-06.
             render: (_: unknown, line: OrderLine) =>
               line.remainingQuantity === 0 && line.shippedQuantity > 0 ? (
-                <Tag color="green">Đã giao đủ</Tag>
+                <StatusDot tone="done">Đã giao đủ</StatusDot>
               ) : (
                 formatNumber(line.remainingQuantity)
               ),

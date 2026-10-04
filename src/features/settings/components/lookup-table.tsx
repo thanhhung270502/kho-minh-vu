@@ -4,6 +4,7 @@ import { App, Button, Popconfirm, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useMemo, useState } from "react";
 
+import { StatusDot } from "@/shared/components/status-dot";
 import { QueryState } from "@/shared/components/query-state";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 
@@ -107,7 +108,7 @@ export function LookupTable({ table }: { table: LookupTableName }) {
             dataIndex: "dang_hoat_dong",
             width: 120,
             render: (isActive: boolean) =>
-              isActive ? <Tag color="green">Đang dùng</Tag> : <Tag>Ngừng</Tag>,
+              isActive ? <StatusDot tone="done">Đang dùng</StatusDot> : <StatusDot tone="muted">Ngừng</StatusDot>,
           },
         ]
       : []),

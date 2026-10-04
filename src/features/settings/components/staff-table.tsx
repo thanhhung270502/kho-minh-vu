@@ -1,9 +1,10 @@
 "use client";
 
-import { Button, Table, Tag } from "antd";
+import { Button, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
 
+import { StatusDot } from "@/shared/components/status-dot";
 import { QueryState } from "@/shared/components/query-state";
 
 import type { StaffRow } from "../api/staff.api";
@@ -25,7 +26,7 @@ export function StaffTable() {
       dataIndex: "isActive",
       width: 120,
       render: (isActive: boolean) =>
-        isActive ? <Tag color="green">Đang dùng</Tag> : <Tag>Ngừng</Tag>,
+        isActive ? <StatusDot tone="done">Đang dùng</StatusDot> : <StatusDot tone="muted">Ngừng</StatusDot>,
     },
     {
       title: "",

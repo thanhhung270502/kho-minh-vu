@@ -1,14 +1,15 @@
 "use client";
 
-import { Alert, Button, Tag } from "antd";
+import { Alert, Button } from "antd";
 import Link from "next/link";
 
+import { StatusDot } from "@/shared/components/status-dot";
 import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
 import { formatOrderRecipients } from "@/shared/lib/recipient";
 
 import { useOrderDetail, useOrderLines } from "../hooks/useOrders";
-import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from "../lib/order-status";
+import { ORDER_STATUS_TONES, ORDER_STATUS_LABELS } from "../lib/order-status";
 import type { OrderPermissions } from "../types";
 import { OrderActions } from "./order-actions";
 import { OrderHeader } from "./order-header";
@@ -57,9 +58,9 @@ export function OrderDetailView({
               title={order.orderNo}
               description={
                 <span className="flex flex-wrap items-center gap-2">
-                  <Tag color={ORDER_STATUS_COLORS[order.status]}>
+                  <StatusDot tone={ORDER_STATUS_TONES[order.status]} variant="badge">
                     {ORDER_STATUS_LABELS[order.status]}
-                  </Tag>
+                  </StatusDot>
                   {formatOrderRecipients(order.recipients)}
                 </span>
               }

@@ -1,13 +1,14 @@
 "use client";
 
-import { App, Descriptions, Input, Tag, Typography } from "antd";
+import { App, Descriptions, Input, Typography } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 
+import { StatusDot } from "@/shared/components/status-dot";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 
 import { useSetOrderRecipients, useUpdateOrderHeader } from "../hooks/useOrders";
-import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from "../lib/order-status";
+import { ORDER_STATUS_TONES, ORDER_STATUS_LABELS } from "../lib/order-status";
 import type { OrderHeaderInput, OrderRecipientsInput } from "../schemas/order.schema";
 import type { OrderDetail } from "../types";
 import { OrderRecipientField, RecipientsReadonly } from "./order-recipient-field";
@@ -114,9 +115,9 @@ export function OrderHeader({ order, editable }: Props) {
           key: "status",
           label: "Trạng thái",
           children: (
-            <Tag color={ORDER_STATUS_COLORS[order.status]}>
+            <StatusDot tone={ORDER_STATUS_TONES[order.status]} strike={order.status === "DA_HUY"}>
               {ORDER_STATUS_LABELS[order.status]}
-            </Tag>
+            </StatusDot>
           ),
         },
         {

@@ -4,10 +4,11 @@ import { Alert, Descriptions, Space, Tag } from "antd";
 import dayjs from "dayjs";
 import Link from "next/link";
 
+import { StatusDot } from "@/shared/components/status-dot";
 import { NegativeStockPanel } from "@/features/documents/components/negative-stock-panel";
 import { PostDocumentButton } from "@/features/documents/components/post-document-button";
 import { VoidDocumentDialog } from "@/features/documents/components/void-document-dialog";
-import { DOC_STATUS_COLORS, DOC_STATUS_LABELS } from "@/features/documents/types";
+import { DOC_STATUS_TONES, DOC_STATUS_LABELS } from "@/features/documents/types";
 import { negativeReasonLabel } from "@/features/documents/lib/negative-reasons";
 import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
@@ -63,9 +64,9 @@ export function ReturnDetailView({
               title={doc.docNo}
               description={
                 <span className="flex flex-wrap items-center gap-2">
-                  <Tag color={DOC_STATUS_COLORS[doc.status]}>
+                  <StatusDot tone={DOC_STATUS_TONES[doc.status]} variant="badge">
                     {DOC_STATUS_LABELS[doc.status]}
-                  </Tag>
+                  </StatusDot>
                   <Tag>{typeLabel}</Tag>
                   {doc.sourceDocId ? (
                     <Link href={sourceHref} className="text-sm">

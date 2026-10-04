@@ -15,7 +15,6 @@ import { usePartners } from "../hooks/usePartners";
 import {
   DEFAULT_PARTNER_FILTER,
   countActivePartnerFilters,
-  PARTNER_KIND_COLORS,
   PARTNER_KIND_LABELS,
   type PartnerFilter,
   type PartnerRow,
@@ -97,7 +96,7 @@ export function PartnerTable({ canEdit }: { canEdit: boolean }) {
       width: 130,
       render: (kind: PartnerRow["kind"], row) => (
         <>
-          <Tag color={PARTNER_KIND_COLORS[kind]}>{PARTNER_KIND_LABELS[kind]}</Tag>
+          <Tag>{PARTNER_KIND_LABELS[kind]}</Tag>
           {row.isActive ? null : <Tag>Ngừng</Tag>}
         </>
       ),

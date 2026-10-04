@@ -5,9 +5,10 @@ import type { TableColumnsType } from "antd";
 import dayjs from "dayjs";
 import Link from "next/link";
 
+import { StatusDot } from "@/shared/components/status-dot";
 import { partnerLabel } from "@/shared/lib/recipient";
 
-import { ORDER_STATUS_COLORS, ORDER_STATUS_LABELS } from "../lib/order-status";
+import { ORDER_STATUS_TONES, ORDER_STATUS_LABELS } from "../lib/order-status";
 import { ORDER_PAGE_SIZE, type OrderFilter } from "../schemas/order.schema";
 import type { OrderRow } from "../types";
 
@@ -66,7 +67,7 @@ const COLUMNS: TableColumnsType<OrderRow> = [
     dataIndex: "status",
     width: 140,
     render: (status: OrderRow["status"]) => (
-      <Tag color={ORDER_STATUS_COLORS[status]}>{ORDER_STATUS_LABELS[status]}</Tag>
+      <StatusDot tone={ORDER_STATUS_TONES[status]} strike={status === "DA_HUY"}>{ORDER_STATUS_LABELS[status]}</StatusDot>
     ),
   },
   { title: "Người tạo", dataIndex: "createdByName", width: 160, ellipsis: true },

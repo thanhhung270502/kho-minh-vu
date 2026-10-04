@@ -1,3 +1,4 @@
+import type { StatusTone } from "@/shared/lib/status-tone";
 import type { Database } from "@/types/database.types";
 
 /**
@@ -20,9 +21,9 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   DA_HUY: "Đã hủy",
 };
 
-export const ORDER_STATUS_COLORS: Record<OrderStatus, string | undefined> = {
-  TAM: "gold",
-  DA_XAC_NHAN: "blue",
-  HOAN_THANH: "green",
-  DA_HUY: undefined,
+export const ORDER_STATUS_TONES: Record<OrderStatus, StatusTone> = {
+  TAM: "pending",
+  DA_XAC_NHAN: "active",
+  HOAN_THANH: "done",
+  DA_HUY: "muted",
 };
