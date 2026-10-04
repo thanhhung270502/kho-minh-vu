@@ -4,14 +4,14 @@ import type { ThemeConfig } from "antd";
  * Token giao diện dùng chung. Đổi màu/khoảng cách ở đây, KHÔNG ghi đè bằng
  * class Tailwind trên từng component antd — làm vậy mỗi màn hình sẽ lệch nhau.
  *
- * Design system đơn sắc lấy từ bản design "Kho Minh Vu 1A" (quick 261004-f2l):
- * đen #0A0A0A là màu chính, thẻ trắng viền mảnh #EBEBEB không đổ bóng, màu chỉ
+ * Design system đơn sắc "hướng 3b" (Phase 20, nối tiếp 1A của quick 261004-f2l):
+ * đen #0A0A0A là màu chính, thẻ trắng viền mảnh #EDEDED không đổ bóng, màu chỉ
  * dùng để báo hiệu (cam = cần xử lý, đỏ = tồn âm/lỗi). Giữ `colorPrimary` trùng
  * với `--color-brand-500` trong src/app/globals.css.
  */
 const INK = "#0A0A0A";
-const WARNING = "#E08A1E"; // oklch(0.68 0.16 60) trong design
-const DANGER = "#D9352B"; // oklch(0.58 0.2 27)
+const WARNING = "#BF6600"; // oklch(0.6 0.15 60) trong design
+const DANGER = "#CC2827"; // oklch(0.55 0.2 27)
 const SUCCESS = "#2F9E5B";
 
 export const antdTheme: ThemeConfig = {
@@ -42,13 +42,13 @@ export const antdTheme: ThemeConfig = {
     colorTextQuaternary: "#A3A3A3",
     colorTextPlaceholder: "#A3A3A3",
     colorBorder: "#E5E5E5",
-    colorBorderSecondary: "#EBEBEB",
+    colorBorderSecondary: "#EDEDED",
     colorSplit: "#F3F3F3",
-    colorBgLayout: "#FAFAFA",
+    colorBgLayout: "#FFFFFF",
     colorBgContainer: "#FFFFFF",
     colorBgElevated: "#FFFFFF",
     colorFillSecondary: "#F3F3F3",
-    colorFillTertiary: "#FAFAFA",
+    colorFillTertiary: "#F5F5F5",
     controlItemBgActive: "#F3F3F3",
     controlItemBgActiveHover: "#EBEBEB",
     controlOutline: "rgba(10,10,10,.08)",
@@ -60,19 +60,20 @@ export const antdTheme: ThemeConfig = {
     lineHeight: 1.45,
     fontFamily: "var(--font-sans)",
     fontFamilyCode: "var(--font-mono)",
-    borderRadius: 8,
-    borderRadiusLG: 12,
-    borderRadiusSM: 7,
+    borderRadius: 10,
+    borderRadiusLG: 16,
+    borderRadiusSM: 8,
     borderRadiusXS: 4,
     // Thẻ trong design chỉ có viền, không đổ bóng; bóng chỉ còn cho lớp nổi
     // (dropdown, modal) để vẫn tách khỏi nền.
     boxShadowTertiary: "none",
     boxShadowSecondary: "0 6px 24px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06)",
+    fontWeightStrong: 700,
     controlHeight: 34,
   },
   components: {
     Table: {
-      headerBg: "#FCFCFC",
+      headerBg: "#FAFAFA",
       headerColor: "#8C8C8C",
       headerSplitColor: "transparent",
       headerSortActiveBg: "#F5F5F5",
@@ -87,7 +88,7 @@ export const antdTheme: ThemeConfig = {
       footerBg: "#FAFAFA",
     },
     Layout: {
-      bodyBg: "#FAFAFA",
+      bodyBg: "#FFFFFF",
       headerBg: "#FFFFFF",
       headerHeight: 60,
     },
@@ -103,7 +104,7 @@ export const antdTheme: ThemeConfig = {
     Tag: {
       defaultBg: "#F3F3F3",
       defaultColor: "#404040",
-      borderRadiusSM: 6,
+      borderRadiusSM: 9999,
     },
     Menu: {
       itemHeight: 40,
@@ -111,8 +112,10 @@ export const antdTheme: ThemeConfig = {
       itemSelectedColor: INK,
     },
     Button: {
-      borderRadius: 9,
-      fontWeight: 500,
+      borderRadius: 9999,
+      borderRadiusLG: 9999,
+      borderRadiusSM: 9999,
+      fontWeight: 600,
       primaryShadow: "none",
       defaultShadow: "none",
       dangerShadow: "none",
@@ -121,20 +124,20 @@ export const antdTheme: ThemeConfig = {
       defaultHoverColor: INK,
     },
     Input: {
-      borderRadius: 8,
+      borderRadius: 10,
       hoverBorderColor: "#A3A3A3",
       activeBorderColor: INK,
       activeShadow: "0 0 0 3px rgba(10,10,10,.08)",
       colorBgContainerDisabled: "#F3F3F3",
     },
     InputNumber: {
-      borderRadius: 8,
+      borderRadius: 10,
       hoverBorderColor: "#A3A3A3",
       activeBorderColor: INK,
       activeShadow: "0 0 0 3px rgba(10,10,10,.08)",
     },
     Select: {
-      borderRadius: 8,
+      borderRadius: 10,
       hoverBorderColor: "#A3A3A3",
       activeBorderColor: INK,
       activeOutlineColor: "rgba(10,10,10,.08)",
@@ -142,25 +145,27 @@ export const antdTheme: ThemeConfig = {
       colorBgContainerDisabled: "#F3F3F3",
     },
     DatePicker: {
-      borderRadius: 8,
+      borderRadius: 10,
       hoverBorderColor: "#A3A3A3",
       activeBorderColor: INK,
       activeShadow: "0 0 0 3px rgba(10,10,10,.08)",
       colorBgContainerDisabled: "#F3F3F3",
     },
     Card: {
-      borderRadiusLG: 12,
-      colorBorderSecondary: "#EBEBEB",
+      borderRadiusLG: 16,
+      colorBorderSecondary: "#EDEDED",
       headerFontSize: 15,
     },
     Checkbox: {
       borderRadiusSM: 4,
     },
     Segmented: {
-      itemSelectedBg: INK,
-      itemSelectedColor: "#FFFFFF",
-      trackBg: "#FFFFFF",
-      borderRadius: 10,
+      itemSelectedBg: "#FFFFFF",
+      itemSelectedColor: INK,
+      itemColor: "#737373",
+      itemHoverColor: INK,
+      trackBg: "#F5F5F5",
+      borderRadius: 9,
       borderRadiusSM: 7,
     },
     Tabs: {
@@ -174,7 +179,7 @@ export const antdTheme: ThemeConfig = {
       itemActiveColorHover: "#FFFFFF",
     },
     Statistic: {
-      contentFontSize: 24,
+      contentFontSize: 28,
     },
     Form: {
       labelColor: "#737373",

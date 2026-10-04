@@ -16,11 +16,13 @@ export function PageHeader({ title, description, actions }: PageHeaderProps) {
       <div>
         {/* `mb-1` không cần `!` vì @layer utilities đứng sau @layer antd —
             layer quyết định thắng thua trước cả độ ưu tiên selector. */}
-        <Typography.Title level={1} className="mb-1 text-[26px] leading-tight font-semibold tracking-[-0.025em]">
+        <Typography.Title level={1} className="mb-1 text-[30px] leading-[1.1] font-extrabold tracking-[-0.04em]">
           {title}
         </Typography.Title>
         {description ? (
-          <Typography.Text type="secondary">{description}</Typography.Text>
+          <Typography.Text type="secondary" className="text-[13.5px]">
+            {description}
+          </Typography.Text>
         ) : null}
       </div>
 
