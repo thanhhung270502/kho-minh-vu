@@ -10,9 +10,10 @@ type Props = {
   filter: OrderFilter;
   onChange: (filter: OrderFilter) => void;
   addButton?: ReactNode;
+  total: number | null;
 };
 
-export function OrderToolbar({ filter, onChange, addButton }: Props) {
+export function OrderToolbar({ filter, onChange, addButton, total }: Props) {
   const [keyword, setKeyword] = useState(filter.q);
   const [previousQuery, setPreviousQuery] = useState(filter.q);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -47,14 +48,17 @@ export function OrderToolbar({ filter, onChange, addButton }: Props) {
         value={keyword}
         prefix={<SearchOutlined />}
         placeholder="Số đơn hoặc tên người nhận"
-        className="w-full sm:max-w-xs"
+        className="w-full sm:max-w-[320px]"
         onChange={(event) => searchDebounced(event.target.value)}
         onPressEnter={() => {
           if (debounce.current) clearTimeout(debounce.current);
           onChange({ ...filter, q: keyword.trim(), page: 1 });
         }}
       />
-      {addButton ? <div className="ms-auto">{addButton}</div> : null}
+      <span className="ms-auto text-[13px] text-trung-tinh-350 tabular-nums">
+        {total === null ? "" : `${total.toLocaleString("vi-VN")} đơn`}
+      </span>
+      {addButton ? <div>{addButton}</div> : null}
     </div>
   );
 }
