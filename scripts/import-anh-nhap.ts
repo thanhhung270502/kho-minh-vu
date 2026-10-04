@@ -5,9 +5,11 @@
  *   npx tsx --env-file=.env.local scripts/import-anh-nhap.ts [thư-mục]                   # = kiểm tra, không ghi
  *   npx tsx --env-file=.env.local scripts/import-anh-nhap.ts [thư-mục] --ghi --gioi-han 20 # nạp thử 20 ảnh
  *   npx tsx --env-file=.env.local scripts/import-anh-nhap.ts [thư-mục] --ghi               # nạp toàn bộ
+ *   npx tsx --env-file=.env.local scripts/import-anh-nhap.ts --drive [--ghi]               # đọc thẳng Drive
  *
- * Thư mục mặc định data/anh-nhap (gitignore). Quét cả thư mục con — file zip Drive
- * tải về thường lồng thêm một tầng.
+ * Nguồn ảnh: thư mục trên máy (mặc định data/anh-nhap, gitignore, quét cả thư mục
+ * con — zip Drive tải về thường lồng thêm một tầng), hoặc --drive: liệt kê thư mục
+ * "anh-nhap" và tải từng ảnh qua Apps Script (action list/get), khỏi tải zip.
  *
  * Mỗi ảnh nén WebP bản gốc + thumb (cùng quy tắc app), lưu qua Apps Script, rồi
  * gắn vào mã qua RPC nap_anh_kiotviet với nguon_url = "anh-nhap/<tên file>":
@@ -33,6 +35,7 @@ import { taoAdminClient } from "./_supabase-admin";
 
 const args = process.argv.slice(2);
 const GHI = args.includes("--ghi");
+const DRIVE = args.includes("--drive");
 const limitIndex = args.indexOf("--gioi-han");
 const GIOI_HAN = limitIndex >= 0 ? Number(args[limitIndex + 1]) : null;
 const THU_MUC = args.find((a, i) => !a.startsWith("--") && args[i - 1] !== "--gioi-han") ?? path.join("data", "anh-nhap");
@@ -46,13 +49,57 @@ const loose = (s: string) =>
 
 const MAU_TEN = /^(.+)_(\d+)\.(jpe?g|png)$/i;
 
-type Job = { file: string; name: string; code: string; order: number; productId: string };
+type Source = { name: string; read: () => Promise<Buffer> };
+type Job = Source & { code: string; order: number; productId: string };
 
 function listFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
     const full = path.join(dir, entry);
     return statSync(full).isDirectory() ? listFiles(full) : [full];
   });
+}
+
+function appsScriptEnv(): { url: string; secret: string } {
+  const url = process.env.APPS_SCRIPT_URL;
+  const secret = process.env.APPS_SCRIPT_SECRET;
+  if (!url || !secret) {
+    throw new Error("Thiếu APPS_SCRIPT_URL hoặc APPS_SCRIPT_SECRET trong .env.local — xem apps-script/README.md mục 8.");
+  }
+  return { url, secret };
+}
+
+/** Apps Script luôn trả HTTP 200 — lỗi nằm trong body {ok:false} (Code.gs). */
+async function callAppsScript<T>(payload: Record<string, unknown>): Promise<T> {
+  const { url, secret } = appsScriptEnv();
+  const res = await fetch(url, { method: "POST", body: JSON.stringify({ secret, ...payload }) });
+  const body = (await res.json()) as { ok: boolean; message?: string } & T;
+  if (!body.ok) throw new Error(`Apps Script ${String(payload.action)}: ${body.message ?? "lỗi không rõ"}`);
+  return body;
+}
+
+async function listSources(): Promise<Source[]> {
+  if (DRIVE) {
+    const { files } = await callAppsScript<{ files: { id: string; name: string }[] }>({
+      action: "list",
+      folder: "anh-nhap",
+    });
+    return files.map((file) => ({
+      name: file.name,
+      read: async () => {
+        const { base64Data } = await callAppsScript<{ base64Data: string }>({ action: "get", fileId: file.id });
+        return Buffer.from(base64Data, "base64");
+      },
+    }));
+  }
+  let files: string[];
+  try {
+    files = listFiles(THU_MUC);
+  } catch {
+    throw new Error(
+      `Không đọc được thư mục ${THU_MUC}.\nCách xử lý: tải thư mục Drive "anh-nhap" về, giải nén vào ${THU_MUC} — hoặc chạy với --drive.`,
+    );
+  }
+  return files.map((file) => ({ name: path.basename(file), read: async () => readFileSync(file) }));
 }
 
 type AdminClient = ReturnType<typeof taoAdminClient>;
@@ -68,14 +115,7 @@ async function readAll<T>(fetchPage: (from: number, to: number) => PromiseLike<{
 }
 
 async function main() {
-  let files: string[];
-  try {
-    files = listFiles(THU_MUC);
-  } catch {
-    throw new Error(
-      `Không đọc được thư mục ${THU_MUC}.\nCách xử lý: tải thư mục Drive "anh-nhap" về (chuột phải → Tải xuống), giải nén vào ${THU_MUC}.`,
-    );
-  }
+  const files = await listSources();
 
   const db: AdminClient = taoAdminClient();
   const products = await readAll<{ id: string; ma_hang: string }>((a, b) => db.from("san_pham").select("id, ma_hang").range(a, b));
@@ -97,8 +137,8 @@ async function main() {
   const ambiguous: string[] = [];
   let alreadyDone = 0;
   const jobs: Job[] = [];
-  for (const file of files) {
-    const name = path.basename(file).normalize("NFC");
+  for (const source of files) {
+    const name = source.name.normalize("NFC");
     const match = MAU_TEN.exec(name);
     if (!match) {
       wrongName.push(name);
@@ -122,11 +162,11 @@ async function main() {
       alreadyDone++;
       continue;
     }
-    jobs.push({ file, name, code, order: Number(match[2]), productId });
+    jobs.push({ ...source, name, code, order: Number(match[2]), productId });
   }
 
   const report = {
-    thu_muc: THU_MUC,
+    nguon: DRIVE ? "Drive anh-nhap (Apps Script)" : THU_MUC,
     tong_file: files.length,
     se_nap: jobs.length,
     so_ma: new Set(jobs.map((j) => j.productId)).size,
@@ -151,12 +191,7 @@ async function main() {
     return;
   }
 
-  const url = process.env.APPS_SCRIPT_URL;
-  const secret = process.env.APPS_SCRIPT_SECRET;
-  if (!url || !secret) {
-    throw new Error("Thiếu APPS_SCRIPT_URL hoặc APPS_SCRIPT_SECRET trong .env.local — xem apps-script/README.md mục 8.");
-  }
-  const storage = new GDriveImageStorage({ url, secret });
+  const storage = new GDriveImageStorage(appsScriptEnv());
   const sharp: SharpFn = (await import("sharp")).default;
 
   // Theo mã, số thứ tự tăng dần: ảnh đầu tiên được _chen_anh đặt làm ảnh chính.
@@ -174,7 +209,7 @@ async function main() {
     let full: Buffer;
     let thumb: Buffer;
     try {
-      const buf = readFileSync(job.file);
+      const buf = await job.read();
       full = await nenAnh(sharp, buf, FULL_MAX_EDGE, FULL_QUALITY, MAX_FULL_BYTES);
       thumb = await nenAnh(sharp, buf, THUMB_MAX_EDGE, THUMB_QUALITY, MAX_THUMB_BYTES);
     } catch {

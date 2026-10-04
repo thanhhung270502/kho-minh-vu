@@ -12,11 +12,13 @@
  *     { secret, action: "put",    folder, fileName, mimeType: "image/webp" | "image/jpeg" | "image/png", base64Data }
  *     { secret, action: "get",    fileId }
  *     { secret, action: "remove", fileId }
+ *     { secret, action: "list",   folder: "anh-nhap" }   (04/10/2026 — script nạp ảnh)
  *   Response LUÔN HTTP 200 (Apps Script không set được status tùy ý — xem "Điểm phải
  *   biết" #1 trong 09-RESEARCH.md), JSON:
  *     put    → { ok: true, fileId }
  *     get    → { ok: true, mimeType, base64Data }
  *     remove → { ok: true }
+ *     list   → { ok: true, files: [{ id, name, size }] }
  *     lỗi    → { ok: false, error: "forbidden" | "bad_request" | "not_found" | "internal", message }
  */
 
@@ -24,6 +26,9 @@ var ROOT_FOLDER_NAME = 'Kho Minh Vu - Anh';
 
 // Nhánh 'chung-tu/...' để dành cho phase ảnh chứng từ sau này (D-08) — CHƯA mở ở đây.
 var ALLOWED_FOLDERS = ['san-pham/goc', 'san-pham/thumb'];
+
+// Chỉ đọc danh sách — ảnh văn phòng đặt tên mã_số chờ script nạp (scripts/import-anh-nhap.ts).
+var LIST_FOLDERS = ['anh-nhap'];
 
 var FILE_NAME_PATTERN = /^[A-Za-z0-9._-]{1,120}\.(webp|jpe?g|png)$/;
 
@@ -77,6 +82,8 @@ function doPost(e) {
         return get_(body);
       case 'remove':
         return remove_(body);
+      case 'list':
+        return list_(body);
       default:
         return fail_('bad_request', 'action không hợp lệ: ' + body.action);
     }
@@ -133,6 +140,19 @@ function get_(body) {
     mimeType: file.getMimeType(),
     base64Data: Utilities.base64Encode(file.getBlob().getBytes()),
   });
+}
+
+function list_(body) {
+  if (LIST_FOLDERS.indexOf(body.folder) < 0) {
+    return fail_('bad_request', 'folder không được liệt kê: ' + body.folder);
+  }
+  var files = getFolder_(body.folder).getFiles();
+  var out = [];
+  while (files.hasNext()) {
+    var file = files.next();
+    if (!file.isTrashed()) out.push({ id: file.getId(), name: file.getName(), size: file.getSize() });
+  }
+  return json_({ ok: true, files: out });
 }
 
 function remove_(body) {
