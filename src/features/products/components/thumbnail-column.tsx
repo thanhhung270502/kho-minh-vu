@@ -6,10 +6,10 @@ import { ProductThumbnailCell } from "@/features/images/components/product-thumb
 
 import type { ProductRow } from "../types";
 
-/** Cột "Ảnh" đầu bảng danh mục — thumbnail ảnh chính hoặc ô xám khi chưa có (D-15, D-17). */
+/** Cột ảnh đầu bảng danh mục — thumbnail ảnh chính hoặc ô xám khi chưa có (D-15, D-17). Tiêu đề để trống. */
 export function thumbnailColumn(): TableColumnType<ProductRow> {
   return {
-    title: "Ảnh",
+    title: "",
     key: "image",
     width: 56,
     fixed: "left",

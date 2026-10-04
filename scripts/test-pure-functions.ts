@@ -1392,10 +1392,12 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
 
   // Ghép số phân tích vào từng dòng bảng theo id sản phẩm.
   const map = forecastById([
-    { productId: "a", customerOrdered: 3, avgDailySales: 1, daysOfCover: 4.2, stockoutDate: "2026-10-06" },
-    { productId: "b", customerOrdered: 0, avgDailySales: null, daysOfCover: null, stockoutDate: null },
-  ]);
-  assert.deepEqual(map.get("a"), { customerOrdered: 3, stockoutDate: "2026-10-06", daysOfCover: 4.2, selling: true });
+    { productId: "a", customerOrdered: 3, avgDailySales: 1, daysOfCover: 4.2, stockoutDate: "2026-10-06", available: 4.2 },
+    { productId: "b", customerOrdered: 0, avgDailySales: null, daysOfCover: null, stockoutDate: null, available: 9 },
+  ], 30);
+  // Cần đặt = ⌈1 × 30 − 4,2⌉ = 26 — cùng công thức Đề nghị nhập trang Phân tích.
+  assert.deepEqual(map.get("a"), { customerOrdered: 3, stockoutDate: "2026-10-06", daysOfCover: 4.2, selling: true, toOrder: 26 });
+  assert.equal(map.get("b")?.toOrder, 0, "không bán thì không cần đặt");
   assert.equal(map.get("b")?.selling, false, "không bán trong kỳ: hiện 'Không bán', không có ngày");
   assert.equal(map.get("zzz"), undefined);
 

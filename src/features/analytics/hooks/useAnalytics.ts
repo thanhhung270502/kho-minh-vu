@@ -29,8 +29,12 @@ export function useSalesDays(period: Period) {
   });
 }
 
-export function useAnalysisSettings() {
-  return useQuery({ queryKey: analyticsKeys.settings, queryFn: fetchAnalysisSettings });
+export function useAnalysisSettings(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: analyticsKeys.settings,
+    queryFn: fetchAnalysisSettings,
+    enabled: options?.enabled ?? true,
+  });
 }
 
 export function useSaveAnalysisSettings() {
