@@ -12,7 +12,7 @@ import { useOrderDetail, useOrderLines } from "../hooks/useOrders";
 import { ORDER_STATUS_TONES, ORDER_STATUS_LABELS } from "../lib/order-status";
 import type { OrderPermissions } from "../types";
 import { OrderActions } from "./order-actions";
-import { OrderHeader } from "./order-header";
+import { OrderAside } from "./order-aside";
 import { OrderLineTable } from "./order-line-table";
 
 export function OrderDetailView({
@@ -50,7 +50,7 @@ export function OrderDetailView({
 
         return (
           <>
-            <Link href="/don-dat" className="mb-2 inline-block text-sm">
+            <Link href="/don-dat" className="mb-2 inline-block text-[13px] font-semibold text-chu-phu">
               ← Đơn đặt
             </Link>
 
@@ -114,9 +114,7 @@ export function OrderDetailView({
               />
             ) : null}
 
-            <OrderHeader order={order} editable={editable} />
-
-            <div className="mt-4">
+            <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
               <QueryState query={lines} isEmpty={() => false} emptyDescription="">
                 {(loadedLines) => (
                   <OrderLineTable
@@ -128,6 +126,7 @@ export function OrderDetailView({
                   />
                 )}
               </QueryState>
+              <OrderAside order={order} editable={editable} />
             </div>
           </>
         );
