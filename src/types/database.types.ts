@@ -1357,6 +1357,7 @@ export type Database = {
           truong_chon_tay: string[]
           updated_at: string
           vi_tri_ke: string | null
+          xe_dung_chung: Json
         }
         Insert: {
           barcode?: string | null
@@ -1388,6 +1389,7 @@ export type Database = {
           truong_chon_tay?: string[]
           updated_at?: string
           vi_tri_ke?: string | null
+          xe_dung_chung?: Json
         }
         Update: {
           barcode?: string | null
@@ -1419,6 +1421,7 @@ export type Database = {
           truong_chon_tay?: string[]
           updated_at?: string
           vi_tri_ke?: string | null
+          xe_dung_chung?: Json
         }
         Relationships: [
           {
@@ -1755,6 +1758,7 @@ export type Database = {
           truong_chon_tay: string[]
           updated_at: string
           vi_tri_ke: string
+          xe_dung_chung: Json
         }[]
       }
       chuan_hoa_ghi_chu: { Args: { p: string }; Returns: string }
@@ -1964,6 +1968,7 @@ export type Database = {
           tong_ton: number
           truong_chon_tay: string[]
           updated_at: string
+          xe_dung_chung: Json
         }[]
       }
       danh_sach_ton_kho: {
