@@ -9,7 +9,6 @@ import {
   type AnalysisRow,
   type AnalysisSettings,
   type FinishType,
-  type SalesDay,
 } from "../types";
 
 export const finishOf = finishFromStageCode;
@@ -193,23 +192,6 @@ export function finishSummary(rows: AnalysisRow[]): FinishSummary[] {
     map.set(r.finish, s);
   }
   return [...map.values()].sort((a, b) => b.sold - a.sold || a.label.localeCompare(b.label));
-}
-
-/**
- * % thay đổi nhịp bán: TB nửa sau ÷ TB nửa đầu − 1, TB tính trên NGÀY CÓ BÁN
- * (biểu đồ xem nhịp của cửa hàng, khác ADU chia ngày lịch). null khi nửa đầu
- * không bán — không chia cho 0.
- */
-export function salesPaceChange(days: SalesDay[], metric: "invoices" | "quantity"): number | null {
-  const value = (d: SalesDay) => (metric === "invoices" ? d.invoiceCount : d.quantity);
-  const half = Math.floor(days.length / 2);
-  const avg = (part: SalesDay[]) => {
-    const sold = part.filter((d) => value(d) > 0);
-    return sold.length === 0 ? 0 : sold.reduce((sum, d) => sum + value(d), 0) / sold.length;
-  };
-  const first = avg(days.slice(0, half));
-  const second = avg(days.slice(half));
-  return first === 0 ? null : second / first - 1;
 }
 
 /** CSV "đề nghị nhập": mã có đề nghị > 0, ít ngày còn hàng nhất lên đầu. Không có giá. */

@@ -3,6 +3,8 @@
  * Chạy: npx tsx scripts/test-pure-functions.ts
  */
 import assert from "node:assert/strict";
+import { periodRange, shiftPeriod, readPeriodFilter, writePeriodFilter, periodLabel, seriesStep, isCurrentPeriod } from "../src/features/analytics/lib/period";
+import { matchesPeriodFilter, periodKpis, breakdown, changeRatio, hasActivity } from "../src/features/analytics/lib/period-analysis";
 import { toAddOrderLineResult, toOrderStatusCounts } from "../src/features/sales-order/types";
 import { statusCountKeyOf, toAddOrderLineRpcArgs, toOrderStatusCountRpcArgs } from "../src/features/sales-order/schemas/order.schema";
 import { DATE_PRESET_LABELS, activeDatePreset, datePresetRange, todayInVietnam } from "../src/features/sales-order/lib/date-presets";
@@ -75,7 +77,6 @@ import {
   visibleCoverBuckets,
   kpisOf,
   reorderTabs,
-  salesPaceChange,
   slowMoving,
   stockStatus,
   suggestedOrder,
@@ -1148,20 +1149,6 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.deepEqual(slow.noSales.map((r) => r.code), ["N2", "N1"], "không bán: tồn nhiều nhất trước, chỉ mã còn tồn");
   assert.deepEqual(slow.overstock.map((r) => r.code), ["B1"], "đủ bán >= 365 ngày");
 
-  // Nhịp bán: TB theo NGÀY CÓ BÁN, nửa sau so với nửa đầu.
-  const days = [
-    { date: "d1", invoiceCount: 2, quantity: 10 },
-    { date: "d2", invoiceCount: 0, quantity: 0 },
-    { date: "d3", invoiceCount: 4, quantity: 30 },
-    { date: "d4", invoiceCount: 0, quantity: 0 },
-  ];
-  assert.equal(salesPaceChange(days, "invoices"), 1, "nửa đầu TB 2, nửa sau TB 4 -> +100%");
-  assert.equal(salesPaceChange(days, "quantity"), 2, "theo số lượng: 10 -> 30");
-  assert.equal(
-    salesPaceChange([{ date: "d1", invoiceCount: 0, quantity: 0 }, { date: "d2", invoiceCount: 3, quantity: 5 }], "invoices"),
-    null,
-    "nửa đầu không bán: không chia cho 0",
-  );
 }
 
 // --- Phase 14: panel chi tiết — mã đang chọn trên URL `?chon=` (PANEL-01..03) --
@@ -1348,6 +1335,61 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
     brands: ["HONDA", "YAMAHA"],
     models: ["Air Blade", "Vision", "Acruzo"],
   });
+}
+
+
+// --- Phân tích theo kỳ (0099) ------------------------------------------------
+{
+  // Kỳ: tuần bắt đầu thứ Hai; kỳ đang chạy cắt ở hôm nay; quý / năm đủ ngày.
+  assert.deepEqual(periodRange("tuan", "2026-09-17", "2026-12-31"), { from: "2026-09-14", to: "2026-09-20" });
+  assert.deepEqual(periodRange("thang", "2026-10-20", "2026-10-05"), { from: "2026-10-01", to: "2026-10-05" }, "tháng đang chạy cắt ở hôm nay");
+  assert.deepEqual(periodRange("quy", "2026-08-02", "2026-12-31"), { from: "2026-07-01", to: "2026-09-30" });
+  assert.deepEqual(periodRange("nam", "2026-03-03", "2027-01-01"), { from: "2026-01-01", to: "2026-12-31" });
+  assert.equal(shiftPeriod("thang", "2026-03-31", -1), "2026-02-01", "lùi tháng từ ngày 31 không nhảy sai tháng");
+  assert.equal(shiftPeriod("quy", "2026-08-15", 1), "2026-10-01");
+  assert.equal(periodLabel("quy", "2026-08-15"), "Quý 3/2026");
+  assert.equal(periodLabel("tuan", "2026-09-17"), "Tuần 14/09 – 20/09/2026");
+  assert.equal(seriesStep("thang"), "ngay");
+  assert.equal(seriesStep("quy"), "tuan");
+  assert.equal(seriesStep("nam"), "thang");
+  assert.equal(isCurrentPeriod("thang", "2026-10-01", "2026-10-05"), true);
+
+  // URL: tham số tiếng Việt; dòng xe bị bỏ khi chưa chọn hãng; mốc về đầu kỳ.
+  const f = readPeriodFilter(new URLSearchParams("ky=quy&moc=2026-08-15&hang=H&dong=VR&xu_ly=s1"), "2026-10-05");
+  assert.equal(f.unit, "quy");
+  assert.equal(f.anchor, "2026-07-01");
+  assert.equal(f.modelCode, "VR");
+  assert.equal(readPeriodFilter(new URLSearchParams("dong=VR"), "2026-10-05").modelCode, null, "dòng xe cần có hãng");
+  assert.equal(readPeriodFilter(new URLSearchParams("ky=xyz&moc=abc"), "2026-10-05").unit, "thang", "giá trị lạ về mặc định");
+  const url = writePeriodFilter(f, new URLSearchParams("tab=phan-tich"));
+  assert.equal(url.get("tab"), "phan-tich", "giữ tham số khác");
+  assert.equal(url.get("hang"), "H");
+
+  // Lọc hãng / dòng tính cả xe dùng chung.
+  const base = {
+    productId: "p", code: "A", name: "A", categoryId: "c1", categoryName: "N", isCombo: false, isActive: true, unitName: "Cái",
+    brandCode: "H", modelCode: "V", sharedVehicles: [{ brandCode: "Y", modelCode: "AC" }], partCode: "12", stageId: "s1", stageName: "Xi",
+    openingStock: 10, received: 5, sold: 8, internalOut: 0, returned: 0, adjusted: 0, closingStock: 7, receivedPrev: 0, soldPrev: 4,
+  };
+  const none = readPeriodFilter(new URLSearchParams(""), "2026-10-05");
+  assert.equal(matchesPeriodFilter(base, { ...none, brandCode: "Y", modelCode: "AC" }), true, "khớp xe dùng chung");
+  assert.equal(matchesPeriodFilter(base, { ...none, brandCode: "H", modelCode: "AC" }), false, "dòng phải cùng hãng");
+  assert.equal(matchesPeriodFilter(base, { ...none, partCode: "13" }), false);
+
+  const k = periodKpis([base, { ...base, productId: "q", sold: 0, soldPrev: 0, openingStock: 0, closingStock: 3 }], [
+    { date: "2026-09-01", received: 5, sold: 8, internalOut: 0, receiptCount: 2, invoiceCount: 3 },
+  ]);
+  assert.equal(k.sold, 8);
+  assert.equal(k.invoiceCount, 3);
+  assert.equal(k.sellingProducts, 1);
+  assert.equal(k.turnover, 8 / ((10 + 10) / 2), "vòng quay = xuất bán ÷ tồn bình quân");
+  assert.equal(changeRatio(8, 4), 1);
+  assert.equal(changeRatio(5, 0), null, "kỳ trước 0: không chia");
+  assert.equal(hasActivity({ ...base, openingStock: 0, received: 0, sold: 0, closingStock: 0, soldPrev: 0 }), false);
+
+  // Cơ cấu theo hãng chỉ tính cặp chính (không đếm một lần bán hai lần).
+  const namer = { brand: (b: string) => (b === "H" ? "HONDA" : b), model: (_b: string, m: string) => m, part: (p: string) => p };
+  assert.deepEqual(breakdown([base], "hang", namer), [{ key: "H", label: "HONDA", sold: 8, soldPrev: 4 }]);
 }
 
 // --- Phase 16: chức vụ & quyền (QUYEN-01/02) ------------------------------

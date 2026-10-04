@@ -3,12 +3,10 @@ import { fetchAllPages } from "@/shared/lib/fetch-all-pages";
 
 import {
   toAnalysisRow,
-  toSalesDay,
   toSettings,
   type AnalysisRow,
   type AnalysisSettings,
   type Period,
-  type SalesDay,
 } from "../types";
 
 /** Lớp api (cùng mapper ở types.ts) là chỗ DUY NHẤT chạm tên RPC/cột tiếng Việt. */
@@ -23,14 +21,6 @@ export async function fetchAnalysisRows(period: Period): Promise<AnalysisRow[]> 
     return data ?? [];
   });
   return rows.map(toAnalysisRow);
-}
-
-export async function fetchSalesDays(period: Period): Promise<SalesDay[]> {
-  const { data, error } = await getSupabaseBrowserClient().rpc("nhip_ban_theo_ngay", {
-    p_so_ngay: period,
-  });
-  if (error) throw error;
-  return (data ?? []).map(toSalesDay);
 }
 
 export async function fetchAnalysisSettings(): Promise<AnalysisSettings> {
