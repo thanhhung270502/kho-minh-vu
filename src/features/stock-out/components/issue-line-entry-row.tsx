@@ -48,7 +48,7 @@ export function IssueLineEntryRow({
   onSubmit,
 }: Props) {
   return (
-    <div className="mt-3 flex flex-wrap items-end gap-2 rounded-the bg-nen-tong p-3">
+    <div className="mt-3 flex flex-wrap items-end gap-2 rounded-the border border-vien bg-nen-tong p-3">
       <div className="min-w-56 flex-1">
         <label className="mb-1 block text-[13px] text-chu-phu">Mã hàng</label>
         <ProductSearchInput

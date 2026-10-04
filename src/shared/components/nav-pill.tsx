@@ -11,29 +11,30 @@ import { cn } from "../utils/cn";
 import { NAV_ICONS } from "./nav-icons";
 
 /**
- * Thanh điều hướng ngang dạng pill — dựng bằng thẻ HTML thường + next/link,
- * không dùng antd Menu (pill nền xanh không ép được qua token antd). Vì
- * không phải component antd nên Tailwind ở đây là đúng chỗ, không cần `!`.
+ * Thanh điều hướng ngang — dựng bằng thẻ HTML thường + next/link, không dùng
+ * antd Menu. Vì không phải component antd nên Tailwind ở đây là đúng chỗ,
+ * không cần `!`. Kiểu design 1A: chữ xám trên nền trắng, mục đang chọn là
+ * khối mực đen chữ trắng.
  */
 export const PILL_CLASS =
-  "flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-2 py-2.5 text-sm font-semibold text-white transition-all duration-200 ease-in-out hover:bg-white/25";
+  "flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-[7px] text-[13.5px] font-medium transition-colors duration-150";
 
-export function PillLabel({ label, active }: { label: string; active: boolean }) {
-  return (
-    <span className="relative">
-      {label}
-      {active ? (
-        <span className="absolute left-1/2 top-6 h-0.75 w-10 -translate-x-1/2 rounded-full bg-white" />
-      ) : null}
-    </span>
-  );
+/** Lớp màu theo trạng thái — tách khỏi PILL_CLASS để hàng đo ẩn dùng chung kích thước. */
+export function pillTone(active: boolean): string {
+  return active
+    ? "bg-brand-500 text-white hover:text-white"
+    : "text-trung-tinh-500 hover:bg-trung-tinh-75 hover:text-chu-chinh";
 }
 
-export function DropdownLabel({ label, active }: { label: string; active: boolean }) {
+export function PillLabel({ label }: { label: string }) {
+  return <span>{label}</span>;
+}
+
+export function DropdownLabel({ label }: { label: string }) {
   return (
     <>
-      <PillLabel label={label} active={active} />
-      <DownOutlined className="text-xs" />
+      <PillLabel label={label} />
+      <DownOutlined className="text-[10px] opacity-70" />
     </>
   );
 }
@@ -83,10 +84,10 @@ export function DropdownPill({
       <button
         type="button"
         aria-current={active ? "page" : undefined}
-        className={cn(PILL_CLASS, "cursor-pointer border-0 bg-transparent", active ? "bg-white/25" : "")}
+        className={cn(PILL_CLASS, "cursor-pointer border-0 bg-transparent", pillTone(active))}
       >
         {icon}
-        <DropdownLabel label={label} active={active} />
+        <DropdownLabel label={label} />
       </button>
     </Dropdown>
   );

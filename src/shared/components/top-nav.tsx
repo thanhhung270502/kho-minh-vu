@@ -15,6 +15,7 @@ import {
   linkItems,
   PILL_CLASS,
   PillLabel,
+  pillTone,
 } from "./nav-pill";
 import { useNavOverflow } from "./use-nav-overflow";
 
@@ -36,8 +37,14 @@ export function TopNav({ user, entries, activeHref }: TopNavProps) {
       data-no-print
       className="sticky top-0 z-20 border-b border-vien bg-nen-the"
     >
-      <div className="flex h-14 items-center gap-3 px-4 lg:px-6">
-        <Link href="/" className="shrink-0 font-semibold text-chu-chinh">
+      <div className="flex h-[60px] items-center gap-5 px-4 lg:px-6">
+        <Link
+          href="/"
+          className="flex shrink-0 items-center gap-2.5 text-[15px] font-semibold tracking-[-0.01em] text-chu-chinh hover:text-chu-chinh"
+        >
+          <span className="flex size-[26px] items-center justify-center rounded-[7px] bg-brand-500 text-[11px] font-bold tracking-[-0.02em] text-white">
+            MV
+          </span>
           Kho Minh Vũ
         </Link>
 
@@ -46,21 +53,8 @@ export function TopNav({ user, entries, activeHref }: TopNavProps) {
           vừa thì gộp vào "Khác" (như KiotViet) thay vì để chữ xuống dòng.
         */}
         <div ref={containerRef} className="relative hidden min-w-0 flex-1 lg:block">
-          {/*
-            Pill nav — chỉ hiện từ 992px, dưới đó đã có thanh tab đáy. Nền là
-            gradient + viền + đổ bóng nhẹ (giá trị trích xuất thật từ KiotViet),
-            không phải màu đặc nên cần style riêng — Tailwind color scale không
-            biểu diễn được gradient 2 điểm dừng chính xác từ token.
-          */}
-          <nav
-            className="flex w-fit max-w-full items-center gap-0.5 rounded-full p-px"
-            style={{
-              background:
-                "linear-gradient(0deg, var(--color-brand-500) 0%, var(--color-brand-400) 100%)",
-              border: "1px solid var(--color-brand-500)",
-              boxShadow: "0 0 4px 0 rgba(0,112,244,.15)",
-            }}
-          >
+          {/* Nav ngang — chỉ hiện từ 992px, dưới đó đã có thanh tab đáy. */}
+          <nav className="flex w-fit max-w-full items-center gap-0.5">
             {visible.map((entry) => {
               const active = entryIsActive(entry, activeHref);
               if (entry.kind === "group") {
@@ -80,10 +74,10 @@ export function TopNav({ user, entries, activeHref }: TopNavProps) {
                   key={entry.key}
                   href={entry.item.href}
                   aria-current={active ? "page" : undefined}
-                  className={cn(PILL_CLASS, active ? "bg-white/25" : "")}
+                  className={cn(PILL_CLASS, pillTone(active))}
                 >
                   {entryIcon(entry)}
-                  <PillLabel label={entry.label} active={active} />
+                  <PillLabel label={entry.label} />
                 </Link>
               );
             })}
@@ -116,14 +110,14 @@ export function TopNav({ user, entries, activeHref }: TopNavProps) {
               <span key={entry.key} className={PILL_CLASS}>
                 {entryIcon(entry)}
                 {entry.kind === "group" ? (
-                  <DropdownLabel label={entry.label} active={false} />
+                  <DropdownLabel label={entry.label} />
                 ) : (
-                  <PillLabel label={entry.label} active={false} />
+                  <PillLabel label={entry.label} />
                 )}
               </span>
             ))}
             <span className={PILL_CLASS}>
-              <DropdownLabel label="Khác" active={false} />
+              <DropdownLabel label="Khác" />
             </span>
           </div>
         </div>
