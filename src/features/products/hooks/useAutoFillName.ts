@@ -45,5 +45,6 @@ export function useAutoFillName({
     setValue("name", found, { shouldDirty: true, shouldValidate: found !== "" });
   }, [code, enabled, sheet.data, getValues, setValue]);
 
-  return enabled && name !== "" && name === lastAuto.current;
+  const sheetName = sheet.data?.names.get((code ?? "").trim().toLowerCase());
+  return enabled && name !== "" && name === sheetName;
 }
