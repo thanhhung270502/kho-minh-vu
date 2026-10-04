@@ -49,7 +49,7 @@ grant select on t113 to authenticated;
 create temp table t113_don (id uuid, nhom text);
 grant select, insert on t113_don to authenticated;
 create temp table t113_r (dong_id uuid, da_cong_don boolean, so_luong_moi numeric);
-grant select, insert on t113_r to authenticated;
+grant select, insert, delete on t113_r to authenticated;
 
 -- Fixture: 3 đơn nội bộ cho NV-A (2 TAM + 1 sẽ thành DA_XAC_NHAN) + 1 đơn TAM để cộng dồn
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
