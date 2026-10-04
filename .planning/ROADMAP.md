@@ -744,5 +744,5 @@ Plans:
 - [x] 20-13-PLAN.md — W3: Xuất Excel danh sách đơn theo bộ lọc
 - [x] 20-14-PLAN.md — W4: Tổng quan B — Cần xử lý, Không luân chuyển, Tồn theo nhóm có SL + tỷ trọng, lưới 1fr 300px
 - [x] 20-15-PLAN.md — W4: Chi tiết đơn hai cột + thêm dòng cộng dồn qua RPC
-- [ ] 20-16-PLAN.md — W5: Ma trận quyền route, cổng kiểm toàn bộ, UAT trình duyệt (checkpoint)
+- [x] 20-16-PLAN.md — W5: Ma trận quyền route, cổng kiểm toàn bộ, UAT trình duyệt (checkpoint)
 **UI hint**: yes

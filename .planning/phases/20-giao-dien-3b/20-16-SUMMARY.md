@@ -1,7 +1,7 @@
 ---
 phase: 20-giao-dien-3b
 plan: 16
-status: checkpoint — chờ người dùng xác nhận UAT
+status: complete
 requirements: [UI3B-01, UI3B-02, UI3B-03, UI3B-04, UI3B-05, UI3B-06, UI3B-07]
 ---
 
@@ -29,6 +29,13 @@ requirements: [UI3B-01, UI3B-02, UI3B-03, UI3B-04, UI3B-05, UI3B-06, UI3B-07]
 | 6 Chi tiết đơn | ✓ hai cột, Enter→SL→Enter, gõ lại cùng mã ⇒ "Đã cộng thêm 3 … nay 5", con trỏ về ô mã (`event.key` = Enter). **Lỗi đã sửa (819fb22):** ô SL giữ số cũ sau cộng dồn; nhãn "Tổng cộng" dồn vào cột #; gợi ý phím hiện 2 lần. Dữ liệu thử đã trả về như cũ |
 | 7 Chi tiết hàng | ✓ chip "Đang kinh doanh", nút Ngừng KD + Sửa, lưới 12 trường, bảng Tồn theo kho (Tồn · Tối thiểu · Giá trị · Tổng tồn), aside Hình ảnh + Quản lý, Thẻ kho/Lịch sử sửa. ⏳ bấm Ngừng/Mở lại KD và kiểm `thukho1` không thấy cột Giá trị — người dùng kiểm |
 | 8 Màn khác | ✓ Nhập kho 1024px không vỡ; console sạch ở mọi màn đã mở (bẫy 11) |
+
+## Xác nhận người dùng (2026-10-04)
+Người dùng trả lời **"đạt"** cho UAT (gồm các bước ⏳ ở trên). Hai điểm mở giữ nguyên, xem lại sau nếu cần:
+- "Ghi sổ →" chỉ mở phiếu nhập dù đếm cả phiếu xuất chờ ghi sổ.
+- "Không luân chuyển" đo theo `lan_phat_sinh_cuoi` (D-05) — rỗng trên dữ liệu local.
+
+## Self-Check: PASSED
 
 ## Nhắc deploy
 Migration 0092–0094 mới ở **LOCAL** (đã vào `schema_migrations` local). Deploy cloud phải đẩy cùng các migration đang
