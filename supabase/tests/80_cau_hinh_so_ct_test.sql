@@ -32,6 +32,10 @@ begin
   perform set_config('role', 'postgres', true);
 end $helper$;
 
+-- 0095 chuyển cấu hình thật sang đếm liên tục (theo_nam = false). Bài này kiểm
+-- định dạng theo năm nên bật lại theo_nam trong transaction (rollback cuối bài).
+update public.cau_hinh_so_ct set theo_nam = true;
+
 -- ─── 1. Cấu hình mặc định đủ 7 loại ────────────────────────────────────────
 -- Đếm theo LOẠI chứ không theo dòng: 0043 thêm dòng (NHAP, NHA_MAY) nên số dòng
 -- là 8, nhưng ý của bài này là "bảy loại chứng từ đều có cấu hình".
@@ -111,7 +115,7 @@ select is(
 select pg_temp.dang_xuat();
 select is(
   (select vi_du from public.danh_sach_cau_hinh_so_ct() where loai_ct = 'XUAT'),
-  'PX' || to_char(extract(year from current_date)::int % 100, 'FM00') || '-' ||
+  'HD' || to_char(extract(year from current_date)::int % 100, 'FM00') || '-' ||
     lpad(((select coalesce(max(so_hien_tai), 0) from public.chuoi_so_ct
            where loai_ct = 'XUAT' and nam = extract(year from current_date)::smallint) + 1)::text, 6, '0'),
   'ví dụ số kế tiếp đúng định dạng'

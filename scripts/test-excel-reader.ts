@@ -74,13 +74,21 @@ async function kiemFileNhapMaMoi() {
   assert.equal(doLai[0].code, "X-01");
   assert.equal(doLai[0].stock, 3);
 
-  // Thiếu cột Mã hàng / Tên hàng → báo rõ, không đọc bừa.
+  // Thiếu cột Mã hàng → báo rõ, không đọc bừa. Thiếu cột Tên hàng thì được:
+  // route tự điền tên từ sheet tên hàng chuẩn.
   const sai = new ExcelJS.Workbook();
-  sai.addWorksheet("S").addRow(["Mã hàng", "Giá"]);
+  sai.addWorksheet("S").addRow(["Tên hàng", "Giá"]);
   await assert.rejects(
     readNewProductFile(Buffer.from(await sai.xlsx.writeBuffer())),
-    /Tên hàng/,
+    /Mã hàng/,
   );
+  const khongTen = new ExcelJS.Workbook();
+  const wsKhongTen = khongTen.addWorksheet("S");
+  wsKhongTen.addRow(["Mã hàng", "Tồn kho"]);
+  wsKhongTen.addRow(["X-02", 1]);
+  const docKhongTen = await readNewProductFile(Buffer.from(await khongTen.xlsx.writeBuffer()));
+  assert.equal(docKhongTen[0]?.code, "X-02");
+  assert.equal(docKhongTen[0]?.name, "");
   console.log("✓ file nhập mã mới: mẫu 4 cột, đọc không dấu, tồn kiểu chữ, file lỗi đọc lại được");
 }
 

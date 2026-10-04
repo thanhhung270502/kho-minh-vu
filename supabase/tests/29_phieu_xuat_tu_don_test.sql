@@ -109,8 +109,8 @@ select is(
   'phieu sinh ra tham chieu dung don goc'
 );
 select ok(
-  (select so_ct from public.chung_tu where don_dat_hang_id = (select id from public.don_dat_hang where so_dh = 'DH-PXD-B')) like 'PX%',
-  'so_ct mang dung tien to PX cua loai XUAT'
+  (select so_ct from public.chung_tu where don_dat_hang_id = (select id from public.don_dat_hang where so_dh = 'DH-PXD-B')) like 'HD%',
+  'so_ct mang dung tien to HD cua loai XUAT (0095)'
 );
 
 -- ─── 6: đúng hai dòng ───────────────────────────────────────────────────────
