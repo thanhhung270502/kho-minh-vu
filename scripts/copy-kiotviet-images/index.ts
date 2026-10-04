@@ -22,19 +22,16 @@ import {
   type CopyJob,
 } from "./parse-image-cell";
 import { GDriveImageStorage } from "../../src/features/images/lib/storage/gdrive-storage.server";
-import { ImageStorageError } from "../../src/features/images/lib/storage/image-storage";
 import {
   FULL_MAX_EDGE,
   THUMB_MAX_EDGE,
   FULL_QUALITY,
   THUMB_QUALITY,
-  FALLBACK_QUALITY,
   MAX_FULL_BYTES,
   MAX_THUMB_BYTES,
   safeFileStem,
 } from "../../src/features/images/lib/image-rules";
-
-type SharpFn = (typeof import("sharp"))["default"];
+import { DungToanBo, luuVoiThuLai, nenAnh, type SharpFn } from "../_image-pipeline";
 
 const CO = new Set(process.argv.slice(2));
 const GHI = CO.has("--ghi");
@@ -172,38 +169,6 @@ async function taiVeCoThuLai(url: string): Promise<Buffer> {
     : new Error("Không tải được ảnh sau 3 lần thử");
 }
 
-async function nenAnh(
-  sharp: SharpFn,
-  buf: Buffer,
-  maxEdge: number,
-  quality: number,
-  maxBytes: number,
-): Promise<Buffer> {
-  let out = await sharp(buf)
-    .rotate()
-    .resize({
-      width: maxEdge,
-      height: maxEdge,
-      fit: "inside",
-      withoutEnlargement: true,
-    })
-    .webp({ quality: Math.round(quality * 100) })
-    .toBuffer();
-  if (out.byteLength > maxBytes) {
-    out = await sharp(buf)
-      .rotate()
-      .resize({
-        width: maxEdge,
-        height: maxEdge,
-        fit: "inside",
-        withoutEnlargement: true,
-      })
-      .webp({ quality: Math.round(FALLBACK_QUALITY * 100) })
-      .toBuffer();
-  }
-  return out;
-}
-
 async function xuLyMotAnh(
   job: CopyJob,
   ctx: {
@@ -308,42 +273,6 @@ async function xuLyMotAnh(
 
 function xuatLoi(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
-}
-
-/** Dừng toàn bộ khi Apps Script từ chối secret — không có cách tự phục hồi. */
-class DungToanBo extends Error {}
-
-async function luuVoiThuLai(
-  storage: GDriveImageStorage,
-  variant: "full" | "thumb",
-  fileName: string,
-  bytes: Buffer,
-): Promise<string> {
-  const cho = [0, 1000, 3000];
-  let lanCuoi: unknown;
-  for (let lan = 0; lan < cho.length; lan++) {
-    if (cho[lan]! > 0) await new Promise((r) => setTimeout(r, cho[lan]));
-    try {
-      return await storage.put({
-        variant,
-        fileName,
-        mimeType: "image/webp",
-        bytes: new Uint8Array(bytes),
-      });
-    } catch (e) {
-      if (e instanceof ImageStorageError && e.kind === "forbidden") {
-        throw new DungToanBo(
-          "Secret Apps Script sai — kiểm APPS_SCRIPT_SECRET",
-        );
-      }
-      lanCuoi = e;
-      if (!(e instanceof ImageStorageError && e.kind === "unavailable"))
-        throw e;
-    }
-  }
-  throw lanCuoi instanceof Error
-    ? lanCuoi
-    : new Error("Không lưu được ảnh sau nhiều lần thử");
 }
 
 async function xuLyMotMa(
