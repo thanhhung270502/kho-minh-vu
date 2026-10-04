@@ -13,7 +13,9 @@
  *
  * Quyết định của người dùng: không giá (đơn giá 0); người nhận hóa đơn là đối
  * tác NB001 (nội bộ), tên nhân viên trong file ghi vào ghi chú dòng; kho = Kho 1.
- * Số phiếu KiotViet (PN…, HD…) giữ nguyên làm so_ct để đối chiếu.
+ * Số phiếu cấp theo quy tắc hệ thống (sinh_so_ct: PN26-…, PX26-…, DC26-…). Số
+ * KiotViet ghi đầu ghi chú "Số KiotViet <số>" — vừa để tra, vừa để chạy lại
+ * nhận ra phiếu đã nạp.
  */
 import { readdirSync } from "node:fs";
 import path from "node:path";
@@ -29,7 +31,8 @@ const GHI = process.argv.includes("--ghi");
 if (!dir) throw new Error("Thiếu đường dẫn thư mục chứa 3 file Excel");
 
 const OPENING_DATE = "2026-09-30";
-const OPENING_PREFIX = "DC-DAUKY-0110-";
+const OPENING_NOTE = "Đưa tồn về đầu 01/10 trước khi nạp phiếu nhập/hóa đơn KiotViet 01–03/10 — tồn cuối giữ nguyên";
+const KIOTVIET_NOTE = /^Số KiotViet (\S+)/;
 const BATCH = 150;
 
 type Cell = ExcelJS.CellValue;
@@ -122,7 +125,9 @@ async function main() {
     "thanh_phan_combo",
     "combo_id, thanh_phan_id, so_luong",
   );
-  const existingSo = new Set((await readAll<{ so_ct: string }>("chung_tu", "so_ct")).map((c) => c.so_ct));
+  const existingNotes = (await readAll<{ ghi_chu: string | null }>("chung_tu", "ghi_chu")).map((c) => c.ghi_chu ?? "");
+  const existingSo = new Set(existingNotes.map((note) => KIOTVIET_NOTE.exec(note)?.[1]).filter(Boolean));
+  const openingDone = existingNotes.includes(OPENING_NOTE);
 
   // --- Đối tác --------------------------------------------------------------
   // File: A mã · B tên · C loại (trống) · D điện thoại · F địa chỉ · G khu vực · H phường/xã · J ghi chú · K đang hoạt động
@@ -193,7 +198,13 @@ async function main() {
   if (khoError) throw khoError;
   const khoId = kho.id;
 
-  async function createAndPost(header: Database["public"]["Tables"]["chung_tu"]["Insert"], lines: { san_pham_id: string; so_luong: number; ghi_chu: string | null }[]) {
+  async function createAndPost(
+    fields: Omit<Database["public"]["Tables"]["chung_tu"]["Insert"], "so_ct">,
+    lines: { san_pham_id: string; so_luong: number; ghi_chu: string | null }[],
+  ) {
+    const { data: so, error: soError } = await user.rpc("sinh_so_ct", { p_loai: fields.loai_ct });
+    if (soError) throw soError;
+    const header = { ...fields, so_ct: so };
     const { data: ct, error } = await user.from("chung_tu").insert(header).select("id").single();
     if (error) throw new Error(`${header.so_ct}: ${error.message}`);
     const { error: lineError } = await user.from("chung_tu_dong").insert(
@@ -212,7 +223,7 @@ async function main() {
   const pending = docList.filter((d) => !existingSo.has(d.so));
 
   // --- 1. Điều chỉnh đầu kỳ: −(nhập − xuất), combo tách thành phần ------------
-  if (!existingSo.has(`${OPENING_PREFIX}1`)) {
+  if (!openingDone) {
     const delta = new Map<string, number>();
     const bump = (productId: string, qty: number) => delta.set(productId, (delta.get(productId) ?? 0) + qty);
     for (const doc of docList) {
@@ -229,11 +240,10 @@ async function main() {
     for (let i = 0; i < adjust.length; i += BATCH) {
       await createAndPost(
         {
-          so_ct: `${OPENING_PREFIX}${i / BATCH + 1}`,
           loai_ct: "DIEU_CHINH",
           kho_id: khoId,
           ngay_ct: OPENING_DATE,
-          ghi_chu: "Đưa tồn về đầu 01/10 trước khi nạp phiếu nhập/hóa đơn KiotViet 01–03/10 — tồn cuối giữ nguyên",
+          ghi_chu: OPENING_NOTE,
         },
         adjust.slice(i, i + BATCH),
       );
@@ -257,13 +267,12 @@ async function main() {
     if (lines.length === 0) continue;
     await createAndPost(
       {
-        so_ct: doc.so,
         loai_ct: doc.type,
         kho_id: khoId,
         ngay_ct: doc.date,
         doi_tac_id: partnerByCode.get(key(doc.partner)) ?? null,
         nguon_nhap: doc.type === "NHAP" ? "NCC" : null,
-        ghi_chu: doc.note,
+        ghi_chu: `Số KiotViet ${doc.so}${doc.note ? ` · ${doc.note}` : ""}`,
       },
       lines,
     );
