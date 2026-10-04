@@ -2,11 +2,12 @@
 // tông màu cho từng trạng thái.
 
 /**
- * Tông trạng thái của design system 1A — màu chỉ để báo hiệu:
+ * Tông trạng thái của design system 3b — màu chỉ để báo hiệu:
  * - `pending`: còn việc phải làm (nhập liệu, đơn tạm, chờ duyệt) — cam
  * - `active`: đang chạy, chưa xong (đã xác nhận, đang đếm) — xám đậm
  * - `done`: đã chốt (ghi sổ, hoàn thành, đang dùng) — mực đen
+ * - `complete`: đã kết thúc trọn vẹn (đơn hoàn thành) — chip nền mực đen chữ trắng (design 3b)
  * - `danger`: cần xử lý gấp (hết hàng, tồn âm, lệch lớn) — đỏ
  * - `muted`: không còn hiệu lực (đã hủy, ngừng) — xám
  */
-export type StatusTone = "pending" | "active" | "done" | "danger" | "muted";
+export type StatusTone = "pending" | "active" | "done" | "complete" | "danger" | "muted";

@@ -24,6 +24,6 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
 export const ORDER_STATUS_TONES: Record<OrderStatus, StatusTone> = {
   TAM: "pending",
   DA_XAC_NHAN: "active",
-  HOAN_THANH: "done",
+  HOAN_THANH: "complete",
   DA_HUY: "muted",
 };
