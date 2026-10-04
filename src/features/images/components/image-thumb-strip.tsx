@@ -49,7 +49,7 @@ export function ImageThumbStrip({
         <button
           type="button"
           onClick={onAdd}
-          className="flex size-14 items-center justify-center rounded-[10px] border border-dashed border-trung-tinh-300 text-xs text-chu-phu"
+          className="flex size-14 items-center justify-center rounded-[10px] border border-dashed border-vien-input text-xs text-chu-phu"
         >
           + Thêm
         </button>
