@@ -1,7 +1,7 @@
 ---
 quick_id: 261004-f2l
 status: complete
-commits: [1400830, 6e086ab, 41378f2]
+commits: [1400830, 6e086ab, 41378f2, 26c13d7]
 ---
 
 # Quick 261004-f2l — Áp design system 1A, giữ bố cục
@@ -26,6 +26,10 @@ Nguồn tham khảo: artifact https://claude.ai/artifact/QaWzNG6HWaQUqbHjh6mfyu
 
 ## Kiểm tra
 - `npm run check` xanh (typecheck + lint + build).
-- Trang `/dang-nhap` render đúng theme mới, console sạch.
-- **Chưa** xem được màn bên trong: `.env.local` đang trỏ Supabase cloud
-  production (rnpq) — không tự đăng nhập tài khoản demo lên đó.
+- Người dùng đăng nhập trong khung trình duyệt; đã xem desktop 1440px: Tổng
+  quan, Nhập kho (danh sách + chi tiết), Duyệt đơn, Đơn đặt, Danh mục, Kiểm
+  kho, Đối tác, Phân tích, Cài đặt; mobile 375px: Duyệt đơn. Console sạch.
+- Đo computed style: font Be Vietnam Pro / JetBrains Mono đã nạp, header bảng
+  #FCFCFC chữ hoa 11.5px, thẻ viền #EBEBEB không bóng, "Đã hủy" gạch ngang.
+- Lỗi phát hiện khi xem & đã sửa (26c13d7): Alert info ra dải đen vì antd sinh
+  bậc nhạt từ seed đen → khai báo colorPrimaryBg*/colorInfoBg* tường minh.
