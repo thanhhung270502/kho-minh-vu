@@ -3,6 +3,27 @@
  * Chạy: npx tsx scripts/test-pure-functions.ts
  */
 import assert from "node:assert/strict";
+import {
+  toFlowDay,
+  toIdleProduct,
+  toOverviewKpis,
+  toStockByGroupRow,
+} from "../src/features/dashboard/types";
+import {
+  averageIssuesLabel,
+  buildInventoryKpi,
+  examplesLabel,
+  formatMoneyShort,
+  formatPercentDelta,
+  formatUpdatedAt,
+  groupShare,
+  negativeByWarehouseLabel,
+  newProductsLabel,
+  oldestPendingLabel,
+  pendingBreakdownLabel,
+  percentChange,
+  previousMonthNumber,
+} from "../src/features/dashboard/lib/overview-format";
 import { toGlobalSearchResult, type GlobalSearchResult } from "../src/features/global-search/types";
 import { defaultActiveIndex, groupSearchResults, searchResultHref } from "../src/features/global-search/lib/search-results";
 
@@ -1351,6 +1372,88 @@ async function kiemCsvPhanTich() {
   assert.equal(defaultActiveIndex([{ label: "ABC1" }, { label: "ABC" }], " abc "), 1);
   assert.equal(defaultActiveIndex([{ label: "ABC1" }, { label: "ABD" }], "abc"), 0);
   assert.equal(defaultActiveIndex([], "abc"), -1);
+}
+
+// --- Phase 20 — tổng quan 3b (UI3B-03/04) -----------------------------------
+{
+  type OverviewDb = Parameters<typeof toOverviewKpis>[0];
+  const overviewRow = (over: Partial<Record<string, unknown>> = {}) =>
+    ({
+      xem_gia_von: true, gia_tri_ton: 312500000, gia_tri_ton_thang_truoc: 305000000,
+      tong_sl_ton: "9000", tong_sl_ton_thang_truoc: "8800", xu_huong_ton: ["1", 2],
+      ma_kinh_doanh: 3000, ma_moi_thang: 3, xu_huong_ma_kd: [1, 2], phieu_xuat_tb_ngay: 4.2,
+      cho_ghi_so: 5, cho_ghi_so_nhap: 3, cho_ghi_so_xuat: 2, cho_ghi_so_cu_nhat_ngay: 2, xu_huong_cho_ghi_so: [0, 5],
+      ton_am_theo_kho: [{ ten_kho: "Kho 1", so_ma: 4 }], vi_du_duoi_dinh_muc: ["A", "B"],
+      ...over,
+    }) as unknown as OverviewDb;
+
+  const k = toOverviewKpis(overviewRow());
+  assert.equal(k.canViewCost, true);
+  assert.equal(k.totalQuantity, 9000);
+  assert.deepEqual(k.inventoryTrend, [1, 2], "xu_huong_ton ép về number[]");
+  assert.deepEqual(k.negativeByWarehouse, [{ warehouseName: "Kho 1", count: 4 }]);
+  assert.equal(k.oldestPendingDays, 2);
+  assert.deepEqual(toOverviewKpis(overviewRow({ ton_am_theo_kho: { x: 1 } })).negativeByWarehouse, [], "jsonb không phải mảng → []");
+
+  assert.equal(
+    toStockByGroupRow({ nhom_id: null, ten_nhom: null, tong_ma: 1, con_hang: 1, het_hang: 0, am: 0, duoi_dinh_muc: 0, tong_so_luong: "120.5" } as unknown as Parameters<typeof toStockByGroupRow>[0]).totalQuantity,
+    120.5,
+  );
+  assert.deepEqual(
+    toFlowDay({ ngay: "2092-03-09", so_phieu_nhap: 2, so_phieu_xuat: 0, sl_nhap: "10", sl_xuat: "0" } as unknown as Parameters<typeof toFlowDay>[0]),
+    { date: "2092-03-09", receiptCount: 2, issueCount: 0, receiptQuantity: 10, issueQuantity: 0 },
+  );
+  assert.deepEqual(
+    toIdleProduct({ san_pham_id: "p", ma_hang: "A", ten_hang: "B", so_ngay: 45, ton: "3" } as unknown as Parameters<typeof toIdleProduct>[0]),
+    { key: "p", productId: "p", code: "A", name: "B", idleDays: 45, quantity: 3 },
+  );
+
+  assert.equal(percentChange(102.4, 100), 2.4);
+  assert.equal(percentChange(5, 0), null);
+  assert.equal(percentChange(5, null), null);
+  assert.equal(percentChange(90, 100), -10);
+  assert.equal(formatPercentDelta(2.4, 9), "↑ 2,4% so tháng 9");
+  assert.equal(formatPercentDelta(-10, 9), "↓ 10% so tháng 9");
+  assert.equal(formatPercentDelta(0, 9), "Bằng tháng 9");
+  assert.equal(formatPercentDelta(null, 9), "Chưa đủ dữ liệu tháng trước");
+  assert.equal(previousMonthNumber("2026-10-04"), 9);
+  assert.equal(previousMonthNumber("2026-01-15"), 12);
+  assert.deepEqual(formatMoneyShort(312_500_000), { value: "312,5", unit: "tr đ" });
+  assert.deepEqual(formatMoneyShort(1_240_000_000), { value: "1,2", unit: "tỷ đ" });
+  assert.deepEqual(formatMoneyShort(850_000), { value: "850.000", unit: "đ" });
+
+  const withCost = buildInventoryKpi(
+    { canViewCost: true, inventoryValue: 312_500_000, inventoryValuePrevMonth: 305_000_000, totalQuantity: 9000, totalQuantityPrevMonth: 8800 },
+    "2026-10-04",
+  );
+  assert.deepEqual(withCost, { label: "Giá trị tồn", value: "312,5", unit: "tr đ", delta: "↑ 2,5% so tháng 9" });
+  const noCost = buildInventoryKpi(
+    { canViewCost: false, inventoryValue: null, inventoryValuePrevMonth: null, totalQuantity: 9000, totalQuantityPrevMonth: 9000 },
+    "2026-10-04",
+  );
+  assert.deepEqual(noCost, { label: "Tổng SL tồn", value: "9.000", unit: "", delta: "Bằng tháng 9" });
+
+  assert.equal(newProductsLabel(3), "+3 mã tháng này");
+  assert.equal(newProductsLabel(0), "Không có mã mới tháng này");
+  assert.equal(averageIssuesLabel(4.2), "TB 4,2 phiếu/ngày");
+  assert.equal(oldestPendingLabel(null), "Không có phiếu chờ");
+  assert.equal(oldestPendingLabel(0), "Cũ nhất hôm nay");
+  assert.equal(oldestPendingLabel(2), "Cũ nhất 2 ngày");
+  assert.equal(examplesLabel(["VOR-275-17", "ACQ-GS-5A"], 8), "VOR-275-17, ACQ-GS-5A và 6 mã khác");
+  assert.equal(examplesLabel(["A"], 1), "A");
+  assert.equal(examplesLabel([], 0), "Không có");
+  assert.equal(pendingBreakdownLabel(5, 3, 2), "3 phiếu nhập · 2 phiếu xuất");
+  assert.equal(pendingBreakdownLabel(6, 3, 2), "3 phiếu nhập · 2 phiếu xuất · 1 phiếu trả");
+  assert.equal(
+    negativeByWarehouseLabel([{ warehouseName: "Kho 1", count: 4 }, { warehouseName: "Kho 2", count: 2 }]),
+    "Kho 1: 4 mã · Kho 2: 2 mã",
+  );
+  assert.equal(negativeByWarehouseLabel([]), "Không có");
+  const share = groupShare([{ key: "a", totalQuantity: 75 }, { key: "b", totalQuantity: 25 }]);
+  assert.equal(share.get("a"), 75);
+  assert.equal(share.get("b"), 25);
+  assert.equal(groupShare([{ key: "a", totalQuantity: 0 }]).get("a"), 0, "tổng 0 → 0%");
+  assert.equal(formatUpdatedAt(Date.UTC(2026, 8, 19, 1, 42)), "Cập nhật 08:42 · 19/09/2026");
 }
 
 void Promise.all([kiemCsvLoi(), kiemCsvPhanTich(), kiemTaiTheoTrang()]).then(() => {
