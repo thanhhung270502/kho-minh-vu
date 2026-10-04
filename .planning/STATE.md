@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-10-03)
 Phase: 19 (Dòng xe dùng chung) — chưa plan, BỊ CHẶN
 Plan: —
 Status: Chờ merge Quy chuẩn mã hàng (0085–0088) và xem lại phạm vi — 0086 bỏ bảng `dong_xe`, thay bằng cột text trên `san_pham`
-Last activity: 2026-10-04 - Completed quick task 261004-f2l: Áp design system mới 1A, giữ bố cục
+Last activity: 2026-10-04 - Completed quick task 261004-g6p: Tăng tốc chuyển trang (loading.tsx, cache getCurrentUser)
 
 ### Phase 18 — đã xong (03/10/2026)
 
@@ -916,6 +916,7 @@ None yet.
 | 261004-f2l | Áp design system mới (tham khảo design 1A), giữ nguyên bố cục: token đơn sắc, font, nav, trạng thái chấm màu | 2026-10-04 | 41378f2 | [261004-f2l-ap-design-system-moi-1a-giu-bo-cuc](./quick/261004-f2l-ap-design-system-moi-1a-giu-bo-cuc/) |
 | 260928-sn5 | Phiếu xuất: mở phiếu đang nhập liệu thì con trỏ nằm sẵn ở ô mã hàng (checklist 5.2) | 2026-09-28 | 319f736 | [260928-sn5-phieu-xuat-tu-focus-o-ma-hang](./quick/260928-sn5-phieu-xuat-tu-focus-o-ma-hang/) |
 | 260928-t0j | Seed tài khoản demo đúng quyền, tự focus ô mã ở phiếu nhập/đơn hàng, migration ten_danh_muc | 2026-09-28 | 0d93f8b | [260928-t0j-seed-quyen-focus-o-ma-ten-danh-muc](./quick/260928-t0j-seed-quyen-focus-o-ma-ten-danh-muc/) |
+| 261004-g6p | Tăng tốc chuyển trang: loading.tsx, cache getCurrentUser, đọc quyền song song | 2026-10-04 | 2bbd9e8 | [261004-g6p-speed-up-navigation](./quick/261004-g6p-speed-up-navigation/) |
 
 ## Session Continuity
 
