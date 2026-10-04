@@ -1,7 +1,11 @@
 // File thuần — không đánh dấu client, không import thư viện UI nào cả.
 // Icon để dạng mã chuỗi (NavIconId), ánh xạ sang element ở nav-icons.tsx
 // (file client) — cách chắc chắn để Server Component vẫn import được từ đây.
-import { allows, type AnyPermission, type PermissionSubject } from "@/shared/lib/permissions";
+import {
+  allows,
+  type AnyPermission,
+  type PermissionSubject,
+} from "@/shared/lib/permissions";
 
 export type NavIconId =
   | "dashboard"
@@ -34,7 +38,10 @@ export type NavItem = {
   group?: NavGroupId;
 };
 
-export const NAV_GROUPS: Record<NavGroupId, { label: string; icon: NavIconId }> = {
+export const NAV_GROUPS: Record<
+  NavGroupId,
+  { label: string; icon: NavIconId }
+> = {
   orders: { label: "Đơn hàng", icon: "orders" },
   goods: { label: "Hàng hóa", icon: "goods" },
 };
@@ -56,6 +63,26 @@ export const NAV_ITEMS: NavItem[] = [
     icon: "dashboard",
     permission: "xem_dashboard",
     mobilePriority: 1,
+  },
+  {
+    href: "/danh-muc",
+    label: "Danh sách hàng hóa",
+    shortLabel: "Hàng",
+    icon: "catalog",
+    permission: "view-catalog",
+    mobilePriority: 4,
+    group: "goods",
+  },
+  {
+    // Kiểm kê định kỳ, không phải việc hằng giờ như xuất/nhập nên không chiếm
+    // ô nào của thanh tab đáy — vào bằng "Khác" (D-04).
+    href: "/kiem-ke",
+    label: "Kiểm kho",
+    shortLabel: "Kiểm kho",
+    icon: "stocktake",
+    permission: "view-catalog",
+    mobilePriority: null,
+    group: "goods",
   },
   {
     href: "/don-dat",
@@ -83,26 +110,6 @@ export const NAV_ITEMS: NavItem[] = [
     icon: "stock-in",
     permission: "view-catalog",
     mobilePriority: 3,
-  },
-  {
-    href: "/danh-muc",
-    label: "Danh sách hàng hóa",
-    shortLabel: "Hàng",
-    icon: "catalog",
-    permission: "view-catalog",
-    mobilePriority: 4,
-    group: "goods",
-  },
-  {
-    // Kiểm kê định kỳ, không phải việc hằng giờ như xuất/nhập nên không chiếm
-    // ô nào của thanh tab đáy — vào bằng "Khác" (D-04).
-    href: "/kiem-ke",
-    label: "Kiểm kho",
-    shortLabel: "Kiểm kho",
-    icon: "stocktake",
-    permission: "view-catalog",
-    mobilePriority: null,
-    group: "goods",
   },
   {
     href: "/doi-tac",
@@ -135,7 +142,13 @@ export const NAV_ITEMS: NavItem[] = [
 
 export type NavEntry =
   | { kind: "item"; key: string; label: string; item: NavItem }
-  | { kind: "group"; key: NavGroupId; label: string; icon: NavIconId; items: NavItem[] };
+  | {
+      kind: "group";
+      key: NavGroupId;
+      label: string;
+      icon: NavIconId;
+      items: NavItem[];
+    };
 
 /**
  * Gộp các mục cùng `group` thành một mục cấp 1 cho menu máy tính. Nhận danh
@@ -148,12 +161,20 @@ export function buildNavEntries(items: NavItem[]): NavEntry[] {
       entries.push({ kind: "item", key: item.href, label: item.label, item });
       continue;
     }
-    const existing = entries.find((e) => e.kind === "group" && e.key === item.group);
+    const existing = entries.find(
+      (e) => e.kind === "group" && e.key === item.group,
+    );
     if (existing?.kind === "group") {
       existing.items.push(item);
     } else {
       const { label, icon } = NAV_GROUPS[item.group];
-      entries.push({ kind: "group", key: item.group, label, icon, items: [item] });
+      entries.push({
+        kind: "group",
+        key: item.group,
+        label,
+        icon,
+        items: [item],
+      });
     }
   }
   return entries;

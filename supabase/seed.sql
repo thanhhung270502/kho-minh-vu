@@ -11,14 +11,31 @@
 -- thì đó là sự cố, không phải tiện lợi.
 -- =============================================================================
 
--- Năm tài khoản khớp SAMPLE_ACCOUNTS (scripts/_supabase-admin.ts) để pgTAP và
--- `npm run seed:users` gặp đúng trạng thái như trên cloud:
+-- Chức vụ "Quản lý kho" khớp scripts/seed-users.ts: phạm vi văn phòng, mọi
+-- quyền trừ Tạo nhân viên.
+insert into public.chuc_vu (ma, ten, pham_vi)
+values ('QUAN_LY_KHO', 'Quản lý kho', 'van_phong')
+on conflict (ma) do update set ten = excluded.ten, pham_vi = excluded.pham_vi;
+
+delete from public.chuc_vu_quyen
+where chuc_vu_id = (select id from public.chuc_vu where ma = 'QUAN_LY_KHO');
+insert into public.chuc_vu_quyen (chuc_vu_id, quyen)
+select cv.id, q.quyen
+from public.chuc_vu cv
+cross join unnest(array[
+  'xem_dashboard', 'nhap_kho', 'tao_don', 'xac_nhan_don', 'hoan_thanh_don',
+  'sua_hoa_don', 'tao_ma_hang', 'kiem_kho'
+]) as q(quyen)
+where cv.ma = 'QUAN_LY_KHO';
+
+
+-- Local chỉ có 3 tài khoản demo (quản lý, văn phòng, chỉ xem). Nhân viên thật và
+-- thủ kho demo chỉ tạo trên cloud bằng `npm run seed:users`.
 --   · ten_dang_nhap = phần trước @ — không để NULL, nếu không màn Người dùng hiện
 --     "—" và luu_ho_so_nguoi_dung từng chết vì chuỗi rỗng (checklist 9.6)
---   · văn phòng bật xem_lich_su_kiotviet: migration 0063 backfill công tắc này
---     bằng UPDATE, nhưng khi `db reset` migration chạy TRƯỚC seed nên lúc đó
+--   · văn phòng demo bật xem_lich_su_kiotviet: migration 0063 backfill công tắc
+--     này bằng UPDATE, nhưng khi `db reset` migration chạy TRƯỚC seed nên lúc đó
 --     chưa có ai để cập nhật
---   · kho của thủ kho ghi vào nguoi_dung_kho (0026), không phải cột kho_id cũ
 do $$
 declare
   v_id uuid;
@@ -26,12 +43,10 @@ declare
 begin
   for r in
     select * from (values
-      ('quanly@khominhvu.local',   'Quản lý demo',    'quan_ly'::public.vai_tro,   array[]::text[]),
-      ('vanphong@khominhvu.local', 'Văn phòng demo',  'van_phong'::public.vai_tro, array[]::text[]),
-      ('thukho1@khominhvu.local',  'Thủ kho K1',      'thu_kho'::public.vai_tro,   array['K1']),
-      ('thukho2@khominhvu.local',  'Thủ kho K1 + K2', 'thu_kho'::public.vai_tro,   array['K1', 'K2']),
-      ('chixem@khominhvu.local',   'Chỉ xem demo',    'chi_xem'::public.vai_tro,   array[]::text[])
-    ) as t(email, ho_ten, vai_tro, ma_kho)
+      ('quanly@khominhvu.local',      'Quản lý demo',    'QUAN_LY',     array[]::text[],    true,  false, false),
+      ('vanphong@khominhvu.local',    'Văn phòng demo',  'NHAN_VIEN',   array[]::text[],    false, false, true),
+      ('chixem@khominhvu.local',      'Chỉ xem demo',    'CHI_XEM',     array[]::text[],    false, false, false)
+    ) as t(email, ho_ten, ma_chuc_vu, ma_kho, duyet_kiem_ke, phai_doi_mat_khau, xem_lich_su_kiotviet)
   loop
     select id into v_id from auth.users where email = r.email;
 
@@ -46,19 +61,29 @@ begin
         confirmation_token, recovery_token, email_change, email_change_token_new
       ) values (
         '00000000-0000-0000-0000-000000000000', v_id, 'authenticated', 'authenticated',
-        r.email, extensions.crypt('MatKhauDemo123!', extensions.gen_salt('bf')),
+        r.email, extensions.crypt('password', extensions.gen_salt('bf')),
         now(), now(), now(),
         '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb,
         '', '', '', ''
       );
     end if;
 
-    insert into public.nguoi_dung (id, ho_ten, ten_dang_nhap, vai_tro, xem_lich_su_kiotviet)
-    values (v_id, r.ho_ten, split_part(r.email, '@', 1), r.vai_tro, r.vai_tro = 'van_phong')
+    -- Ghi chức vụ, trigger dong_bo_vai_tro_chuc_vu (0082) tự đặt vai_tro.
+    insert into public.nguoi_dung (
+      id, ho_ten, ten_dang_nhap, chuc_vu_id,
+      duyet_kiem_ke, phai_doi_mat_khau, xem_lich_su_kiotviet
+    )
+    values (
+      v_id, r.ho_ten, split_part(r.email, '@', 1),
+      (select id from public.chuc_vu where ma = r.ma_chuc_vu),
+      r.duyet_kiem_ke, r.phai_doi_mat_khau, r.xem_lich_su_kiotviet
+    )
     on conflict (id) do update set
       ho_ten = excluded.ho_ten,
       ten_dang_nhap = excluded.ten_dang_nhap,
-      vai_tro = excluded.vai_tro,
+      chuc_vu_id = excluded.chuc_vu_id,
+      duyet_kiem_ke = excluded.duyet_kiem_ke,
+      phai_doi_mat_khau = excluded.phai_doi_mat_khau,
       xem_lich_su_kiotviet = excluded.xem_lich_su_kiotviet;
 
     delete from public.nguoi_dung_kho where nguoi_dung_id = v_id;
@@ -66,6 +91,10 @@ begin
     select v_id, k.id from public.kho k where k.ma = any(r.ma_kho);
   end loop;
 end $$;
+
+-- Local không dùng chức vụ Thủ kho (không còn tài khoản thủ kho). Migration 0082
+-- tạo nó cùng ba chức vụ mặc định nên phải xóa ở đây sau mỗi `db reset`.
+delete from public.chuc_vu where ma = 'THU_KHO';
 
 insert into public.doi_tac (ma, ten, loai, ghi_chu) values
   ('NCC000001', 'Nhà máy Vũ Trụ L.An', 'CA_HAI',

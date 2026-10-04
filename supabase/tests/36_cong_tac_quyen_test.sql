@@ -88,15 +88,18 @@ select ok(
 -- ─── A2 (5-6): backfill — mọi van_phong có xem_lich_su_kiotviet=true, duyet_kiem_ke=false
 select pg_temp.dang_xuat();
 
+-- Chỉ kiểm tài khoản văn phòng DEMO: nhân viên thật trong seed (Nhân viên, Quản lý
+-- kho) được quản lý bật Duyệt KK có chủ đích, không phải trạng thái backfill.
 select ok(
-  exists(select 1 from public.nguoi_dung where vai_tro = 'van_phong'),
-  'A2 tiền đề: có ít nhất một tài khoản van_phong thật để kiểm backfill (tránh giả pass trên bảng rỗng)'
+  exists(select 1 from public.nguoi_dung where vai_tro = 'van_phong' and ten_dang_nhap = 'vanphong'),
+  'A2 tiền đề: có tài khoản van_phong demo để kiểm backfill (tránh giả pass trên bảng rỗng)'
 );
 select is(
   (select count(*) from public.nguoi_dung
-    where vai_tro = 'van_phong' and (not xem_lich_su_kiotviet or duyet_kiem_ke)),
+    where vai_tro = 'van_phong' and ten_dang_nhap = 'vanphong'
+      and (not xem_lich_su_kiotviet or duyet_kiem_ke)),
   0::bigint,
-  'A2: mọi van_phong có xem_lich_su_kiotviet=true (giữ quyền cũ) và duyet_kiem_ke=false sau backfill'
+  'A2: văn phòng demo có xem_lich_su_kiotviet=true (giữ quyền cũ) và duyet_kiem_ke=false sau backfill'
 );
 
 -- ─── A3 (7-9): thukho1 mặc định false; đổi cột trong CÙNG transaction có hiệu lực ngay

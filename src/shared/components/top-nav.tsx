@@ -43,10 +43,10 @@ export function TopNav({ user, entries, activeHref, search }: TopNavProps) {
 
   return (
     <header data-no-print className="sticky top-0 z-20 bg-nen-the">
-      <div className="flex h-[60px] items-center gap-4 px-4 max-lg:border-b max-lg:border-vien lg:px-6">
+      <div className="flex h-15 items-center gap-4 px-4 max-lg:border-b max-lg:border-vien lg:px-6">
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2.5 text-chu-chinh hover:text-chu-chinh lg:w-[260px]"
+          className="flex shrink-0 items-center gap-2.5 text-chu-chinh hover:text-chu-chinh lg:w-65"
         >
           <span className="flex size-7 items-center justify-center rounded-full bg-chu-chinh text-[10.5px] font-extrabold text-white">
             MV
@@ -60,7 +60,7 @@ export function TopNav({ user, entries, activeHref, search }: TopNavProps) {
           {search}
         </div>
 
-        <div className="flex shrink-0 justify-end lg:w-[260px]">
+        <div className="flex shrink-0 justify-end lg:w-65">
           <AccountMenu user={user} />
         </div>
       </div>
