@@ -22,16 +22,17 @@ import { createClient } from "@supabase/supabase-js";
 import ExcelJS from "exceljs";
 
 import type { Database } from "../src/types/database.types";
-import { SAMPLE_ACCOUNTS, samplePassword, taoAdminClient } from "./_supabase-admin";
+import { laSoLuongHopLe, napDieuChinhDauKy, taoGhiSo, type ExistingDoc } from "./_nap-chung-tu";
+import { dangNhapTaiKhoanNap, taoAdminClient } from "./_supabase-admin";
 
 const dir = process.argv[2];
 const GHI = process.argv.includes("--ghi");
 if (!dir) throw new Error("Thiếu đường dẫn thư mục chứa 3 file Excel");
 
 const OPENING_DATE = "2026-09-30";
-// Phiếu điều chỉnh đầu kỳ nhận ra bằng ghi chú, số lấy theo quy tắc hệ thống (sinh_so_ct).
+// Phiếu điều chỉnh đầu kỳ nhận ra bằng ghi chú (+ " (đợt k/n)"), số lấy theo quy
+// tắc hệ thống (sinh_so_ct).
 const OPENING_NOTE = "Đưa tồn về đầu 01/10 trước khi nạp phiếu nhập/hóa đơn KiotViet 01–03/10 — tồn cuối giữ nguyên";
-const BATCH = 150;
 
 type Cell = ExcelJS.CellValue;
 
@@ -123,9 +124,10 @@ async function main() {
     "thanh_phan_combo",
     "combo_id, thanh_phan_id, so_luong",
   );
-  const existing = await readAll<{ so_ct: string; ghi_chu: string | null }>("chung_tu", "so_ct, ghi_chu");
+  const existing = await readAll<ExistingDoc>("chung_tu", "id, so_ct, ghi_chu, trang_thai");
   const existingSo = new Set(existing.map((c) => c.so_ct));
-  const openingDone = existing.some((c) => c.ghi_chu === OPENING_NOTE);
+  // Lần chạy trước dừng giữa chừng: phiếu đã tạo nhưng chưa ghi sổ (chưa đụng tồn).
+  const unposted = existing.filter((c) => c.trang_thai === "NHAP_LIEU" && docs.has(c.so_ct));
 
   // --- Đối tác --------------------------------------------------------------
   // File: A mã · B tên · C loại (trống) · D điện thoại · F địa chỉ · G khu vực · H phường/xã · J ghi chú · K đang hoạt động
@@ -139,7 +141,10 @@ async function main() {
       if (!productByCode.has(key(line.code))) unknownCodes.set(line.code, (unknownCodes.get(line.code) ?? 0) + 1);
     }
   }
-  const badQty = [...docs.values()].flatMap((d) => d.lines.filter((l) => !(l.qty > 0)).map((l) => `${d.so} ${l.code}`));
+  const badQty = [...docs.values()].flatMap((d) => d.lines.filter((l) => !laSoLuongHopLe(l.qty)).map((l) => `${d.so} ${l.code}`));
+  // Ô số lượng không phải số (NaN/Infinity) là file hỏng, khác với số lượng 0 — dừng
+  // trước khi ghi bất cứ gì thay vì lặng lẽ bỏ dòng.
+  const nonNumericQty = [...docs.values()].flatMap((d) => d.lines.filter((l) => !Number.isFinite(l.qty)).map((l) => `${d.so} ${l.code}`));
   const docList = [...docs.values()];
   console.log(
     JSON.stringify(
@@ -152,11 +157,18 @@ async function main() {
         da_co_tren_he_thong: docList.filter((d) => existingSo.has(d.so)).length,
         ma_hang_khong_co: Object.fromEntries(unknownCodes),
         so_luong_sai: badQty,
+        so_luong_khong_phai_so: nonNumericQty,
+        phieu_do_dang_se_ghi_so_tiep: unposted.map((c) => c.so_ct),
       },
       null,
       2,
     ),
   );
+  if (nonNumericQty.length) {
+    console.log("\nDỪNG: có ô số lượng không phải số (so_luong_khong_phai_so) — sửa file rồi chạy lại.");
+    process.exitCode = 1;
+    return;
+  }
   if (!GHI) {
     console.log("\nChế độ kiểm tra — chưa ghi gì. Thêm --ghi để nạp. Dòng có mã hàng không có sẽ bị BỎ khỏi phiếu.");
     return;
@@ -188,62 +200,53 @@ async function main() {
   const user = createClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "", {
     auth: { persistSession: false },
   });
-  const manager = SAMPLE_ACCOUNTS.find((a) => a.role === "quan_ly");
-  if (!manager) throw new Error("Không có tài khoản quản lý mẫu");
-  const { error: loginError } = await user.auth.signInWithPassword({ email: manager.email, password: samplePassword() });
-  if (loginError) throw loginError;
+  await dangNhapTaiKhoanNap(user);
   const { data: kho, error: khoError } = await user.from("kho").select("id").eq("ma", "K1").single();
   if (khoError) throw khoError;
   const khoId = kho.id;
 
-  async function createAndPost(header: Database["public"]["Tables"]["chung_tu"]["Insert"], lines: { san_pham_id: string; so_luong: number; ghi_chu: string | null }[]) {
-    const { data: ct, error } = await user.from("chung_tu").insert(header).select("id").single();
-    if (error) throw new Error(`${header.so_ct}: ${error.message}`);
-    const { error: lineError } = await user.from("chung_tu_dong").insert(
-      lines.map((l) => ({ chung_tu_id: ct.id, san_pham_id: l.san_pham_id, so_luong: l.so_luong, don_gia: 0, thanh_tien: 0, kho_id: khoId, ghi_chu: l.ghi_chu })),
-    );
-    if (lineError) throw new Error(`${header.so_ct} dòng: ${lineError.message}`);
-    let { error: postError } = await user.rpc("ghi_so_chung_tu", { p_chung_tu_id: ct.id });
-    if (postError && header.loai_ct === "XUAT" && postError.message.includes("Xuất quá tồn")) {
-      // Thứ tự trong ngày của KiotViet không có — xuất trước nhập cùng ngày thì âm tạm.
-      await user.from("chung_tu").update({ ly_do_xuat_am: "LECH_TON_CHO_KIEM_KE" }).eq("id", ct.id);
-      ({ error: postError } = await user.rpc("ghi_so_chung_tu", { p_chung_tu_id: ct.id }));
-    }
-    if (postError) throw new Error(`${header.so_ct} ghi sổ: ${postError.message}`);
-  }
+  const ghiSo = taoGhiSo(user, khoId);
+  const toLines = (doc: Doc, skipped: string[]) =>
+    doc.lines.flatMap((l) => {
+      const product = productByCode.get(key(l.code));
+      if (!product || !laSoLuongHopLe(l.qty)) {
+        skipped.push(`${doc.so} ${l.code}`);
+        return [];
+      }
+      return [{ san_pham_id: product.id, so_luong: l.qty, ghi_chu: l.note }];
+    });
 
   const pending = docList.filter((d) => !existingSo.has(d.so));
 
   // --- 1. Điều chỉnh đầu kỳ: −(nhập − xuất), combo tách thành phần ------------
-  if (!openingDone) {
-    const delta = new Map<string, number>();
-    const bump = (productId: string, qty: number) => delta.set(productId, (delta.get(productId) ?? 0) + qty);
-    for (const doc of docList) {
-      const sign = doc.type === "NHAP" ? 1 : -1;
-      for (const line of doc.lines) {
-        const product = productByCode.get(key(line.code));
-        if (!product) continue;
-        const parts = product.loai_hang === "COMBO" ? components.filter((c) => c.combo_id === product.id) : [];
-        if (parts.length) for (const part of parts) bump(part.thanh_phan_id, sign * line.qty * Number(part.so_luong));
-        else bump(product.id, sign * line.qty);
+  // Tính trên TOÀN BỘ phiếu trong file (không chỉ phiếu chưa nạp) nên giống nhau
+  // giữa các lần chạy — đợt dở dang làm nốt đúng nội dung cũ.
+  const opening = await napDieuChinhDauKy({
+    user, ghiSo, khoId, existing, base: OPENING_NOTE, date: OPENING_DATE,
+    computeAdjust: () => {
+      const delta = new Map<string, number>();
+      const bump = (productId: string, qty: number) => delta.set(productId, (delta.get(productId) ?? 0) + qty);
+      for (const doc of docList) {
+        const sign = doc.type === "NHAP" ? 1 : -1;
+        for (const line of doc.lines) {
+          // Cùng điều kiện với vòng ghi sổ: dòng bị bỏ ở đó thì không được tính ở đây.
+          const product = productByCode.get(key(line.code));
+          if (!product || !laSoLuongHopLe(line.qty)) continue;
+          const parts = product.loai_hang === "COMBO" ? components.filter((c) => c.combo_id === product.id) : [];
+          if (parts.length) for (const part of parts) bump(part.thanh_phan_id, sign * line.qty * Number(part.so_luong));
+          else bump(product.id, sign * line.qty);
+        }
       }
-    }
-    const adjust = [...delta].filter(([, q]) => q !== 0).map(([san_pham_id, q]) => ({ san_pham_id, so_luong: -q, ghi_chu: null }));
-    for (let i = 0; i < adjust.length; i += BATCH) {
-      const { data: so, error: soError } = await user.rpc("sinh_so_ct", { p_loai: "DIEU_CHINH" });
-      if (soError) throw soError;
-      await createAndPost(
-        {
-          so_ct: so,
-          loai_ct: "DIEU_CHINH",
-          kho_id: khoId,
-          ngay_ct: OPENING_DATE,
-          ghi_chu: OPENING_NOTE,
-        },
-        adjust.slice(i, i + BATCH),
-      );
-    }
-    console.log(`Điều chỉnh đầu kỳ: ${adjust.length} mã`);
+      return [...delta].filter(([, q]) => q !== 0).map(([san_pham_id, q]) => ({ san_pham_id, so_luong: -q, ghi_chu: null }));
+    },
+  });
+  console.log(`Điều chỉnh đầu kỳ: ${opening}`);
+
+  for (const c of unposted) {
+    const doc = docs.get(c.so_ct);
+    if (!doc) continue;
+    await ghiSo.completeDoc(c.id, c.so_ct, doc.type, toLines(doc, []));
+    console.log(`Ghi sổ tiếp phiếu dở dang ${c.so_ct}`);
   }
 
   // --- 2. Phiếu nhập rồi hóa đơn, theo ngày ----------------------------------
@@ -251,16 +254,9 @@ async function main() {
   let done = 0;
   const skippedLines: string[] = [];
   for (const doc of pending) {
-    const lines = doc.lines.flatMap((l) => {
-      const product = productByCode.get(key(l.code));
-      if (!product || !(l.qty > 0)) {
-        skippedLines.push(`${doc.so} ${l.code}`);
-        return [];
-      }
-      return [{ san_pham_id: product.id, so_luong: l.qty, ghi_chu: l.note }];
-    });
+    const lines = toLines(doc, skippedLines);
     if (lines.length === 0) continue;
-    await createAndPost(
+    await ghiSo.createAndPost(
       {
         so_ct: doc.so,
         loai_ct: doc.type,
@@ -275,7 +271,7 @@ async function main() {
     done++;
     if (done % 25 === 0) console.log(`  đã ghi sổ ${done} / ${pending.length}`);
   }
-  console.log(`\nXong: ghi sổ ${done} phiếu. Dòng bỏ qua (mã không có): ${skippedLines.length}`);
+  console.log(`\nXong: ghi sổ ${done} phiếu. Dòng bỏ qua (mã không có / số lượng ≤ 0): ${skippedLines.length}`);
   if (skippedLines.length) console.log(skippedLines.join("\n"));
 }
 

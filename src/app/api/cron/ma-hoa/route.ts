@@ -1,3 +1,5 @@
+import { timingSafeEqual } from "node:crypto";
+
 import { syncCodeDictionary } from "@/features/product-codes/api/sync.server";
 import { getCodeSyncEnv } from "@/lib/env-server";
 
@@ -17,7 +19,7 @@ export async function GET(request: Request) {
       { status: 503 },
     );
   }
-  if (request.headers.get("authorization") !== `Bearer ${CRON_SECRET}`) {
+  if (!isAuthorized(request.headers.get("authorization"), CRON_SECRET)) {
     return Response.json({ title: "Không có quyền chạy job đồng bộ" }, { status: 401 });
   }
 
@@ -27,4 +29,12 @@ export async function GET(request: Request) {
   // Lỗi vẫn trả về để log Vercel ghi rõ lý do; từ điển cũ giữ nguyên.
   const status = result.stage === "fetch" ? 502 : 422;
   return Response.json({ thanh_cong: false, giai_doan: result.stage, loi: result.message }, { status });
+}
+
+/** So sánh hằng thời gian — `!==` lộ độ dài tiền tố khớp qua thời gian phản hồi. */
+function isAuthorized(header: string | null, secret: string): boolean {
+  const given = Buffer.from(header ?? "");
+  const expected = Buffer.from(`Bearer ${secret}`);
+  if (given.length !== expected.length) return false;
+  return timingSafeEqual(given, expected);
 }

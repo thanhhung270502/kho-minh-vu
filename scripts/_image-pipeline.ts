@@ -44,35 +44,35 @@ export async function nenAnh(
 /** Dừng toàn bộ khi Apps Script từ chối secret — không có cách tự phục hồi. */
 export class DungToanBo extends Error {}
 
+/**
+ * Lưu một biến thể ảnh, KHÔNG tự thử lại ở đây.
+ *
+ * `put` không idempotent: "unavailable" (timeout, 5xx) không có nghĩa là Apps
+ * Script chưa ghi — file có thể đã nằm trên Drive. Thử lại mù sẽ đẻ file trùng
+ * mồ côi, và Apps Script không có action liệt kê/tra theo tên để kiểm trước.
+ * Nên lỗi được ném ra; script gọi coi mã đó là thất bại và lần chạy sau làm lại
+ * (vẫn có thể còn một file mồ côi, nhưng chỉ một, và có dấu vết trong log).
+ * Tên hàm giữ nguyên để không phải sửa hai script đang gọi.
+ */
 export async function luuVoiThuLai(
   storage: GDriveImageStorage,
   variant: "full" | "thumb",
   fileName: string,
   bytes: Buffer,
 ): Promise<string> {
-  const cho = [0, 1000, 3000];
-  let lanCuoi: unknown;
-  for (let lan = 0; lan < cho.length; lan++) {
-    if (cho[lan]! > 0) await new Promise((r) => setTimeout(r, cho[lan]));
-    try {
-      return await storage.put({
-        variant,
-        fileName,
-        mimeType: "image/webp",
-        bytes: new Uint8Array(bytes),
-      });
-    } catch (e) {
-      if (e instanceof ImageStorageError && e.kind === "forbidden") {
-        throw new DungToanBo(
-          "Secret Apps Script sai — kiểm APPS_SCRIPT_SECRET",
-        );
-      }
-      lanCuoi = e;
-      if (!(e instanceof ImageStorageError && e.kind === "unavailable"))
-        throw e;
+  try {
+    return await storage.put({
+      variant,
+      fileName,
+      mimeType: "image/webp",
+      bytes: new Uint8Array(bytes),
+    });
+  } catch (e) {
+    if (e instanceof ImageStorageError && e.kind === "forbidden") {
+      throw new DungToanBo(
+        "Secret Apps Script sai — kiểm APPS_SCRIPT_SECRET",
+      );
     }
+    throw e;
   }
-  throw lanCuoi instanceof Error
-    ? lanCuoi
-    : new Error("Không lưu được ảnh sau nhiều lần thử");
 }

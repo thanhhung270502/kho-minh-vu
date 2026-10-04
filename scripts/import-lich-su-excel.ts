@@ -20,7 +20,8 @@ import { createClient } from "@supabase/supabase-js";
 import ExcelJS from "exceljs";
 
 import type { Database } from "../src/types/database.types";
-import { SAMPLE_ACCOUNTS, samplePassword, taoAdminClient } from "./_supabase-admin";
+import { laSoLuongHopLe, napDieuChinhDauKy, taoGhiSo, type DocLine, type ExistingDoc } from "./_nap-chung-tu";
+import { dangNhapTaiKhoanNap, taoAdminClient } from "./_supabase-admin";
 
 const dir = process.argv[2];
 const GHI = process.argv.includes("--ghi");
@@ -29,7 +30,6 @@ if (!dir) throw new Error("Thiếu đường dẫn thư mục chứa nhap-hang.x
 const OPENING_DATE = "2026-06-14";
 const OPENING_NOTE = "Đưa tồn về đầu 15/06 trước khi nạp lịch sử phiếu nhập/hóa đơn KiotViet 15/06–30/09 — tồn cuối giữ nguyên";
 const CANCEL_REASON = "Hóa đơn đã hủy trên KiotViet";
-const BATCH = 150;
 // 6 luồng làm ghi_so_chung_tu tranh khóa tồn kho đến quá statement_timeout — 2 là đủ.
 const WORKERS = 2;
 const HISTORY_BEFORE = "2026-10-01";
@@ -139,11 +139,11 @@ async function main() {
   const partnerByCode = new Map(partners.map((p) => [key(p.ma), p.id]));
   const users = await readAll<{ id: string; ho_ten: string }>("nguoi_dung", "id, ho_ten");
   const userByName = new Map(users.map((u) => [key(name(u.ho_ten)), u.id]));
-  const existing = await readAll<{ id: string; so_ct: string; ghi_chu: string | null; trang_thai: string }>("chung_tu", "id, so_ct, ghi_chu, trang_thai");
+  const existing = await readAll<ExistingDoc>("chung_tu", "id, so_ct, ghi_chu, trang_thai");
   const existingSo = new Set(existing.map((c) => c.so_ct));
   // Lần chạy trước dừng giữa chừng: phiếu đã tạo nhưng chưa ghi sổ (chưa đụng tồn).
   const unposted = existing.filter((c) => c.trang_thai === "NHAP_LIEU" && docs.has(c.so_ct));
-  const openingDone = existing.some((c) => c.ghi_chu === OPENING_NOTE);
+  const openingDone = existing.some((c) => c.ghi_chu?.startsWith(OPENING_NOTE));
   const orders = await readAll<{ id: string; so_dh: string }>("don_dat_hang", "id, so_dh");
   const orderBySo = new Map(orders.map((o) => [o.so_dh, o.id]));
 
@@ -155,7 +155,7 @@ async function main() {
   const people = new Set(pending.flatMap((d) => [d.creator, d.seller ?? ""]).filter(Boolean));
   const missingPeople = [...people].filter((p) => !userByName.has(key(p)));
   const missingPartners = [...new Set(pending.map((d) => d.partner))].filter((p) => !partnerByCode.has(key(p)));
-  const badQty = pending.flatMap((d) => d.lines.filter((l) => !(l.qty > 0)).map((l) => `${d.so} ${l.code}`));
+  const badQty = pending.flatMap((d) => d.lines.filter((l) => !laSoLuongHopLe(l.qty)).map((l) => `${d.so} ${l.code}`));
   const dates = pending.map((d) => d.date).sort();
 
   console.log(JSON.stringify({
@@ -169,7 +169,7 @@ async function main() {
       tu_ngay: dates[0], den_ngay: dates.at(-1),
       don_dat_moi: new Set(pending.map((d) => d.order).filter((o): o is string => !!o && !orderBySo.has(o))).size,
     },
-    dieu_chinh_dau_ky_da_co: openingDone,
+    dieu_chinh_dau_ky_da_co_phieu: openingDone,
     phieu_do_dang_se_ghi_so_tiep: unposted.map((c) => c.so_ct),
     ma_hang_khong_co: { so_ma: unknownCodes.size, so_dong: [...unknownCodes.values()].reduce((a, b) => a + b, 0) },
     nguoi_chua_co_tai_khoan: missingPeople,
@@ -190,53 +190,18 @@ async function main() {
   const user = createClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "", {
     auth: { persistSession: false },
   });
-  const manager = SAMPLE_ACCOUNTS.find((a) => a.role === "quan_ly");
-  if (!manager) throw new Error("Không có tài khoản quản lý mẫu");
-  const { error: loginError } = await user.auth.signInWithPassword({ email: manager.email, password: samplePassword() });
-  if (loginError) throw loginError;
+  await dangNhapTaiKhoanNap(user);
   const { data: kho, error: khoError } = await user.from("kho").select("id").eq("ma", "K1").single();
   if (khoError) throw khoError;
   const khoId = kho.id;
 
-  type DocLine = { san_pham_id: string; so_luong: number; ghi_chu: string | null };
-  async function createAndPost(header: Database["public"]["Tables"]["chung_tu"]["Insert"], lines: DocLine[]): Promise<string> {
-    const { data: ct, error } = await user.from("chung_tu").insert(header).select("id").single();
-    if (error) throw new Error(`${header.so_ct}: ${error.message}`);
-    const { error: lineError } = await user.from("chung_tu_dong").insert(
-      lines.map((l) => ({ chung_tu_id: ct.id, san_pham_id: l.san_pham_id, so_luong: l.so_luong, don_gia: 0, thanh_tien: 0, kho_id: khoId, ghi_chu: l.ghi_chu })),
-    );
-    if (lineError) throw new Error(`${header.so_ct} dòng: ${lineError.message}`);
-    await post(ct.id, header.so_ct ?? "", header.loai_ct ?? "");
-    return ct.id;
-  }
-
-  async function post(id: string, so: string, type: string) {
-    for (let attempt = 1; ; attempt++) {
-      let { error } = await user.rpc("ghi_so_chung_tu", { p_chung_tu_id: id });
-      if (error && type === "XUAT" && error.message.includes("Xuất quá tồn")) {
-        // Thứ tự trong ngày của KiotViet không có — xuất trước nhập cùng ngày thì âm tạm.
-        await user.from("chung_tu").update({ ly_do_xuat_am: "LECH_TON_CHO_KIEM_KE" }).eq("id", id);
-        ({ error } = await user.rpc("ghi_so_chung_tu", { p_chung_tu_id: id }));
-      }
-      if (!error) return;
-      // Ghi sổ là một transaction: timeout thì không ghi gì, thử lại an toàn.
-      if (attempt < 5 && /timeout|deadlock|could not serialize/i.test(error.message)) {
-        await new Promise((r) => setTimeout(r, 2000 * attempt));
-        continue;
-      }
-      throw new Error(`${so} ghi sổ: ${error.message}`);
-    }
-  }
-
-  for (const c of unposted) {
-    await post(c.id, c.so_ct, docs.get(c.so_ct)!.type);
-    console.log(`Ghi sổ tiếp phiếu dở dang ${c.so_ct}`);
-  }
+  const ghiSo = taoGhiSo(user, khoId);
+  const { createAndPost } = ghiSo;
 
   const toLines = (doc: Doc, skipped: string[]): DocLine[] =>
     doc.lines.flatMap((l) => {
       const product = productByCode.get(key(l.code));
-      if (!product || !(l.qty > 0)) {
+      if (!product || !laSoLuongHopLe(l.qty)) {
         skipped.push(`${doc.so} ${l.code}`);
         return [];
       }
@@ -244,28 +209,36 @@ async function main() {
     });
 
   // --- 1. Điều chỉnh đầu kỳ 14/06: −(nhập − xuất) của các phiếu sắp nạp ------
-  // Hóa đơn đã hủy không tính: ghi sổ rồi đảo ngay, ròng bằng 0.
-  if (!openingDone) {
-    const delta = new Map<string, number>();
-    const bump = (productId: string, qty: number) => delta.set(productId, (delta.get(productId) ?? 0) + qty);
-    for (const doc of pending) {
-      if (doc.canceled) continue;
-      const sign = doc.type === "NHAP" ? 1 : -1;
-      for (const line of doc.lines) {
-        const product = productByCode.get(key(line.code));
-        if (!product || !(line.qty > 0)) continue;
-        const parts = product.loai_hang === "COMBO" ? components.filter((c) => c.combo_id === product.id) : [];
-        if (parts.length) for (const part of parts) bump(part.thanh_phan_id, sign * line.qty * Number(part.so_luong));
-        else bump(product.id, sign * line.qty);
+  // Hóa đơn đã hủy không tính: ghi sổ rồi đảo ngay, ròng bằng 0. Phiếu chứng từ
+  // chỉ được tạo SAU khi đủ mọi đợt điều chỉnh, nên khi còn đợt dở dang thì
+  // `pending` vẫn đúng tập của lần chạy đầu — đợt làm nốt ra đúng nội dung cũ.
+  const opening = await napDieuChinhDauKy({
+    user, ghiSo, khoId, existing, base: OPENING_NOTE, date: OPENING_DATE,
+    computeAdjust: () => {
+      const delta = new Map<string, number>();
+      const bump = (productId: string, qty: number) => delta.set(productId, (delta.get(productId) ?? 0) + qty);
+      for (const doc of pending) {
+        if (doc.canceled) continue;
+        const sign = doc.type === "NHAP" ? 1 : -1;
+        for (const line of doc.lines) {
+          const product = productByCode.get(key(line.code));
+          if (!product || !laSoLuongHopLe(line.qty)) continue;
+          const parts = product.loai_hang === "COMBO" ? components.filter((c) => c.combo_id === product.id) : [];
+          if (parts.length) for (const part of parts) bump(part.thanh_phan_id, sign * line.qty * Number(part.so_luong));
+          else bump(product.id, sign * line.qty);
+        }
       }
-    }
-    const adjust = [...delta].filter(([, q]) => q !== 0).map(([san_pham_id, q]) => ({ san_pham_id, so_luong: -q, ghi_chu: null }));
-    for (let i = 0; i < adjust.length; i += BATCH) {
-      const { data: so, error: soError } = await user.rpc("sinh_so_ct", { p_loai: "DIEU_CHINH" });
-      if (soError) throw soError;
-      await createAndPost({ so_ct: so, loai_ct: "DIEU_CHINH", kho_id: khoId, ngay_ct: OPENING_DATE, ghi_chu: OPENING_NOTE }, adjust.slice(i, i + BATCH));
-    }
-    console.log(`Điều chỉnh đầu kỳ 14/06: ${adjust.length} mã`);
+      return [...delta].filter(([, q]) => q !== 0).map(([san_pham_id, q]) => ({ san_pham_id, so_luong: -q, ghi_chu: null }));
+    },
+  });
+  console.log(`Điều chỉnh đầu kỳ 14/06: ${opening}`);
+
+  // Phiếu dở dang của lần chạy trước: header có thể chưa có dòng — làm nốt rồi ghi sổ.
+  for (const c of unposted) {
+    const doc = docs.get(c.so_ct);
+    if (!doc) continue;
+    await ghiSo.completeDoc(c.id, c.so_ct, doc.type, toLines(doc, []));
+    console.log(`Ghi sổ tiếp phiếu dở dang ${c.so_ct}`);
   }
 
   // --- 2. Ghi sổ theo ngày: trong một ngày nhập trước, xuất sau; chạy song song --
@@ -297,15 +270,20 @@ async function main() {
 
   // Bước 3–5 làm trên TOÀN BỘ phiếu lịch sử đang có (kể cả của lần chạy trước bị
   // dừng) — mỗi bước tự bỏ qua phần đã làm, chạy lại an toàn.
-  const now = await readAll<{ id: string; so_ct: string; trang_thai: string }>("chung_tu", "id, so_ct, trang_thai");
+  const now = await readAll<{ id: string; so_ct: string; trang_thai: string; don_dat_hang_id: string | null }>(
+    "chung_tu", "id, so_ct, trang_thai, don_dat_hang_id",
+  );
   const statusBySo = new Map(now.map((c) => [c.so_ct, c]));
   created.length = 0;
   for (const doc of docs.values()) {
     const row = statusBySo.get(doc.so);
     if (row && doc.date < HISTORY_BEFORE) created.push({ doc, id: row.id });
   }
-  const freshOrders = await readAll<{ id: string; so_dh: string }>("don_dat_hang", "id, so_dh");
+  const freshOrders = await readAll<{ id: string; so_dh: string; trang_thai: string; ngay_dh: string }>(
+    "don_dat_hang", "id, so_dh, trang_thai, ngay_dh",
+  );
   for (const o of freshOrders) orderBySo.set(o.so_dh, o.id);
+  const freshOrderBySo = new Map(freshOrders.map((o) => [o.so_dh, o]));
 
   // --- 3. Người tạo (service role — cột hệ thống, không phải dữ liệu người dùng sửa) --
   for (const [creator, items] of Map.groupBy(created, (c) => c.doc.creator)) {
@@ -317,27 +295,55 @@ async function main() {
   }
 
   // --- 4. Đơn đặt: một đơn cho mỗi mã đặt hàng, Hoàn thành, nối hóa đơn -------
-  const invoicesByOrder = Map.groupBy(created.filter((c) => c.doc.type === "XUAT" && c.doc.order && !orderBySo.has(c.doc.order)), (c) => c.doc.order!);
+  // Một đơn = 3 request service-role rời (header → dòng → nối hóa đơn); REST không
+  // bọc được chúng trong một transaction. Lần chạy trước dừng giữa chừng để lại
+  // đơn có header mà thiếu dòng, hoặc hóa đơn chưa nối. Vì nối hóa đơn là bước
+  // CUỐI, đơn dở dang luôn còn hóa đơn của file chưa nối — đó là dấu để làm nốt.
+  // Chỉ sửa đơn trông như do script tạo (HOAN_THANH/DA_HUY, đúng ngày hóa đơn đầu);
+  // đơn trùng số tạo trong app thì để nguyên như trước.
+  const invoicesByOrder = Map.groupBy(created.filter((c) => c.doc.type === "XUAT" && c.doc.order), (c) => c.doc.order!);
   let orderCount = 0;
+  let repairedCount = 0;
   for (const [so, invoices] of invoicesByOrder) {
     const first = invoices[0]!.doc;
-    const { data: dh, error } = await admin.from("don_dat_hang").insert({
-      so_dh: so, ngay_dh: first.date, trang_thai: "HOAN_THANH",
-      doi_tac_id: partnerByCode.get(key(first.partner)) ?? null,
-      nguoi_tao_id: userByName.get(key(first.seller ?? first.creator)) ?? null,
-    }).select("id").single();
-    if (error) throw new Error(`${so}: ${error.message}`);
-    const qty = new Map<string, number>();
-    for (const inv of invoices) for (const l of toLines(inv.doc, [])) qty.set(l.san_pham_id, (qty.get(l.san_pham_id) ?? 0) + l.so_luong);
-    const { error: lineError } = await admin.from("don_dat_hang_dong").insert(
-      [...qty].map(([san_pham_id, q]) => ({ don_dat_hang_id: dh.id, san_pham_id, so_luong_dat: q, so_luong_da_xuat: q, don_gia: 0 })),
-    );
-    if (lineError) throw new Error(`${so} dòng: ${lineError.message}`);
-    const { error: linkError } = await admin.from("chung_tu").update({ don_dat_hang_id: dh.id }).in("id", invoices.map((i) => i.id));
+    const unlinked = invoices.filter((i) => statusBySo.get(i.doc.so)?.don_dat_hang_id == null);
+    const found = freshOrderBySo.get(so);
+    let orderId: string;
+    let needLines: boolean;
+    if (!found) {
+      const { data: dh, error } = await admin.from("don_dat_hang").insert({
+        so_dh: so, ngay_dh: first.date, trang_thai: "HOAN_THANH",
+        doi_tac_id: partnerByCode.get(key(first.partner)) ?? null,
+        nguoi_tao_id: userByName.get(key(first.seller ?? first.creator)) ?? null,
+      }).select("id").single();
+      if (error) throw new Error(`${so}: ${error.message}`);
+      orderId = dh.id;
+      needLines = true;
+      orderCount++;
+    } else {
+      const looksImported = ["HOAN_THANH", "DA_HUY"].includes(found.trang_thai) && found.ngay_dh.slice(0, 10) === first.date;
+      if (unlinked.length === 0 || !looksImported) continue;
+      const { count, error: countError } = await admin
+        .from("don_dat_hang_dong").select("id", { count: "exact", head: true }).eq("don_dat_hang_id", found.id);
+      if (countError) throw new Error(`${so} đếm dòng: ${countError.message}`);
+      orderId = found.id;
+      needLines = (count ?? 0) === 0;
+      repairedCount++;
+      console.log(`  làm nốt đơn đặt dở dang ${so}${needLines ? " (thêm dòng)" : ""}, nối ${unlinked.length} hóa đơn`);
+    }
+    if (needLines) {
+      const qty = new Map<string, number>();
+      for (const inv of invoices) for (const l of toLines(inv.doc, [])) qty.set(l.san_pham_id, (qty.get(l.san_pham_id) ?? 0) + l.so_luong);
+      const { error: lineError } = await admin.from("don_dat_hang_dong").insert(
+        [...qty].map(([san_pham_id, q]) => ({ don_dat_hang_id: orderId, san_pham_id, so_luong_dat: q, so_luong_da_xuat: q, don_gia: 0 })),
+      );
+      if (lineError) throw new Error(`${so} dòng: ${lineError.message}`);
+    }
+    const { error: linkError } = await admin.from("chung_tu").update({ don_dat_hang_id: orderId }).in("id", unlinked.map((i) => i.id));
     if (linkError) throw linkError;
-    if (++orderCount % 500 === 0) console.log(`  đã tạo ${orderCount} / ${invoicesByOrder.size} đơn đặt`);
+    if (orderCount > 0 && orderCount % 500 === 0 && !found) console.log(`  đã tạo ${orderCount} đơn đặt`);
   }
-  console.log(`Đơn đặt: tạo ${orderCount}`);
+  console.log(`Đơn đặt: tạo ${orderCount}, làm nốt ${repairedCount}`);
 
   // --- 5. Hóa đơn đã hủy trên KiotViet: hủy (bút toán đảo), đơn của nó cũng hủy --
   for (const { doc, id } of created.filter((c) => c.doc.canceled && statusBySo.get(c.doc.so)?.trang_thai !== "DA_HUY")) {

@@ -53,3 +53,6 @@ next-env.d.ts
 /data/backup-*/
 /data/anh-nhap/
 /data/anh-nhap-*.csv
+
+# handoff phiên làm việc (cục bộ)
+.handoff/

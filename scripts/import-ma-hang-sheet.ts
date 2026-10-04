@@ -4,7 +4,7 @@
  *   npx tsx --env-file=.env.local scripts/import-ma-hang-sheet.ts <file.csv>          # = kiểm tra, không ghi
  *   npx tsx --env-file=.env.local scripts/import-ma-hang-sheet.ts <file.csv> --ghi    # nạp thật
  *
- * Đi qua RPC nhap_ma_hang_moi (0088) với phiên quản lý demo — để tồn đầu kỳ vào
+ * Đi qua RPC nhap_ma_hang_moi (0088) với phiên tài khoản nạp (IMPORT_USER_EMAIL) — để tồn đầu kỳ vào
  * sổ bằng phiếu Điều chỉnh có ghi sổ (nguyên tắc 1–2), không ghi thẳng bảng.
  * Tên Hãng/Dòng/Linh kiện/Xử lý trong sheet tra ra MÃ trong ma_hoa (đồng bộ
  * từ sheet NGUON) — san_pham lưu mã, không lưu tên.
@@ -18,7 +18,7 @@ import { createClient } from "@supabase/supabase-js";
 
 import { parseCsv } from "../src/shared/lib/csv";
 import type { Database, Json } from "../src/types/database.types";
-import { SAMPLE_ACCOUNTS, samplePassword, taoAdminClient } from "./_supabase-admin";
+import { dangNhapTaiKhoanNap, taoAdminClient } from "./_supabase-admin";
 
 const file = process.argv[2];
 const GHI = process.argv.includes("--ghi");
@@ -158,14 +158,11 @@ async function main() {
     }
   }
 
-  // 2. Phiên quản lý demo — RPC kiểm co_quyen('tao_ma_hang') theo auth.uid().
+  // 2. Phiên tài khoản nạp (IMPORT_USER_*) — RPC kiểm co_quyen('tao_ma_hang') theo auth.uid().
   const user = createClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "", {
     auth: { persistSession: false },
   });
-  const manager = SAMPLE_ACCOUNTS.find((a) => a.role === "quan_ly");
-  if (!manager) throw new Error("Không có tài khoản quản lý mẫu");
-  const { error: loginError } = await user.auth.signInWithPassword({ email: manager.email, password: samplePassword() });
-  if (loginError) throw loginError;
+  await dangNhapTaiKhoanNap(user);
 
   // Lô 50 dòng: RPC dò trùng tên trên cả bảng cho từng dòng — lô lớn vượt
   // statement timeout 8s của vai trò authenticated khi danh mục đã đầy. Mỗi lô
