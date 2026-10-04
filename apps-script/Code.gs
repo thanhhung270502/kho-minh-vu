@@ -22,7 +22,13 @@
  *     lỗi    → { ok: false, error: "forbidden" | "bad_request" | "not_found" | "internal", message }
  */
 
-var ROOT_FOLDER_NAME = 'Kho Minh Vu - Anh';
+// NƠI LƯU ẢNH DUY NHẤT (chuẩn hóa 04/10/2026):
+//   My Drive / [APP][Kho Minh Vu] / Kho Minh Vu - Anh / san-pham / goc | thumb
+// ID cố định để dán code này vào dự án Apps Script NÀO cũng ghi đúng chỗ. Trước
+// đây thiếu Script Property ROOT_FOLDER_ID là tự tạo cây thư mục mới rỗng — ảnh
+// rơi vào chỗ khác mà không ai biết (đã xảy ra 04/10/2026). Muốn dời nơi lưu thì
+// đặt ROOT_FOLDER_ID trong Script Properties; property luôn thắng hằng số này.
+var ROOT_FOLDER_ID_CHUAN = '1kWvuYpdIMZwO91yjvGh3hD2Rcaq_47TN';
 
 // Nhánh 'chung-tu/...' để dành cho phase ảnh chứng từ sau này (D-08) — CHƯA mở ở đây.
 var ALLOWED_FOLDERS = ['san-pham/goc', 'san-pham/thumb'];
@@ -173,22 +179,22 @@ function remove_(body) {
   return json_({ ok: true });
 }
 
+/**
+ * Thư mục gốc chứa ảnh. KHÔNG bao giờ tự tạo mới: không mở được thì báo lỗi để
+ * người dùng thấy ngay, thay vì âm thầm lưu ảnh sang một cây thư mục khác.
+ */
 function getRootFolder_() {
-  var props = PropertiesService.getScriptProperties();
-  var rootId = props.getProperty('ROOT_FOLDER_ID');
-  if (rootId) {
-    try {
-      var existing = DriveApp.getFolderById(rootId);
-      if (!existing.isTrashed()) {
-        return existing;
-      }
-    } catch (notFoundErr) {
-      // rơi xuống tạo mới
-    }
+  var rootId = PropertiesService.getScriptProperties().getProperty('ROOT_FOLDER_ID') || ROOT_FOLDER_ID_CHUAN;
+  var root;
+  try {
+    root = DriveApp.getFolderById(rootId);
+  } catch (notFoundErr) {
+    throw new Error('Không mở được thư mục ảnh gốc ' + rootId + ' — tài khoản chạy Apps Script phải có quyền sửa thư mục này.');
   }
-  var created = DriveApp.createFolder(ROOT_FOLDER_NAME);
-  props.setProperty('ROOT_FOLDER_ID', created.getId());
-  return created;
+  if (root.isTrashed()) {
+    throw new Error('Thư mục ảnh gốc ' + rootId + ' đang nằm trong thùng rác — khôi phục lại trên Drive.');
+  }
+  return root;
 }
 
 /**
@@ -197,7 +203,9 @@ function getRootFolder_() {
  */
 function getFolder_(path) {
   var props = PropertiesService.getScriptProperties();
-  var cacheKey = 'FOLDER_' + path;
+  // Khóa cache gắn với thư mục gốc: đổi gốc thì cache cũ (trỏ sang cây khác) tự bị bỏ qua.
+  var rootId = props.getProperty('ROOT_FOLDER_ID') || ROOT_FOLDER_ID_CHUAN;
+  var cacheKey = 'FOLDER_' + rootId + '_' + path;
   var cachedId = props.getProperty(cacheKey);
   if (cachedId) {
     try {
