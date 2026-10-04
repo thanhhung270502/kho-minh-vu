@@ -734,9 +734,9 @@ Plans:
 - [x] 20-03-PLAN.md — W1: RPC đơn đặt (`dem_don_theo_trang_thai`, `them_dong_don` cộng dồn) (0094) + pgTAP 113
 - [x] 20-04-PLAN.md — W1: Token design system 3b (Manrope, antd pill/bo 16, biến CSS, chip trạng thái, tiêu đề trang)
 - [x] 20-05-PLAN.md — W1: Bảng Tồn theo kho có giá trị theo quyền + khung ảnh aside
-- [ ] 20-06-PLAN.md — W2: Đồng bộ migration + database.types + mapper/hàm thuần có test cho 3 feature
-- [ ] 20-07-PLAN.md — W2: Header hai tầng + slot ô tìm + offsetHeader 6 bảng dính (D-10)
-- [ ] 20-08-PLAN.md — W2: Chi tiết hàng hóa hai cột — badge, Ngừng/Mở lại KD, ghép bảng tồn + ảnh aside
+- [x] 20-06-PLAN.md — W2: Đồng bộ migration + database.types + mapper/hàm thuần có test cho 3 feature
+- [x] 20-07-PLAN.md — W2: Header hai tầng + slot ô tìm + offsetHeader 6 bảng dính (D-10)
+- [x] 20-08-PLAN.md — W2: Chi tiết hàng hóa hai cột — badge, Ngừng/Mở lại KD, ghép bảng tồn + ảnh aside
 - [ ] 20-09-PLAN.md — W3: Ô tìm kiếm ⌘K (feature global-search) ghép vào header
 - [ ] 20-10-PLAN.md — W3: Tổng quan A — 4 KPI + sparkline + biểu đồ Nhập–Xuất 7N/30N/90N
 - [ ] 20-11-PLAN.md — W3: Đơn đặt — panel lọc có số đếm trạng thái, preset ngày
