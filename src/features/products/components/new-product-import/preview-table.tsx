@@ -25,7 +25,8 @@ const toOptions = (items: { id: string; name: string }[] | undefined) =>
   (items ?? []).map((item) => ({ value: item.id, label: item.name }));
 
 /**
- * Bảng xem trước: cột từ file chỉ đọc, cột còn lại chọn tại chỗ. Hãng xe / Dòng
+ * Bảng xem trước: mã, tồn, mô tả từ file chỉ đọc; tên hàng (có thể tự điền từ
+ * sheet tên hàng chuẩn) và các cột còn lại sửa tại chỗ. Hãng xe / Dòng
  * xe / Linh kiện / Xử lý tự điền từ mã theo quy chuẩn (phần A) — không chọn tay ở đây.
  */
 export function PreviewTable({ rows, problems, lookups, selected, onSelect, onChange }: Props) {
@@ -87,7 +88,32 @@ export function PreviewTable({ rows, problems, lookups, selected, onSelect, onCh
     },
     lookupColumn("Nhóm hàng", "categoryId", "nhom_hang", "nhóm hàng", lookups?.categories),
     { title: "Mã hàng", dataIndex: "code", width: 140, render: (code: string) => <span className="font-mono">{code || "—"}</span> },
-    { title: "Tên hàng", dataIndex: "name", width: 240, ellipsis: true },
+    {
+      title: "Tên hàng",
+      key: "name",
+      width: 280,
+      render: (_: unknown, row) => (
+        <Input
+          size="small"
+          value={row.name}
+          placeholder="Nhập tên hàng"
+          status={row.name.trim() === "" ? "error" : undefined}
+          // suffix luôn có mặt (bẫy 20): bỏ suffix khi gõ sẽ dựng lại ô và mất focus.
+          suffix={
+            <span>
+              {row.nameFromSheet ? (
+                <Tooltip title="Tự điền từ sheet tên hàng chuẩn — sửa được">
+                  <Tag color="blue" className="m-0">
+                    tự điền
+                  </Tag>
+                </Tooltip>
+              ) : null}
+            </span>
+          }
+          onChange={(event) => onChange(row.row, { name: event.target.value, nameFromSheet: false })}
+        />
+      ),
+    },
     {
       title: "Tồn kho",
       dataIndex: "stock",
@@ -136,7 +162,7 @@ export function PreviewTable({ rows, problems, lookups, selected, onSelect, onCh
       sticky
       columns={columns}
       dataSource={rows}
-      scroll={{ x: 1520 }}
+      scroll={{ x: 1560 }}
       rowClassName={(row) => (problems.has(row.row) ? "[&>td]:bg-red-50" : "")}
       rowSelection={{
         selectedRowKeys: selected,

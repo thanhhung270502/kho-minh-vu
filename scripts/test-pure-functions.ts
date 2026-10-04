@@ -17,6 +17,8 @@ import { BUSINESS_PERMISSIONS, SCOPE_LABELS, allows, type BusinessPermission, ty
 import { jobTitleSchema, titleCodeFromName } from "../src/features/settings/schemas/job-title.schema";
 import { editUserFormSchema } from "../src/features/settings/schemas/user.schema";
 import { duplicateProblemsInFile } from "../src/features/products/lib/new-product-file";
+import { fillNamesFromSheet, readProductNameSheet } from "../src/features/products/lib/product-name-sheet";
+import { INITIAL_IMPORT_STATE, importReducer } from "../src/features/products/lib/new-product-import-state";
 import { buildCodeDictionary, parseProductCode } from "../src/features/product-codes/lib/parse-product-code";
 import { SourceSheetError, readSourceSheet } from "../src/features/product-codes/lib/source-sheet";
 import { dictionaryFromEntries, toSyncEntries } from "../src/features/product-codes/lib/sync-entries";
@@ -1198,9 +1200,9 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   const lh = "11111111-1111-4111-8111-111111111111";
   const drafts = toDraftRows(
     [
-      { row: 2, code: "A", name: "Áo", stock: 3, description: "d", problems: [] },
-      { row: 3, code: "B", name: "Bé", stock: 0, description: "", problems: ["Tồn kho không phải là số"] },
-      { row: 4, code: "C", name: "Cá", stock: 1, description: "", problems: [] },
+      { row: 2, code: "A", name: "Áo", nameFromSheet: false, stock: 3, description: "d", problems: [] },
+      { row: 3, code: "B", name: "Bé", nameFromSheet: false, stock: 0, description: "", problems: ["Tồn kho không phải là số"] },
+      { row: 4, code: "C", name: "Cá", nameFromSheet: false, stock: 1, description: "", problems: [] },
     ],
     { unitId: cai },
   );
@@ -1233,6 +1235,46 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
     dvt_id: cai, nhom_hang_id: lh, loai_hang: "HANG_HOA",
     dang_kinh_doanh: true, duoc_ban_truc_tiep: true, vi_tri_ke: "K-1",
   });
+}
+
+// --- Tên hàng tự điền từ sheet tên hàng chuẩn (04/10/2026) -----------------
+{
+  // Sheet thật: 2 cột không tiêu đề, có dòng rác "--," và mã lặp.
+  const names = readProductNameSheet(
+    "﻿YAC-01-X,Ốp chắn bùn  trước ACRUZO xi\r\n--,\r\n" +
+      '-TKX--201/304,"Tay kiếng xoay 360 Inox 201, 304"\r\nyac-01-x,Tên lặp\r\n',
+  );
+  assert.equal(names.size, 2, "bỏ dòng thiếu tên, mã lặp giữ dòng đầu");
+  assert.equal(names.get("yac-01-x"), "Ốp chắn bùn trước ACRUZO xi", "khóa không phân biệt hoa thường, gộp khoảng trắng");
+  assert.equal(names.get("-tkx--201/304"), "Tay kiếng xoay 360 Inox 201, 304", "tên có dấu phẩy trong ngoặc kép");
+
+  const filled = fillNamesFromSheet(
+    [
+      { row: 2, code: "Yac-01-X", name: "", nameFromSheet: false, stock: 0, description: "", problems: [] },
+      { row: 3, code: "YAC-01-X", name: "Tên tự gõ", nameFromSheet: false, stock: 0, description: "", problems: [] },
+      { row: 4, code: "KHONG-CO", name: "", nameFromSheet: false, stock: 0, description: "", problems: [] },
+    ],
+    names,
+  );
+  assert.deepEqual(filled.map((r) => [r.name, r.nameFromSheet]), [
+    ["Ốp chắn bùn trước ACRUZO xi", true],
+    ["Tên tự gõ", false],
+    ["", false],
+  ], "chỉ điền ô trống; tên trong file thắng sheet");
+
+  // Sửa tên trên màn xem trước: bỏ lỗi "tên đã có trong danh mục" của đúng dòng đó.
+  const drafts = toDraftRows(filled, { unitId: "u" });
+  const loaded = importReducer(INITIAL_IMPORT_STATE, {
+    type: "loaded",
+    drafts,
+    catalog: new Map([[2, [CATALOG_REASONS.code, CATALOG_REASONS.name]], [3, [CATALOG_REASONS.name]]]),
+    nameSheetError: null,
+  });
+  const edited = importReducer(loaded, { type: "edit", rows: [2], patch: { name: "Tên mới", nameFromSheet: false } });
+  assert.deepEqual(edited.catalog.get(2), [CATALOG_REASONS.code], "giữ lỗi trùng mã");
+  assert.deepEqual(edited.catalog.get(3), [CATALOG_REASONS.name], "dòng khác không đổi");
+  assert.equal(edited.drafts[0]?.name, "Tên mới");
+  assert.deepEqual(draftProblems(edited.drafts, edited.catalog).get(4), ["Thiếu tên hàng"], "mã không có trong sheet vẫn báo thiếu tên");
 }
 
 // --- Phase 16: chức vụ & quyền (QUYEN-01/02) ------------------------------

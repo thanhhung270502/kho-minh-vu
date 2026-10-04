@@ -19,10 +19,9 @@ import {
 export async function readNewProductFile(buf: Buffer): Promise<NewProductFileRow[]> {
   const sheet = await readFirstSheet(buf);
 
-  if (!sheet.headers.includes("ma_hang") || !sheet.headers.includes("ten_hang")) {
-    throw new Error(
-      "Dòng đầu của file phải có cột “Mã hàng” và “Tên hàng”. Tải file mẫu 4 cột rồi điền vào đó.",
-    );
+  // "Tên hàng" được để trống (cả cột): route tự điền từ sheet tên hàng chuẩn.
+  if (!sheet.headers.includes("ma_hang")) {
+    throw new Error("Dòng đầu của file phải có cột “Mã hàng”. Tải file mẫu 4 cột rồi điền vào đó.");
   }
 
   return sheet.rows.map((raw) => {
@@ -41,6 +40,7 @@ export async function readNewProductFile(buf: Buffer): Promise<NewProductFileRow
       row: raw.rowNumber,
       code: readString(raw.cells.ma_hang)?.trim() ?? "",
       name: readString(raw.cells.ten_hang)?.trim().replace(/\s+/g, " ") ?? "",
+      nameFromSheet: false,
       stock,
       description: readString(raw.cells.mo_ta)?.trim() ?? "",
       problems,

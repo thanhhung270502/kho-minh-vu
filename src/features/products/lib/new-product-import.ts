@@ -7,7 +7,10 @@ import { duplicateProblemsInFile, type NewProductFileRow } from "./new-product-f
 export type DraftRow = {
   row: number;
   code: string;
+  /** Sửa được trên màn xem trước — ô tên trống trong file được tự điền từ sheet tên hàng chuẩn. */
   name: string;
+  /** Tên đang hiện là tên tự điền từ sheet; người dùng gõ lại thì thành false. */
+  nameFromSheet: boolean;
   stock: number;
   description: string;
   /** Lỗi đọc file (tồn không phải số…) — không sửa được trên màn, phải sửa file. */
@@ -20,13 +23,14 @@ export type DraftRow = {
   shelfLocation: string;
 };
 
-export type DraftFields = Omit<DraftRow, "row" | "code" | "name" | "stock" | "description" | "fileProblems">;
+export type DraftFields = Omit<DraftRow, "row" | "code" | "stock" | "description" | "fileProblems">;
 
 export function toDraftRows(rows: NewProductFileRow[], defaults: { unitId: string | null }): DraftRow[] {
   return rows.map((r) => ({
     row: r.row,
     code: r.code,
     name: r.name,
+    nameFromSheet: r.nameFromSheet,
     stock: r.stock,
     description: r.description,
     fileProblems: r.problems,
@@ -74,7 +78,7 @@ export function draftProblems(rows: DraftRow[], catalog: Map<number, string[]>):
   for (const r of rows) {
     const problems = [
       ...(r.code === "" ? ["Thiếu mã hàng"] : []),
-      ...(r.name === "" ? ["Thiếu tên hàng"] : []),
+      ...(r.name.trim() === "" ? ["Thiếu tên hàng"] : []),
       ...r.fileProblems,
       ...(inFile.get(r.row) ?? []),
       ...(r.unitId ? [] : ["Chưa chọn đơn vị tính"]),
@@ -108,7 +112,8 @@ function toPayloadRow(r: DraftRow): ImportPayloadRow {
   return {
     dong: r.row,
     ma_hang: r.code,
-    ten_hang: r.name,
+    // Tên sửa tay trên màn xem trước: gộp khoảng trắng như bộ đọc file.
+    ten_hang: r.name.trim().replace(/\s+/g, " "),
     ton_kho: r.stock,
     mo_ta: r.description,
     dvt_id: r.unitId,

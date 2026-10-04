@@ -18,9 +18,10 @@ import {
 export function useReadNewProductFile() {
   return useMutation({
     mutationFn: async ({ file, defaultUnitId }: { file: File; defaultUnitId: string | null }) => {
-      const drafts = toDraftRows(await readNewProductUpload(file), { unitId: defaultUnitId });
+      const { rows, nameSheetError } = await readNewProductUpload(file);
+      const drafts = toDraftRows(rows, { unitId: defaultUnitId });
       const catalog = catalogProblemsFrom(await checkNewProducts(toCheckPayload(drafts)));
-      return { drafts, catalog };
+      return { drafts, catalog, nameSheetError };
     },
   });
 }

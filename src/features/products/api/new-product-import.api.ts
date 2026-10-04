@@ -12,6 +12,7 @@ const fileRowSchema = z.object({
   row: z.number(),
   code: z.string(),
   name: z.string(),
+  nameFromSheet: z.boolean(),
   stock: z.number(),
   description: z.string(),
   problems: z.array(z.string()),
@@ -56,12 +57,17 @@ async function readJsonError(response: Response, fallbackTitle: string): Promise
   throw new ExcelImportError(title, action, response.status);
 }
 
-export async function readNewProductUpload(file: File): Promise<NewProductFileRow[]> {
+/** `nameSheetError` khác null = sheet tên hàng chuẩn không tải được, ô tên trống chưa được tự điền. */
+export async function readNewProductUpload(
+  file: File,
+): Promise<{ rows: NewProductFileRow[]; nameSheetError: string | null }> {
   const form = new FormData();
   form.set("file", file);
   const response = await fetch("/api/danh-muc/doc-file-nhap-moi", { method: "POST", body: form });
   if (!response.ok) return readJsonError(response, "Không đọc được file");
-  return z.object({ rows: z.array(fileRowSchema) }).parse(await response.json()).rows;
+  return z
+    .object({ rows: z.array(fileRowSchema), nameSheetError: z.string().nullable() })
+    .parse(await response.json());
 }
 
 async function callImportRpc(rows: ImportPayloadRow[], warehouseId: string | null, checkOnly: boolean) {

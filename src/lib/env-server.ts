@@ -84,3 +84,14 @@ export function getCodeSyncEnv(): { CRON_SECRET: string | null; MA_HOA_SHEET_ID:
     MA_HOA_SHEET_ID: process.env.MA_HOA_SHEET_ID || "1lG9MEAdHGVw-MTaxWkcLm5fcIr1pf-CVO8eyhsoRXsQ",
   };
 }
+
+/**
+ * Sheet tên hàng chuẩn (2 cột: mã, tên — không tiêu đề), dạng CSV "Xuất bản lên web".
+ * Nhập mã hàng mới tự điền tên cho mã có trong sheet mà file để trống ô tên.
+ */
+export function getProductNameSheetUrl(): string {
+  return (
+    process.env.TEN_HANG_SHEET_CSV_URL ||
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRkRbOsZwM9ZAA6HRR_8zYEz_ncdgfnkvpDj8C_X5v7iBQoadfP8Q_7bpYv1Lk0NxdevfBCELTvp96i/pub?gid=0&single=true&output=csv"
+  );
+}

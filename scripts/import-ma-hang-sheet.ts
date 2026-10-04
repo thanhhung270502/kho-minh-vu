@@ -16,7 +16,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 
 import { createClient } from "@supabase/supabase-js";
 
-import { parseCsv } from "../src/features/product-codes/lib/source-sheet";
+import { parseCsv } from "../src/shared/lib/csv";
 import type { Database, Json } from "../src/types/database.types";
 import { SAMPLE_ACCOUNTS, samplePassword, taoAdminClient } from "./_supabase-admin";
 
