@@ -92,8 +92,6 @@ import {
 } from "../src/features/sales-order/schemas/order.schema";
 import {
   COMMON_GOODS_LABEL,
-  DEFAULT_RECIPIENT_KIND,
-  RECIPIENT_KIND_ORDER,
   formatOrderRecipients,
   isMultiRecipientOrder,
   lineRecipientLabel,
@@ -237,8 +235,6 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
 // Phase 11 (NVPT-01/02): đặt hàng mặc định Nội bộ, Nội bộ đứng trước; tab
 // Nhân viên phụ trách cho quản lý + văn phòng; tên viết tắt + đầy đủ bắt buộc.
 {
-  assert.equal(DEFAULT_RECIPIENT_KIND, "internal", "tạo đơn mặc định chế độ Nội bộ");
-  assert.deepEqual(RECIPIENT_KIND_ORDER, ["internal", "partner"], "Nội bộ đứng trước Đối tác");
 
   const nvpt = "/cai-dat/nhan-vien-phu-trach";
   assert.ok(tabsFor(as("van_phong")).some((t) => t.duongDan === nvpt), "văn phòng có tab Nhân viên phụ trách");

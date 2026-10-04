@@ -39,7 +39,7 @@ export function CreateOrderButton({ label = "Tạo đơn" }: Props) {
         closable={!pending}
         destroyOnHidden
       >
-        <p className="mb-3 text-sm text-gray-500">Mặc định nhận Nội bộ — đổi sang Đối tác nếu giao cho khách.</p>
+        <p className="mb-3 text-sm text-gray-500">Chọn nhân viên nhận hàng. Giao cho khách thì gõ tên khách — chưa có thì thêm ngay.</p>
         <NewOrderForm onPendingChange={setPending} onCancel={close} />
       </Modal>
     </>

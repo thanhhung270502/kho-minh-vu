@@ -132,7 +132,7 @@ export function PartnerSearchInput({ value, onChange, disabled, autoFocus }: Pro
   );
 }
 
-function CreatePartnerModal({
+export function CreatePartnerModal({
   open,
   initialName,
   onClose,
@@ -194,7 +194,7 @@ function CreatePartnerModal({
   return (
     <Modal
       open={open}
-      title="Thêm đối tác mới"
+      title="Thêm khách hàng mới"
       okText="Tạo đối tác"
       cancelText="Hủy"
       confirmLoading={save.isPending}

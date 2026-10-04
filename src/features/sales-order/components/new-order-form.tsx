@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
-import { DEFAULT_RECIPIENT_KIND, type RecipientKind } from "@/shared/lib/recipient";
 
 import { useCreateOrder } from "../hooks/useOrders";
 import { orderRecipientsSchema } from "../schemas/order.schema";
@@ -28,16 +27,16 @@ type Props = {
 export function NewOrderForm({ onPendingChange, onCancel }: Props) {
   const router = useRouter();
   const createOrder = useCreateOrder();
-  const [kind, setKind] = useState<RecipientKind>(DEFAULT_RECIPIENT_KIND);
+  // Không còn công tắc chế độ: có khách thì là đơn đối tác, không thì nội bộ.
   const [partnerId, setPartnerId] = useState<string | undefined>();
   const [staffIds, setStaffIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const parsed = orderRecipientsSchema.safeParse({
-    partnerId: kind === "partner" ? (partnerId ?? null) : null,
+    partnerId: partnerId ?? null,
     staffIds,
   });
-  const canCreate = kind === "partner" ? Boolean(partnerId) && parsed.success : parsed.success;
+  const canCreate = parsed.success;
 
   async function create() {
     if (!canCreate || !parsed.success || createOrder.isPending) return;
@@ -49,7 +48,9 @@ export function NewOrderForm({ onPendingChange, onCancel }: Props) {
       router.replace(`/don-dat/${id}`);
     } catch (caught) {
       if (errorCode(caught) === "42501") {
-        setError("Tài khoản không có quyền tạo đơn. Nhờ quản lý hoặc văn phòng.");
+        setError(
+          "Tài khoản không có quyền tạo đơn. Nhờ quản lý hoặc văn phòng.",
+        );
         return;
       }
       if (isPostgrestError(caught) && caught.code === "23514") {
@@ -65,30 +66,27 @@ export function NewOrderForm({ onPendingChange, onCancel }: Props) {
 
   return (
     <>
-      {error ? <Alert className="mb-3" type="error" showIcon title={error} /> : null}
+      {error ? (
+        <Alert className="mb-3" type="error" showIcon title={error} />
+      ) : null}
 
-      <Form layout="vertical" onFinish={() => void create()} disabled={createOrder.isPending}>
+      <Form
+        layout="vertical"
+        onFinish={() => void create()}
+        disabled={createOrder.isPending}
+      >
         <Form.Item
           label="Người nhận"
           help="Bấm Tạo là tạo đơn tạm và chuyển sang gõ dòng hàng. Ghi chú sửa ở đầu đơn."
         >
           <RecipientPicker
             autoFocus
-            kind={kind}
             partnerId={partnerId}
             staffIds={staffIds}
             onEnterWhenEmpty={() => void create()}
-            onKindChange={(next) => {
-              setKind(next);
-              if (next === "internal") setPartnerId(undefined);
-              setError(null);
-            }}
-            onPartnerChange={(id) => {
-              setPartnerId(id);
-              setError(null);
-            }}
-            onStaffChange={(ids) => {
-              setStaffIds(ids);
+            onChange={(next) => {
+              setPartnerId(next.partnerId);
+              setStaffIds(next.staffIds);
               setError(null);
             }}
           />
@@ -96,7 +94,12 @@ export function NewOrderForm({ onPendingChange, onCancel }: Props) {
 
         <div className="mt-4 flex justify-end gap-2">
           {onCancel ? <Button onClick={onCancel}>Hủy</Button> : null}
-          <Button type="primary" htmlType="submit" disabled={!canCreate} loading={createOrder.isPending}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            disabled={!canCreate}
+            loading={createOrder.isPending}
+          >
             Tạo
           </Button>
         </div>

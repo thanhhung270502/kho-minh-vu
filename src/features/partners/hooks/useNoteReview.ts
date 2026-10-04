@@ -55,10 +55,12 @@ export function useUndoNoteDecision() {
   });
 }
 
-export function useCustomerSearch(q: string) {
+/** `enabled = false` khi ô chọn chỉ hiện khách lúc đã gõ chữ (ô người nhận của đơn). */
+export function useCustomerSearch(q: string, enabled = true) {
   return useQuery({
     queryKey: noteReviewKeys.customerSearch(q),
     queryFn: () => searchCustomers(q),
     staleTime: 30_000,
+    enabled,
   });
 }
