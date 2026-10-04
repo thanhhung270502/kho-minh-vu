@@ -7,6 +7,7 @@ import {
   toSetOrderRecipientsRpcArgs,
   toOrderUpdate,
   toOrderListRpcArgs,
+  toOrderStatusCountRpcArgs,
   type OrderFilter,
   type OrderHeaderInput,
   type OrderLineInput,
@@ -16,9 +17,11 @@ import {
   toOrderDetail,
   toOrderLine,
   toOrderRow,
+  toOrderStatusCounts,
   type OrderDetail,
   type OrderLine,
   type OrderRow,
+  type OrderStatusCounts,
 } from "../types";
 
 // Hàm thuần — nhận tham số, trả dữ liệu đã có kiểu. Không JSX, không hook.
@@ -40,6 +43,15 @@ export async function fetchOrders(
     items: raw.map(toOrderRow),
     total: Number(raw[0]?.tong_so_dong ?? 0),
   };
+}
+
+export async function fetchOrderStatusCounts(filter: OrderFilter): Promise<OrderStatusCounts> {
+  const { data, error } = await getSupabaseBrowserClient().rpc(
+    "dem_don_theo_trang_thai",
+    toOrderStatusCountRpcArgs(filter),
+  );
+  if (error) throw error;
+  return toOrderStatusCounts(data ?? []);
 }
 
 export async function fetchOrderDetail(id: string): Promise<OrderDetail | null> {
