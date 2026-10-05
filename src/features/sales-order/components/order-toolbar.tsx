@@ -10,10 +10,12 @@ type Props = {
   filter: OrderFilter;
   onChange: (filter: OrderFilter) => void;
   addButton?: ReactNode;
+  /** Cụm nút Excel (xuất / nhập / file mẫu) — trang truyền vào. */
+  excelActions?: ReactNode;
   total: number | null;
 };
 
-export function OrderToolbar({ filter, onChange, addButton, total }: Props) {
+export function OrderToolbar({ filter, onChange, addButton, excelActions, total }: Props) {
   const [keyword, setKeyword] = useState(filter.q);
   const [previousQuery, setPreviousQuery] = useState(filter.q);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -55,10 +57,13 @@ export function OrderToolbar({ filter, onChange, addButton, total }: Props) {
           onChange({ ...filter, q: keyword.trim(), page: 1 });
         }}
       />
-      <span className="ms-auto text-[13px] text-trung-tinh-350 tabular-nums">
-        {total === null ? "" : `${total.toLocaleString("vi-VN")} đơn`}
-      </span>
-      {addButton ? <div>{addButton}</div> : null}
+      <div className="ms-auto flex flex-wrap items-center gap-2">
+        {excelActions}
+        <span className="text-[13px] text-trung-tinh-350 tabular-nums">
+          {total === null ? "" : `${total.toLocaleString("vi-VN")} đơn`}
+        </span>
+        {addButton}
+      </div>
     </div>
   );
 }

@@ -10,9 +10,11 @@ type Props = {
   filter: ReceiptFilter;
   onChange: (filter: ReceiptFilter) => void;
   addButton?: ReactNode;
+  /** Cụm nút Excel (nhập / file mẫu) — trang truyền vào. */
+  excelActions?: ReactNode;
 };
 
-export function ReceiptToolbar({ filter, onChange, addButton }: Props) {
+export function ReceiptToolbar({ filter, onChange, addButton, excelActions }: Props) {
   const [keyword, setKeyword] = useState(filter.q);
   const [previousQuery, setPreviousQuery] = useState(filter.q);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -54,7 +56,12 @@ export function ReceiptToolbar({ filter, onChange, addButton }: Props) {
           onChange({ ...filter, q: keyword.trim(), page: 1 });
         }}
       />
-      {addButton ? <div className="ms-auto">{addButton}</div> : null}
+      {addButton || excelActions ? (
+        <div className="ms-auto flex flex-wrap items-center gap-2">
+          {excelActions}
+          {addButton}
+        </div>
+      ) : null}
     </div>
   );
 }

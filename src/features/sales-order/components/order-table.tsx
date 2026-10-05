@@ -2,7 +2,7 @@
 
 import { Button } from "antd";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, type ReactNode } from "react";
 
 import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
@@ -20,7 +20,7 @@ import { OrderFilterPanel } from "./order-filter-panel";
 import { OrderTableBody } from "./order-table-body";
 import { OrderToolbar } from "./order-toolbar";
 
-export function OrderTable({ canCreate }: { canCreate: boolean }) {
+export function OrderTable({ canCreate, excelActions }: { canCreate: boolean; excelActions?: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -58,6 +58,7 @@ export function OrderTable({ canCreate }: { canCreate: boolean }) {
           onChange={changeFilter}
           total={orders.data ? total : null}
           addButton={canCreate ? <CreateOrderButton /> : null}
+          excelActions={excelActions}
         />
       }
     >

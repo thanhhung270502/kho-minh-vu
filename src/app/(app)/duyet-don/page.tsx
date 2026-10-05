@@ -18,12 +18,14 @@ export default async function StockOutPage() {
       <PageHeader
         title="Duyệt đơn"
         description="Hàng ra kho — ghi sổ xong là tồn giảm."
-        actions={<DocumentExcelActions kind="hoa-don" canImport={canImportDocuments(user, "hoa-don")} />}
       />
 
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}
       <Suspense fallback={null}>
-        <IssueTable canCreate={hasPermission(user.role, "edit-catalog")} />
+        <IssueTable
+          canCreate={hasPermission(user.role, "edit-catalog")}
+          excelActions={<DocumentExcelActions kind="hoa-don" canImport={canImportDocuments(user, "hoa-don")} />}
+        />
       </Suspense>
     </>
   );

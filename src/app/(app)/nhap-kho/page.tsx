@@ -18,12 +18,14 @@ export default async function StockInPage() {
       <PageHeader
         title="Phiếu nhập"
         description="Hàng về kho — ghi sổ xong là tồn tăng và giá vốn tính lại."
-        actions={<DocumentExcelActions kind="phieu-nhap" canImport={canImportDocuments(user, "phieu-nhap")} />}
       />
 
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}
       <Suspense fallback={null}>
-        <ReceiptTable canCreate={can(user, "nhap_kho")} />
+        <ReceiptTable
+          canCreate={can(user, "nhap_kho")}
+          excelActions={<DocumentExcelActions kind="phieu-nhap" canImport={canImportDocuments(user, "phieu-nhap")} />}
+        />
       </Suspense>
     </>
   );

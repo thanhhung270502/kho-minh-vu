@@ -2,7 +2,7 @@
 
 import { Button } from "antd";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
@@ -20,7 +20,7 @@ import { ReceiptFilterPanel } from "./receipt-filter-panel";
 import { ReceiptTableBody } from "./receipt-table-body";
 import { ReceiptToolbar } from "./receipt-toolbar";
 
-export function ReceiptTable({ canCreate }: { canCreate: boolean }) {
+export function ReceiptTable({ canCreate, excelActions }: { canCreate: boolean; excelActions?: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -68,6 +68,7 @@ export function ReceiptTable({ canCreate }: { canCreate: boolean }) {
                 </Button>
               ) : null
             }
+            excelActions={excelActions}
           />
         }
       >

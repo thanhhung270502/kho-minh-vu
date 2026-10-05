@@ -2,7 +2,7 @@
 
 import { Button } from "antd";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, type ReactNode } from "react";
 
 import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
@@ -20,7 +20,7 @@ import { IssueFilterPanel } from "./issue-filter-panel";
 import { IssueTableBody } from "./issue-table-body";
 import { IssueToolbar } from "./issue-toolbar";
 
-export function IssueTable({ canCreate }: { canCreate: boolean }) {
+export function IssueTable({ canCreate, excelActions }: { canCreate: boolean; excelActions?: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -57,6 +57,7 @@ export function IssueTable({ canCreate }: { canCreate: boolean }) {
           filter={filter}
           onChange={changeFilter}
           addButton={canCreate ? <CreateIssueButton /> : null}
+          excelActions={excelActions}
         />
       }
     >
