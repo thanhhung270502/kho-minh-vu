@@ -3,6 +3,8 @@ import { Suspense } from "react";
 
 import { IssueTable } from "@/features/stock-out/components/issue-table";
 import { requirePermission } from "@/features/auth/api/current-user.server";
+import { DocumentExcelActions } from "@/features/document-excel/components/document-excel-actions";
+import { canImportDocuments } from "@/features/document-excel/lib/document-access";
 import { PageHeader } from "@/shared/components/page-header";
 import { hasPermission } from "@/shared/lib/permissions";
 
@@ -16,6 +18,7 @@ export default async function StockOutPage() {
       <PageHeader
         title="Duyệt đơn"
         description="Hàng ra kho — ghi sổ xong là tồn giảm."
+        actions={<DocumentExcelActions kind="hoa-don" canImport={canImportDocuments(user, "hoa-don")} />}
       />
 
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}

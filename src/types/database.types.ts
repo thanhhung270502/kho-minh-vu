@@ -2588,6 +2588,15 @@ export type Database = {
           ten_nguoi_nhan: string
         }[]
       }
+      nhap_chung_tu_excel: {
+        Args: {
+          p_chi_kiem_tra?: boolean
+          p_kieu: string
+          p_loai: string
+          p_phieu: Json
+        }
+        Returns: Json
+      }
       nhap_danh_muc: {
         Args: { p_chi_kiem_tra?: boolean; p_dong: Json }
         Returns: Json

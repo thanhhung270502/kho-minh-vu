@@ -72,6 +72,16 @@ import {
   toDraftRows,
   toImportPayload,
 } from "../src/features/products/lib/new-product-import";
+import {
+  groupDocuments,
+  mapHeaders,
+  parseDateCell,
+  parseNegativeReason,
+  parseQuantityCell,
+  parseRecipientKind,
+  splitStaffNames,
+  type DocumentFileRow,
+} from "../src/features/document-excel/lib/document-excel";
 import { toAnalysisRow, type AnalysisRow, type AnalysisSettings } from "../src/features/analytics/types";
 import {
   buildReorderCsv,
@@ -1765,3 +1775,47 @@ async function kiemCsvPhanTich() {
 void Promise.all([kiemCsvLoi(), kiemCsvPhanTich(), kiemTaiTheoTrang()]).then(() => {
   console.log("✓ hàm thuần: tất cả assert đạt");
 });
+
+// --- Nhập chứng từ từ Excel (0104) ------------------------------------------
+{
+assert.equal(parseDateCell("03/10/2026"), "2026-10-03");
+assert.equal(parseDateCell("2026-10-03"), "2026-10-03");
+assert.equal(parseDateCell(new Date(Date.UTC(2026, 9, 3))), "2026-10-03");
+assert.equal(parseDateCell(46298), "2026-10-03", "số serial Excel");
+assert.equal(parseDateCell("31/02/2026"), null, "ngày không có thật");
+assert.equal(parseQuantityCell("1.200"), 1200, "dấu chấm phân nghìn");
+assert.equal(parseQuantityCell("1,5"), 1.5);
+assert.equal(parseQuantityCell("abc"), null);
+assert.equal(parseRecipientKind("Nội bộ"), "NOI_BO");
+assert.equal(parseRecipientKind("Đối tác"), "DOI_TAC");
+assert.deepEqual(splitStaffNames("NGỌC - QUỲNH"), ["NGỌC", "QUỲNH"]);
+assert.deepEqual(parseNegativeReason("Lệch tồn, chờ kiểm kê", { LECH_TON_CHO_KIEM_KE: "Lệch tồn, chờ kiểm kê" }), { code: "LECH_TON_CHO_KIEM_KE", note: null });
+assert.deepEqual(parseNegativeReason("hàng gửi trước", {}), { code: "KHAC", note: "hàng gửi trước" });
+
+const h = mapHeaders("hoa-don", ["ma_dat_hang", "ma_hoa_don", "ngay", "kho_khong_can_de_kho_nao", "ma_hang", "tong_so_luong", "so_luong"]);
+assert.equal(h.warehouse, "kho_khong_can_de_kho_nao", "tiền tố");
+assert.equal(h.quantity, "so_luong", "không ăn nhầm tong_so_luong");
+assert.equal(h.orderNo, "ma_dat_hang");
+const p = mapHeaders("phieu-nhap", ["ma_nhap_hang", "ngay_nhap", "ma_ncc", "ghi_chu_phieu", "ma_hang", "so_luong", "ghi_chu_dong"]);
+assert.equal(p.note, "ghi_chu_phieu");
+assert.equal(p.lineNote, "ghi_chu_dong");
+
+const row = (o: Partial<DocumentFileRow>): DocumentFileRow => ({
+  row: 2, docNo: "HD1", orderNo: "", date: "2026-10-03", dateRaw: "03/10/2026", dueDate: null, recipientKind: "",
+  partnerCode: "NB001", staff: "", source: "", warehouse: "", note: "", productCode: "A", quantity: 1, quantityRaw: "1",
+  lineNote: "", negativeReason: "", ...o,
+});
+const g = groupDocuments([
+  row({ row: 2, staff: "NGỌC" }),
+  row({ row: 3, productCode: "B", quantity: 2, quantityRaw: "2", staff: "QUỲNH - NGỌC" }),
+  row({ row: 4, docNo: "HD2", quantity: null, quantityRaw: "x" }),
+  row({ row: 5, docNo: "" }),
+], {});
+assert.equal(g.documents.length, 2);
+assert.deepEqual(g.documents[0]?.nhan_vien, ["NGỌC", "QUỲNH"], "gộp nhân viên, không trùng");
+assert.equal(g.documents[0]?.dong.length, 2);
+assert.equal(g.documents[0]?.dong_dau, 2);
+assert.deepEqual(g.issues.map((i) => i.row), [4, 5]);
+const headerOnly = groupDocuments([row({ productCode: "", quantity: null, quantityRaw: "" })], {});
+assert.equal(headerOnly.documents[0]?.dong.length, 0, "dòng trống mã + số lượng = chỉ sửa đầu phiếu");
+}

@@ -3,6 +3,8 @@ import { Suspense } from "react";
 
 import { ReceiptTable } from "@/features/stock-in/components/receipt-table";
 import { requirePermission } from "@/features/auth/api/current-user.server";
+import { DocumentExcelActions } from "@/features/document-excel/components/document-excel-actions";
+import { canImportDocuments } from "@/features/document-excel/lib/document-access";
 import { PageHeader } from "@/shared/components/page-header";
 import { can } from "@/shared/lib/permissions";
 
@@ -16,6 +18,7 @@ export default async function StockInPage() {
       <PageHeader
         title="Phiếu nhập"
         description="Hàng về kho — ghi sổ xong là tồn tăng và giá vốn tính lại."
+        actions={<DocumentExcelActions kind="phieu-nhap" canImport={canImportDocuments(user, "phieu-nhap")} />}
       />
 
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}
