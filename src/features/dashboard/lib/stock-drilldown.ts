@@ -36,8 +36,3 @@ export function buildCatalogDrilldownUrl({
   return query ? `/danh-muc?${query}` : "/danh-muc";
 }
 
-/** Danh sách hàng hóa lọc theo trạng thái tồn, mọi nhóm — cho việc cần xử lý ở tổng quan. */
-export function buildStockStatusUrl(stockStatus: StockStatus): string {
-  const query = writeFilterToUrl({ ...DEFAULT_PRODUCT_FILTER, stockStatus }).toString();
-  return query ? `/danh-muc?${query}` : "/danh-muc";
-}

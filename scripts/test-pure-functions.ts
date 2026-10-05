@@ -21,24 +21,17 @@ import { DATE_PRESET_LABELS, activeDatePreset, datePresetRange, todayInVietnam }
 import { orderProgress } from "../src/features/sales-order/lib/order-progress";
 import {
   toFlowDay,
-  toIdleProduct,
   toOverviewKpis,
   toStockByGroupRow,
 } from "../src/features/dashboard/types";
 import {
   averageIssuesLabel,
-  buildInventoryKpi,
-  examplesLabel,
-  formatMoneyShort,
-  formatPercentDelta,
   formatUpdatedAt,
   groupShare,
   negativeByWarehouseLabel,
-  newProductsLabel,
   oldestPendingLabel,
   pendingBreakdownLabel,
-  percentChange,
-  previousMonthNumber,
+  vsYesterdayLabel,
 } from "../src/features/dashboard/lib/overview-format";
 import { toGlobalSearchResult, type GlobalSearchResult } from "../src/features/global-search/types";
 import { defaultActiveIndex, groupSearchResults, searchResultHref } from "../src/features/global-search/lib/search-results";
@@ -174,7 +167,6 @@ import {
 } from "../src/features/dashboard/lib/stock-drilldown";
 import {
   countNegativeByReason,
-  compareSalesPace,
 } from "../src/features/dashboard/lib/dashboard-stats";
 import { parseImageCell, buildCopyPlan } from "./copy-kiotviet-images/parse-image-cell";
 
@@ -575,10 +567,6 @@ assert.equal(
   );
 }
 
-assert.deepEqual(compareSalesPace(5, 3), { diff: 2, trend: "up" });
-assert.deepEqual(compareSalesPace(3, 5), { diff: -2, trend: "down" });
-assert.deepEqual(compareSalesPace(4, 4), { diff: 0, trend: "same" });
-assert.deepEqual(compareSalesPace(7, 0), { diff: 7, trend: "up" }, "hôm qua = 0 không được chia nổ");
 
 // Ghi chú KiotViet thật: dòng 1 là tên + địa chỉ, dòng 2 là SĐT.
 assert.equal(
@@ -1684,9 +1672,7 @@ async function kiemCsvPhanTich() {
     }) as unknown as OverviewDb;
 
   const k = toOverviewKpis(overviewRow());
-  assert.equal(k.canViewCost, true);
-  assert.equal(k.totalQuantity, 9000);
-  assert.deepEqual(k.inventoryTrend, [1, 2], "xu_huong_ton ép về number[]");
+  assert.deepEqual(k.pendingTrend, [0, 5], "xu_huong_cho_ghi_so ép về number[]");
   assert.deepEqual(k.negativeByWarehouse, [{ warehouseName: "Kho 1", count: 4 }]);
   assert.equal(k.oldestPendingDays, 2);
   assert.deepEqual(toOverviewKpis(overviewRow({ ton_am_theo_kho: { x: 1 } })).negativeByWarehouse, [], "jsonb không phải mảng → []");
@@ -1699,45 +1685,14 @@ async function kiemCsvPhanTich() {
     toFlowDay({ ngay: "2092-03-09", so_phieu_nhap: 2, so_phieu_xuat: 0, sl_nhap: "10", sl_xuat: "0" } as unknown as Parameters<typeof toFlowDay>[0]),
     { date: "2092-03-09", receiptCount: 2, issueCount: 0, receiptQuantity: 10, issueQuantity: 0 },
   );
-  assert.deepEqual(
-    toIdleProduct({ san_pham_id: "p", ma_hang: "A", ten_hang: "B", so_ngay: 45, ton: "3" } as unknown as Parameters<typeof toIdleProduct>[0]),
-    { key: "p", productId: "p", code: "A", name: "B", idleDays: 45, quantity: 3 },
-  );
-
-  assert.equal(percentChange(102.4, 100), 2.4);
-  assert.equal(percentChange(5, 0), null);
-  assert.equal(percentChange(5, null), null);
-  assert.equal(percentChange(90, 100), -10);
-  assert.equal(formatPercentDelta(2.4, 9), "↑ 2,4% so tháng 9");
-  assert.equal(formatPercentDelta(-10, 9), "↓ 10% so tháng 9");
-  assert.equal(formatPercentDelta(0, 9), "Bằng tháng 9");
-  assert.equal(formatPercentDelta(null, 9), "Chưa đủ dữ liệu tháng trước");
-  assert.equal(previousMonthNumber("2026-10-04"), 9);
-  assert.equal(previousMonthNumber("2026-01-15"), 12);
-  assert.deepEqual(formatMoneyShort(312_500_000), { value: "312,5", unit: "tr đ" });
-  assert.deepEqual(formatMoneyShort(1_240_000_000), { value: "1,2", unit: "tỷ đ" });
-  assert.deepEqual(formatMoneyShort(850_000), { value: "850.000", unit: "đ" });
-
-  const withCost = buildInventoryKpi(
-    { canViewCost: true, inventoryValue: 312_500_000, inventoryValuePrevMonth: 305_000_000, totalQuantity: 9000, totalQuantityPrevMonth: 8800 },
-    "2026-10-04",
-  );
-  assert.deepEqual(withCost, { label: "Giá trị tồn", value: "312,5", unit: "tr đ", delta: "↑ 2,5% so tháng 9" });
-  const noCost = buildInventoryKpi(
-    { canViewCost: false, inventoryValue: null, inventoryValuePrevMonth: null, totalQuantity: 9000, totalQuantityPrevMonth: 9000 },
-    "2026-10-04",
-  );
-  assert.deepEqual(noCost, { label: "Tổng SL tồn", value: "9.000", unit: "", delta: "Bằng tháng 9" });
-
-  assert.equal(newProductsLabel(3), "+3 mã tháng này");
-  assert.equal(newProductsLabel(0), "Không có mã mới tháng này");
+  assert.equal(vsYesterdayLabel(12, 9), "Hôm qua 9 · ▲ +3");
+  assert.equal(vsYesterdayLabel(5, 0), "Hôm qua 0 · ▲ +5", "hôm qua 0 không chia");
+  assert.equal(vsYesterdayLabel(7, 10), "Hôm qua 10 · ▼ −3");
+  assert.equal(vsYesterdayLabel(4, 4), "Bằng hôm qua (4)");
   assert.equal(averageIssuesLabel(4.2), "TB 4,2 phiếu/ngày");
   assert.equal(oldestPendingLabel(null), "Không có phiếu chờ");
   assert.equal(oldestPendingLabel(0), "Cũ nhất hôm nay");
   assert.equal(oldestPendingLabel(2), "Cũ nhất 2 ngày");
-  assert.equal(examplesLabel(["VOR-275-17", "ACQ-GS-5A"], 8), "VOR-275-17, ACQ-GS-5A và 6 mã khác");
-  assert.equal(examplesLabel(["A"], 1), "A");
-  assert.equal(examplesLabel([], 0), "Không có");
   assert.equal(pendingBreakdownLabel(5, 3, 2), "3 phiếu nhập · 2 phiếu xuất");
   assert.equal(pendingBreakdownLabel(6, 3, 2), "3 phiếu nhập · 2 phiếu xuất · 1 phiếu trả");
   assert.equal(

@@ -42,7 +42,12 @@ export function PeriodKpiCards({ kpis, reorder }: Props) {
         icon={<ExclamationCircleOutlined />}
         label="Mã cần nhập"
         value={n(reorder.products)}
-        footnote={`tổng ${n(reorder.quantity)} cần nhập · tính tại hôm nay`}
+        footnote={
+          <>
+            tổng {n(reorder.quantity)} cần nhập · tính tại hôm nay ·{" "}
+            <a href="#can-nhap">Xem danh sách ↓</a>
+          </>
+        }
       />
     </div>
   );

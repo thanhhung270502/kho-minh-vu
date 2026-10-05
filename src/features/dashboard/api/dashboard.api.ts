@@ -3,16 +3,12 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { StockGroupBy } from "../lib/stock-drilldown";
 import {
   toFlowDay,
-  toIdleProduct,
   toNegativeStockLine,
   toOverviewKpis,
-  toSalesPace,
   toStockByGroupRow,
   type FlowDay,
-  type IdleProduct,
   type NegativeStockLine,
   type OverviewKpis,
-  type SalesPace,
   type StockByGroupRow,
 } from "../types";
 
@@ -23,15 +19,6 @@ import {
  * Các RPC tự chặn quyền ở database (42501 nếu thiếu quyền; các RPC 3b dùng
  * `co_quyen('xem_dashboard')`, 0083/0093) — không lọc/ẩn gì thêm ở JS.
  */
-
-export type FlowRange = 7 | 30 | 90;
-
-export async function fetchSalesPace(): Promise<SalesPace> {
-  const supabase = getSupabaseBrowserClient();
-  const { data, error } = await supabase.rpc("nhip_ban");
-  if (error) throw error;
-  return toSalesPace(data ?? []);
-}
 
 export async function fetchNegativeStockReport(
   date: string | null,
@@ -70,19 +57,9 @@ export async function fetchOverviewKpis(): Promise<OverviewKpis> {
   return toOverviewKpis(row);
 }
 
-export async function fetchFlowByDay(days: FlowRange): Promise<FlowDay[]> {
+export async function fetchFlowByDay(days: number): Promise<FlowDay[]> {
   const supabase = getSupabaseBrowserClient();
   const { data, error } = await supabase.rpc("nhap_xuat_theo_ngay", { p_so_ngay: days });
   if (error) throw error;
   return (data ?? []).map(toFlowDay);
-}
-
-export async function fetchIdleProducts(): Promise<IdleProduct[]> {
-  const supabase = getSupabaseBrowserClient();
-  const { data, error } = await supabase.rpc("khong_luan_chuyen", {
-    p_so_ngay: 30,
-    p_gioi_han: 8,
-  });
-  if (error) throw error;
-  return (data ?? []).map(toIdleProduct);
 }

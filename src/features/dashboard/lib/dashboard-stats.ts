@@ -46,20 +46,3 @@ export function countNegativeByReason(
   }));
 }
 
-export type SalesPaceComparison = {
-  diff: number;
-  trend: "up" | "down" | "same";
-};
-
-/**
- * So nhịp bán hôm nay với hôm qua bằng CHÊNH LỆCH TUYỆT ĐỐI, không chia —
- * hôm qua bằng 0 (kho mới mở, ngày nghỉ) không được làm phép tính nổ (D-09).
- */
-export function compareSalesPace(
-  today: number,
-  yesterday: number,
-): SalesPaceComparison {
-  const diff = today - yesterday;
-  const trend = diff > 0 ? "up" : diff < 0 ? "down" : "same";
-  return { diff, trend };
-}

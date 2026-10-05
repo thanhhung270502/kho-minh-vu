@@ -3,7 +3,7 @@
 import { Button, Card, Input, Select, Table, Tabs } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { downloadBlob } from "@/shared/lib/csv";
 import { labelMatches } from "@/shared/lib/text";
@@ -21,6 +21,13 @@ export function ReorderTable({ rows, settings }: { rows: AnalysisRow[]; settings
   const [finish, setFinish] = useState<FinishType | "">("");
 
   const tabs = useMemo(() => reorderTabs(rows, settings), [rows, settings]);
+
+  // Tổng quan dẫn sang bằng /phan-tich#can-nhap; bảng chỉ có sau khi dữ liệu về nên
+  // trình duyệt không tự cuộn tới được — cuộn một lần khi bảng xuất hiện.
+  const cardRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (window.location.hash === "#can-nhap") cardRef.current?.scrollIntoView({ block: "start" });
+  }, []);
   const filter = (list: AnalysisRow[]) =>
     list.filter(
       (r) => (!finish || r.finish === finish) && (!query.trim() || labelMatches(query, `${r.code} ${r.name}`)),
@@ -70,8 +77,10 @@ export function ReorderTable({ rows, settings }: { rows: AnalysisRow[]; settings
 
   return (
     <Card
+      ref={cardRef}
+      id="can-nhap"
       size="small"
-      className="rounded-xl"
+      className="scroll-mt-28 rounded-xl"
       title="Danh sách cần nhập hàng"
       extra={
         <Button size="small" onClick={() => downloadBlob(buildReorderCsv(rows, settings), "danh-sach-can-nhap.csv")}>Xuất Excel</Button>
