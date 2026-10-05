@@ -85,13 +85,15 @@ export async function buildDocumentWorkbook(
   kind: DocumentKind,
   mode: ImportMode,
   rows: readonly TemplateRow[],
+  /** Tên sheet dữ liệu — mặc định theo kiểu file mẫu; file xuất dùng "Danh sách". */
+  sheetName?: string,
 ): Promise<Buffer> {
   const columns = KIND_COLUMNS[kind];
   const wb = new ExcelJS.Workbook();
   wb.creator = "Kho Minh Vũ";
   wb.created = new Date();
 
-  const ws = wb.addWorksheet(mode === "moi" ? "Nhập mới" : "Cập nhật");
+  const ws = wb.addWorksheet(sheetName ?? (mode === "moi" ? "Nhập mới" : "Cập nhật"));
   ws.columns = columns.map((c) => ({
     header: c.title + (mode === "moi" && c.required ? " *" : ""),
     key: c.key,

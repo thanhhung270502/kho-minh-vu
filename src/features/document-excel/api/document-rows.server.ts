@@ -1,5 +1,6 @@
 /**
- * Phiếu còn nháp → các dòng của "file mẫu cập nhật". Lớp api: chỗ duy nhất của
+ * Chứng từ → các dòng Excel cùng cột với file mẫu (nhập lại được). Dùng cho "file
+ * mẫu cập nhật" (các phiếu còn nháp, số ít). Xuất theo bộ lọc dùng RPC 0105. Lớp api: chỗ duy nhất của
  * feature chạm tên bảng/cột tiếng Việt. Chạy bằng phiên của người dùng (RLS).
  *
  * Truy vấn phẳng rồi ghép ở đây thay vì nhúng (embed) PostgREST: don_dat_hang có
@@ -14,7 +15,7 @@ import type { TemplateRow } from "../lib/document-excel-file.server";
 
 /** Mẫu cập nhật chỉ là bản sao để sửa — giới hạn để file không quá nặng. */
 export const MAX_DRAFTS = 500;
-const CHUNK = 100;
+const CHUNK = 200;
 
 type Client = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 
@@ -50,15 +51,18 @@ async function lookupMaps(supabase: Client, partnerIds: string[], productIds: st
 
 const toDate = (iso: string | null) => (iso ? new Date(`${iso}T00:00:00Z`) : null);
 
-async function orderDrafts(supabase: Client): Promise<TemplateRow[]> {
-  const { data: heads, error } = await supabase
-    .from("don_dat_hang")
-    .select("id, so_dh, ngay_dh, ngay_giao_du_kien, ghi_chu, doi_tac_id")
-    .eq("trang_thai", "TAM")
-    .order("so_dh")
-    .limit(MAX_DRAFTS);
-  if (error) throw error;
-  const ids = (heads ?? []).map((h) => h.id);
+async function orderRows(supabase: Client, ids: string[]): Promise<TemplateRow[]> {
+  const heads: { id: string; so_dh: string; ngay_dh: string; ngay_giao_du_kien: string | null; ghi_chu: string | null; doi_tac_id: string | null }[] = [];
+  for (const part of chunks(ids)) {
+    const { data, error } = await supabase
+      .from("don_dat_hang")
+      .select("id, so_dh, ngay_dh, ngay_giao_du_kien, ghi_chu, doi_tac_id")
+      .in("id", part);
+    if (error) throw error;
+    heads.push(...(data ?? []));
+  }
+  const order = new Map(ids.map((id, i) => [id, i]));
+  heads.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
 
   const lines: { don_dat_hang_id: string; san_pham_id: string; so_luong_dat: number; nguoi_nhan_id: string | null }[] = [];
   const recipients: { don_dat_hang_id: string; nguoi_nhan_id: string; thu_tu: number }[] = [];
@@ -80,12 +84,12 @@ async function orderDrafts(supabase: Client): Promise<TemplateRow[]> {
 
   const maps = await lookupMaps(
     supabase,
-    (heads ?? []).flatMap((h) => (h.doi_tac_id ? [h.doi_tac_id] : [])),
+    heads.flatMap((h) => (h.doi_tac_id ? [h.doi_tac_id] : [])),
     lines.map((l) => l.san_pham_id),
   );
 
   const rows: TemplateRow[] = [];
-  for (const h of heads ?? []) {
+  for (const h of heads) {
     const staffNames = recipients
       .filter((r) => r.don_dat_hang_id === h.id)
       .sort((a, b) => a.thu_tu - b.thu_tu)
@@ -112,16 +116,31 @@ async function orderDrafts(supabase: Client): Promise<TemplateRow[]> {
   return rows;
 }
 
-async function documentDrafts(supabase: Client, kind: "hoa-don" | "phieu-nhap"): Promise<TemplateRow[]> {
-  const { data: heads, error } = await supabase
-    .from("chung_tu")
-    .select("id, so_ct, ngay_ct, kho_id, doi_tac_id, nguon_nhap, don_dat_hang_id, ghi_chu, ly_do_xuat_am, ghi_chu_ly_do")
-    .eq("loai_ct", kind === "hoa-don" ? "XUAT" : "NHAP")
-    .eq("trang_thai", "NHAP_LIEU")
-    .order("so_ct")
-    .limit(MAX_DRAFTS);
-  if (error) throw error;
-  const ids = (heads ?? []).map((h) => h.id);
+type DocHead = {
+  id: string;
+  so_ct: string;
+  ngay_ct: string;
+  kho_id: string;
+  doi_tac_id: string | null;
+  nguon_nhap: string | null;
+  don_dat_hang_id: string | null;
+  ghi_chu: string | null;
+  ly_do_xuat_am: string | null;
+  ghi_chu_ly_do: string | null;
+};
+
+async function documentRows(supabase: Client, kind: "hoa-don" | "phieu-nhap", ids: string[]): Promise<TemplateRow[]> {
+  const heads: DocHead[] = [];
+  for (const part of chunks(ids)) {
+    const { data, error } = await supabase
+      .from("chung_tu")
+      .select("id, so_ct, ngay_ct, kho_id, doi_tac_id, nguon_nhap, don_dat_hang_id, ghi_chu, ly_do_xuat_am, ghi_chu_ly_do")
+      .in("id", part);
+    if (error) throw error;
+    heads.push(...(data ?? []));
+  }
+  const order = new Map(ids.map((id, i) => [id, i]));
+  heads.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
 
   const lines: { chung_tu_id: string; san_pham_id: string; so_luong: number; ghi_chu: string | null; nguoi_nhan_id: string | null }[] = [];
   const recipients: { chung_tu_id: string; nguoi_nhan_id: string; thu_tu: number }[] = [];
@@ -144,7 +163,7 @@ async function documentDrafts(supabase: Client, kind: "hoa-don" | "phieu-nhap"):
   }
 
   const orderNos = new Map<string, string>();
-  const orderIds = [...new Set((heads ?? []).flatMap((h) => (h.don_dat_hang_id ? [h.don_dat_hang_id] : [])))];
+  const orderIds = [...new Set(heads.flatMap((h) => (h.don_dat_hang_id ? [h.don_dat_hang_id] : [])))];
   for (const part of chunks(orderIds)) {
     const { data, error: e } = await supabase.from("don_dat_hang").select("id, so_dh").in("id", part);
     if (e) throw e;
@@ -153,13 +172,13 @@ async function documentDrafts(supabase: Client, kind: "hoa-don" | "phieu-nhap"):
 
   const maps = await lookupMaps(
     supabase,
-    (heads ?? []).flatMap((h) => (h.doi_tac_id ? [h.doi_tac_id] : [])),
+    heads.flatMap((h) => (h.doi_tac_id ? [h.doi_tac_id] : [])),
     lines.map((l) => l.san_pham_id),
   );
   const reasonLabels = NEGATIVE_REASON_LABELS as Record<string, string>;
 
   const rows: TemplateRow[] = [];
-  for (const h of heads ?? []) {
+  for (const h of heads) {
     const staffNames = recipients
       .filter((r) => r.chung_tu_id === h.id)
       .sort((a, b) => a.thu_tu - b.thu_tu)
@@ -192,7 +211,25 @@ async function documentDrafts(supabase: Client, kind: "hoa-don" | "phieu-nhap"):
   return rows;
 }
 
+/** Các dòng Excel của đúng các chứng từ này, theo thứ tự id truyền vào. */
+export async function fetchRowsByIds(kind: DocumentKind, ids: string[]): Promise<TemplateRow[]> {
+  const supabase = await createSupabaseServerClient();
+  return kind === "don-dat" ? orderRows(supabase, ids) : documentRows(supabase, kind, ids);
+}
+
+/** Phiếu còn nháp (đơn tạm / chưa ghi sổ) — nội dung "file mẫu cập nhật". */
 export async function fetchDraftRows(kind: DocumentKind): Promise<TemplateRow[]> {
   const supabase = await createSupabaseServerClient();
-  return kind === "don-dat" ? orderDrafts(supabase) : documentDrafts(supabase, kind);
+  const query =
+    kind === "don-dat"
+      ? supabase.from("don_dat_hang").select("id").eq("trang_thai", "TAM").order("so_dh")
+      : supabase
+          .from("chung_tu")
+          .select("id")
+          .eq("loai_ct", kind === "hoa-don" ? "XUAT" : "NHAP")
+          .eq("trang_thai", "NHAP_LIEU")
+          .order("so_ct");
+  const { data, error } = await query.limit(MAX_DRAFTS);
+  if (error) throw error;
+  return fetchRowsByIds(kind, (data ?? []).map((r) => r.id));
 }

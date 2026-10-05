@@ -2982,6 +2982,20 @@ export type Database = {
         }[]
       }
       xoa_dong_kiem_ke: { Args: { p_dong_id: string }; Returns: undefined }
+      xuat_excel_chung_tu: {
+        Args: {
+          p_den_ngay?: string
+          p_doi_tac_id?: string
+          p_kho_id?: string
+          p_loai_ct: Database["public"]["Enums"]["loai_ct"]
+          p_nguon_nhap?: Database["public"]["Enums"]["nguon_nhap"]
+          p_toi_da?: number
+          p_trang_thai?: Database["public"]["Enums"]["trang_thai_ct"]
+          p_tu_khoa?: string
+          p_tu_ngay?: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       loai_ct:

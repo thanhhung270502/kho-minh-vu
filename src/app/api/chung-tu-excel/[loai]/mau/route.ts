@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/features/auth/api/current-user.server";
-import { fetchDraftRows } from "@/features/document-excel/api/document-drafts.server";
+import { fetchDraftRows } from "@/features/document-excel/api/document-rows.server";
 import { isDocumentKind, KIND_LABELS } from "@/features/document-excel/lib/document-excel";
 import { buildDocumentWorkbook } from "@/features/document-excel/lib/document-excel-file.server";
 import { explainError } from "@/shared/lib/errors";

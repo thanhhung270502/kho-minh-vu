@@ -1,6 +1,5 @@
 "use client";
 
-import { FileExcelOutlined } from "@ant-design/icons";
 import { App, Button, Dropdown, Space } from "antd";
 import type { MenuProps } from "antd";
 import { useState, type ReactNode } from "react";
@@ -8,17 +7,21 @@ import { useState, type ReactNode } from "react";
 import { downloadFile } from "@/shared/lib/download-file";
 
 import { KIND_LABELS, type DocumentKind, type ImportMode } from "../lib/document-excel";
+import { DocumentExportButton } from "./document-export-button";
 import { DocumentImportDialog } from "./document-import-dialog";
 
 type Props = {
   kind: DocumentKind;
   /** Có quyền tạo chứng từ loại này — ẩn "Nhập mới" / "Cập nhật" nếu không. */
   canImport: boolean;
-  /** Nút xuất sẵn có của trang (Đơn đặt) — ghép chung một cụm với menu. */
+  /** Nút xuất riêng của trang (Đơn đặt). Không truyền: hóa đơn / phiếu nhập dùng nút xuất chung. */
   exportButton?: ReactNode;
 };
 
-/** Cụm nút Excel đầu trang: nhập mới, tải mẫu nhập mới, cập nhật, tải mẫu cập nhật. */
+/**
+ * Cụm nút Excel trên thanh công cụ của bảng: [Excel] xuất các phiếu đang lọc, [⋯]
+ * nhập mới, tải mẫu nhập mới, cập nhật, tải mẫu cập nhật. Ba màn dùng chung một kiểu.
+ */
 export function DocumentExcelActions({ kind, canImport, exportButton }: Props) {
   const { message } = App.useApp();
   const [mode, setMode] = useState<ImportMode | null>(null);
@@ -52,21 +55,13 @@ export function DocumentExcelActions({ kind, canImport, exportButton }: Props) {
 
   return (
     <>
-      {exportButton ? (
-        // `Dropdown.Button` đã bị antd v6 bỏ — ghép tay đúng khuyến nghị của nó.
-        <Space.Compact>
-          {exportButton}
-          <Dropdown menu={menu}>
-            <Button loading={downloading} aria-label="Nhập và file mẫu Excel">⋯</Button>
-          </Dropdown>
-        </Space.Compact>
-      ) : (
+      {/* `Dropdown.Button` đã bị antd v6 bỏ — ghép tay đúng khuyến nghị của nó. */}
+      <Space.Compact>
+        {exportButton ?? (kind === "don-dat" ? null : <DocumentExportButton kind={kind} />)}
         <Dropdown menu={menu}>
-          <Button icon={<FileExcelOutlined />} loading={downloading}>
-            Excel
-          </Button>
+          <Button loading={downloading} aria-label="Nhập Excel và file mẫu">⋯</Button>
         </Dropdown>
-      )}
+      </Space.Compact>
       <DocumentImportDialog kind={kind} mode={mode} onClose={() => setMode(null)} />
     </>
   );
