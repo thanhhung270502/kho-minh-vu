@@ -6,18 +6,10 @@ import type { DateRange, SeriesStep } from "../lib/period";
 import type { FlowPoint, PeriodRow } from "../types";
 
 /**
- * Hai RPC 0099. Kiểu sinh tự động chưa có hai hàm này (sinh lại từ database chưa
- * áp đủ migration của main sẽ làm mất kiểu các hàm khác), nên gọi qua `untypedRpc`
- * và kiểm dạng bằng zod — chạy `npm run db:types` sau khi áp migration thì đổi
- * sang client có kiểu. Khóa snake_case là hợp đồng jsonb với RPC.
+ * Hai RPC 0099. `phan_tich_theo_ky` trả một mảng jsonb (né giới hạn 1000 dòng của
+ * PostgREST) nên kiểu sinh ra chỉ là `Json` — vẫn kiểm dạng bằng zod. Khóa
+ * snake_case là hợp đồng jsonb với RPC.
  */
-type UntypedRpc = (fn: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: unknown }>;
-
-function untypedRpc(fn: string, args: Record<string, unknown>) {
-  const client = getSupabaseBrowserClient();
-  return (client.rpc as unknown as UntypedRpc).call(client, fn, args);
-}
-
 const num = z.coerce.number();
 
 const periodRowSchema = z.object({
@@ -47,10 +39,10 @@ const periodRowSchema = z.object({
 });
 
 export async function fetchPeriodRows(range: DateRange, warehouseId: string | null): Promise<PeriodRow[]> {
-  const { data, error } = await untypedRpc("phan_tich_theo_ky", {
+  const { data, error } = await getSupabaseBrowserClient().rpc("phan_tich_theo_ky", {
     p_tu: range.from,
     p_den: range.to,
-    p_kho_id: warehouseId,
+    p_kho_id: warehouseId ?? undefined,
   });
   if (error) throw error;
   return z.array(periodRowSchema).parse(data ?? []).map((r) => ({
@@ -96,12 +88,12 @@ export async function fetchFlowSeries(
   warehouseId: string | null,
   productIds: string[] | null,
 ): Promise<FlowPoint[]> {
-  const { data, error } = await untypedRpc("nhap_xuat_theo_ky", {
+  const { data, error } = await getSupabaseBrowserClient().rpc("nhap_xuat_theo_ky", {
     p_tu: range.from,
     p_den: range.to,
     p_buoc: step,
-    p_kho_id: warehouseId,
-    p_san_pham_ids: productIds,
+    p_kho_id: warehouseId ?? undefined,
+    p_san_pham_ids: productIds ?? undefined,
   });
   if (error) throw error;
   return z.array(flowSchema).parse(data ?? []).map((r) => ({

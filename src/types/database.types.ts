@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      _ton_truoc_lich_su: {
+        Row: {
+          kho_id: string | null
+          san_pham_id: string | null
+          so_luong: number | null
+        }
+        Insert: {
+          kho_id?: string | null
+          san_pham_id?: string | null
+          so_luong?: number | null
+        }
+        Update: {
+          kho_id?: string | null
+          san_pham_id?: string | null
+          so_luong?: number | null
+        }
+        Relationships: []
+      }
       anh_xa_ghi_chu_kiotviet: {
         Row: {
           doi_tac_id: string | null
@@ -2585,6 +2603,23 @@ export type Database = {
         }
         Returns: Json
       }
+      nhap_xuat_theo_ky: {
+        Args: {
+          p_buoc: string
+          p_den: string
+          p_kho_id?: string
+          p_san_pham_ids?: string[]
+          p_tu: string
+        }
+        Returns: {
+          ky: string
+          nhap: number
+          so_hoa_don: number
+          so_phieu_nhap: number
+          xuat_ban: number
+          xuat_noi_bo: number
+        }[]
+      }
       nhap_xuat_theo_ngay: {
         Args: { p_ngay?: string; p_so_ngay: number }
         Returns: {
@@ -2611,6 +2646,10 @@ export type Database = {
           so_hoa_don: number
           so_luong: number
         }[]
+      }
+      phan_tich_theo_ky: {
+        Args: { p_den: string; p_kho_id?: string; p_tu: string }
+        Returns: Json
       }
       phan_tich_ton_kho: {
         Args: { p_ngay?: string; p_san_pham_id?: string; p_so_ngay?: number }
