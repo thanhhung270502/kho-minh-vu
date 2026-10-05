@@ -1,4 +1,5 @@
 import { readDate, readUuid } from "@/features/documents/lib/url-filter";
+import { isDefaultDateRange, readDateRangeOrThisMonth } from "@/shared/lib/date-presets";
 import type { Database } from "@/types/database.types";
 
 import type { DocStatus, ReceiptSource } from "../types";
@@ -48,7 +49,8 @@ export function countActiveReceiptFilters(filter: ReceiptFilter): number {
   if (filter.partnerId !== null) count++;
   if (filter.warehouseId !== null) count++;
   if (filter.source !== null) count++;
-  if (filter.fromDate !== null || filter.toDate !== null) count++;
+  // Mặc định tháng này không tính là đang lọc.
+  if ((filter.fromDate !== null || filter.toDate !== null) && !isDefaultDateRange(filter.fromDate, filter.toDate)) count++;
   return count;
 }
 
@@ -69,8 +71,8 @@ export function readReceiptFilterFromUrl(params: {
     source: SOURCES.includes(source as ReceiptSource)
       ? (source as ReceiptSource)
       : null,
-    fromDate: readDate(params.get("tu_ngay")),
-    toDate: readDate(params.get("den_ngay")),
+    // URL chưa chọn ngày → tháng này.
+    ...readDateRangeOrThisMonth(params, readDate),
     page: Number.isFinite(page) && page >= 1 ? Math.trunc(page) : 1,
   };
 }
@@ -82,8 +84,11 @@ export function writeReceiptFilterToUrl(filter: ReceiptFilter): URLSearchParams 
   if (filter.partnerId) params.set("ncc", filter.partnerId);
   if (filter.warehouseId) params.set("kho", filter.warehouseId);
   if (filter.source) params.set("nguon", filter.source);
-  if (filter.fromDate) params.set("tu_ngay", filter.fromDate);
-  if (filter.toDate) params.set("den_ngay", filter.toDate);
+  // Tháng này là mặc định — không ghi lên URL để link lưu lại vẫn "tháng này" khi sang tháng.
+  if (!isDefaultDateRange(filter.fromDate, filter.toDate)) {
+    if (filter.fromDate) params.set("tu_ngay", filter.fromDate);
+    if (filter.toDate) params.set("den_ngay", filter.toDate);
+  }
   if (filter.page !== 1) params.set("trang", String(filter.page));
   return params;
 }

@@ -50,3 +50,29 @@ export function activeDatePreset(
   }
   return "custom";
 }
+
+/**
+ * Khoảng ngày của bộ lọc danh sách (Đơn đặt, Duyệt đơn, Nhập kho): URL chưa có
+ * `tu_ngay` lẫn `den_ngay` → mặc định tháng này. Có tham số mà sai định dạng thì
+ * `readDate` trả null như cũ (không âm thầm thay bằng tháng này).
+ */
+export function readDateRangeOrThisMonth(
+  params: { get(k: string): string | null },
+  readDate: (raw: string | null) => string | null,
+  today: string = todayInVietnam(),
+): { fromDate: string | null; toDate: string | null } {
+  const rawFrom = params.get("tu_ngay");
+  const rawTo = params.get("den_ngay");
+  if (rawFrom === null && rawTo === null) return datePresetRange("month", today);
+  return { fromDate: readDate(rawFrom), toDate: readDate(rawTo) };
+}
+
+/** Khoảng ngày đang là mặc định (tháng này) — không tính là "đang lọc". */
+export function isDefaultDateRange(
+  fromDate: string | null,
+  toDate: string | null,
+  today: string = todayInVietnam(),
+): boolean {
+  const month = datePresetRange("month", today);
+  return fromDate === month.fromDate && toDate === month.toDate;
+}

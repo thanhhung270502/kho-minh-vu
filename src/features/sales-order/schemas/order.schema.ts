@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { readDate, readUuid } from "@/features/documents/lib/url-filter";
+import { isDefaultDateRange, readDateRangeOrThisMonth } from "@/shared/lib/date-presets";
 import type { RecipientKind } from "@/shared/lib/recipient";
 import type { Database } from "@/types/database.types";
 
@@ -134,7 +135,8 @@ export function countActiveOrderFilters(filter: OrderFilter): number {
   if (filter.recipientKind !== null) count++;
   if (filter.partnerId !== null) count++;
   if (filter.staffId !== null) count++;
-  if (filter.fromDate !== null || filter.toDate !== null) count++;
+  // Mặc định tháng này không tính là đang lọc.
+  if ((filter.fromDate !== null || filter.toDate !== null) && !isDefaultDateRange(filter.fromDate, filter.toDate)) count++;
   return count;
 }
 
@@ -177,8 +179,8 @@ export function readOrderFilterFromUrl(params: {
     recipientKind: readRecipientKind(params.get("nguoi_nhan")),
     partnerId: readUuid(params.get("doi_tac")),
     staffId: readUuid(params.get("nhan_vien")),
-    fromDate: readDate(params.get("tu_ngay")),
-    toDate: readDate(params.get("den_ngay")),
+    // URL chưa chọn ngày → tháng này.
+    ...readDateRangeOrThisMonth(params, readDate),
     page: Number.isFinite(page) && page >= 1 ? Math.trunc(page) : 1,
   };
 }
@@ -192,8 +194,11 @@ export function writeOrderFilterToUrl(filter: OrderFilter): URLSearchParams {
   }
   if (filter.partnerId) params.set("doi_tac", filter.partnerId);
   if (filter.staffId) params.set("nhan_vien", filter.staffId);
-  if (filter.fromDate) params.set("tu_ngay", filter.fromDate);
-  if (filter.toDate) params.set("den_ngay", filter.toDate);
+  // Tháng này là mặc định — không ghi lên URL để link lưu lại vẫn "tháng này" khi sang tháng.
+  if (!isDefaultDateRange(filter.fromDate, filter.toDate)) {
+    if (filter.fromDate) params.set("tu_ngay", filter.fromDate);
+    if (filter.toDate) params.set("den_ngay", filter.toDate);
+  }
   if (filter.page !== 1) params.set("trang", String(filter.page));
   return params;
 }

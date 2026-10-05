@@ -1,12 +1,12 @@
 "use client";
 
-import { Button, DatePicker, Select } from "antd";
-import dayjs from "dayjs";
+import { Button, Select } from "antd";
 import type { ReactNode } from "react";
 
 import { usePartners } from "@/features/partners/hooks/usePartners";
 import { DEFAULT_PARTNER_FILTER } from "@/features/partners/types";
 import { useLookups } from "@/features/products/hooks/useProducts";
+import { DateRangeFilter } from "@/shared/components/date-range-filter";
 import { filterByLabel } from "@/shared/lib/text";
 
 import {
@@ -103,20 +103,10 @@ export function ReceiptFilterPanel({
       </FilterGroup>
 
       <FilterGroup label="Khoảng ngày">
-        <DatePicker.RangePicker
-          className="w-full"
-          format="DD/MM/YYYY"
-          value={
-            filter.fromDate && filter.toDate
-              ? [dayjs(filter.fromDate), dayjs(filter.toDate)]
-              : null
-          }
-          onChange={(range) =>
-            change({
-              fromDate: range?.[0] ? range[0].format("YYYY-MM-DD") : null,
-              toDate: range?.[1] ? range[1].format("YYYY-MM-DD") : null,
-            })
-          }
+        <DateRangeFilter
+          fromDate={filter.fromDate}
+          toDate={filter.toDate}
+          onChange={(range) => change(range)}
         />
       </FilterGroup>
 

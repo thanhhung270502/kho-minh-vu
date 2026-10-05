@@ -17,7 +17,15 @@ import {
 } from "../src/features/analytics/lib/period-analysis";
 import { toAddOrderLineResult, toOrderStatusCounts } from "../src/features/sales-order/types";
 import { statusCountKeyOf, toAddOrderLineRpcArgs, toOrderStatusCountRpcArgs } from "../src/features/sales-order/schemas/order.schema";
-import { DATE_PRESET_LABELS, activeDatePreset, datePresetRange, todayInVietnam } from "../src/features/sales-order/lib/date-presets";
+import {
+  DATE_PRESET_LABELS,
+  activeDatePreset,
+  datePresetRange,
+  isDefaultDateRange,
+  readDateRangeOrThisMonth,
+  todayInVietnam,
+} from "../src/shared/lib/date-presets";
+import { readDate } from "../src/features/documents/lib/url-filter";
 import { orderProgress } from "../src/features/sales-order/lib/order-progress";
 import {
   toFlowDay,
@@ -610,7 +618,21 @@ assert.deepEqual(
   "bộ lọc phiếu nhập quay vòng qua URL không mất giá trị",
 );
 assert.equal(writeReceiptFilterToUrl(DEFAULT_RECEIPT_FILTER).toString(), "", "bộ lọc mặc định không ghi gì vào URL");
-assert.deepEqual(readReceiptFilterFromUrl(new URLSearchParams("")), DEFAULT_RECEIPT_FILTER);
+assert.deepEqual(
+  readReceiptFilterFromUrl(new URLSearchParams("")),
+  { ...DEFAULT_RECEIPT_FILTER, ...datePresetRange("month", todayInVietnam()) },
+  "URL chưa chọn ngày → mặc định tháng này",
+);
+assert.equal(
+  writeReceiptFilterToUrl({ ...DEFAULT_RECEIPT_FILTER, ...datePresetRange("month", todayInVietnam()) }).toString(),
+  "",
+  "tháng này là mặc định — không ghi lên URL",
+);
+assert.equal(
+  countActiveReceiptFilters({ ...DEFAULT_RECEIPT_FILTER, ...datePresetRange("month", todayInVietnam()) }),
+  0,
+  "tháng này không tính là đang lọc",
+);
 assert.equal(readReceiptFilterFromUrl(new URLSearchParams("trang=-2")).page, 1, "page âm về 1");
 assert.equal(readReceiptFilterFromUrl(new URLSearchParams("ncc=khong-phai-uuid")).partnerId, null);
 assert.equal(readReceiptFilterFromUrl(new URLSearchParams("tu_ngay=01/09/2026")).fromDate, null, "ngày sai định dạng bị bỏ");
@@ -1758,6 +1780,11 @@ async function kiemCsvPhanTich() {
   assert.deepEqual(datePresetRange("7d", "2026-10-04"), { fromDate: "2026-09-28", toDate: "2026-10-04" });
   assert.deepEqual(datePresetRange("30d", "2026-10-04"), { fromDate: "2026-09-05", toDate: "2026-10-04" });
   assert.deepEqual(datePresetRange("month", "2026-10-04"), { fromDate: "2026-10-01", toDate: "2026-10-04" });
+  // Bộ lọc danh sách: URL chưa chọn ngày → tháng này; tháng này không tính là đang lọc.
+  assert.deepEqual(readDateRangeOrThisMonth(new URLSearchParams(""), readDate, "2026-10-05"), { fromDate: "2026-10-01", toDate: "2026-10-05" });
+  assert.deepEqual(readDateRangeOrThisMonth(new URLSearchParams("tu_ngay=01/09/2026"), readDate, "2026-10-05"), { fromDate: null, toDate: null }, "có tham số sai thì không tự thay");
+  assert.equal(isDefaultDateRange("2026-10-01", "2026-10-05", "2026-10-05"), true);
+  assert.equal(isDefaultDateRange("2026-09-01", "2026-09-30", "2026-10-05"), false);
   assert.deepEqual(datePresetRange("7d", "2026-03-03"), { fromDate: "2026-02-25", toDate: "2026-03-03" });
   assert.equal(activeDatePreset(null, null, "2026-10-04"), null);
   assert.equal(activeDatePreset("2026-09-28", "2026-10-04", "2026-10-04"), "7d");
