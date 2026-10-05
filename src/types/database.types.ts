@@ -1879,6 +1879,7 @@ export type Database = {
           ghi_chu: string
           ho_ten_nguoi_tao: string
           id: string
+          ma_doi_tac: string
           ngay_dh: string
           ngay_giao_du_kien: string
           nguoi_nhan_ids: string[]

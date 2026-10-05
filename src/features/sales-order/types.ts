@@ -72,7 +72,7 @@ export function toOrderRow(row: OrderRowDb): OrderRow {
     // RPC trả null cho cột không dùng dù type sinh tự động khai `string`.
     recipients: {
       partner: row.doi_tac_id
-        ? { id: row.doi_tac_id, code: null, name: row.ten_doi_tac }
+        ? { id: row.doi_tac_id, code: row.ma_doi_tac, name: row.ten_doi_tac }
         : null,
       staff: toStaffRefs(row.nguoi_nhan_ids, row.ten_nguoi_nhan),
     },

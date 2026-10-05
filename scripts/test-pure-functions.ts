@@ -126,6 +126,7 @@ import {
 import {
   COMMON_GOODS_LABEL,
   formatOrderRecipients,
+  isInternalPartnerCode,
   isMultiRecipientOrder,
   lineRecipientLabel,
   partnerLabel,
@@ -669,6 +670,12 @@ assert.equal(formatOrderRecipients({ partner: null, staff: [staffAn, staffBinh] 
 assert.equal(formatOrderRecipients({ partner: null, staff: [] }), "Chưa chọn người nhận");
 assert.equal(formatOrderRecipients({ partner: partnerLienHoa, staff: [] }), "KH01 Liên Hoa");
 assert.equal(formatOrderRecipients({ partner: partnerLienHoa, staff: [staffAn] }), "KH01 Liên Hoa · An");
+// NB001 (Bộ phận điều phối đơn) là đối tác nội bộ: có nhân viên thì chỉ hiện nhân viên.
+const partnerNb001 = { id: "nb1", code: "NB001", name: "BỘ PHẬN ĐIỀU PHỐI ĐƠN" };
+assert.equal(formatOrderRecipients({ partner: partnerNb001, staff: [staffAn] }), "An");
+assert.equal(formatOrderRecipients({ partner: partnerNb001, staff: [] }), "NB001 BỘ PHẬN ĐIỀU PHỐI ĐƠN");
+assert.equal(isInternalPartnerCode("nb002"), true);
+assert.equal(isInternalPartnerCode("NBA01"), false, "phải là NB + số");
 assert.equal(recipientKindOf({ partner: null, staff: [staffAn] }), "internal");
 assert.equal(recipientKindOf({ partner: partnerLienHoa, staff: [] }), "partner");
 // Phase 17 (DDAT-02, A3): phiếu đi lấy hàng chỉ in TÊN người nhận — không "Nội bộ —", không mã đối tác.
@@ -741,15 +748,15 @@ assert.deepEqual(
 );
 const partnerOrderRow = toOrderRow({
   id: "dh-2", so_dh: "DH26-000002", ngay_dh: "2026-10-01", trang_thai: "TAM",
-  ngay_giao_du_kien: null as unknown as string, doi_tac_id: "dt-1", ten_doi_tac: "Liên Hoa",
+  ngay_giao_du_kien: null as unknown as string, doi_tac_id: "dt-1", ma_doi_tac: "KH01", ten_doi_tac: "Liên Hoa",
   nguoi_nhan_ids: [], ten_nguoi_nhan: [], so_dong: 0,
   tong_so_luong_dat: 0, tong_so_luong_da_xuat: 0, ho_ten_nguoi_tao: "Văn phòng",
   ghi_chu: null as unknown as string, created_at: "2026-10-01T00:00:00Z", tong_so_dong: 1,
 });
 assert.deepEqual(
   partnerOrderRow.recipients,
-  { partner: { id: "dt-1", code: null, name: "Liên Hoa" }, staff: [] },
-  "danh_sach_don không trả mã đối tác → code null",
+  { partner: { id: "dt-1", code: "KH01", name: "Liên Hoa" }, staff: [] },
+  "danh_sach_don trả mã đối tác (0103) — cần để nhận ra đối tác nội bộ NB…",
 );
 
 assert.equal(

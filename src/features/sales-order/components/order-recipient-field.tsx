@@ -2,7 +2,7 @@
 
 import { Tag } from "antd";
 
-import { partnerLabel, type OrderRecipients } from "@/shared/lib/recipient";
+import { partnerLabel, showsStaffOnly, type OrderRecipients } from "@/shared/lib/recipient";
 
 import { useRecipientSaveQueue } from "../hooks/use-recipient-save-queue";
 import type { OrderRecipientsInput } from "../schemas/order.schema";
@@ -49,7 +49,7 @@ export function RecipientsReadonly({
   if (!partner && staff.length === 0) return <>—</>;
   return (
     <div className="flex flex-wrap items-center gap-1">
-      {partner ? <span>{partnerLabel(partner)}</span> : <Tag>Nội bộ</Tag>}
+      {showsStaffOnly(recipients) ? null : partner ? <span>{partnerLabel(partner)}</span> : <Tag>Nội bộ</Tag>}
       {staff.map((person) => (
         <Tag key={person.id}>{person.name}</Tag>
       ))}

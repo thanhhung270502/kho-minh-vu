@@ -3,7 +3,7 @@
 import { Button } from "antd";
 import dayjs from "dayjs";
 
-import { staffNames } from "@/shared/lib/recipient";
+import { isInternalPartnerCode, staffNames } from "@/shared/lib/recipient";
 
 import type { IssueDetail, IssueLine } from "../types";
 
@@ -67,7 +67,8 @@ export function DeliveryPrintTemplate({
         <div>
           <span className="text-gray-600">Người nhận: </span>
           <strong>
-            {issue.partnerId === null && issue.staffRecipients.length > 0 ? (
+            {issue.staffRecipients.length > 0 &&
+            (issue.partnerId === null || isInternalPartnerCode(issue.partnerCode)) ? (
               staffNames(issue.staffRecipients)
             ) : (
               <>
@@ -77,7 +78,9 @@ export function DeliveryPrintTemplate({
             )}
           </strong>
         </div>
-        {issue.partnerId !== null && issue.staffRecipients.length > 0 ? (
+        {issue.partnerId !== null &&
+        !isInternalPartnerCode(issue.partnerCode) &&
+        issue.staffRecipients.length > 0 ? (
           <div>
             <span className="text-gray-600">Nhân viên nhận: </span>
             <strong>{staffNames(issue.staffRecipients)}</strong>

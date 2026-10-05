@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 import Link from "next/link";
 
 import { StatusDot } from "@/shared/components/status-dot";
-import { partnerLabel } from "@/shared/lib/recipient";
+import { partnerLabel, showsStaffOnly } from "@/shared/lib/recipient";
 
 import { ORDER_STATUS_TONES, ORDER_STATUS_LABELS } from "../lib/order-status";
 import { OrderProgressBar } from "./order-progress-bar";
@@ -46,7 +46,12 @@ const COLUMNS: TableColumnsType<OrderRow> = [
       }
       return (
         <span className="flex flex-wrap items-center gap-1.5">
-          {recipients.partner ? (
+          {showsStaffOnly(recipients) ? (
+            <>
+              <span className="font-bold">{first?.name}</span>
+              {rest.length > 0 ? <span className="text-chu-phu">+{rest.length}</span> : null}
+            </>
+          ) : recipients.partner ? (
             <>
               <span className="font-bold">{partnerLabel(recipients.partner)}</span>
               {recipients.staff.map((person) => (

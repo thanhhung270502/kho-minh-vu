@@ -4,7 +4,7 @@ import { Button } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 
-import { lineRecipientLabel, recipientDisplayName } from "@/shared/lib/recipient";
+import { isInternalPartnerCode, lineRecipientLabel, recipientDisplayName } from "@/shared/lib/recipient";
 
 import { groupLinesByWarehouse } from "../lib/group-lines-by-warehouse";
 import type { OrderDetail, OrderLine } from "../types";
@@ -81,7 +81,7 @@ export function PickingPrintTemplate({
               : recipientDisplayName(partner?.name)}
           </strong>
         </div>
-        {staff.length > 0 && partner ? (
+        {staff.length > 0 && partner && !isInternalPartnerCode(partner.code) ? (
           <div className="col-span-2">
             <span className="text-gray-600">Đối tác: </span>
             {recipientDisplayName(partner.name)}
