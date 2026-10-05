@@ -698,7 +698,7 @@ assert.equal(staffNames([]), "—");
 assert.equal(partnerLabel(partnerLienHoa), "KH01 Liên Hoa");
 assert.equal(partnerLabel({ ...partnerLienHoa, code: null }), "Liên Hoa");
 assert.equal(partnerLabel({ id: "d", code: null, name: null }), "—");
-assert.equal(formatOrderRecipients({ partner: null, staff: [staffAn, staffBinh] }), "Nội bộ — An, Bình");
+assert.equal(formatOrderRecipients({ partner: null, staff: [staffAn, staffBinh] }), "An, Bình", "không gắn nhãn Nội bộ");
 assert.equal(formatOrderRecipients({ partner: null, staff: [] }), "Chưa chọn người nhận");
 assert.equal(formatOrderRecipients({ partner: partnerLienHoa, staff: [] }), "KH01 Liên Hoa");
 assert.equal(formatOrderRecipients({ partner: partnerLienHoa, staff: [staffAn] }), "KH01 Liên Hoa · An");

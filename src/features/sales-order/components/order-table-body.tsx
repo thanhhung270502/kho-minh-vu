@@ -64,9 +64,6 @@ const COLUMNS: TableColumnsType<OrderRow> = [
             <>
               {first ? <span className="font-bold">{first.name}</span> : null}
               {rest.length > 0 ? <span className="text-chu-phu">+{rest.length}</span> : null}
-              <span className="shrink-0 rounded-md border border-vien px-[7px] text-[11px] font-bold">
-                Nội bộ
-              </span>
             </>
           )}
         </span>

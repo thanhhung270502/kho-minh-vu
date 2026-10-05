@@ -93,7 +93,6 @@ export function IssueHeader({ issue, canEdit }: Props) {
             label: issue.partnerId ? "Nhân viên nhận" : "Người nhận",
             children: (
               <span className="flex flex-wrap gap-1">
-                {issue.partnerId ? null : <Tag className="m-0">Nội bộ</Tag>}
                 {issue.staffRecipients.map((p) => (
                   <Tag key={p.id} className="m-0">
                     {p.name}

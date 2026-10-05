@@ -49,7 +49,7 @@ export function RecipientsReadonly({
   if (!partner && staff.length === 0) return <>—</>;
   return (
     <div className="flex flex-wrap items-center gap-1">
-      {showsStaffOnly(recipients) ? null : partner ? <span>{partnerLabel(partner)}</span> : <Tag>Nội bộ</Tag>}
+      {partner && !showsStaffOnly(recipients) ? <span>{partnerLabel(partner)}</span> : null}
       {staff.map((person) => (
         <Tag key={person.id}>{person.name}</Tag>
       ))}
