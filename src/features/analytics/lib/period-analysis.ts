@@ -200,13 +200,15 @@ export function topCategories(rows: PeriodRow[], limit: number): CategoryRank[] 
     .slice(0, limit);
 }
 
-/** Tăng / giảm mạnh nhất so với kỳ trước, xếp theo chênh lệch số lượng (không theo %, để mã bán lẻ tẻ không chiếm chỗ). */
+/**
+ * Tăng / giảm mạnh nhất so với kỳ trước, xếp theo chênh lệch số lượng (không theo %,
+ * để mã bán lẻ tẻ không chiếm chỗ). upCount / downCount đếm đủ, không bị cắt top.
+ */
 export function salesMovers(rows: PeriodRow[], limit: number) {
   const delta = (r: PeriodRow) => r.sold - r.soldPrev;
-  return {
-    up: rows.filter((r) => delta(r) > 0).sort((a, b) => delta(b) - delta(a) || a.code.localeCompare(b.code)).slice(0, limit),
-    down: rows.filter((r) => delta(r) < 0).sort((a, b) => delta(a) - delta(b) || a.code.localeCompare(b.code)).slice(0, limit),
-  };
+  const up = rows.filter((r) => delta(r) > 0).sort((a, b) => delta(b) - delta(a) || a.code.localeCompare(b.code));
+  const down = rows.filter((r) => delta(r) < 0).sort((a, b) => delta(a) - delta(b) || a.code.localeCompare(b.code));
+  return { up: up.slice(0, limit), down: down.slice(0, limit), upCount: up.length, downCount: down.length };
 }
 
 /**
@@ -215,12 +217,15 @@ export function salesMovers(rows: PeriodRow[], limit: number) {
  */
 export function slowStock(rows: PeriodRow[], days: number, limit: number) {
   const coverDays = (r: PeriodRow) => (days > 0 && r.sold > 0 ? r.closingStock / (r.sold / days) : null);
+  const noSales = rows.filter((r) => r.closingStock > 0 && r.sold <= 0).sort(byClosingDesc);
+  const overstock = rows.filter((r) => r.closingStock > 0 && (coverDays(r) ?? 0) >= 365).sort(byClosingDesc);
+  const qty = (list: PeriodRow[]) => list.reduce((sum, r) => sum + r.closingStock, 0);
   return {
-    noSales: rows.filter((r) => r.closingStock > 0 && r.sold <= 0).sort(byClosingDesc).slice(0, limit),
-    overstock: rows
-      .filter((r) => r.closingStock > 0 && (coverDays(r) ?? 0) >= 365)
-      .sort(byClosingDesc)
-      .slice(0, limit)
-      .map((r) => ({ row: r, coverDays: coverDays(r) ?? 0 })),
+    noSales: noSales.slice(0, limit),
+    overstock: overstock.slice(0, limit).map((r) => ({ row: r, coverDays: coverDays(r) ?? 0 })),
+    noSalesCount: noSales.length,
+    noSalesQty: qty(noSales),
+    overstockCount: overstock.length,
+    overstockQty: qty(overstock),
   };
 }

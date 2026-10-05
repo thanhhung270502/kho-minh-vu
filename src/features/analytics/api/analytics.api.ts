@@ -32,17 +32,3 @@ export async function fetchAnalysisSettings(): Promise<AnalysisSettings> {
   return toSettings(data);
 }
 
-/** Chỉ quản lý sửa được (RLS 0079) — văn phòng gọi sẽ cập nhật 0 dòng, báo lỗi rõ. */
-export async function saveAnalysisSettings(settings: AnalysisSettings): Promise<void> {
-  const { data, error } = await getSupabaseBrowserClient()
-    .from("cau_hinh_phan_tich")
-    .update({
-      nguong_do: settings.redDays,
-      nguong_vang: settings.yellowDays,
-      so_ngay_du_tru: settings.coverDays,
-    })
-    .eq("id", true)
-    .select("id");
-  if (error) throw error;
-  if (!data?.length) throw new Error("Chỉ quản lý được đổi ngưỡng phân tích.");
-}

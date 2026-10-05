@@ -47,17 +47,17 @@ export function BreakdownChart({ rows }: { rows: PeriodRow[] }) {
       {data.length === 0 ? (
         <div className="flex h-72 items-center justify-center text-sm text-chu-phu">Không có xuất bán trong kỳ.</div>
       ) : (
-        <div className="h-72">
+        <div style={{ height: Math.max(288, data.length * 46 + 32) }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="vertical" margin={{ top: 4, right: 12, left: 4, bottom: 0 }} barCategoryGap="28%">
+            <BarChart data={data} layout="vertical" margin={{ top: 4, right: 12, left: 4, bottom: 0 }} barCategoryGap="14%" barGap={3}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" tick={{ fontSize: 11 }} />
               <YAxis type="category" dataKey="label" width={120} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
               <Tooltip
                 formatter={(v, name) => [Number(v).toLocaleString("vi-VN"), name === "sold" ? "Kỳ này" : "Kỳ trước"]}
               />
-              <Bar dataKey="sold" fill="#2f54eb" radius={[0, 4, 4, 0]} />
-              <Bar dataKey="soldPrev" fill="#c7d2fe" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="sold" fill="#2f54eb" radius={[0, 4, 4, 0]} maxBarSize={22} />
+              <Bar dataKey="soldPrev" fill="#c7d2fe" radius={[0, 4, 4, 0]} maxBarSize={22} />
             </BarChart>
           </ResponsiveContainer>
         </div>

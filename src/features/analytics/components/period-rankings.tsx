@@ -1,18 +1,16 @@
 "use client";
 
-import { Card, Segmented } from "antd";
-import { useMemo, useState } from "react";
+import { Card } from "antd";
+import type { TableColumnsType } from "antd";
+import { useMemo } from "react";
 
-import { changeRatio, salesMovers, slowStock, topCategories, topProducts } from "../lib/period-analysis";
+import { changeRatio, topCategories, topProducts, type CategoryRank } from "../lib/period-analysis";
 import type { PeriodRow } from "../types";
-import { RankList, type RankItem } from "./rank-list";
+import { MoversTable, SlowStockTable } from "./period-movement-tables";
+import { BarValue, CompactTable, Highlights, ProductCode, fmt, pct, rankColumn } from "./ranking-parts";
 import { ChangePill } from "./stat-card";
 
 const LIMIT = 10;
-const n = (v: number) => v.toLocaleString("vi-VN", { maximumFractionDigits: 0 });
-const pct = (v: number) => `${(v * 100).toLocaleString("vi-VN", { maximumFractionDigits: 1 })}%`;
-const productHref = (r: PeriodRow) => `/danh-muc/${r.productId}`;
-const ratioOf = (v: number, max: number) => (max > 0 ? v / max : 0);
 
 type Props = {
   rows: PeriodRow[];
@@ -20,124 +18,102 @@ type Props = {
   days: number;
 };
 
-/** Bốn bảng xếp hạng theo kỳ: bán chạy, nhóm hàng, biến động so kỳ trước, tồn chậm. */
+/**
+ * Bốn bảng xếp hạng theo kỳ, mỗi bảng có dải số tóm tắt ở đầu: bán chạy, nhóm hàng
+ * (cái gì đang bán) rồi biến động, tồn chậm (cái gì đang đổi / đang nằm yên).
+ */
 export function PeriodRankings({ rows, days }: Props) {
-  const [moveDir, setMoveDir] = useState<"up" | "down">("up");
-  const [slowKind, setSlowKind] = useState<"noSales" | "overstock">("noSales");
-
-  const data = useMemo(
-    () => ({
-      top: topProducts(rows, LIMIT),
-      categories: topCategories(rows, LIMIT),
-      movers: salesMovers(rows, LIMIT),
-      slow: slowStock(rows, days, LIMIT),
-    }),
-    [rows, days],
+  return (
+    <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+      <TopProductsTable rows={rows} />
+      <TopCategoriesTable rows={rows} />
+      <MoversTable rows={rows} limit={LIMIT} />
+      <SlowStockTable rows={rows} days={days} limit={LIMIT} />
+    </div>
   );
+}
 
-  const topMax = data.top[0]?.sold ?? 0;
-  const topItems: RankItem[] = data.top.map((r) => ({
-    key: r.productId,
-    href: productHref(r),
-    title: r.code,
-    subtitle: r.name,
-    value: n(r.sold),
-    note: <ChangePill ratio={changeRatio(r.sold, r.soldPrev)} previous={n(r.soldPrev)} />,
-    ratio: ratioOf(r.sold, topMax),
-  }));
+function TopProductsTable({ rows }: { rows: PeriodRow[] }) {
+  const { top, total } = useMemo(
+    () => ({ top: topProducts(rows, LIMIT), total: rows.reduce((s, r) => s + r.sold, 0) }),
+    [rows],
+  );
+  const max = top[0]?.sold ?? 0;
+  const topSum = top.reduce((s, r) => s + r.sold, 0);
+  const leader = top[0];
 
-  const catMax = data.categories[0]?.sold ?? 0;
-  const catItems: RankItem[] = data.categories.map((g) => ({
-    key: g.key,
-    title: g.name,
-    subtitle: `${pct(g.share)} tổng xuất · ${n(g.products)} mã có bán`,
-    value: n(g.sold),
-    note: <ChangePill ratio={changeRatio(g.sold, g.soldPrev)} previous={n(g.soldPrev)} />,
-    ratio: ratioOf(g.sold, catMax),
-  }));
-
-  const moves = data.movers[moveDir];
-  const moveMax = Math.max(0, ...moves.map((r) => Math.abs(r.sold - r.soldPrev)));
-  const moveItems: RankItem[] = moves.map((r) => {
-    const delta = r.sold - r.soldPrev;
-    return {
-      key: r.productId,
-      href: productHref(r),
-      title: r.code,
-      subtitle: r.name,
-      value: `${delta > 0 ? "+" : "−"}${n(Math.abs(delta))}`,
-      note: `${n(r.soldPrev)} → ${n(r.sold)}`,
-      ratio: ratioOf(Math.abs(delta), moveMax),
-    };
-  });
-
-  const slowRows =
-    slowKind === "noSales"
-      ? data.slow.noSales.map((r) => ({ row: r, note: "Không bán trong kỳ" }))
-      : data.slow.overstock.map(({ row, coverDays }) => ({ row, note: `Đủ bán ~${n(coverDays)} ngày` }));
-  const slowMax = slowRows[0]?.row.closingStock ?? 0;
-  const slowItems: RankItem[] = slowRows.map(({ row, note }) => ({
-    key: row.productId,
-    href: productHref(row),
-    title: row.code,
-    subtitle: row.name,
-    value: `${n(row.closingStock)}${row.unitName ? ` ${row.unitName}` : ""}`,
-    note,
-    ratio: ratioOf(row.closingStock, slowMax),
-  }));
+  const columns: TableColumnsType<PeriodRow> = [
+    rankColumn<PeriodRow>(),
+    { title: "Mã hàng", dataIndex: "code", width: 140, render: (code: string, r) => <ProductCode id={r.productId} code={code} /> },
+    { title: "Tên hàng", dataIndex: "name", ellipsis: true },
+    {
+      title: "Xuất",
+      dataIndex: "sold",
+      width: 120,
+      align: "right",
+      render: (v: number) => <BarValue value={fmt(v)} ratio={max > 0 ? v / max : 0} />,
+    },
+    {
+      title: "So kỳ trước",
+      key: "change",
+      width: 100,
+      align: "right",
+      render: (_: unknown, r) => <ChangePill ratio={changeRatio(r.sold, r.soldPrev)} previous={fmt(r.soldPrev)} />,
+    },
+  ];
 
   return (
-    <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-      <Card size="small" className="rounded-xl" title="Bán chạy nhất">
-        <RankList items={topItems} empty="Kỳ này chưa có mã nào bán." />
-      </Card>
-      <Card size="small" className="rounded-xl" title="Nhóm hàng bán nhiều nhất">
-        <RankList items={catItems} monoTitle={false} empty="Kỳ này chưa có nhóm nào bán." />
-      </Card>
-      <Card
-        size="small"
-        className="rounded-xl"
-        title="Biến động so với kỳ trước"
-        extra={
-          <Segmented<"up" | "down">
-            size="small"
-            value={moveDir}
-            onChange={setMoveDir}
-            options={[
-              { value: "up", label: "Tăng" },
-              { value: "down", label: "Giảm" },
-            ]}
-          />
-        }
-      >
-        <RankList
-          items={moveItems}
-          tone={moveDir === "up" ? "green" : "red"}
-          empty={moveDir === "up" ? "Không mã nào bán nhiều hơn kỳ trước." : "Không mã nào bán ít hơn kỳ trước."}
-        />
-      </Card>
-      <Card
-        size="small"
-        className="rounded-xl"
-        title="Tồn chậm luân chuyển"
-        extra={
-          <Segmented<"noSales" | "overstock">
-            size="small"
-            value={slowKind}
-            onChange={setSlowKind}
-            options={[
-              { value: "noSales", label: "Không bán" },
-              { value: "overstock", label: "Tồn > 1 năm" },
-            ]}
-          />
-        }
-      >
-        <RankList
-          items={slowItems}
-          tone="orange"
-          empty={slowKind === "noSales" ? "Mã nào còn tồn cũng có bán trong kỳ." : "Không mã nào tồn quá một năm bán."}
-        />
-      </Card>
-    </div>
+    <Card size="small" className="rounded-xl" title="Bán chạy nhất">
+      <Highlights
+        items={[
+          { label: `Top ${LIMIT} chiếm`, value: total > 0 ? `${pct(topSum / total)} tổng xuất` : "—" },
+          { label: "Dẫn đầu", value: leader ? `${leader.code} · ${fmt(leader.sold)}` : "—" },
+          { label: "Mã có bán", value: fmt(rows.filter((r) => r.sold > 0).length) },
+        ]}
+      />
+      <CompactTable rowKey="productId" columns={columns} data={top} empty="Kỳ này chưa có mã nào bán." />
+    </Card>
+  );
+}
+
+function TopCategoriesTable({ rows }: { rows: PeriodRow[] }) {
+  const all = useMemo(() => topCategories(rows, Number.POSITIVE_INFINITY), [rows]);
+  const top = all.slice(0, LIMIT);
+  const max = top[0]?.sold ?? 0;
+  const top3Share = all.slice(0, 3).reduce((s, g) => s + g.share, 0);
+  const growing = all.filter((g) => g.sold > g.soldPrev).length;
+
+  const columns: TableColumnsType<CategoryRank> = [
+    rankColumn<CategoryRank>(),
+    { title: "Nhóm hàng", dataIndex: "name", ellipsis: true },
+    { title: "Mã có bán", dataIndex: "products", width: 90, align: "right", render: (v: number) => fmt(v) },
+    {
+      title: "Xuất",
+      dataIndex: "sold",
+      width: 120,
+      align: "right",
+      render: (v: number) => <BarValue value={fmt(v)} ratio={max > 0 ? v / max : 0} />,
+    },
+    { title: "Tỷ trọng", dataIndex: "share", width: 80, align: "right", render: (v: number) => pct(v) },
+    {
+      title: "So kỳ trước",
+      key: "change",
+      width: 100,
+      align: "right",
+      render: (_: unknown, g) => <ChangePill ratio={changeRatio(g.sold, g.soldPrev)} previous={fmt(g.soldPrev)} />,
+    },
+  ];
+
+  return (
+    <Card size="small" className="rounded-xl" title="Nhóm hàng bán nhiều nhất">
+      <Highlights
+        items={[
+          { label: "Nhóm có bán", value: fmt(all.length) },
+          { label: "Top 3 nhóm chiếm", value: all.length > 0 ? pct(top3Share) : "—" },
+          { label: "Nhóm bán tăng", value: `${fmt(growing)} / ${fmt(all.length)}`, tone: "green" },
+        ]}
+      />
+      <CompactTable rowKey="key" columns={columns} data={top} empty="Kỳ này chưa có nhóm nào bán." />
+    </Card>
   );
 }

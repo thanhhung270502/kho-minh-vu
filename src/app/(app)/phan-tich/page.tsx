@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Phân tích tồn kho" };
 
 export default async function Page() {
   // Chặn thật ở xem_duoc_phan_tich() (0079) — tồn mọi kho nên thủ kho không vào.
-  const user = await requirePermission("view-analysis");
+  await requirePermission("view-analysis");
 
   return (
     <>
@@ -19,7 +19,7 @@ export default async function Page() {
       />
       {/* `useSearchParams()` (bộ lọc trên URL) bắt buộc có ranh giới Suspense. */}
       <Suspense fallback={null}>
-        <AnalysisView canEditSettings={user.role === "quan_ly"} />
+        <AnalysisView />
       </Suspense>
     </>
   );

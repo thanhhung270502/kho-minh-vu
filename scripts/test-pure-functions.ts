@@ -1368,9 +1368,11 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   const mv = salesMovers(ranked, 5);
   assert.deepEqual(mv.up.map((x) => x.code), ["B1"]);
   assert.deepEqual(mv.down.map((x) => x.code), ["B2"]);
+  assert.equal(mv.upCount, 1, "đếm đủ, không bị cắt top");
   const slow = slowStock(ranked, 30, 10);
   assert.deepEqual(slow.noSales.map((x) => x.code), ["B3"], "còn tồn, kỳ này không bán");
   assert.deepEqual(slow.overstock.map((x) => x.row.code), ["B4"], "400 ÷ (1/30) = 12.000 ngày ≥ 365");
+  assert.equal(slow.noSalesQty, 90, "tổng tồn của mã không bán");
 }
 
 // --- Phase 16: chức vụ & quyền (QUYEN-01/02) ------------------------------

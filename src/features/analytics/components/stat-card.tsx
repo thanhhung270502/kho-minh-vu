@@ -7,6 +7,14 @@ import type { ReactNode } from "react";
 /** Ô nhỏ "↑ 16%" xanh / "↓ 24%" đỏ — null (kỳ trước = 0) thì không hiện. */
 export function ChangePill({ ratio, previous }: { ratio: number | null; previous?: string }) {
   if (ratio === null) return null;
+  // Lệch dưới 0,05% làm tròn ra "0%" — hiện xám, không gắn mũi tên đỏ/xanh gây hiểu nhầm.
+  if (Math.abs(ratio) < 0.0005) {
+    return (
+      <span className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-1.5 py-px text-xs font-medium text-gray-500 tabular-nums">
+        0%
+      </span>
+    );
+  }
   const up = ratio >= 0;
   const pill = (
     <span

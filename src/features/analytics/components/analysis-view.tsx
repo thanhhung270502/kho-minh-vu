@@ -10,7 +10,6 @@ import { periodRange } from "../lib/period";
 import { matchesPeriodFilter } from "../lib/period-analysis";
 import { PeriodFilterBar } from "./period-filter-bar";
 import { PeriodSection } from "./period-section";
-import { SettingsDialog } from "./settings-dialog";
 
 /** Nhịp bán dùng cho phần cần nhập — cùng số cột Cần đặt ở Danh sách hàng hóa. */
 const CURRENT_PACE_DAYS = 30;
@@ -19,7 +18,7 @@ const CURRENT_PACE_DAYS = 30;
  * Tab Phân tích (một màn, không còn tab Duyệt định mức): thanh lọc kỳ tuần/tháng/
  * quý/năm + kho + quy chuẩn mã → KPI → biểu đồ → bảng XNT → danh sách cần nhập.
  */
-export function AnalysisView({ canEditSettings }: { canEditSettings: boolean }) {
+export function AnalysisView() {
   const today = useToday();
   const { filter, setFilter } = usePeriodFilterUrl(today);
   const range = useMemo(() => periodRange(filter.unit, filter.anchor, today), [filter.unit, filter.anchor, today]);
@@ -47,10 +46,7 @@ export function AnalysisView({ canEditSettings }: { canEditSettings: boolean }) 
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <PeriodFilterBar filter={filter} today={today} rows={periodRows.data ?? []} onChange={setFilter} />
-        {canEditSettings && settings.data ? <SettingsDialog settings={settings.data} /> : null}
-      </div>
+      <PeriodFilterBar filter={filter} today={today} rows={periodRows.data ?? []} onChange={setFilter} />
 
       <QueryState query={settings} isEmpty={() => false} emptyDescription="">
         {(loadedSettings) => (
