@@ -80,16 +80,19 @@ export function ReorderTable({ rows, settings }: { rows: AnalysisRow[]; settings
       size="small"
       className="scroll-mt-28 rounded-xl"
       title="Danh sách cần nhập hàng"
+      extra={
+        <div className="flex items-center gap-2">
+          <Input.Search allowClear size="small" className="w-56" placeholder="Tìm mã hoặc tên" onChange={(e) => setQuery(e.target.value)} />
+          <Button
+            size="small"
+            icon={<DownloadOutlined />}
+            onClick={() => downloadBlob(buildReorderCsv(rows, settings), "danh-sach-can-nhap.csv")}
+          >
+            Xuất Excel
+          </Button>
+        </div>
+      }
     >
-      <div className="mb-3 flex flex-wrap gap-2">
-        <Input.Search allowClear placeholder="Mã hoặc tên hàng" className="max-w-xs" onChange={(e) => setQuery(e.target.value)} />
-        <Button
-          icon={<DownloadOutlined />}
-          onClick={() => downloadBlob(buildReorderCsv(rows, settings), "danh-sach-can-nhap.csv")}
-        >
-          Excel
-        </Button>
-      </div>
       <Tabs
         activeKey={tab === "later" && settings.yellowDays >= 30 ? "soon" : tab}
         onChange={(k) => setTab(k as TabKey)}

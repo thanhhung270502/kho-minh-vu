@@ -105,7 +105,7 @@ export function PeriodTable({ rows, periodText, days, settings }: Props) {
             disabled={visible.length === 0}
             onClick={() => downloadBlob(buildPeriodCsv(visible, periodText, days, settings), `xuat-nhap-ton-${periodText}.csv`)}
           >
-            Excel
+            Xuất Excel
           </Button>
         </div>
       }
