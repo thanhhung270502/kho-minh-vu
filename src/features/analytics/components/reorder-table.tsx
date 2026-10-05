@@ -87,7 +87,7 @@ export function ReorderTable({ rows, settings }: { rows: AnalysisRow[]; settings
           icon={<DownloadOutlined />}
           onClick={() => downloadBlob(buildReorderCsv(rows, settings), "danh-sach-can-nhap.csv")}
         >
-          Xuất Excel
+          Excel
         </Button>
       </div>
       <Tabs

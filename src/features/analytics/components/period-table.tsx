@@ -1,5 +1,6 @@
 "use client";
 
+import { DownloadOutlined } from "@ant-design/icons";
 import { Button, Card, Input, Table, Tag, Typography } from "antd";
 import type { TableColumnsType } from "antd";
 import { useMemo, useState } from "react";
@@ -98,8 +99,13 @@ export function PeriodTable({ rows, periodText, days, settings }: Props) {
       extra={
         <div className="flex items-center gap-2">
           <Input.Search allowClear size="small" className="w-56" placeholder="Tìm mã hoặc tên" onChange={(e) => setQuery(e.target.value)} />
-          <Button size="small" disabled={visible.length === 0} onClick={() => downloadBlob(buildPeriodCsv(visible, periodText, days, settings), `xuat-nhap-ton-${periodText}.csv`)}>
-            Xuất Excel
+          <Button
+            size="small"
+            icon={<DownloadOutlined />}
+            disabled={visible.length === 0}
+            onClick={() => downloadBlob(buildPeriodCsv(visible, periodText, days, settings), `xuat-nhap-ton-${periodText}.csv`)}
+          >
+            Excel
           </Button>
         </div>
       }
