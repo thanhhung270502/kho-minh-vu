@@ -12,9 +12,13 @@ export type ProductNameSheet = { names: Map<string, string>; error: string | nul
  * và trả câu báo để màn xem trước nói cho người dùng biết vì sao ô tên còn trống.
  */
 export async function loadProductNameSheet(): Promise<ProductNameSheet> {
+  const url = getProductNameSheetUrl();
+  if (!url) {
+    return { names: new Map(), error: "Chưa cấu hình sheet tên hàng chuẩn (TEN_HANG_SHEET_CSV_URL) nên chưa tự điền tên. Gõ tên vào ô trống." };
+  }
   const unavailable = "Không tải được sheet tên hàng chuẩn nên chưa tự điền tên. Gõ tên vào ô trống, hoặc thử lại sau ít phút.";
   try {
-    const response = await fetch(getProductNameSheetUrl(), {
+    const response = await fetch(url, {
       next: { revalidate: 3600 },
       // Google treo thì nhập file vẫn phải đi tiếp — quá 15 giây coi như tải lỗi.
       signal: AbortSignal.timeout(15_000),

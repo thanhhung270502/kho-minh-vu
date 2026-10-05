@@ -20,7 +20,7 @@ import { dictionaryFromEntries, toSyncEntries } from "../src/features/product-co
 const DIR = "data/quy-chuan";
 const CATALOG = join(DIR, "danh-muc-hang-hoa.xlsx");
 const SNAPSHOT = join(DIR, "quy-chuan-ma.csv");
-const SHEET_ID = process.env.MA_HOA_SHEET_ID ?? "1PkbqzSaEF7W_LOrxxMLbgPokS71M0QNhIuA4IShnkOc";
+const SHEET_CSV_URL = process.env.MA_HOA_SHEET_CSV_URL;
 
 const cellText = (v: unknown): string => {
   if (v === null || v === undefined) return "";
@@ -31,7 +31,8 @@ const same = (a: string, b: string) => a.trim().replace(/\s+/g, " ") === b.trim(
 
 async function main() {
   if (process.argv.includes("--tai-moi")) {
-    const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`);
+    assert.ok(SHEET_CSV_URL, "Cần biến MA_HOA_SHEET_CSV_URL (chạy kèm --env-file=.env.local)");
+    const res = await fetch(SHEET_CSV_URL);
     assert.ok(res.ok, `Không tải được sheet quy chuẩn mã (HTTP ${res.status})`);
     writeFileSync(SNAPSHOT, await res.text());
   }

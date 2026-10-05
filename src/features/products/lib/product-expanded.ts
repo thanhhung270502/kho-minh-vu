@@ -14,6 +14,8 @@ type ForecastSource = {
   avgDailySales: number | null;
   daysOfCover: number | null;
   stockoutDate: string | null;
+  /** Tồn khả dụng = tồn − đơn đặt chưa xuất. */
+  available: number;
 };
 
 export type ProductForecast = {
@@ -22,9 +24,12 @@ export type ProductForecast = {
   daysOfCover: number | null;
   /** false = không bán trong kỳ → hiện "Không bán", không có ngày dự kiến. */
   selling: boolean;
+  /** Cần đặt — CÙNG công thức "Đề nghị nhập" trang Phân tích (suggestedOrder). */
+  toOrder: number;
 };
 
-export function forecastById(rows: ReadonlyArray<ForecastSource>): Map<string, ProductForecast> {
+/** coverDays: số ngày dự trữ trong cài đặt Phân tích. */
+export function forecastById(rows: ReadonlyArray<ForecastSource>, coverDays: number): Map<string, ProductForecast> {
   return new Map(
     rows.map((r) => [
       r.productId,
@@ -33,6 +38,8 @@ export function forecastById(rows: ReadonlyArray<ForecastSource>): Map<string, P
         stockoutDate: r.stockoutDate,
         daysOfCover: r.daysOfCover,
         selling: r.avgDailySales !== null,
+        // ⌈bán TB/ngày × số ngày dự trữ − khả dụng⌉, âm thì 0; không bán thì không đặt.
+        toOrder: r.avgDailySales === null ? 0 : Math.max(0, Math.ceil(r.avgDailySales * coverDays - r.available)),
       },
     ]),
   );
