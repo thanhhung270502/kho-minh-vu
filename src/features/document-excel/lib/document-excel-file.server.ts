@@ -132,9 +132,10 @@ export async function buildDocumentWorkbook(
           "Số phiếu đã có trên hệ thống sẽ bị báo lỗi — muốn sửa thì dùng file mẫu cập nhật.",
         ]
       : [
-          "Chỉ sửa được phiếu còn nháp (phiếu nhập / hóa đơn chưa ghi sổ, đơn đặt còn là đơn tạm).",
-          "Ô đầu phiếu để trống = giữ nguyên giá trị đang có.",
-          "Phiếu có dòng hàng trong file: TOÀN BỘ dòng hàng cũ được thay bằng dòng trong file. Xóa trống cột Mã hàng và Số lượng nếu chỉ muốn sửa đầu phiếu.",
+          "Cập nhật chỉ sửa thông tin KHÔNG ảnh hưởng tồn: đối tác, loại người nhận, nhân viên nhận, mã đặt hàng, nguồn nhập, ghi chú phiếu, ghi chú dòng, lý do xuất âm (đơn đặt thêm ngày đặt, ngày giao dự kiến). Sửa được cả phiếu đã ghi sổ.",
+          "Mã hàng, số lượng, số dòng, kho và ngày phiếu phải GIỮ NGUYÊN — khác là báo lỗi. Muốn đổi những thứ này thì hủy phiếu rồi lập phiếu mới.",
+          "Ô để trống = giữ nguyên giá trị đang có.",
+          "Chỉ sửa đầu phiếu: xóa trống cột Mã hàng và Số lượng ở mọi dòng của phiếu đó.",
         ];
   for (const n of notes) guide.addRow({ col: "Lưu ý", hint: n });
 

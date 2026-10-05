@@ -138,10 +138,18 @@ export function DocumentImportDialog({ kind, mode, onClose }: Props) {
             </p>
           </Upload.Dragger>
           <Typography.Paragraph type="secondary" className="mt-3 mb-0">
-            {activeMode === "moi"
-              ? `Mỗi số phiếu thành một ${label} nháp — chưa đụng tồn, kiểm lại trên web rồi mới ghi sổ.`
-              : `Chỉ sửa ${label} còn nháp. Ô đầu phiếu để trống = giữ nguyên; phiếu có dòng hàng trong file sẽ được thay toàn bộ dòng.`}{" "}
-            <a href={`/api/chung-tu-excel/${kind}/mau?kieu=${activeMode}`}>Tải file mẫu</a>
+            {activeMode === "moi" ? (
+              <>
+                Mỗi số phiếu thành một {label} nháp — chưa đụng tồn, kiểm lại trên web rồi mới ghi sổ.{" "}
+                <a href={`/api/chung-tu-excel/${kind}/mau?kieu=moi`}>Tải file mẫu</a>
+              </>
+            ) : (
+              <>
+                Sửa thông tin không ảnh hưởng tồn (người nhận, ghi chú, lý do xuất âm…) của mọi {label}, kể cả đã
+                ghi sổ. Mã hàng, số lượng, kho, ngày phải giữ nguyên. Ô trống = giữ nguyên. Lấy file bằng “Tải mẫu
+                cập nhật” ở nút ⋯ — file có sẵn các phiếu đang lọc.
+              </>
+            )}
           </Typography.Paragraph>
         </>
       ) : null}

@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/features/auth/api/current-user.server";
-import { fetchExportRows, MAX_EXPORT } from "@/features/document-excel/api/document-export.server";
+import { fetchFilteredRows, MAX_EXPORT } from "@/features/document-excel/api/document-export.server";
 import { KIND_LABELS } from "@/features/document-excel/lib/document-excel";
 import { buildDocumentWorkbook } from "@/features/document-excel/lib/document-excel-file.server";
 import { explainError } from "@/shared/lib/errors";
@@ -23,7 +23,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ loai
   }
 
   try {
-    const { total, rows } = await fetchExportRows(loai, new URL(request.url).searchParams);
+    const { total, rows } = await fetchFilteredRows(loai, new URL(request.url).searchParams);
     if (total > MAX_EXPORT) {
       return Response.json(
         {

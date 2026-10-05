@@ -2,6 +2,7 @@
 
 import { App, Button, Dropdown, Space } from "antd";
 import type { MenuProps } from "antd";
+import { useSearchParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
 import { downloadFile } from "@/shared/lib/download-file";
@@ -24,13 +25,18 @@ type Props = {
  */
 export function DocumentExcelActions({ kind, canImport, exportButton }: Props) {
   const { message } = App.useApp();
+  const searchParams = useSearchParams();
   const [mode, setMode] = useState<ImportMode | null>(null);
   const [downloading, setDownloading] = useState(false);
   const file = KIND_LABELS[kind].file;
 
   async function download(kieu: ImportMode) {
     setDownloading(true);
-    const result = await downloadFile(`/api/chung-tu-excel/${kind}/mau?kieu=${kieu}`, `mau-${file}.xlsx`);
+    // Mẫu cập nhật = các phiếu đang lọc trên màn hình, đủ thông tin: gửi kèm bộ lọc.
+    const params = kieu === "cap_nhat" ? new URLSearchParams(searchParams.toString()) : new URLSearchParams();
+    params.delete("trang");
+    params.set("kieu", kieu);
+    const result = await downloadFile(`/api/chung-tu-excel/${kind}/mau?${params.toString()}`, `mau-${file}.xlsx`);
     setDownloading(false);
     if (!result.ok) message.error(result.message);
   }

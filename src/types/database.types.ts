@@ -2996,6 +2996,19 @@ export type Database = {
         }
         Returns: Json
       }
+      xuat_excel_don_dat: {
+        Args: {
+          p_den_ngay?: string
+          p_doi_tac_id?: string
+          p_loai_nhan?: string
+          p_nguoi_nhan_id?: string
+          p_toi_da?: number
+          p_trang_thai?: Database["public"]["Enums"]["trang_thai_ddh"]
+          p_tu_khoa?: string
+          p_tu_ngay?: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       loai_ct:

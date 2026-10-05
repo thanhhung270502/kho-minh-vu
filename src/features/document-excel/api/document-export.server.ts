@@ -1,15 +1,19 @@
 /**
- * Hóa đơn / phiếu nhập đang hiện trên màn Duyệt đơn / Nhập kho theo đúng bộ lọc URL
- * → các dòng Excel. Một lần gọi RPC xuat_excel_chung_tu (0105): cùng quy tắc lọc và
- * phạm vi kho với danh_sach_chung_tu. Lớp api: chỗ duy nhất chạm khóa jsonb tiếng Việt.
+ * Chứng từ đang hiện trên màn danh sách theo đúng bộ lọc URL → các dòng Excel cùng
+ * cột với file mẫu. Dùng cho "Excel" (xuất) và "Tải mẫu cập nhật" (đủ thông tin để
+ * sửa rồi nhập lại). Một lần gọi RPC: xuat_excel_chung_tu (0105) cho hóa đơn / phiếu
+ * nhập, xuat_excel_don_dat (0107) cho đơn đặt — cùng quy tắc lọc với màn danh sách.
+ * Lớp api: chỗ duy nhất chạm khóa jsonb tiếng Việt.
  */
 import { z } from "zod";
 
 import { NEGATIVE_REASON_LABELS } from "@/features/documents/lib/negative-reasons";
+import { readOrderFilterFromUrl, toOrderListRpcArgs } from "@/features/sales-order/schemas/order.schema";
 import { readReceiptFilterFromUrl, toReceiptListRpcArgs } from "@/features/stock-in/schemas/receipt.schema";
 import { readIssueFilterFromUrl, toIssueListRpcArgs } from "@/features/stock-out/schemas/issue.schema";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+import type { DocumentKind } from "../lib/document-excel";
 import type { TemplateRow } from "../lib/document-excel-file.server";
 
 /** Đủ cả lịch sử hóa đơn hiện có (~8.900 phiếu, ~42.000 dòng). */
@@ -33,11 +37,61 @@ const rowSchema = z.object({
 });
 const resultSchema = z.object({ tong: z.number(), dong: z.array(rowSchema) });
 
+const orderRowSchema = z.object({
+  so: z.string(),
+  ngay: z.string(),
+  ngay_giao: z.string().nullable(),
+  ma_doi_tac: z.string().nullable(),
+  ghi_chu: z.string().nullable(),
+  nv_phieu: z.string().nullable(),
+  ma_hang: z.string().nullable(),
+  so_luong: z.coerce.number().nullable(),
+  nv_dong: z.string().nullable(),
+});
+const orderResultSchema = z.object({ tong: z.number(), dong: z.array(orderRowSchema) });
+
+const toDate = (iso: string | null) => (iso ? new Date(`${iso}T00:00:00Z`) : null);
+
+async function fetchOrderRows(params: URLSearchParams): Promise<ExportRows> {
+  const list = toOrderListRpcArgs(readOrderFilterFromUrl(params));
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("xuat_excel_don_dat", {
+    p_trang_thai: list.p_trang_thai,
+    p_doi_tac_id: list.p_doi_tac_id,
+    p_tu_ngay: list.p_tu_ngay,
+    p_den_ngay: list.p_den_ngay,
+    p_tu_khoa: list.p_tu_khoa,
+    p_loai_nhan: list.p_loai_nhan,
+    p_nguoi_nhan_id: list.p_nguoi_nhan_id,
+    p_toi_da: MAX_EXPORT,
+  });
+  if (error) throw error;
+  const result = orderResultSchema.parse(data);
+  return {
+    total: result.tong,
+    rows: result.dong.map((r) => ({
+      docNo: r.so,
+      date: toDate(r.ngay),
+      dueDate: toDate(r.ngay_giao),
+      recipientKind: r.ma_doi_tac ? "Đối tác" : "Nội bộ",
+      partnerCode: r.ma_doi_tac,
+      note: r.ghi_chu,
+      staff: r.nv_dong ?? r.nv_phieu,
+      productCode: r.ma_hang,
+      quantity: r.so_luong,
+    })),
+  };
+}
+
 export type ExportRows = { total: number; rows: TemplateRow[] };
 
 const reasonLabels = NEGATIVE_REASON_LABELS as Record<string, string>;
 
-export async function fetchExportRows(kind: "hoa-don" | "phieu-nhap", params: URLSearchParams): Promise<ExportRows> {
+export async function fetchFilteredRows(kind: DocumentKind, params: URLSearchParams): Promise<ExportRows> {
+  return kind === "don-dat" ? fetchOrderRows(params) : fetchDocumentRows(kind, params);
+}
+
+async function fetchDocumentRows(kind: "hoa-don" | "phieu-nhap", params: URLSearchParams): Promise<ExportRows> {
   // Bộ lọc của chính màn danh sách; bỏ phân trang — xuất mọi phiếu khớp lọc.
   const list =
     kind === "hoa-don"
@@ -62,7 +116,7 @@ export async function fetchExportRows(kind: "hoa-don" | "phieu-nhap", params: UR
     total: result.tong,
     rows: result.dong.map((r) => ({
       docNo: r.so,
-      date: new Date(`${r.ngay}T00:00:00Z`),
+      date: toDate(r.ngay),
       orderNo: r.ma_dat_hang,
       recipientKind: kind === "hoa-don" ? (r.ma_doi_tac ? "Đối tác" : "Nội bộ") : null,
       partnerCode: r.ma_doi_tac,
