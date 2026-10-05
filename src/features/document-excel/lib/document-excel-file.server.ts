@@ -88,7 +88,7 @@ export async function buildDocumentWorkbook(
   /** Tên sheet dữ liệu — mặc định theo kiểu file mẫu; file xuất dùng "Danh sách". */
   sheetName?: string,
 ): Promise<Buffer> {
-  const columns = KIND_COLUMNS[kind];
+  const columns = KIND_COLUMNS[kind].filter((c) => !c.readOnly);
   const wb = new ExcelJS.Workbook();
   wb.creator = "Kho Minh Vũ";
   wb.created = new Date();

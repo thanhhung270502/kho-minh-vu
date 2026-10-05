@@ -42,6 +42,8 @@ export type ColumnSpec = {
   width: number;
   /** Bắt buộc khi nhập mới (đánh dấu * trên tiêu đề). */
   required?: boolean;
+  /** Chỉ đọc khi nhập (file KiotViet còn cột này), không ghi ra file mẫu / file xuất. */
+  readOnly?: boolean;
   /** Tên cột đã chuẩn hóa (bỏ dấu, gạch dưới) mà bộ đọc nhận — tiền tố khớp là đủ. */
   match: string[];
   hint: string;
@@ -54,7 +56,7 @@ export const KIND_COLUMNS: Record<DocumentKind, ColumnSpec[]> = {
     { key: "docNo", title: "Mã đặt hàng", width: 14, required: true, match: ["ma_dat_hang", "so_don"], hint: NO_HINT },
     { key: "date", title: "Ngày", width: 12, required: true, match: ["ngay_dat", "ngay"], hint: "Ngày đặt — dd/mm/yyyy." },
     { key: "dueDate", title: "Ngày giao dự kiến", width: 16, match: ["ngay_giao"], hint: "Không bắt buộc." },
-    { key: "recipientKind", title: "Loại người nhận", width: 14, match: ["loai_nguoi_nhan"], hint: "Đối tác hoặc Nội bộ. Trống: có Mã khách hàng là Đối tác." },
+    { key: "recipientKind", title: "Loại người nhận", width: 14, readOnly: true, match: ["loai_nguoi_nhan"], hint: "Không cần — có Mã khách hàng là đơn cho đối tác, không có là đơn cho nhân viên." },
     { key: "partnerCode", title: "Mã khách hàng", width: 14, match: ["ma_khach_hang", "ma_doi_tac"], hint: "Mã đối tác trên hệ thống (vd. NB001)." },
     { key: "partnerName", title: "Tên khách hàng", width: 28, match: ["ten_khach_hang"], hint: "Chỉ để đọc — hệ thống tra theo Mã khách hàng." },
     { key: "staff", title: "Nhân viên nhận", width: 16, match: ["nhan_vien_nhan"], hint: "Tên viết tắt nhân viên (vd. NGỌC). Nhiều người: NGỌC - QUỲNH." },
@@ -66,7 +68,7 @@ export const KIND_COLUMNS: Record<DocumentKind, ColumnSpec[]> = {
     { key: "orderNo", title: "Mã đặt hàng", width: 14, match: ["ma_dat_hang"], hint: "Có đơn đặt trên hệ thống thì hóa đơn gắn vào đơn đó." },
     { key: "docNo", title: "Mã hóa đơn", width: 14, required: true, match: ["ma_hoa_don", "so_hoa_don"], hint: NO_HINT },
     { key: "date", title: "Ngày", width: 12, required: true, match: ["ngay"], hint: "dd/mm/yyyy." },
-    { key: "recipientKind", title: "Loại người nhận", width: 14, match: ["loai_nguoi_nhan"], hint: "Đối tác hoặc Nội bộ. Trống: có Mã khách hàng là Đối tác." },
+    { key: "recipientKind", title: "Loại người nhận", width: 14, readOnly: true, match: ["loai_nguoi_nhan"], hint: "Không cần — có Mã khách hàng là đơn cho đối tác, không có là đơn cho nhân viên." },
     { key: "partnerCode", title: "Mã khách hàng", width: 14, match: ["ma_khach_hang", "ma_doi_tac"], hint: "Mã đối tác trên hệ thống (vd. NB001)." },
     { key: "partnerName", title: "Tên khách hàng", width: 28, match: ["ten_khach_hang"], hint: "Chỉ để đọc — hệ thống tra theo Mã khách hàng." },
     { key: "staff", title: "Nhân viên nhận", width: 16, match: ["nhan_vien_nhan"], hint: "Tên viết tắt nhân viên (vd. NGỌC). Nhiều người: NGỌC - QUỲNH." },
