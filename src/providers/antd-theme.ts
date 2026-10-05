@@ -79,9 +79,11 @@ export const antdTheme: ThemeConfig = {
       headerSortActiveBg: "#F5F5F5",
       headerSortHoverBg: "#F5F5F5",
       borderColor: "#F3F3F3",
-      rowHoverBg: "#FAFAFA",
+      // Rê chuột phải thấy rõ đang ở dòng nào trên bảng dày (#FAFAFA cũ gần như
+      // trùng nền trắng). Vẫn là xám — màu chỉ dùng để báo hiệu.
+      rowHoverBg: "#EDEDED",
       rowSelectedBg: "#F3F3F3",
-      rowSelectedHoverBg: "#EBEBEB",
+      rowSelectedHoverBg: "#E5E5E5",
       cellPaddingBlock: 9,
       cellPaddingInline: 12,
       headerBorderRadius: 0,
