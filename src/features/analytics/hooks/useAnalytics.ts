@@ -26,4 +26,3 @@ export function useAnalysisSettings(options?: { enabled?: boolean }) {
     enabled: options?.enabled ?? true,
   });
 }
-
