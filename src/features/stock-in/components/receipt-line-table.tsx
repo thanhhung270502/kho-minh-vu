@@ -115,7 +115,7 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
       title: "Mã hàng",
       dataIndex: "productCode",
       key: "productCode",
-      width: 160,
+      width: 140,
       render: (code: string) => <span className="font-mono">{code}</span>,
     },
     {
@@ -124,14 +124,14 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
       key: "productName",
       ellipsis: true,
     },
-    { title: "ĐVT", dataIndex: "unitName", key: "unitName", width: 90 },
+    { title: "ĐVT", dataIndex: "unitName", key: "unitName", width: 70 },
     ...(hasMultipleWarehouses
       ? [
           {
             title: "Kho",
             dataIndex: "warehouseName",
             key: "warehouseName",
-            width: 130,
+            width: 110,
             render: (name: string, line: DocumentLine) =>
               editable ? (
                 <Select
@@ -154,7 +154,7 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
       title: "Số lượng",
       dataIndex: "quantity",
       key: "quantity",
-      width: 120,
+      width: 110,
       align: "right",
       render: (value: number, line: DocumentLine) =>
         editable ? (
@@ -201,14 +201,16 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
 
   return (
     <>
-      <div className="overflow-x-auto">
+      {/* scroll.x của antd tự cuộn ngang trong khung bảng; bọc overflow-x sẽ kéo theo thanh cuộn dọc thừa. */}
+      <div>
         <Table<DocumentLine>
           rowKey="id"
           size="small"
           columns={columns}
           dataSource={lines}
           pagination={false}
-          scroll={{ x: 900 }}
+          // Bảng nằm cột trái (khung Thông tin phiếu bên phải) — đủ hẹp để thấy cột Số lượng.
+          scroll={{ x: 680 }}
           locale={{ emptyText: "Chưa có dòng nào. Gõ mã hàng ở ô bên dưới để thêm." }}
           summary={() =>
             lines.length > 0 ? (

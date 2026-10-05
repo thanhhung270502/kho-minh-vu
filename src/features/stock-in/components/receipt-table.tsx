@@ -2,7 +2,7 @@
 
 import { Button } from "antd";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, type ReactNode } from "react";
 
 import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
@@ -30,7 +30,6 @@ export function ReceiptTable({ canCreate, excelActions }: { canCreate: boolean; 
     [searchParams],
   );
   const receipts = useReceipts(filter);
-  const [createOpen, setCreateOpen] = useState(false);
 
   const changeFilter = useCallback(
     (next: ReceiptFilter) => {
@@ -61,13 +60,7 @@ export function ReceiptTable({ canCreate, excelActions }: { canCreate: boolean; 
           <ReceiptToolbar
             filter={filter}
             onChange={changeFilter}
-            addButton={
-              canCreate ? (
-                <Button type="primary" onClick={() => setCreateOpen(true)}>
-                  Tạo phiếu nhập
-                </Button>
-              ) : null
-            }
+            addButton={canCreate ? <CreateReceiptButton /> : null}
             excelActions={excelActions}
           />
         }
@@ -104,8 +97,6 @@ export function ReceiptTable({ canCreate, excelActions }: { canCreate: boolean; 
           )}
         </QueryState>
       </ListLayout>
-
-      <CreateReceiptButton open={createOpen} onClose={() => setCreateOpen(false)} />
     </>
   );
 }

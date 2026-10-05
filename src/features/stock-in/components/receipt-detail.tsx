@@ -6,12 +6,13 @@ import { useState } from "react";
 
 import { ReturnButton } from "@/features/returns/components/return-button";
 import { PageHeader } from "@/shared/components/page-header";
+import { StatusDot } from "@/shared/components/status-dot";
 import { QueryState } from "@/shared/components/query-state";
 
 import { useReceiptDetail, useReceiptLines } from "../hooks/useReceipts";
-import type { ReceiptPermissions } from "../types";
+import { DOC_STATUS_LABELS, DOC_STATUS_TONES, type ReceiptPermissions } from "../types";
 import { PostReceiptButton } from "./post-receipt-button";
-import { ReceiptHeader } from "./receipt-header";
+import { ReceiptAside } from "./receipt-aside";
 import { ReceiptLineTable } from "./receipt-line-table";
 import { VoidReceiptDialog } from "./void-receipt-dialog";
 
@@ -49,13 +50,20 @@ export function ReceiptDetailView({
 
         return (
           <>
-            <Link href="/nhap-kho" className="mb-2 inline-block text-sm">
+            <Link href="/nhap-kho" className="mb-2 inline-block text-[13px] font-semibold text-chu-phu">
               ← Phiếu nhập
             </Link>
 
             <PageHeader
               title={receipt.docNo}
-              description={receipt.partnerName ?? "Chưa chọn nhà cung cấp"}
+              description={
+                <span className="flex flex-wrap items-center gap-2">
+                  <StatusDot tone={DOC_STATUS_TONES[receipt.status]} variant="badge">
+                    {DOC_STATUS_LABELS[receipt.status]}
+                  </StatusDot>
+                  {receipt.partnerName ?? "Chưa chọn nhà cung cấp"}
+                </span>
+              }
               actions={
                 <Space wrap>
                   <Link href={`/nhap-kho/${id}/in`} target="_blank">
@@ -81,9 +89,8 @@ export function ReceiptDetailView({
               }
             />
 
-            <ReceiptHeader receipt={receipt} canEdit={permissions.canEdit} />
-
-            <div className="mt-4">
+            {/* Cùng khuôn trang đơn đặt: dòng hàng bên trái, thông tin phiếu bên phải. */}
+            <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
               <QueryState query={lines} isEmpty={() => false} emptyDescription="">
                 {(loadedLines) => (
                   <ReceiptLineTable
@@ -93,6 +100,7 @@ export function ReceiptDetailView({
                   />
                 )}
               </QueryState>
+              <ReceiptAside receipt={receipt} canEdit={permissions.canEdit} />
             </div>
 
             <VoidReceiptDialog

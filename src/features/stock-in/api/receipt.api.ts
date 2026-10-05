@@ -23,7 +23,8 @@ export async function fetchReceipts(
 }
 
 export type NewReceiptHeader = {
-  partnerId: string;
+  /** null: bấm "Tạo phiếu nhập" là tạo ngay, chọn nhà cung cấp trong trang phiếu. */
+  partnerId: string | null;
   warehouseId: string;
   source: ReceiptSource;
   docDate?: string;
@@ -59,4 +60,24 @@ export async function createReceipt(header: NewReceiptHeader): Promise<string> {
   if (error) throw error;
 
   return data.id;
+}
+
+/**
+ * Nguồn nhập quyết định dãy số (PN… / PNM…). Đổi nguồn của phiếu còn nháp thì cấp
+ * số mới đúng dãy — số cũ bỏ trống, không tái dùng (hai người tạo cùng lúc sẽ trùng).
+ */
+export async function changeReceiptSource(id: string, source: ReceiptSource): Promise<void> {
+  const supabase = getSupabaseBrowserClient();
+  const { data: docNo, error: docNoError } = await supabase.rpc("sinh_so_ct", {
+    p_loai: "NHAP",
+    p_nguon: source === "NHA_MAY" ? "NHA_MAY" : "",
+  });
+  if (docNoError) throw docNoError;
+
+  const { error, count } = await supabase
+    .from("chung_tu")
+    .update({ nguon_nhap: source, so_ct: docNo }, { count: "exact" })
+    .eq("id", id);
+  if (error) throw error;
+  if (!count) throw new Error("Không đổi được nguồn — phiếu đã ghi sổ hoặc tài khoản không có quyền sửa.");
 }
