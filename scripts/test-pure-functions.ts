@@ -3,30 +3,35 @@
  * Chạy: npx tsx scripts/test-pure-functions.ts
  */
 import assert from "node:assert/strict";
+import { periodRange, shiftPeriod, readPeriodFilter, writePeriodFilter, periodLabel, seriesStep, isCurrentPeriod } from "../src/features/analytics/lib/period";
+import {
+  matchesPeriodFilter,
+  periodKpis,
+  breakdown,
+  changeRatio,
+  hasActivity,
+  salesMovers,
+  slowStock,
+  topCategories,
+  topProducts,
+} from "../src/features/analytics/lib/period-analysis";
 import { toAddOrderLineResult, toOrderStatusCounts } from "../src/features/sales-order/types";
 import { statusCountKeyOf, toAddOrderLineRpcArgs, toOrderStatusCountRpcArgs } from "../src/features/sales-order/schemas/order.schema";
 import { DATE_PRESET_LABELS, activeDatePreset, datePresetRange, todayInVietnam } from "../src/features/sales-order/lib/date-presets";
 import { orderProgress } from "../src/features/sales-order/lib/order-progress";
 import {
   toFlowDay,
-  toIdleProduct,
   toOverviewKpis,
   toStockByGroupRow,
 } from "../src/features/dashboard/types";
 import {
   averageIssuesLabel,
-  buildInventoryKpi,
-  examplesLabel,
-  formatMoneyShort,
-  formatPercentDelta,
   formatUpdatedAt,
   groupShare,
   negativeByWarehouseLabel,
-  newProductsLabel,
   oldestPendingLabel,
   pendingBreakdownLabel,
-  percentChange,
-  previousMonthNumber,
+  vsYesterdayLabel,
 } from "../src/features/dashboard/lib/overview-format";
 import { toGlobalSearchResult, type GlobalSearchResult } from "../src/features/global-search/types";
 import { defaultActiveIndex, groupSearchResults, searchResultHref } from "../src/features/global-search/lib/search-results";
@@ -70,17 +75,10 @@ import {
 import { toAnalysisRow, type AnalysisRow, type AnalysisSettings } from "../src/features/analytics/types";
 import {
   buildReorderCsv,
-  coverBucket,
   finishOf,
-  visibleCoverBuckets,
-  kpisOf,
   reorderTabs,
-  salesPaceChange,
-  slowMoving,
   stockStatus,
   suggestedOrder,
-  topGroups,
-  topSellers,
 } from "../src/features/analytics/lib/analysis";
 import { toProductInsert, type ProductInput } from "../src/features/products/types";
 import { TEMPLATE_COLUMNS } from "../src/features/products/lib/excel-template";
@@ -169,7 +167,6 @@ import {
 } from "../src/features/dashboard/lib/stock-drilldown";
 import {
   countNegativeByReason,
-  compareSalesPace,
 } from "../src/features/dashboard/lib/dashboard-stats";
 import { parseImageCell, buildCopyPlan } from "./copy-kiotviet-images/parse-image-cell";
 
@@ -570,10 +567,6 @@ assert.equal(
   );
 }
 
-assert.deepEqual(compareSalesPace(5, 3), { diff: 2, trend: "up" });
-assert.deepEqual(compareSalesPace(3, 5), { diff: -2, trend: "down" });
-assert.deepEqual(compareSalesPace(4, 4), { diff: 0, trend: "same" });
-assert.deepEqual(compareSalesPace(7, 0), { diff: 7, trend: "up" }, "hôm qua = 0 không được chia nổ");
 
 // Ghi chú KiotViet thật: dòng 1 là tên + địa chỉ, dòng 2 là SĐT.
 assert.equal(
@@ -1098,22 +1091,6 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.equal(st({ stock: 5, avgDailySales: null }), "no-sales", "còn tồn, không bán: Không bán");
   assert.equal(st({ stock: 0, avgDailySales: null }), "stopped", "hết tồn, không bán: Ngừng bán?");
 
-  const b = (o: Partial<AnalysisRow>) => coverBucket(arow(o), ANALYSIS_SETTINGS);
-  assert.equal(b({ avgDailySales: null }), "no-data", "còn tồn, không bán: chưa đủ dữ liệu");
-  assert.equal(b({ stock: 0, avgDailySales: null }), null, "không tồn, không bán: không đưa vào biểu đồ");
-  assert.equal(b({ stock: 0, avgDailySales: 1, daysOfCover: 0 }), "out");
-  assert.equal(b({ avgDailySales: 1, daysOfCover: 14 }), "le-x", "<= X (ngưỡng vàng)");
-  assert.equal(b({ avgDailySales: 1, daysOfCover: 30 }), "x-30");
-  assert.deepEqual(
-    visibleCoverBuckets({ ...ANALYSIS_SETTINGS, yellowDays: 30 }).includes("x-30"),
-    false,
-    "ngưỡng vàng >= 30: không còn khoảng X+1..30, bỏ cột đó (tránh nhãn '31–30')",
-  );
-  assert.equal(visibleCoverBuckets(ANALYSIS_SETTINGS).length, 7);
-  assert.equal(b({ avgDailySales: 1, daysOfCover: 90 }), "31-90");
-  assert.equal(b({ avgDailySales: 1, daysOfCover: 364 }), "91-364");
-  assert.equal(b({ avgDailySales: 1, daysOfCover: 365 }), "ge-365");
-
   assert.equal(finishOf("XI_MA"), "XI_MA");
   assert.equal(finishOf(null), "KHAC");
 
@@ -1128,40 +1105,12 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
     arow({ code: "B1", stock: 400, avgDailySales: 1, daysOfCover: 400, soldInPeriod: 30, categoryId: "g3", categoryName: "Nhóm 3" }),
   ];
 
-  const k = kpisOf(rows, ANALYSIS_SETTINGS);
-  assert.deepEqual(k.needSoon, { count: 2, total: 8 }, "cần nhập trong X ngày: S1, S2 (còn hàng, <= 14 ngày)");
-  assert.deepEqual(k.outWithDemand, { count: 1, outTotal: 2 }, "hết hàng vẫn có khách mua: O1 / 2 mã hết");
-  assert.deepEqual(k.totalStock, { quantity: 545, productsInStock: 6 }, "Σ tồn của mã còn hàng");
-  assert.deepEqual(k.noSalesStock, { quantity: 110, products: 2, share: 110 / 545 }, "tồn không có tín hiệu bán: N1 + N2");
-
   const tabs = reorderTabs(rows, ANALYSIS_SETTINGS);
   assert.deepEqual(tabs.soon.map((r) => r.code), ["S1", "S2"], "sắp hết, ít ngày nhất lên đầu");
   assert.deepEqual(tabs.outWithDemand.map((r) => r.code), ["O1"]);
   assert.deepEqual(tabs.later.map((r) => r.code), ["L1"], "còn X+1..30 ngày");
 
-  assert.deepEqual(topSellers(rows, 2).map((r) => r.code), ["O1", "B1"], "bán chạy: bán nhiều nhất, hòa thì theo mã");
-  const groups = topGroups(rows, 15);
-  assert.equal(groups[0]?.categoryId, "g2", "nhóm bán nhiều nhất trước (90)");
-  assert.equal(groups[0]?.daysOfCover, 20 / (90 / 30), "số ngày tồn nhóm = Σ tồn / (Σ bán / số ngày)");
 
-  const slow = slowMoving(rows);
-  assert.deepEqual(slow.noSales.map((r) => r.code), ["N2", "N1"], "không bán: tồn nhiều nhất trước, chỉ mã còn tồn");
-  assert.deepEqual(slow.overstock.map((r) => r.code), ["B1"], "đủ bán >= 365 ngày");
-
-  // Nhịp bán: TB theo NGÀY CÓ BÁN, nửa sau so với nửa đầu.
-  const days = [
-    { date: "d1", invoiceCount: 2, quantity: 10 },
-    { date: "d2", invoiceCount: 0, quantity: 0 },
-    { date: "d3", invoiceCount: 4, quantity: 30 },
-    { date: "d4", invoiceCount: 0, quantity: 0 },
-  ];
-  assert.equal(salesPaceChange(days, "invoices"), 1, "nửa đầu TB 2, nửa sau TB 4 -> +100%");
-  assert.equal(salesPaceChange(days, "quantity"), 2, "theo số lượng: 10 -> 30");
-  assert.equal(
-    salesPaceChange([{ date: "d1", invoiceCount: 0, quantity: 0 }, { date: "d2", invoiceCount: 3, quantity: 5 }], "invoices"),
-    null,
-    "nửa đầu không bán: không chia cho 0",
-  );
 }
 
 // --- Phase 14: panel chi tiết — mã đang chọn trên URL `?chon=` (PANEL-01..03) --
@@ -1348,6 +1297,82 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
     brands: ["HONDA", "YAMAHA"],
     models: ["Air Blade", "Vision", "Acruzo"],
   });
+}
+
+
+// --- Phân tích theo kỳ (0099) ------------------------------------------------
+{
+  // Kỳ: tuần bắt đầu thứ Hai; kỳ đang chạy cắt ở hôm nay; quý / năm đủ ngày.
+  assert.deepEqual(periodRange("tuan", "2026-09-17", "2026-12-31"), { from: "2026-09-14", to: "2026-09-20" });
+  assert.deepEqual(periodRange("thang", "2026-10-20", "2026-10-05"), { from: "2026-10-01", to: "2026-10-05" }, "tháng đang chạy cắt ở hôm nay");
+  assert.deepEqual(periodRange("quy", "2026-08-02", "2026-12-31"), { from: "2026-07-01", to: "2026-09-30" });
+  assert.deepEqual(periodRange("nam", "2026-03-03", "2027-01-01"), { from: "2026-01-01", to: "2026-12-31" });
+  assert.equal(shiftPeriod("thang", "2026-03-31", -1), "2026-02-01", "lùi tháng từ ngày 31 không nhảy sai tháng");
+  assert.equal(shiftPeriod("quy", "2026-08-15", 1), "2026-10-01");
+  assert.equal(periodLabel("quy", "2026-08-15"), "Quý 3/2026");
+  assert.equal(periodLabel("tuan", "2026-09-17"), "Tuần 14/09 – 20/09/2026");
+  assert.equal(seriesStep("thang"), "ngay");
+  assert.equal(seriesStep("quy"), "tuan");
+  assert.equal(seriesStep("nam"), "thang");
+  assert.equal(isCurrentPeriod("thang", "2026-10-01", "2026-10-05"), true);
+
+  // URL: tham số tiếng Việt; dòng xe bị bỏ khi chưa chọn hãng; mốc về đầu kỳ.
+  const f = readPeriodFilter(new URLSearchParams("ky=quy&moc=2026-08-15&hang=H&dong=VR&xu_ly=s1"), "2026-10-05");
+  assert.equal(f.unit, "quy");
+  assert.equal(f.anchor, "2026-07-01");
+  assert.equal(f.modelCode, "VR");
+  assert.equal(readPeriodFilter(new URLSearchParams("dong=VR"), "2026-10-05").modelCode, null, "dòng xe cần có hãng");
+  assert.equal(readPeriodFilter(new URLSearchParams("ky=xyz&moc=abc"), "2026-10-05").unit, "thang", "giá trị lạ về mặc định");
+  const url = writePeriodFilter(f, new URLSearchParams("tab=phan-tich"));
+  assert.equal(url.get("tab"), "phan-tich", "giữ tham số khác");
+  assert.equal(url.get("hang"), "H");
+
+  // Lọc hãng / dòng tính cả xe dùng chung.
+  const base = {
+    productId: "p", code: "A", name: "A", categoryId: "c1", categoryName: "N", isCombo: false, isActive: true, unitName: "Cái",
+    brandCode: "H", modelCode: "V", sharedVehicles: [{ brandCode: "Y", modelCode: "AC" }], partCode: "12", stageId: "s1", stageName: "Xi",
+    openingStock: 10, received: 5, sold: 8, internalOut: 0, returned: 0, adjusted: 0, closingStock: 7, receivedPrev: 0, soldPrev: 4,
+  };
+  const none = readPeriodFilter(new URLSearchParams(""), "2026-10-05");
+  assert.equal(matchesPeriodFilter(base, { ...none, brandCode: "Y", modelCode: "AC" }), true, "khớp xe dùng chung");
+  assert.equal(matchesPeriodFilter(base, { ...none, brandCode: "H", modelCode: "AC" }), false, "dòng phải cùng hãng");
+  assert.equal(matchesPeriodFilter(base, { ...none, partCode: "13" }), false);
+
+  const k = periodKpis([base, { ...base, productId: "q", sold: 0, soldPrev: 0, openingStock: 0, closingStock: 3 }], [
+    { date: "2026-09-01", received: 5, sold: 8, internalOut: 0, receiptCount: 2, invoiceCount: 3 },
+  ]);
+  assert.equal(k.sold, 8);
+  assert.equal(k.invoiceCount, 3);
+  assert.equal(k.sellingProducts, 1);
+  assert.equal(k.turnover, 8 / ((10 + 10) / 2), "vòng quay = xuất bán ÷ tồn bình quân");
+  assert.equal(changeRatio(8, 4), 1);
+  assert.equal(changeRatio(5, 0), null, "kỳ trước 0: không chia");
+  assert.equal(hasActivity({ ...base, openingStock: 0, received: 0, sold: 0, closingStock: 0, soldPrev: 0 }), false);
+
+  // Cơ cấu theo hãng chỉ tính cặp chính (không đếm một lần bán hai lần).
+  const namer = { brand: (b: string) => (b === "H" ? "HONDA" : b), model: (_b: string, m: string) => m, part: (p: string) => p };
+  assert.deepEqual(breakdown([base], "hang", namer), [{ key: "H", label: "HONDA", sold: 8, soldPrev: 4 }]);
+
+  // Bảng xếp hạng theo kỳ.
+  const r = (id: string, o: Partial<typeof base>) => ({ ...base, productId: id, code: id, ...o });
+  const ranked = [
+    r("B1", { sold: 50, soldPrev: 10, categoryId: "c1" }),
+    r("B2", { sold: 30, soldPrev: 60, categoryId: "c2", categoryName: "M" }),
+    r("B3", { sold: 0, soldPrev: 0, closingStock: 90 }),
+    r("B4", { sold: 1, soldPrev: 1, closingStock: 400 }),
+  ];
+  assert.deepEqual(topProducts(ranked, 2).map((x) => x.code), ["B1", "B2"]);
+  const cats = topCategories(ranked, 5);
+  assert.equal(cats[0]?.sold, 51, "nhóm c1 = B1 + B4");
+  assert.equal(cats[0]?.share, 51 / 81, "tỉ trọng trong tổng xuất bán");
+  const mv = salesMovers(ranked, 5);
+  assert.deepEqual(mv.up.map((x) => x.code), ["B1"]);
+  assert.deepEqual(mv.down.map((x) => x.code), ["B2"]);
+  assert.equal(mv.upCount, 1, "đếm đủ, không bị cắt top");
+  const slow = slowStock(ranked, 30, 10);
+  assert.deepEqual(slow.noSales.map((x) => x.code), ["B3"], "còn tồn, kỳ này không bán");
+  assert.deepEqual(slow.overstock.map((x) => x.row.code), ["B4"], "400 ÷ (1/30) = 12.000 ngày ≥ 365");
+  assert.equal(slow.noSalesQty, 90, "tổng tồn của mã không bán");
 }
 
 // --- Phase 16: chức vụ & quyền (QUYEN-01/02) ------------------------------
@@ -1601,10 +1626,9 @@ async function kiemCsvPhanTich() {
     ANALYSIS_SETTINGS,
   ).text();
   const header = csv.split("\r\n")[0] ?? "";
-  assert.ok(header.includes("Đề nghị nhập") && header.includes("Mã hàng"), "CSV đề nghị nhập có tiêu đề tiếng Việt");
-  assert.ok(!/giá|vốn/i.test(header), "CSV đề nghị nhập không có cột giá");
-  assert.ok(header.includes("Đơn đặt") && !header.includes("Khách đặt"), "TEN-03: CSV ghi Đơn đặt thay Khách đặt");
-  assert.ok(csv.includes("RWT") && csv.includes(",65"), "dòng RWT đề nghị 65");
+  // Excel danh sách cần nhập: đúng 3 cột theo yêu cầu.
+  assert.equal(header.replace(/^﻿/, ""), "Mã hàng,Tên hàng,Số lượng cần nhập");
+  assert.ok(csv.includes("RWT,Hàng RWT,65"), "dòng RWT đề nghị 65");
 }
 
 // --- Phase 20 — tìm kiếm toàn cục (UI3B-02) ---------------------------------
@@ -1650,9 +1674,7 @@ async function kiemCsvPhanTich() {
     }) as unknown as OverviewDb;
 
   const k = toOverviewKpis(overviewRow());
-  assert.equal(k.canViewCost, true);
-  assert.equal(k.totalQuantity, 9000);
-  assert.deepEqual(k.inventoryTrend, [1, 2], "xu_huong_ton ép về number[]");
+  assert.deepEqual(k.pendingTrend, [0, 5], "xu_huong_cho_ghi_so ép về number[]");
   assert.deepEqual(k.negativeByWarehouse, [{ warehouseName: "Kho 1", count: 4 }]);
   assert.equal(k.oldestPendingDays, 2);
   assert.deepEqual(toOverviewKpis(overviewRow({ ton_am_theo_kho: { x: 1 } })).negativeByWarehouse, [], "jsonb không phải mảng → []");
@@ -1665,45 +1687,14 @@ async function kiemCsvPhanTich() {
     toFlowDay({ ngay: "2092-03-09", so_phieu_nhap: 2, so_phieu_xuat: 0, sl_nhap: "10", sl_xuat: "0" } as unknown as Parameters<typeof toFlowDay>[0]),
     { date: "2092-03-09", receiptCount: 2, issueCount: 0, receiptQuantity: 10, issueQuantity: 0 },
   );
-  assert.deepEqual(
-    toIdleProduct({ san_pham_id: "p", ma_hang: "A", ten_hang: "B", so_ngay: 45, ton: "3" } as unknown as Parameters<typeof toIdleProduct>[0]),
-    { key: "p", productId: "p", code: "A", name: "B", idleDays: 45, quantity: 3 },
-  );
-
-  assert.equal(percentChange(102.4, 100), 2.4);
-  assert.equal(percentChange(5, 0), null);
-  assert.equal(percentChange(5, null), null);
-  assert.equal(percentChange(90, 100), -10);
-  assert.equal(formatPercentDelta(2.4, 9), "↑ 2,4% so tháng 9");
-  assert.equal(formatPercentDelta(-10, 9), "↓ 10% so tháng 9");
-  assert.equal(formatPercentDelta(0, 9), "Bằng tháng 9");
-  assert.equal(formatPercentDelta(null, 9), "Chưa đủ dữ liệu tháng trước");
-  assert.equal(previousMonthNumber("2026-10-04"), 9);
-  assert.equal(previousMonthNumber("2026-01-15"), 12);
-  assert.deepEqual(formatMoneyShort(312_500_000), { value: "312,5", unit: "tr đ" });
-  assert.deepEqual(formatMoneyShort(1_240_000_000), { value: "1,2", unit: "tỷ đ" });
-  assert.deepEqual(formatMoneyShort(850_000), { value: "850.000", unit: "đ" });
-
-  const withCost = buildInventoryKpi(
-    { canViewCost: true, inventoryValue: 312_500_000, inventoryValuePrevMonth: 305_000_000, totalQuantity: 9000, totalQuantityPrevMonth: 8800 },
-    "2026-10-04",
-  );
-  assert.deepEqual(withCost, { label: "Giá trị tồn", value: "312,5", unit: "tr đ", delta: "↑ 2,5% so tháng 9" });
-  const noCost = buildInventoryKpi(
-    { canViewCost: false, inventoryValue: null, inventoryValuePrevMonth: null, totalQuantity: 9000, totalQuantityPrevMonth: 9000 },
-    "2026-10-04",
-  );
-  assert.deepEqual(noCost, { label: "Tổng SL tồn", value: "9.000", unit: "", delta: "Bằng tháng 9" });
-
-  assert.equal(newProductsLabel(3), "+3 mã tháng này");
-  assert.equal(newProductsLabel(0), "Không có mã mới tháng này");
+  assert.equal(vsYesterdayLabel(12, 9), "Hôm qua 9 · ▲ +3");
+  assert.equal(vsYesterdayLabel(5, 0), "Hôm qua 0 · ▲ +5", "hôm qua 0 không chia");
+  assert.equal(vsYesterdayLabel(7, 10), "Hôm qua 10 · ▼ −3");
+  assert.equal(vsYesterdayLabel(4, 4), "Bằng hôm qua (4)");
   assert.equal(averageIssuesLabel(4.2), "TB 4,2 phiếu/ngày");
   assert.equal(oldestPendingLabel(null), "Không có phiếu chờ");
   assert.equal(oldestPendingLabel(0), "Cũ nhất hôm nay");
   assert.equal(oldestPendingLabel(2), "Cũ nhất 2 ngày");
-  assert.equal(examplesLabel(["VOR-275-17", "ACQ-GS-5A"], 8), "VOR-275-17, ACQ-GS-5A và 6 mã khác");
-  assert.equal(examplesLabel(["A"], 1), "A");
-  assert.equal(examplesLabel([], 0), "Không có");
   assert.equal(pendingBreakdownLabel(5, 3, 2), "3 phiếu nhập · 2 phiếu xuất");
   assert.equal(pendingBreakdownLabel(6, 3, 2), "3 phiếu nhập · 2 phiếu xuất · 1 phiếu trả");
   assert.equal(

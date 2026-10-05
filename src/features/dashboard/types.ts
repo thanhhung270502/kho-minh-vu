@@ -6,26 +6,12 @@ type Fn = Database["public"]["Functions"];
 // Chỉ lớp api và mapper ở đây được chạm vào các kiểu này. Component và hook
 // luôn nhận kiểu đã map (CLAUDE.md Bước 3-4).
 
-type SalesPaceRowDb = Fn["nhip_ban"]["Returns"][number];
 type NegativeStockRowDb = Fn["bao_cao_xuat_am"]["Returns"][number];
 type StockByGroupRowDb = Fn["ton_theo_nhom"]["Returns"][number];
 type OverviewRowDb = Fn["tong_quan_chi_so"]["Returns"][number];
 type FlowRowDb = Fn["nhap_xuat_theo_ngay"]["Returns"][number];
-type IdleRowDb = Fn["khong_luan_chuyen"]["Returns"][number];
 
 // --- Mô hình miền (khóa camelCase tiếng Anh) --------------------------------
-
-export type SalesPaceDay = {
-  date: string;
-  documentCount: number;
-  lineCount: number;
-  productCount: number;
-};
-
-export type SalesPace = {
-  today: SalesPaceDay;
-  yesterday: SalesPaceDay;
-};
 
 /**
  * `bao_cao_xuat_am` chỉ gồm hai loại chứng từ bị ép chọn lý do xuất âm
@@ -59,23 +45,12 @@ export type StockByGroupRow = {
   inStock: number;
   outOfStock: number;
   negative: number;
-  belowMinimum: number;
   totalQuantity: number;
 };
 
 export type NegativeByWarehouse = { warehouseName: string; count: number };
 
 export type OverviewKpis = {
-  canViewCost: boolean;
-  inventoryValue: number | null;
-  inventoryValuePrevMonth: number | null;
-  totalQuantity: number;
-  totalQuantityPrevMonth: number;
-  /** 30 điểm cũ → mới: giá trị nếu canViewCost, ngược lại SL — ƯỚC TÍNH theo giá vốn hiện tại (D-09). */
-  inventoryTrend: number[];
-  activeProducts: number;
-  newProductsThisMonth: number;
-  activeProductsTrend: number[];
   avgIssuesPerDay: number;
   pendingDocs: number;
   pendingReceipts: number;
@@ -83,7 +58,6 @@ export type OverviewKpis = {
   oldestPendingDays: number | null;
   pendingTrend: number[];
   negativeByWarehouse: NegativeByWarehouse[];
-  belowMinimumExamples: string[];
 };
 
 export type FlowDay = {
@@ -94,44 +68,11 @@ export type FlowDay = {
   issueQuantity: number;
 };
 
-export type IdleProduct = {
-  key: string;
-  productId: string;
-  code: string;
-  name: string;
-  idleDays: number;
-  quantity: number;
-};
 
 // --- Mapper: database -> miền ----------------------------------------------
 
 function isDocumentKind(value: string): value is DocumentKind {
   return value === "XUAT" || value === "TRA_NCC";
-}
-
-/**
- * `nhip_ban` luôn trả đúng hai dòng, ngày mới trước (0071). Sắp lại theo `ngay`
- * giảm dần cho chắc thay vì tin thứ tự SQL, rồi tách today/yesterday theo vị
- * trí — thiếu dòng (không nên xảy ra với RPC này) thì báo lỗi rõ ràng thay vì
- * để `undefined` rò ra tới component.
- */
-export function toSalesPace(rows: SalesPaceRowDb[]): SalesPace {
-  const sorted = [...rows].sort((a, b) => (a.ngay < b.ngay ? 1 : -1));
-  const [today, yesterday] = sorted;
-  if (!today || !yesterday) {
-    throw new Error(
-      "Nhịp bán: RPC nhip_ban phải trả đúng hai dòng (hôm nay, hôm qua)",
-    );
-  }
-
-  const toDay = (row: SalesPaceRowDb): SalesPaceDay => ({
-    date: row.ngay,
-    documentCount: Number(row.so_phieu),
-    lineCount: Number(row.so_dong),
-    productCount: Number(row.so_ma),
-  });
-
-  return { today: toDay(today), yesterday: toDay(yesterday) };
 }
 
 export function toNegativeStockLine(row: NegativeStockRowDb): NegativeStockLine {
@@ -161,7 +102,6 @@ export function toStockByGroupRow(row: StockByGroupRowDb): StockByGroupRow {
     inStock: Number(row.con_hang),
     outOfStock: Number(row.het_hang),
     negative: Number(row.am),
-    belowMinimum: Number(row.duoi_dinh_muc),
     totalQuantity: Number(row.tong_so_luong),
   };
 }
@@ -183,16 +123,6 @@ const toNumbers = (values: unknown[] | null): number[] => (values ?? []).map(Num
 
 export function toOverviewKpis(row: OverviewRowDb): OverviewKpis {
   return {
-    canViewCost: row.xem_gia_von,
-    inventoryValue: row.gia_tri_ton == null ? null : Number(row.gia_tri_ton),
-    inventoryValuePrevMonth:
-      row.gia_tri_ton_thang_truoc == null ? null : Number(row.gia_tri_ton_thang_truoc),
-    totalQuantity: Number(row.tong_sl_ton),
-    totalQuantityPrevMonth: Number(row.tong_sl_ton_thang_truoc),
-    inventoryTrend: toNumbers(row.xu_huong_ton),
-    activeProducts: Number(row.ma_kinh_doanh),
-    newProductsThisMonth: Number(row.ma_moi_thang),
-    activeProductsTrend: toNumbers(row.xu_huong_ma_kd),
     avgIssuesPerDay: Number(row.phieu_xuat_tb_ngay),
     pendingDocs: Number(row.cho_ghi_so),
     pendingReceipts: Number(row.cho_ghi_so_nhap),
@@ -201,7 +131,6 @@ export function toOverviewKpis(row: OverviewRowDb): OverviewKpis {
       row.cho_ghi_so_cu_nhat_ngay == null ? null : Number(row.cho_ghi_so_cu_nhat_ngay),
     pendingTrend: toNumbers(row.xu_huong_cho_ghi_so),
     negativeByWarehouse: parseNegativeByWarehouse(row.ton_am_theo_kho),
-    belowMinimumExamples: row.vi_du_duoi_dinh_muc ?? [],
   };
 }
 
@@ -212,16 +141,5 @@ export function toFlowDay(row: FlowRowDb): FlowDay {
     issueCount: Number(row.so_phieu_xuat),
     receiptQuantity: Number(row.sl_nhap),
     issueQuantity: Number(row.sl_xuat),
-  };
-}
-
-export function toIdleProduct(row: IdleRowDb): IdleProduct {
-  return {
-    key: row.san_pham_id,
-    productId: row.san_pham_id,
-    code: row.ma_hang,
-    name: row.ten_hang,
-    idleDays: Number(row.so_ngay),
-    quantity: Number(row.ton),
   };
 }

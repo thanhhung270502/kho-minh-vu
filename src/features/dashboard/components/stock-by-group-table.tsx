@@ -15,7 +15,7 @@ type Props = {
   groupBy: StockGroupBy;
 };
 
-type CountKey = "total" | "inStock" | "outOfStock" | "negative" | "belowMinimum";
+type CountKey = "total" | "inStock" | "outOfStock" | "negative";
 
 // stockStatus: null = "Tổng mã" (không lọc trạng thái tồn) — hợp đồng của
 // buildCatalogDrilldownUrl/StockStatus (database), không phải tên cột tiếng Việt.
@@ -28,7 +28,6 @@ const COUNT_COLUMNS: Array<{
   { key: "inStock", title: "Còn hàng", stockStatus: "con_hang" },
   { key: "outOfStock", title: "Hết hàng", stockStatus: "het_hang" },
   { key: "negative", title: "Âm", stockStatus: "am" },
-  { key: "belowMinimum", title: "Dưới định mức", stockStatus: "duoi_dinh_muc" },
 ];
 
 function sumBy(rows: readonly StockByGroupRow[], key: CountKey): number {
@@ -96,12 +95,7 @@ export function StockByGroupTable({ rows, groupBy }: Props) {
       className: "tabular-nums",
       sorter: (a: StockByGroupRow, b: StockByGroupRow) => a[key] - b[key],
       render: (value: number, row: StockByGroupRow) => {
-        const color =
-          key === "negative" && value > 0
-            ? token.colorError
-            : key === "belowMinimum" && value > 0
-              ? token.colorWarning
-              : undefined;
+        const color = key === "negative" && value > 0 ? token.colorError : undefined;
         const text = <span style={{ color }}>{value.toLocaleString("vi-VN")}</span>;
 
         if (row.groupId === null || value === 0) return text;

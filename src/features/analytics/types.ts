@@ -5,7 +5,6 @@ type Tables = Database["public"]["Tables"];
 
 // --- Hàng thô (khóa snake_case) — chỉ lớp api chạm tới ----------------------
 type AnalysisRowDb = Fn["phan_tich_ton_kho"]["Returns"][number];
-type SalesDayDb = Fn["nhip_ban_theo_ngay"]["Returns"][number];
 type SettingsDb = Tables["cau_hinh_phan_tich"]["Row"];
 
 /** Loại hoàn thiện = mã công đoạn (0018); mọi mã khác (MUA_NGOAI…) gộp "Khác". */
@@ -48,8 +47,6 @@ export type AnalysisRow = {
   minStock: number;
   lastSaleDate: string | null;
 };
-
-export type SalesDay = { date: string; invoiceCount: number; quantity: number };
 
 export type AnalysisSettings = {
   /** Còn <= số ngày này: đỏ, cần nhập ngay. */
@@ -95,10 +92,49 @@ export function toAnalysisRow(row: AnalysisRowDb): AnalysisRow {
   };
 }
 
-export function toSalesDay(row: SalesDayDb): SalesDay {
-  return { date: row.ngay, invoiceCount: Number(row.so_hoa_don), quantity: Number(row.so_luong) };
-}
-
 export function toSettings(row: SettingsDb): AnalysisSettings {
   return { redDays: row.nguong_do, yellowDays: row.nguong_vang, coverDays: row.so_ngay_du_tru };
 }
+
+// --- Phân tích theo kỳ (0099) -----------------------------------------------
+
+/** Một mã trong kỳ: xuất – nhập – tồn từ sổ cái, kèm số kỳ trước cùng độ dài. */
+export type PeriodRow = {
+  productId: string;
+  code: string;
+  name: string;
+  categoryId: string | null;
+  categoryName: string | null;
+  isCombo: boolean;
+  isActive: boolean;
+  unitName: string | null;
+  /** Mã trong bộ mã hóa — tên tra ở giao diện. */
+  brandCode: string | null;
+  modelCode: string | null;
+  sharedVehicles: Array<{ brandCode: string; modelCode: string | null }>;
+  partCode: string | null;
+  stageId: string | null;
+  stageName: string | null;
+  openingStock: number;
+  received: number;
+  sold: number;
+  /** Xuất cho nhân viên nội bộ — không tính là bán. */
+  internalOut: number;
+  /** Trả hàng (khách trả +, trả NCC −). */
+  returned: number;
+  /** Điều chỉnh + kiểm kê + chuyển kho (ròng). */
+  adjusted: number;
+  closingStock: number;
+  receivedPrev: number;
+  soldPrev: number;
+};
+
+/** Một mốc của biểu đồ nhập – xuất (ngày / đầu tuần / đầu tháng). */
+export type FlowPoint = {
+  date: string;
+  received: number;
+  sold: number;
+  internalOut: number;
+  receiptCount: number;
+  invoiceCount: number;
+};

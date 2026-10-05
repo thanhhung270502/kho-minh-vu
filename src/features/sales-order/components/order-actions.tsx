@@ -45,7 +45,7 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
       onOk: async () => {
         try {
           await approve.mutateAsync();
-          message.success("Đã xác nhận. In phiếu đi lấy hàng, giao xong bấm Hoàn thành.");
+          message.success("Đã xác nhận. In phiếu, giao xong bấm Hoàn thành.");
         } catch (error) {
           if (isPostgrestError(error) && error.code === "23514") {
             message.error(error.message);
@@ -79,7 +79,7 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
         ) : null}
         {actions.includes("print") ? (
           <Link href={`/don-dat/${orderId}/in`} target="_blank">
-            <Button>In phiếu đi lấy hàng</Button>
+            <Button>In phiếu</Button>
           </Link>
         ) : null}
         {actions.includes("unlock") ? (

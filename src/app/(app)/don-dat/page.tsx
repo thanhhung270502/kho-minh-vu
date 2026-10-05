@@ -21,7 +21,7 @@ export default async function SalesOrderPage() {
             <OrderExcelButton />
           </Suspense>
         }
-        description="Đơn tạm cho tới khi quản lý xác nhận — xác nhận xong mới in phiếu đi lấy hàng."
+        description="Đơn tạm cho tới khi quản lý xác nhận — xác nhận xong mới in phiếu."
       />
 
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}

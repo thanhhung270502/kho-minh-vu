@@ -9,7 +9,6 @@ import {
 } from "@tanstack/react-query";
 
 import type { Database } from "@/types/database.types";
-import { inventoryKeys } from "@/features/inventory/api/inventory.keys";
 
 import {
   approveSession,
@@ -134,7 +133,6 @@ export function useApproveSession(sessionId: string) {
         queryKey: ["stocktake", "session", sessionId],
       });
       void queryClient.invalidateQueries({ queryKey: stocktakeKeys.sessions() });
-      void queryClient.invalidateQueries({ queryKey: inventoryKeys.all });
     },
   });
 }

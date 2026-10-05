@@ -4,25 +4,20 @@ import { Skeleton, Tooltip } from "antd";
 
 import { QueryState } from "@/shared/components/query-state";
 
-import { useFlowByDay, useOverviewKpis, useSalesPace } from "../hooks/useDashboard";
-import {
-  averageIssuesLabel,
-  buildInventoryKpi,
-  newProductsLabel,
-  oldestPendingLabel,
-} from "../lib/overview-format";
+import { useFlowByDay, useOverviewKpis } from "../hooks/useDashboard";
+import { averageIssuesLabel, oldestPendingLabel, vsYesterdayLabel } from "../lib/overview-format";
+import type { FlowDay } from "../types";
 import { Sparkline } from "./sparkline";
 
 type KpiCellProps = {
   label: string;
   value: string;
-  unit?: string;
   delta: string;
   trend: number[];
   hint?: string;
 };
 
-function KpiCell({ label, value, unit, delta, trend, hint }: KpiCellProps) {
+function KpiCell({ label, value, delta, trend, hint }: KpiCellProps) {
   const deltaLine = (
     <div className="text-[12px] font-semibold text-trung-tinh-500">{delta}</div>
   );
@@ -33,9 +28,6 @@ function KpiCell({ label, value, unit, delta, trend, hint }: KpiCellProps) {
       <div className="flex items-end justify-between gap-2">
         <div className="text-[28px] leading-none font-extrabold tracking-[-0.04em] tabular-nums">
           {value}
-          {unit ? (
-            <span className="ml-[3px] text-[14px] tracking-normal text-trung-tinh-300">{unit}</span>
-          ) : null}
         </div>
         <Sparkline values={trend} />
       </div>
@@ -44,14 +36,17 @@ function KpiCell({ label, value, unit, delta, trend, hint }: KpiCellProps) {
   );
 }
 
-function todayIsoVietnam(): string {
-  return new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Ho_Chi_Minh" }).format(new Date());
-}
+const LAST_DAYS = 30;
+const n = (value: number) => value.toLocaleString("vi-VN", { maximumFractionDigits: 0 });
 
+/**
+ * Bốn số của HÔM NAY: hóa đơn, số lượng xuất, phiếu nhập (so hôm qua, đường xu hướng
+ * 30 ngày từ nhap_xuat_theo_ngay — điểm cuối là hôm nay) và phiếu chờ ghi sổ.
+ * So sánh theo tuần / tháng / quý nằm ở trang Phân tích.
+ */
 export function KpiStrip() {
   const overview = useOverviewKpis();
-  const pace = useSalesPace();
-  const flow = useFlowByDay(30);
+  const flow = useFlowByDay(LAST_DAYS);
 
   return (
     <QueryState
@@ -61,36 +56,26 @@ export function KpiStrip() {
       isEmpty={() => false}
     >
       {(kpis) => {
-        const inventory = buildInventoryKpi(kpis, todayIsoVietnam());
-        // Cùng nguồn nhip_ban với thẻ Nhịp bán (D-01); sparkline từ nhap_xuat_theo_ngay
-        // dùng cùng định nghĩa đếm nên điểm cuối trùng số trên ô.
-        const issuesToday = pace.data ? pace.data.today.documentCount.toLocaleString("vi-VN") : "—";
+        const days = flow.data ?? [];
+        const today = days.at(-1);
+        const yesterday = days.at(-2);
+        const cell = (pick: (d: FlowDay) => number) => ({
+          value: today ? n(pick(today)) : "—",
+          delta: today && yesterday ? vsYesterdayLabel(pick(today), pick(yesterday)) : "Đang tải…",
+          trend: days.map(pick),
+        });
+        const invoices = cell((d) => d.issueCount);
+        const issued = cell((d) => d.issueQuantity);
+        const receipts = cell((d) => d.receiptCount);
 
         return (
           <div className="grid grid-cols-2 overflow-hidden rounded-the border border-vien bg-nen-the lg:grid-cols-4">
-            <KpiCell
-              label={inventory.label}
-              value={inventory.value}
-              unit={inventory.unit}
-              delta={inventory.delta}
-              trend={kpis.inventoryTrend}
-              hint="Ước tính: tồn tháng trước dựng lùi từ sổ kho × giá vốn hiện tại"
-            />
-            <KpiCell
-              label="Mã đang kinh doanh"
-              value={kpis.activeProducts.toLocaleString("vi-VN")}
-              delta={newProductsLabel(kpis.newProductsThisMonth)}
-              trend={kpis.activeProductsTrend}
-            />
-            <KpiCell
-              label="Phiếu xuất hôm nay"
-              value={issuesToday}
-              delta={averageIssuesLabel(kpis.avgIssuesPerDay)}
-              trend={flow.data?.map((day) => day.issueCount) ?? []}
-            />
+            <KpiCell label="Hóa đơn hôm nay" {...invoices} hint={averageIssuesLabel(kpis.avgIssuesPerDay)} />
+            <KpiCell label="Số lượng xuất hôm nay" {...issued} />
+            <KpiCell label="Phiếu nhập hôm nay" {...receipts} />
             <KpiCell
               label="Phiếu chờ ghi sổ"
-              value={kpis.pendingDocs.toLocaleString("vi-VN")}
+              value={n(kpis.pendingDocs)}
               delta={oldestPendingLabel(kpis.oldestPendingDays)}
               trend={kpis.pendingTrend}
             />

@@ -1,30 +1,35 @@
 "use client";
 
-import { Button, Card, Input, Select, Table, Tabs } from "antd";
+import { DownloadOutlined } from "@ant-design/icons";
+import { Button, Card, Input, Table, Tabs } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { downloadBlob } from "@/shared/lib/csv";
 import { labelMatches } from "@/shared/lib/text";
 
 import { buildReorderCsv, reorderTabs, suggestedOrder } from "../lib/analysis";
-import { FINISH_LABELS, FINISH_TYPES, type AnalysisRow, type AnalysisSettings, type FinishType } from "../types";
+import { FINISH_LABELS, type AnalysisRow, type AnalysisSettings, type FinishType } from "../types";
 import { StatusTag, formatQty } from "./status-tag";
 
 type TabKey = "soon" | "outWithDemand" | "later";
 
-/** Bảng "Danh sách cần nhập hàng" — 3 tab, tìm, lọc loại hoàn thiện, xuất CSV. */
+/** Bảng "Danh sách cần nhập hàng" — 3 tab, tìm mã; Xuất Excel: mã, tên, số lượng cần nhập. */
 export function ReorderTable({ rows, settings }: { rows: AnalysisRow[]; settings: AnalysisSettings }) {
   const [tab, setTab] = useState<TabKey>("soon");
   const [query, setQuery] = useState("");
-  const [finish, setFinish] = useState<FinishType | "">("");
 
   const tabs = useMemo(() => reorderTabs(rows, settings), [rows, settings]);
+
+  // Tổng quan dẫn sang bằng /phan-tich#can-nhap; bảng chỉ có sau khi dữ liệu về nên
+  // trình duyệt không tự cuộn tới được — cuộn một lần khi bảng xuất hiện.
+  const cardRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (window.location.hash === "#can-nhap") cardRef.current?.scrollIntoView({ block: "start" });
+  }, []);
   const filter = (list: AnalysisRow[]) =>
-    list.filter(
-      (r) => (!finish || r.finish === finish) && (!query.trim() || labelMatches(query, `${r.code} ${r.name}`)),
-    );
+    list.filter((r) => !query.trim() || labelMatches(query, `${r.code} ${r.name}`));
 
   const columns: ColumnsType<AnalysisRow> = [
     {
@@ -70,21 +75,24 @@ export function ReorderTable({ rows, settings }: { rows: AnalysisRow[]; settings
 
   return (
     <Card
+      ref={cardRef}
+      id="can-nhap"
       size="small"
+      className="scroll-mt-28 rounded-xl"
       title="Danh sách cần nhập hàng"
       extra={
-        <Button onClick={() => downloadBlob(buildReorderCsv(rows, settings), "de-nghi-nhap.csv")}>Xuất CSV</Button>
+        <div className="flex items-center gap-2">
+          <Input.Search allowClear size="small" className="w-56" placeholder="Tìm mã hoặc tên" onChange={(e) => setQuery(e.target.value)} />
+          <Button
+            size="small"
+            icon={<DownloadOutlined />}
+            onClick={() => downloadBlob(buildReorderCsv(rows, settings), "danh-sach-can-nhap.csv")}
+          >
+            Xuất Excel
+          </Button>
+        </div>
       }
     >
-      <div className="mb-3 flex flex-wrap gap-2">
-        <Input.Search allowClear placeholder="Mã hoặc tên hàng" className="max-w-xs" onChange={(e) => setQuery(e.target.value)} />
-        <Select<FinishType | "">
-          className="w-40"
-          value={finish}
-          onChange={setFinish}
-          options={[{ value: "", label: "Mọi loại hoàn thiện" }, ...FINISH_TYPES.map((f) => ({ value: f, label: FINISH_LABELS[f] }))]}
-        />
-      </div>
       <Tabs
         activeKey={tab === "later" && settings.yellowDays >= 30 ? "soon" : tab}
         onChange={(k) => setTab(k as TabKey)}

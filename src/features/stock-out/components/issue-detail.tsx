@@ -82,7 +82,7 @@ export function IssueDetailView({
               actions={
                 <Space wrap>
                   <Link href={`/duyet-don/${id}/in`} target="_blank">
-                    <Button>In phiếu giao hàng</Button>
+                    <Button>In phiếu</Button>
                   </Link>
                   <ReturnButton document={issue} canEdit={permissions.canEdit} />
                   <VoidDocumentDialog document={issue} canVoid={permissions.canVoid} />

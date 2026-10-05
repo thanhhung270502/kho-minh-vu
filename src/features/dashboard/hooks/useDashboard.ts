@@ -7,11 +7,8 @@ import {
 
 import {
   fetchFlowByDay,
-  fetchIdleProducts,
   fetchNegativeStockReport,
   fetchOverviewKpis,
-  type FlowRange,
-  fetchSalesPace,
   fetchStockByGroup,
 } from "../api/dashboard.api";
 import { dashboardKeys } from "../api/dashboard.keys";
@@ -21,22 +18,11 @@ export function useOverviewKpis() {
   return useQuery({ queryKey: dashboardKeys.overview(), queryFn: fetchOverviewKpis });
 }
 
-export function useFlowByDay(days: FlowRange) {
+export function useFlowByDay(days: number) {
   return useQuery({
     queryKey: dashboardKeys.flow(days),
     queryFn: () => fetchFlowByDay(days),
     placeholderData: keepPreviousData,
-  });
-}
-
-export function useIdleProducts() {
-  return useQuery({ queryKey: dashboardKeys.idleProducts(), queryFn: fetchIdleProducts });
-}
-
-export function useSalesPace() {
-  return useQuery({
-    queryKey: dashboardKeys.salesPace(),
-    queryFn: fetchSalesPace,
   });
 }
 
