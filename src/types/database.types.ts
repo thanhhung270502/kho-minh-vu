@@ -1697,6 +1697,7 @@ export type Database = {
           don_dat_hang_id: string
           ghi_chu: string
           ghi_chu_ly_do: string
+          ho_ten_nguoi_duyet: string
           ho_ten_nguoi_tao: string
           id: string
           kho_id: string

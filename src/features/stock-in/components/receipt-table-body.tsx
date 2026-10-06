@@ -20,10 +20,6 @@ import { isInteractiveTarget } from "@/shared/lib/selected-id";
 
 import { ReceiptExpanded } from "./receipt-expanded";
 
-function formatNumber(value: number | string | null): string {
-  return value === null ? "—" : Number(value).toLocaleString("vi-VN");
-}
-
 const COLUMNS: TableColumnsType<DocumentRow> = [
   {
     title: "Số phiếu",
@@ -43,20 +39,6 @@ const COLUMNS: TableColumnsType<DocumentRow> = [
     render: (date: string) => dayjs(date).format("DD/MM/YYYY"),
   },
   { title: "Nhà cung cấp", dataIndex: "partnerName", width: 240, ellipsis: true },
-  {
-    title: "Số dòng",
-    dataIndex: "lineCount",
-    width: 90,
-    align: "right",
-    render: formatNumber,
-  },
-  {
-    title: "Tổng số lượng",
-    dataIndex: "totalQuantity",
-    width: 130,
-    align: "right",
-    render: formatNumber,
-  },
   {
     title: "Trạng thái",
     dataIndex: "status",
@@ -109,7 +91,7 @@ export function ReceiptTableBody({
           setExpandedId((current) => (current === row.id ? null : row.id));
         },
       })}
-      scroll={{ x: 890 }}
+      scroll={{ x: 670 }}
       pagination={{
         current: filter.page,
         pageSize: RECEIPT_PAGE_SIZE,

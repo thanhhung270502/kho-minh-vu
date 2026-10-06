@@ -872,7 +872,7 @@ const internalIssue = toDocumentDetail({
   don_dat_hang_id: "dh-1", so_dh: "DH26-000002", chung_tu_goc_id: null as unknown as string,
   so_ct_goc: null as unknown as string, ly_do_xuat_am: null as unknown as string,
   ghi_chu_ly_do: null as unknown as string, nguoi_duyet_id: null as unknown as string,
-  nguoi_nhan_ids: ["nd-1"], ten_nguoi_nhan: ["Thủ kho K1"],
+  nguoi_nhan_ids: ["nd-1"], ten_nguoi_nhan: ["Thủ kho K1"], ho_ten_nguoi_duyet: "Quản lý",
 });
 assert.deepEqual(internalIssue.staffRecipients, [{ id: "nd-1", name: "Thủ kho K1" }]);
 assert.deepEqual(toDocumentUpdate({ note: "x" }), { ghi_chu: "x" });

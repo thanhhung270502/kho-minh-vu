@@ -18,6 +18,12 @@ import { VoidReceiptDialog } from "./void-receipt-dialog";
 
 const qty = (v: number) => Number(v).toLocaleString("vi-VN");
 
+// Phiếu nhập từ KiotViet ghi người nhập trong ghi chú ("Người nhập: X"); phiếu tạo
+// trên hệ mới thì người nhập là người ghi sổ.
+function receiverName(note: string | null, postedBy: string | null): string {
+  return note?.match(/Người nhập:\s*([^\n·]+)/)?.[1]?.trim() || postedBy || "—";
+}
+
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="min-w-0">
@@ -59,7 +65,6 @@ export function ReceiptExpanded({ id, permissions }: Props) {
             (!codeQuery.trim() || labelMatches(codeQuery, l.productCode)) &&
             (!nameQuery.trim() || labelMatches(nameQuery, l.productName)),
         );
-        const totalQuantity = all.reduce((s, l) => s + Number(l.quantity), 0);
 
         const columns: TableColumnsType<DocumentLine> = [
           {
@@ -95,8 +100,9 @@ export function ReceiptExpanded({ id, permissions }: Props) {
               </StatusDot>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
               <Field label="Người tạo">{receipt.createdByName ?? "—"}</Field>
+              <Field label="Người nhập">{receiverName(receipt.note, receipt.approvedByName)}</Field>
               <Field label="Nhà cung cấp">{receipt.partnerName ?? "Chưa chọn"}</Field>
               <Field label="Ngày nhập">{dayjs(receipt.docDate).format("DD/MM/YYYY")}</Field>
               <Field label="Ghi sổ lúc">
@@ -118,7 +124,7 @@ export function ReceiptExpanded({ id, permissions }: Props) {
               )}
             </QueryState>
 
-            <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
               <Input.TextArea
                 key={receipt.note ?? ""}
                 className="max-w-2xl"
@@ -137,12 +143,6 @@ export function ReceiptExpanded({ id, permissions }: Props) {
                   }
                 }}
               />
-              <dl className="m-0 grid min-w-56 grid-cols-[1fr_auto] gap-x-6 gap-y-1 text-[13.5px]">
-                <dt className="text-chu-phu">Số lượng mặt hàng</dt>
-                <dd className="m-0 text-right font-semibold tabular-nums">{qty(all.length)}</dd>
-                <dt className="text-chu-phu">Tổng số lượng</dt>
-                <dd className="m-0 text-right font-semibold tabular-nums">{qty(totalQuantity)}</dd>
-              </dl>
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-vien pt-3">
