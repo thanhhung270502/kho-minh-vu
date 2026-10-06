@@ -38,7 +38,6 @@ const COLUMNS: TableColumnsType<DocumentRow> = [
     render: (date: string) => dayjs(date).format("DD/MM/YYYY"),
   },
   { title: "Nhà cung cấp", dataIndex: "partnerName", width: 240, ellipsis: true },
-  { title: "Kho", dataIndex: "warehouseName", width: 110 },
   {
     title: "Số dòng",
     dataIndex: "lineCount",
@@ -88,7 +87,7 @@ export function ReceiptTableBody({
       columns={COLUMNS}
       dataSource={rows}
       loading={loading}
-      scroll={{ x: 1000 }}
+      scroll={{ x: 890 }}
       pagination={{
         current: filter.page,
         pageSize: RECEIPT_PAGE_SIZE,
