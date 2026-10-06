@@ -11,8 +11,11 @@ import { partnerLabel, showsStaffOnly } from "@/shared/lib/recipient";
 import { ORDER_STATUS_TONES, ORDER_STATUS_LABELS } from "../lib/order-status";
 import { OrderProgressBar } from "./order-progress-bar";
 import { ORDER_PAGE_SIZE, type OrderFilter } from "../schemas/order.schema";
-import type { OrderRow } from "../types";
+import type { OrderPermissions, OrderRow } from "../types";
+import { useExpandableRows } from "@/shared/hooks/use-expandable-rows";
 import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
+
+import { OrderExpanded } from "./order-expanded";
 
 const COLUMNS: TableColumnsType<OrderRow> = [
   {
@@ -118,10 +121,12 @@ type Props = {
   filter: OrderFilter;
   loading: boolean;
   onFilterChange: (filter: OrderFilter) => void;
+  permissions: OrderPermissions;
 };
 
-export function OrderTableBody({ rows, total, filter, loading, onFilterChange }: Props) {
+export function OrderTableBody({ rows, total, filter, loading, onFilterChange, permissions }: Props) {
   const offsetHeader = useStickyTableOffset();
+  const expandable = useExpandableRows<OrderRow>((row) => <OrderExpanded id={row.id} permissions={permissions} />);
   return (
     <Table<OrderRow>
       rowKey="id"
@@ -130,6 +135,7 @@ export function OrderTableBody({ rows, total, filter, loading, onFilterChange }:
       columns={COLUMNS}
       dataSource={rows}
       loading={loading}
+      {...expandable}
       scroll={{ x: 980 }}
       pagination={{
         current: filter.page,

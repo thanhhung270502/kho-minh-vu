@@ -1,22 +1,24 @@
 "use client";
 
-import { App, Button, Input, Skeleton, Table } from "antd";
-import type { TableColumnsType } from "antd";
+import { Button, Skeleton } from "antd";
 import dayjs from "dayjs";
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 
 import { ReturnButton } from "@/features/returns/components/return-button";
 import { QueryState } from "@/shared/components/query-state";
+import {
+  QuickViewField as Field,
+  QuickViewFrame,
+  QuickViewLineTable,
+  QuickViewNote,
+  formatQuantity,
+} from "@/shared/components/quick-view";
 import { StatusDot } from "@/shared/components/status-dot";
-import { explainError } from "@/shared/lib/errors";
-import { labelMatches } from "@/shared/lib/text";
 
 import { useReceiptDetail, useReceiptLines, useUpdateReceiptHeader } from "../hooks/useReceipts";
 import { DOC_STATUS_LABELS, DOC_STATUS_TONES, type DocumentLine, type ReceiptPermissions } from "../types";
 import { VoidReceiptDialog } from "./void-receipt-dialog";
-
-const qty = (v: number) => Number(v).toLocaleString("vi-VN");
 
 // Phiếu nạp từ KiotViet ghi người nhập vào ghi chú ("… · Người nhập: X"). Tách ra để
 // hiện ở ô "Người nhập" và không lặp lại trong ghi chú; phiếu tạo trên hệ mới thì người
@@ -33,15 +35,6 @@ function splitNote(note: string | null): { receiver: string | null; segment: str
   };
 }
 
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="min-w-0">
-      <div className="text-xs text-chu-phu">{label}</div>
-      <div className="truncate text-[13.5px] font-semibold">{children}</div>
-    </div>
-  );
-}
-
 type Props = { id: string; permissions: ReceiptPermissions };
 
 /**
@@ -50,11 +43,9 @@ type Props = { id: string; permissions: ReceiptPermissions };
  * hàng NCC, in phiếu). Sửa dòng hàng thì "Mở phiếu".
  */
 export function ReceiptExpanded({ id, permissions }: Props) {
-  const { message } = App.useApp();
   const detail = useReceiptDetail(id);
   const lines = useReceiptLines(id);
   const update = useUpdateReceiptHeader(id);
-  const [query, setQuery] = useState("");
   const [voidOpen, setVoidOpen] = useState(false);
 
   return (
@@ -67,40 +58,10 @@ export function ReceiptExpanded({ id, permissions }: Props) {
       {(receipt) => {
         if (!receipt) return null;
         const editable = receipt.status === "NHAP_LIEU" && permissions.canEdit;
-        const all = lines.data ?? [];
-        const visible = query.trim()
-          ? all.filter((l) => labelMatches(query, l.productCode) || labelMatches(query, l.productName))
-          : all;
         const note = splitNote(receipt.note);
 
-        const columns: TableColumnsType<DocumentLine> = [
-          {
-            // Một ô tìm phủ cả hai cột Mã và Tên.
-            title: (
-              <Input size="small" allowClear placeholder="Tìm mã hoặc tên hàng" value={query} onChange={(e) => setQuery(e.target.value)} />
-            ),
-            colSpan: 2,
-            dataIndex: "productCode",
-            width: 220,
-            render: (code: string, l) => (
-              <Link href={`/danh-muc?chon=${l.productId}`} className="font-mono">
-                {code}
-              </Link>
-            ),
-          },
-          {
-            title: "Tên hàng",
-            colSpan: 0,
-            dataIndex: "productName",
-            ellipsis: true,
-            render: (name: string, l) => `${name}${l.unitName ? ` (${l.unitName})` : ""}`,
-          },
-          { title: "Số lượng", dataIndex: "quantity", width: 110, align: "right", render: (v: number) => qty(v) },
-        ];
-
         return (
-          // Bấm trong khung mở rộng không được gập dòng lại.
-          <div data-no-row-click className="flex cursor-default flex-col gap-4 px-2 py-3">
+          <QuickViewFrame>
             <div className="flex flex-wrap items-center gap-3">
               <span className="font-mono text-lg font-bold">{receipt.docNo}</span>
               <StatusDot tone={DOC_STATUS_TONES[receipt.status]} variant="badge" strike={receipt.status === "DA_HUY"}>
@@ -119,42 +80,22 @@ export function ReceiptExpanded({ id, permissions }: Props) {
             </div>
 
             <QueryState query={lines} isEmpty={() => false} emptyDescription="">
-              {() => (
-                <Table<DocumentLine>
-                  rowKey="id"
-                  size="small"
-                  columns={columns}
-                  dataSource={visible}
-                  scroll={{ x: 560 }}
-                  pagination={{ pageSize: 10, showSizeChanger: false, hideOnSinglePage: true }}
-                  locale={{ emptyText: all.length === 0 ? "Phiếu chưa có dòng nào." : "Không có dòng nào khớp ô tìm." }}
+              {(all) => (
+                <QuickViewLineTable<DocumentLine>
+                  lines={all}
+                  quantityColumns={[
+                    { title: "Số lượng", dataIndex: "quantity", width: 110, align: "right", render: formatQuantity },
+                  ]}
                 />
               )}
             </QueryState>
 
-            <div>
-              <Input.TextArea
-                key={note.rest}
-                className="max-w-2xl"
-                autoSize={{ minRows: 3, maxRows: 6 }}
-                placeholder={editable ? "Ghi chú…" : "Không có ghi chú"}
-                defaultValue={note.rest}
-                readOnly={!editable}
-                onBlur={async (event) => {
-                  const text = event.target.value.trim();
-                  if (!editable || text === note.rest) return;
-                  // Giữ lại phần "Người nhập: X" đã tách ra khỏi ô.
-                  const next = [text, note.segment].filter(Boolean).join(" · ") || null;
-                  try {
-                    await update.mutateAsync({ note: next });
-                    message.success("Đã lưu ghi chú");
-                  } catch (error) {
-                    const explained = explainError(error);
-                    message.error(`${explained.title}. ${explained.action}`);
-                  }
-                }}
-              />
-            </div>
+            <QuickViewNote
+              value={note.rest}
+              editable={editable}
+              // Giữ lại phần "Người nhập: X" đã tách ra khỏi ô.
+              onSave={(text) => update.mutateAsync({ note: [text, note.segment].filter(Boolean).join(" · ") || null })}
+            />
 
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-vien pt-3">
               <div>
@@ -176,7 +117,7 @@ export function ReceiptExpanded({ id, permissions }: Props) {
             </div>
 
             <VoidReceiptDialog receipt={receipt} open={voidOpen} onClose={() => setVoidOpen(false)} />
-          </div>
+          </QuickViewFrame>
         );
       }}
     </QueryState>

@@ -17,10 +17,18 @@ import {
 } from "../schemas/order.schema";
 import { CreateOrderButton } from "./create-order-button";
 import { OrderFilterPanel } from "./order-filter-panel";
+import type { OrderPermissions } from "../types";
 import { OrderTableBody } from "./order-table-body";
 import { OrderToolbar } from "./order-toolbar";
 
-export function OrderTable({ canCreate, excelActions }: { canCreate: boolean; excelActions?: ReactNode }) {
+export function OrderTable({
+  permissions,
+  excelActions,
+}: {
+  permissions: OrderPermissions;
+  excelActions?: ReactNode;
+}) {
+  const canCreate = permissions.canEdit;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -89,6 +97,7 @@ export function OrderTable({ canCreate, excelActions }: { canCreate: boolean; ex
             total={total}
             filter={filter}
             loading={orders.isFetching && !orders.isPending}
+            permissions={permissions}
             onFilterChange={changeFilter}
           />
         )}

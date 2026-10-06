@@ -24,7 +24,13 @@ export default async function SalesOrderPage() {
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}
       <Suspense fallback={null}>
         <OrderTable
-          canCreate={can(user, "tao_don")}
+          // Giống trang chi tiết đơn — phần xem nhanh dùng chung các nút của đơn.
+          permissions={{
+            canEdit: can(user, "tao_don"),
+            canApprove: can(user, "xac_nhan_don"),
+            canComplete: can(user, "hoan_thanh_don"),
+            canCancel: user.role === "quan_ly",
+          }}
           excelActions={
             <DocumentExcelActions
               kind="don-dat"

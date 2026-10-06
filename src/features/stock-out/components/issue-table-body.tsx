@@ -7,9 +7,12 @@ import Link from "next/link";
 
 import { StatusDot } from "@/shared/components/status-dot";
 
-import { DOC_STATUS_TONES, DOC_STATUS_LABELS, type IssueRow } from "../types";
+import { DOC_STATUS_TONES, DOC_STATUS_LABELS, type IssuePermissions, type IssueRow } from "../types";
 import { ISSUE_PAGE_SIZE, type IssueFilter } from "../schemas/issue.schema";
+import { useExpandableRows } from "@/shared/hooks/use-expandable-rows";
 import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
+
+import { IssueExpanded } from "./issue-expanded";
 
 function formatNumber(value: number | string | null): string {
   return value === null ? "—" : Number(value).toLocaleString("vi-VN");
@@ -78,6 +81,7 @@ type Props = {
   filter: IssueFilter;
   loading: boolean;
   onFilterChange: (filter: IssueFilter) => void;
+  permissions: IssuePermissions;
 };
 
 export function IssueTableBody({
@@ -86,8 +90,10 @@ export function IssueTableBody({
   filter,
   loading,
   onFilterChange,
+  permissions,
 }: Props) {
   const offsetHeader = useStickyTableOffset();
+  const expandable = useExpandableRows<IssueRow>((row) => <IssueExpanded id={row.id} permissions={permissions} />);
   return (
     <Table<IssueRow>
       rowKey="id"
@@ -96,6 +102,7 @@ export function IssueTableBody({
       columns={COLUMNS}
       dataSource={rows}
       loading={loading}
+      {...expandable}
       scroll={{ x: 1050 }}
       pagination={{
         current: filter.page,

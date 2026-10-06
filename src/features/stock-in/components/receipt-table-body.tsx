@@ -4,7 +4,6 @@ import { Table } from "antd";
 import type { TableColumnsType } from "antd";
 import dayjs from "dayjs";
 import Link from "next/link";
-import { useState } from "react";
 
 import { StatusDot } from "@/shared/components/status-dot";
 
@@ -16,7 +15,7 @@ import {
   type ReceiptPermissions,
 } from "../types";
 import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
-import { isInteractiveTarget } from "@/shared/lib/selected-id";
+import { useExpandableRows } from "@/shared/hooks/use-expandable-rows";
 
 import { ReceiptExpanded } from "./receipt-expanded";
 
@@ -68,8 +67,9 @@ export function ReceiptTableBody({
   permissions,
 }: Props) {
   const offsetHeader = useStickyTableOffset();
-  // Bấm dòng = mở / gập phần xem nhanh ngay dưới dòng (một dòng mở một lúc).
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const expandable = useExpandableRows<DocumentRow>((row) => (
+    <ReceiptExpanded id={row.id} permissions={permissions} />
+  ));
   return (
     <Table<DocumentRow>
       rowKey="id"
@@ -78,19 +78,7 @@ export function ReceiptTableBody({
       columns={COLUMNS}
       dataSource={rows}
       loading={loading}
-      expandable={{
-        expandedRowKeys: expandedId ? [expandedId] : [],
-        expandedRowRender: (row) => <ReceiptExpanded id={row.id} permissions={permissions} />,
-        showExpandColumn: false,
-        expandedRowClassName: () => "[&>td]:bg-brand-25",
-      }}
-      rowClassName={(row) => (row.id === expandedId ? "cursor-pointer [&>td]:bg-brand-50" : "cursor-pointer")}
-      onRow={(row) => ({
-        onClick: (event) => {
-          if (isInteractiveTarget(event.target as Element)) return;
-          setExpandedId((current) => (current === row.id ? null : row.id));
-        },
-      })}
+      {...expandable}
       scroll={{ x: 670 }}
       pagination={{
         current: filter.page,

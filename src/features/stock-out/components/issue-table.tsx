@@ -15,12 +15,20 @@ import {
   writeIssueFilterToUrl,
   type IssueFilter,
 } from "../schemas/issue.schema";
+import type { IssuePermissions } from "../types";
 import { CreateIssueButton } from "./create-issue-button";
 import { IssueFilterPanel } from "./issue-filter-panel";
 import { IssueTableBody } from "./issue-table-body";
 import { IssueToolbar } from "./issue-toolbar";
 
-export function IssueTable({ canCreate, excelActions }: { canCreate: boolean; excelActions?: ReactNode }) {
+export function IssueTable({
+  permissions,
+  excelActions,
+}: {
+  permissions: IssuePermissions;
+  excelActions?: ReactNode;
+}) {
+  const canCreate = permissions.canEdit;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -89,6 +97,7 @@ export function IssueTable({ canCreate, excelActions }: { canCreate: boolean; ex
             filter={filter}
             loading={issues.isFetching && !issues.isPending}
             onFilterChange={changeFilter}
+            permissions={permissions}
           />
         )}
       </QueryState>
