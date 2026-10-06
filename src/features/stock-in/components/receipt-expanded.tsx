@@ -18,10 +18,19 @@ import { VoidReceiptDialog } from "./void-receipt-dialog";
 
 const qty = (v: number) => Number(v).toLocaleString("vi-VN");
 
-// Phiếu nhập từ KiotViet ghi người nhập trong ghi chú ("Người nhập: X"); phiếu tạo
-// trên hệ mới thì người nhập là người ghi sổ.
-function receiverName(note: string | null, postedBy: string | null): string {
-  return note?.match(/Người nhập:\s*([^\n·]+)/)?.[1]?.trim() || postedBy || "—";
+// Phiếu nạp từ KiotViet ghi người nhập vào ghi chú ("… · Người nhập: X"). Tách ra để
+// hiện ở ô "Người nhập" và không lặp lại trong ghi chú; phiếu tạo trên hệ mới thì người
+// nhập là người ghi sổ.
+const RECEIVER_IN_NOTE = /(?:\s*·\s*)?Người nhập:\s*([^\n·]+)/;
+
+function splitNote(note: string | null): { receiver: string | null; segment: string; rest: string } {
+  const match = note?.match(RECEIVER_IN_NOTE);
+  if (!note || !match) return { receiver: null, segment: "", rest: note ?? "" };
+  return {
+    receiver: match[1]?.trim() || null,
+    segment: match[0].replace(/^\s*·\s*/, ""),
+    rest: note.replace(match[0], "").replace(/^\s*·\s*/, "").trim(),
+  };
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -37,7 +46,7 @@ type Props = { id: string; permissions: ReceiptPermissions };
 
 /**
  * Bấm vào một dòng của danh sách Phiếu nhập: xem nhanh phiếu ngay trong bảng — thông
- * tin, dòng hàng (tìm theo mã / tên), ghi chú, và các thao tác (hủy, mở phiếu, trả
+ * tin, dòng hàng (một ô tìm theo mã hoặc tên), ghi chú, và các thao tác (hủy, mở phiếu, trả
  * hàng NCC, in phiếu). Sửa dòng hàng thì "Mở phiếu".
  */
 export function ReceiptExpanded({ id, permissions }: Props) {
@@ -45,8 +54,7 @@ export function ReceiptExpanded({ id, permissions }: Props) {
   const detail = useReceiptDetail(id);
   const lines = useReceiptLines(id);
   const update = useUpdateReceiptHeader(id);
-  const [codeQuery, setCodeQuery] = useState("");
-  const [nameQuery, setNameQuery] = useState("");
+  const [query, setQuery] = useState("");
   const [voidOpen, setVoidOpen] = useState(false);
 
   return (
@@ -60,17 +68,18 @@ export function ReceiptExpanded({ id, permissions }: Props) {
         if (!receipt) return null;
         const editable = receipt.status === "NHAP_LIEU" && permissions.canEdit;
         const all = lines.data ?? [];
-        const visible = all.filter(
-          (l) =>
-            (!codeQuery.trim() || labelMatches(codeQuery, l.productCode)) &&
-            (!nameQuery.trim() || labelMatches(nameQuery, l.productName)),
-        );
+        const visible = query.trim()
+          ? all.filter((l) => labelMatches(query, l.productCode) || labelMatches(query, l.productName))
+          : all;
+        const note = splitNote(receipt.note);
 
         const columns: TableColumnsType<DocumentLine> = [
           {
+            // Một ô tìm phủ cả hai cột Mã và Tên.
             title: (
-              <Input size="small" allowClear placeholder="Tìm mã hàng" value={codeQuery} onChange={(e) => setCodeQuery(e.target.value)} />
+              <Input size="small" allowClear placeholder="Tìm mã hoặc tên hàng" value={query} onChange={(e) => setQuery(e.target.value)} />
             ),
+            colSpan: 2,
             dataIndex: "productCode",
             width: 220,
             render: (code: string, l) => (
@@ -80,9 +89,8 @@ export function ReceiptExpanded({ id, permissions }: Props) {
             ),
           },
           {
-            title: (
-              <Input size="small" allowClear placeholder="Tìm tên hàng" value={nameQuery} onChange={(e) => setNameQuery(e.target.value)} />
-            ),
+            title: "Tên hàng",
+            colSpan: 0,
             dataIndex: "productName",
             ellipsis: true,
             render: (name: string, l) => `${name}${l.unitName ? ` (${l.unitName})` : ""}`,
@@ -102,7 +110,7 @@ export function ReceiptExpanded({ id, permissions }: Props) {
 
             <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
               <Field label="Người tạo">{receipt.createdByName ?? "—"}</Field>
-              <Field label="Người nhập">{receiverName(receipt.note, receipt.approvedByName)}</Field>
+              <Field label="Người nhập">{note.receiver ?? receipt.approvedByName ?? "—"}</Field>
               <Field label="Nhà cung cấp">{receipt.partnerName ?? "Chưa chọn"}</Field>
               <Field label="Ngày nhập">{dayjs(receipt.docDate).format("DD/MM/YYYY")}</Field>
               <Field label="Ghi sổ lúc">
@@ -126,16 +134,19 @@ export function ReceiptExpanded({ id, permissions }: Props) {
 
             <div>
               <Input.TextArea
-                key={receipt.note ?? ""}
+                key={note.rest}
                 className="max-w-2xl"
                 autoSize={{ minRows: 3, maxRows: 6 }}
                 placeholder={editable ? "Ghi chú…" : "Không có ghi chú"}
-                defaultValue={receipt.note ?? ""}
+                defaultValue={note.rest}
                 readOnly={!editable}
                 onBlur={async (event) => {
-                  if (!editable || (event.target.value || null) === (receipt.note ?? null)) return;
+                  const text = event.target.value.trim();
+                  if (!editable || text === note.rest) return;
+                  // Giữ lại phần "Người nhập: X" đã tách ra khỏi ô.
+                  const next = [text, note.segment].filter(Boolean).join(" · ") || null;
                   try {
-                    await update.mutateAsync({ note: event.target.value || null });
+                    await update.mutateAsync({ note: next });
                     message.success("Đã lưu ghi chú");
                   } catch (error) {
                     const explained = explainError(error);
