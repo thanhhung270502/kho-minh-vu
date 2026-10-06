@@ -1761,17 +1761,29 @@ async function kiemCsvPhanTich() {
   );
 
   const staff = "11111111-1111-4111-8111-111111111111";
-  const countArgs = toOrderStatusCountRpcArgs({ ...DEFAULT_ORDER_FILTER, status: "TAM", page: 3, recipientKind: "internal", staffId: staff });
+  const countArgs = toOrderStatusCountRpcArgs({ ...DEFAULT_ORDER_FILTER, statuses: ["TAM"], page: 3, recipientKind: "internal", staffId: staff });
   assert.deepEqual(countArgs, {
     p_doi_tac_id: undefined, p_tu_ngay: undefined, p_den_ngay: undefined, p_tu_khoa: undefined,
     p_loai_nhan: "NOI_BO", p_nguoi_nhan_id: staff,
   });
   assert.ok(!("p_trang_thai" in countArgs) && !("p_trang" in countArgs) && !("p_kich_thuoc" in countArgs));
   assert.deepEqual(
-    statusCountKeyOf({ ...DEFAULT_ORDER_FILTER, status: "TAM", page: 3 }),
-    statusCountKeyOf({ ...DEFAULT_ORDER_FILTER, status: null, page: 1 }),
+    statusCountKeyOf({ ...DEFAULT_ORDER_FILTER, statuses: ["TAM"], page: 3 }),
+    statusCountKeyOf({ ...DEFAULT_ORDER_FILTER, statuses: ["TAM", "HOAN_THANH"], page: 1 }),
     "đổi trạng thái/trang không đổi khóa đếm",
   );
+
+  // Trạng thái nhiều lựa chọn: mặc định ẩn Đã hủy, không ghi lên URL; tích đủ = không lọc.
+  {
+    const def = readOrderFilterFromUrl(new URLSearchParams(""));
+    assert.deepEqual(def.statuses, ["TAM", "DA_XAC_NHAN", "HOAN_THANH"]);
+    assert.equal(writeOrderFilterToUrl(def).get("trang_thai"), null);
+    assert.deepEqual(toOrderListRpcArgs(def).p_trang_thai, ["TAM", "DA_XAC_NHAN", "HOAN_THANH"]);
+    const all = readOrderFilterFromUrl(new URLSearchParams("trang_thai=DA_HUY,TAM,HOAN_THANH,DA_XAC_NHAN"));
+    assert.deepEqual(all.statuses, ["TAM", "DA_XAC_NHAN", "HOAN_THANH", "DA_HUY"], "giữ thứ tự chuẩn");
+    assert.equal(toOrderListRpcArgs(all).p_trang_thai, undefined);
+    assert.deepEqual(readOrderFilterFromUrl(new URLSearchParams("trang_thai=xyz")).statuses, def.statuses);
+  }
   assert.deepEqual(toAddOrderLineRpcArgs("o1", { productId: "p1", quantity: 2, recipientId: null }), {
     p_don_id: "o1", p_san_pham_id: "p1", p_so_luong: 2, p_nguoi_nhan_id: undefined,
   });

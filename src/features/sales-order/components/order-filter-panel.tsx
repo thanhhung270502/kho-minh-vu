@@ -49,7 +49,7 @@ export function OrderFilterPanel({
       </div>
 
       <FilterGroup label="Trạng thái">
-        <OrderStatusFilter filter={filter} onSelect={(status) => change({ status })} />
+        <OrderStatusFilter filter={filter} onChange={(statuses) => change({ statuses })} />
       </FilterGroup>
 
       <FilterGroup label="Người nhận">

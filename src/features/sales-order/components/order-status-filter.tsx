@@ -1,7 +1,8 @@
 "use client";
 
+import { Checkbox } from "antd";
+
 import { StatusDot } from "@/shared/components/status-dot";
-import { cn } from "@/shared/utils/cn";
 
 import { useOrderStatusCounts } from "../hooks/useOrders";
 import {
@@ -12,14 +13,19 @@ import {
 } from "../lib/order-status";
 import type { OrderFilter } from "../schemas/order.schema";
 
+/**
+ * Tích chọn nhiều trạng thái. Mặc định tích mọi trạng thái trừ Đã hủy — đơn hủy ẩn,
+ * tích vào mới hiện. Luôn giữ ít nhất một trạng thái (bỏ hết thì bảng trống vô nghĩa).
+ */
 export function OrderStatusFilter({
   filter,
-  onSelect,
+  onChange,
 }: {
   filter: OrderFilter;
-  onSelect: (status: OrderStatus | null) => void;
+  onChange: (statuses: OrderStatus[]) => void;
 }) {
   const counts = useOrderStatusCounts(filter);
+  const selected = filter.statuses;
 
   function countText(value: number | undefined): string {
     if (counts.isError) return "—";
@@ -31,42 +37,30 @@ export function OrderStatusFilter({
     ? "Không tải được số đếm — tải lại trang hoặc thử lại sau"
     : undefined;
 
-  const items: { status: OrderStatus | null; count: number | undefined }[] = [
-    { status: null, count: counts.data?.total },
-    ...ORDER_STATUSES.map((status) => ({
-      status,
-      count: counts.data?.byStatus[status],
-    })),
-  ];
+  function toggle(status: OrderStatus) {
+    const next = selected.includes(status)
+      ? selected.filter((s) => s !== status)
+      : ORDER_STATUSES.filter((s) => s === status || selected.includes(s));
+    if (next.length > 0) onChange(next);
+  }
 
   return (
-    <div className="-mx-2 flex flex-col gap-0.5" role="radiogroup" aria-label="Trạng thái">
-      {items.map(({ status, count }) => {
-        const selected = filter.status === status;
+    <div className="-mx-2 flex flex-col gap-0.5" role="group" aria-label="Trạng thái">
+      {ORDER_STATUSES.map((status) => {
+        const checked = selected.includes(status);
+        // Cả dòng là nhãn của ô tích (Checkbox của antd tự bọc <label>) — bấm đâu cũng đổi.
         return (
-          <button
-            key={status ?? "all"}
-            type="button"
-            role="radio"
-            aria-checked={selected}
-            onClick={() => onSelect(status)}
-            className={cn(
-              "flex h-9 w-full cursor-pointer items-center gap-2.5 rounded-[9px] border-0 px-2.5 text-left text-[13.5px]",
-              selected ? "bg-nen-phu font-bold" : "bg-transparent hover:bg-nen-phu",
-            )}
+          <Checkbox
+            key={status}
+            checked={checked}
+            onChange={() => toggle(status)}
+            className="m-0 flex h-9 w-full items-center rounded-[9px] px-2.5 text-[13.5px] hover:bg-nen-phu [&>span:last-child]:flex [&>span:last-child]:flex-1 [&>span:last-child]:items-center"
           >
-            {status === null ? (
-              <span>Tất cả</span>
-            ) : (
-              <StatusDot tone={ORDER_STATUS_TONES[status]}>{ORDER_STATUS_LABELS[status]}</StatusDot>
-            )}
-            <span
-              className="ms-auto text-[12px] font-semibold text-trung-tinh-350 tabular-nums"
-              title={errorTitle}
-            >
-              {countText(count)}
+            <StatusDot tone={ORDER_STATUS_TONES[status]}>{ORDER_STATUS_LABELS[status]}</StatusDot>
+            <span className="ms-auto text-[12px] font-semibold text-trung-tinh-350 tabular-nums" title={errorTitle}>
+              {countText(counts.data?.byStatus[status])}
             </span>
-          </button>
+          </Checkbox>
         );
       })}
     </div>

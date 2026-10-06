@@ -106,7 +106,8 @@ export function toOrderLineInsert(
 
 export type OrderFilter = {
   q: string;
-  status: OrderStatus | null;
+  /** Trạng thái được tích — luôn ít nhất một, giữ đúng thứ tự ORDER_STATUSES. */
+  statuses: OrderStatus[];
   recipientKind: RecipientKind | null;
   partnerId: string | null;
   staffId: string | null;
@@ -115,9 +116,18 @@ export type OrderFilter = {
   page: number;
 };
 
+/** Mặc định ẩn đơn đã hủy — tích "Đã hủy" mới hiện. */
+export const DEFAULT_ORDER_STATUSES: OrderStatus[] = ORDER_STATUSES.filter((s) => s !== "DA_HUY");
+
+export function isDefaultOrderStatuses(statuses: readonly OrderStatus[]): boolean {
+  return (
+    statuses.length === DEFAULT_ORDER_STATUSES.length && DEFAULT_ORDER_STATUSES.every((s) => statuses.includes(s))
+  );
+}
+
 export const DEFAULT_ORDER_FILTER: OrderFilter = {
   q: "",
-  status: null,
+  statuses: DEFAULT_ORDER_STATUSES,
   recipientKind: null,
   partnerId: null,
   staffId: null,
@@ -131,7 +141,7 @@ export const ORDER_PAGE_SIZE = 50;
 /** Đếm điều kiện đang bật, KHÔNG tính ô tìm (ô tìm nằm ngoài panel). */
 export function countActiveOrderFilters(filter: OrderFilter): number {
   let count = 0;
-  if (filter.status !== null) count++;
+  if (!isDefaultOrderStatuses(filter.statuses)) count++;
   if (filter.recipientKind !== null) count++;
   if (filter.partnerId !== null) count++;
   if (filter.staffId !== null) count++;
@@ -163,19 +173,24 @@ function readRecipientKind(raw: string | null): RecipientKind | null {
     : null;
 }
 
+/** `?trang_thai=TAM,HOAN_THANH`; thiếu hoặc không giá trị nào hợp lệ → mặc định. */
+function readStatuses(raw: string | null): OrderStatus[] {
+  if (raw === null) return DEFAULT_ORDER_STATUSES;
+  const picked = new Set(raw.split(","));
+  const statuses = ORDER_STATUSES.filter((s) => picked.has(s));
+  return statuses.length > 0 ? statuses : DEFAULT_ORDER_STATUSES;
+}
+
 export function readOrderFilterFromUrl(params: {
   get(k: string): string | null;
 }): OrderFilter {
-  const status = params.get("trang_thai");
   // `Number(null)` là 0 chứ không phải NaN — phải chặn trước khi Number().
   const rawPage = params.get("trang");
   const page = rawPage === null || rawPage.trim() === "" ? 1 : Number(rawPage);
 
   return {
     q: params.get("q")?.trim() ?? "",
-    status: ORDER_STATUSES.includes(status as OrderStatus)
-      ? (status as OrderStatus)
-      : null,
+    statuses: readStatuses(params.get("trang_thai")),
     recipientKind: readRecipientKind(params.get("nguoi_nhan")),
     partnerId: readUuid(params.get("doi_tac")),
     staffId: readUuid(params.get("nhan_vien")),
@@ -188,7 +203,8 @@ export function readOrderFilterFromUrl(params: {
 export function writeOrderFilterToUrl(filter: OrderFilter): URLSearchParams {
   const params = new URLSearchParams();
   if (filter.q) params.set("q", filter.q);
-  if (filter.status) params.set("trang_thai", filter.status);
+  // Mặc định (trừ Đã hủy) không ghi lên URL.
+  if (!isDefaultOrderStatuses(filter.statuses)) params.set("trang_thai", filter.statuses.join(","));
   if (filter.recipientKind) {
     params.set("nguoi_nhan", RECIPIENT_KIND_TO_URL[filter.recipientKind]);
   }
@@ -208,7 +224,8 @@ type OrderListArgs = Database["public"]["Functions"]["danh_sach_don"]["Args"];
 /** Viết riêng — tham số của `danh_sach_don` khác `danh_sach_chung_tu` của màn nhập. */
 export function toOrderListRpcArgs(filter: OrderFilter): OrderListArgs {
   return {
-    p_trang_thai: filter.status ?? undefined,
+    // Tích đủ mọi trạng thái = không lọc.
+    p_trang_thai: filter.statuses.length === ORDER_STATUSES.length ? undefined : filter.statuses,
     p_doi_tac_id: filter.partnerId ?? undefined,
     p_nguoi_nhan_id: filter.staffId ?? undefined,
     p_tu_ngay: filter.fromDate ?? undefined,
@@ -222,8 +239,8 @@ export function toOrderListRpcArgs(filter: OrderFilter): OrderListArgs {
   };
 }
 
-/** Khóa đếm trạng thái: bỏ status và page — đổi tab/trang không đếm lại. */
-export type OrderStatusCountKey = Omit<OrderFilter, "status" | "page">;
+/** Khóa đếm trạng thái: bỏ statuses và page — đổi tab/trang không đếm lại. */
+export type OrderStatusCountKey = Omit<OrderFilter, "statuses" | "page">;
 
 export function statusCountKeyOf(filter: OrderFilter): OrderStatusCountKey {
   return {

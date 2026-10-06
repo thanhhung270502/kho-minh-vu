@@ -1871,7 +1871,7 @@ export type Database = {
           p_loai_nhan?: string
           p_nguoi_nhan_id?: string
           p_trang?: number
-          p_trang_thai?: Database["public"]["Enums"]["trang_thai_ddh"]
+          p_trang_thai?: Database["public"]["Enums"]["trang_thai_ddh"][]
           p_tu_khoa?: string
           p_tu_ngay?: string
         }
@@ -3010,7 +3010,7 @@ export type Database = {
           p_loai_nhan?: string
           p_nguoi_nhan_id?: string
           p_toi_da?: number
-          p_trang_thai?: Database["public"]["Enums"]["trang_thai_ddh"]
+          p_trang_thai?: Database["public"]["Enums"]["trang_thai_ddh"][]
           p_tu_khoa?: string
           p_tu_ngay?: string
         }
