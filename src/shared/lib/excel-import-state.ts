@@ -1,11 +1,11 @@
-// File thuần: trạng thái hộp nhập Excel chứng từ. File / bước / lỗi / đang gửi ràng
+// File thuần: trạng thái hộp nhập Excel (chứng từ, đối tác). File / bước / lỗi / đang gửi ràng
 // buộc nhau nên dùng useReducer thay vì nhiều useState rời.
-import type { DocumentImportResult } from "../api/document-import.api";
+import type { ExcelImportResult } from "./excel-import";
 
 export type DialogState = {
   step: 0 | 1 | 2;
   file: File | null;
-  result: DocumentImportResult | null;
+  result: ExcelImportResult | null;
   error: { title: string; action: string } | null;
   /** Server thấy lỗi mới lúc nạp → quay lại xem trước, chưa nạp gì. */
   dataChanged: boolean;
@@ -15,8 +15,8 @@ export type DialogState = {
 export type DialogAction =
   | { type: "select-file"; file: File }
   | { type: "submitting" }
-  | { type: "preview"; result: DocumentImportResult }
-  | { type: "committed"; result: DocumentImportResult }
+  | { type: "preview"; result: ExcelImportResult }
+  | { type: "committed"; result: ExcelImportResult }
   | { type: "error"; title: string; action: string }
   | { type: "reset" };
 

@@ -3,11 +3,9 @@ import type { Page } from "@/shared/types";
 
 import { toPartnerInsert, type PartnerInput } from "../schemas/partner.schema";
 import {
-  DEFAULT_PARTNER_FILTER,
   toPartnerDetail,
   toPartnerRow,
   toTransactionRow,
-  type ActiveStatus,
   type PartnerDetail,
   type PartnerFilter,
   type PartnerKind,
@@ -17,49 +15,6 @@ import {
 
 const DETAIL_COLUMNS =
   "id, ma, ten, loai, dien_thoai, email, dia_chi, khu_vuc, phuong_xa, ma_so_thue, ghi_chu, dang_hoat_dong, created_at, updated_at";
-
-const VALID_KINDS: PartnerKind[] = ["NCC", "KHACH", "CA_HAI"];
-
-/** Giá trị tham số URL `hoat_dong` — bề mặt người dùng, giữ tiếng Việt. */
-const ACTIVE_STATUS_TO_URL: Record<ActiveStatus, string> = {
-  active: "dang",
-  inactive: "ngung",
-  all: "tat_ca",
-};
-
-const URL_TO_ACTIVE_STATUS: Record<string, ActiveStatus> = {
-  dang: "active",
-  ngung: "inactive",
-  tat_ca: "all",
-};
-
-export function readPartnerFilterFromUrl(params: {
-  get(k: string): string | null;
-}): PartnerFilter {
-  const kind = params.get("loai");
-  const active = params.get("hoat_dong");
-  const page = Number(params.get("trang"));
-
-  return {
-    q: params.get("q")?.trim() ?? "",
-    kind: VALID_KINDS.includes(kind as PartnerKind) ? (kind as PartnerKind) : null,
-    activeStatus:
-      (active ? URL_TO_ACTIVE_STATUS[active] : undefined) ??
-      DEFAULT_PARTNER_FILTER.activeStatus,
-    page: Number.isFinite(page) && page >= 1 ? Math.trunc(page) : 1,
-  };
-}
-
-export function writePartnerFilterToUrl(filter: PartnerFilter): URLSearchParams {
-  const params = new URLSearchParams();
-  if (filter.q) params.set("q", filter.q);
-  if (filter.kind) params.set("loai", filter.kind);
-  if (filter.activeStatus !== DEFAULT_PARTNER_FILTER.activeStatus) {
-    params.set("hoat_dong", ACTIVE_STATUS_TO_URL[filter.activeStatus]);
-  }
-  if (filter.page !== 1) params.set("trang", String(filter.page));
-  return params;
-}
 
 export async function fetchPartners(
   filter: PartnerFilter,

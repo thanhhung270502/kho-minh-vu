@@ -4,40 +4,57 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Alert, Button, Modal, Result, Steps, Tabs, Typography, Upload } from "antd";
 import { useReducer } from "react";
 
-import { DocumentImportError, submitDocumentFile } from "../api/document-import.api";
-import { KIND_LABELS, type DocumentKind, type ImportMode } from "../lib/document-excel";
-import { dialogReducer, INITIAL_DIALOG_STATE } from "../lib/import-dialog-state";
+import { ExcelImportError, submitExcelImport, type ExcelImportMode } from "@/shared/lib/excel-import";
+import { dialogReducer, INITIAL_DIALOG_STATE } from "@/shared/lib/excel-import-state";
+
 import { ImportIssuesTable } from "./import-issues-table";
 
 const MAX_FILE_MB = 20;
 const n = (v: number) => v.toLocaleString("vi-VN");
 
+export type ExcelImportCopy = {
+  /** Danh từ của một bản ghi: "phiếu nhập", "đối tác"… */
+  label: string;
+  /** Lời dẫn dưới ô chọn file, theo kiểu nhập. */
+  hint: Record<ExcelImportMode, string>;
+  /** Hậu tố sau "Đã tạo N <label>" — vd. "nháp". */
+  createdSuffix?: string;
+  /** Lời nhắc sau khi nạp xong. */
+  doneNote?: string;
+};
+
 type Props = {
-  kind: DocumentKind;
+  /** Route POST nhận file (form: file, kieu, che_do). */
+  endpoint: string;
+  /** Link tải file mẫu nhập mới, hiện cạnh lời dẫn. */
+  templateHref: string;
+  /** Tiền tố tên file danh sách lỗi tải về. */
+  fileStem: string;
+  copy: ExcelImportCopy;
   /** null = đóng. */
-  mode: ImportMode | null;
+  mode: ExcelImportMode | null;
   onClose: () => void;
 };
 
-/** Chọn file → xem trước (lỗi / cảnh báo theo dòng) → nạp. Phiếu nạp vào luôn là NHÁP. */
-export function DocumentImportDialog({ kind, mode, onClose }: Props) {
+/** Chọn file → xem trước (lỗi / cảnh báo theo dòng Excel) → nạp. Còn lỗi thì không nạp gì. */
+export function ExcelImportDialog({ endpoint, templateHref, fileStem, copy, mode, onClose }: Props) {
   const queryClient = useQueryClient();
   const [state, dispatch] = useReducer(dialogReducer, INITIAL_DIALOG_STATE);
-  const label = KIND_LABELS[kind].one;
-  const activeMode: ImportMode = mode ?? "moi";
+  const activeMode: ExcelImportMode = mode ?? "moi";
+  const { label } = copy;
 
   async function submit(file: File, commit: boolean) {
     try {
-      const result = await submitDocumentFile(kind, activeMode, file, commit);
+      const result = await submitExcelImport(endpoint, activeMode, file, commit);
       if (commit && result.committed) {
-        // Nhập hàng loạt chạm danh sách, bộ đếm, tồn dự kiến — làm mới cả trang.
+        // Nhập hàng loạt chạm danh sách, bộ đếm, ô tìm… — làm mới cả trang.
         void queryClient.invalidateQueries();
         dispatch({ type: "committed", result });
         return;
       }
       dispatch({ type: "preview", result });
     } catch (error) {
-      if (error instanceof DocumentImportError) {
+      if (error instanceof ExcelImportError) {
         dispatch({ type: "error", title: error.title, action: error.action });
         return;
       }
@@ -68,6 +85,7 @@ export function DocumentImportDialog({ kind, mode, onClose }: Props) {
   const result = state.result;
   const errorCount = result?.errors.length ?? 0;
   const verb = activeMode === "moi" ? "Tạo" : "Cập nhật";
+  const linesText = result && result.lines > 0 ? `, ${n(result.lines)} dòng hàng` : "";
 
   return (
     <Modal
@@ -138,18 +156,8 @@ export function DocumentImportDialog({ kind, mode, onClose }: Props) {
             </p>
           </Upload.Dragger>
           <Typography.Paragraph type="secondary" className="mt-3 mb-0">
-            {activeMode === "moi" ? (
-              <>
-                Mỗi số phiếu thành một {label} nháp — chưa đụng tồn, kiểm lại trên web rồi mới ghi sổ.{" "}
-                <a href={`/api/chung-tu-excel/${kind}/mau?kieu=moi`}>Tải file mẫu</a>
-              </>
-            ) : (
-              <>
-                Sửa thông tin không ảnh hưởng tồn (người nhận, ghi chú, lý do xuất âm…) của mọi {label}, kể cả đã
-                ghi sổ. Mã hàng, số lượng, kho, ngày phải giữ nguyên. Ô trống = giữ nguyên. Lấy file bằng “Tải mẫu
-                cập nhật” ở nút ⋯ — file có sẵn các phiếu đang lọc.
-              </>
-            )}
+            {copy.hint[activeMode]}{" "}
+            {activeMode === "moi" ? <a href={templateHref}>Tải file mẫu</a> : null}
           </Typography.Paragraph>
         </>
       ) : null}
@@ -163,16 +171,16 @@ export function DocumentImportDialog({ kind, mode, onClose }: Props) {
             title={
               errorCount > 0
                 ? `${n(errorCount)} lỗi — sửa file rồi chọn lại. Chưa có gì được nạp.`
-                : `Sẵn sàng: ${n(result.documents)} ${label}, ${n(result.lines)} dòng hàng.`
+                : `Sẵn sàng: ${n(result.documents)} ${label}${linesText}.`
             }
           />
           <Tabs
             items={[
               ...(errorCount > 0
-                ? [{ key: "errors", label: `Lỗi (${n(errorCount)})`, children: <ImportIssuesTable issues={result.errors} fileName={`loi-${kind}.csv`} /> }]
+                ? [{ key: "errors", label: `Lỗi (${n(errorCount)})`, children: <ImportIssuesTable issues={result.errors} fileName={`loi-${fileStem}.csv`} /> }]
                 : []),
               ...(result.warnings.length > 0
-                ? [{ key: "warnings", label: `Cảnh báo (${n(result.warnings.length)})`, children: <ImportIssuesTable issues={result.warnings} fileName={`canh-bao-${kind}.csv`} /> }]
+                ? [{ key: "warnings", label: `Cảnh báo (${n(result.warnings.length)})`, children: <ImportIssuesTable issues={result.warnings} fileName={`canh-bao-${fileStem}.csv`} /> }]
                 : []),
             ]}
           />
@@ -185,12 +193,16 @@ export function DocumentImportDialog({ kind, mode, onClose }: Props) {
             status={result.partial ? "warning" : "success"}
             title={
               activeMode === "moi"
-                ? `Đã tạo ${n(result.created)} ${label} nháp`
+                ? `Đã tạo ${n(result.created)} ${label}${copy.createdSuffix ? ` ${copy.createdSuffix}` : ""}`
                 : `Đã cập nhật ${n(result.updated)} ${label}`
             }
-            subTitle={result.partial ? `Nạp được ${n(result.partial.done)}/${n(result.partial.total)} phiếu. ${result.partial.message}` : "Mở từng phiếu để kiểm lại rồi ghi sổ."}
+            subTitle={
+              result.partial
+                ? `Nạp được ${n(result.partial.done)}/${n(result.partial.total)}. ${result.partial.message}`
+                : copy.doneNote
+            }
           />
-          {result.warnings.length > 0 ? <ImportIssuesTable issues={result.warnings} fileName={`canh-bao-${kind}.csv`} /> : null}
+          {result.warnings.length > 0 ? <ImportIssuesTable issues={result.warnings} fileName={`canh-bao-${fileStem}.csv`} /> : null}
         </>
       ) : null}
     </Modal>

@@ -7,10 +7,15 @@ import { useState } from "react";
 
 import { downloadFile } from "@/shared/lib/download-file";
 
-import { KIND_LABELS } from "../lib/document-excel";
+type Props = {
+  /** Route GET trả file — nhận nguyên tham số lọc URL của màn danh sách. */
+  href: string;
+  fileName: string;
+  title: string;
+};
 
-/** Xuất hóa đơn / phiếu nhập đang lọc — gửi nguyên tham số URL của màn danh sách. */
-export function DocumentExportButton({ kind }: { kind: "hoa-don" | "phieu-nhap" }) {
+/** Nút [Excel]: xuất các bản ghi đang lọc trên màn danh sách (bỏ phân trang). */
+export function ExcelExportButton({ href, fileName, title }: Props) {
   const searchParams = useSearchParams();
   const { message } = App.useApp();
   const [downloading, setDownloading] = useState(false);
@@ -18,12 +23,10 @@ export function DocumentExportButton({ kind }: { kind: "hoa-don" | "phieu-nhap" 
   async function run() {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("trang");
+    params.delete("chon");
     const query = params.toString();
     setDownloading(true);
-    const result = await downloadFile(
-      `/api/chung-tu-excel/${kind}/xuat${query ? `?${query}` : ""}`,
-      `${KIND_LABELS[kind].file}.xlsx`,
-    );
+    const result = await downloadFile(`${href}${query ? `?${query}` : ""}`, fileName);
     setDownloading(false);
     if (!result.ok) message.error(result.message);
   }
@@ -31,7 +34,7 @@ export function DocumentExportButton({ kind }: { kind: "hoa-don" | "phieu-nhap" 
   return (
     <Button
       icon={<FileExcelOutlined />}
-      title={`Xuất Excel các ${KIND_LABELS[kind].one} đang lọc`}
+      title={title}
       loading={downloading}
       disabled={downloading}
       onClick={() => void run()}

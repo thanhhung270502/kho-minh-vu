@@ -2601,6 +2601,10 @@ export type Database = {
         Args: { p_chi_kiem_tra?: boolean; p_dong: Json }
         Returns: Json
       }
+      nhap_doi_tac_excel: {
+        Args: { p_chi_kiem_tra?: boolean; p_dong: Json; p_kieu: string }
+        Returns: Json
+      }
       nhap_ma_hang_moi: {
         Args: { p_chi_kiem_tra?: boolean; p_dong: Json; p_kho_id: string }
         Returns: Json

@@ -5,7 +5,7 @@ import { Button, Table } from "antd";
 
 import { buildCsv, downloadBlob } from "@/shared/lib/csv";
 
-import type { ImportIssue } from "../api/document-import.api";
+import type { ImportIssue } from "@/shared/lib/excel-import";
 
 type Props = {
   issues: ImportIssue[];

@@ -90,6 +90,7 @@ import {
   splitStaffNames,
   type DocumentFileRow,
 } from "../src/features/document-excel/lib/document-excel";
+import { mapPartnerHeaders, parseActiveFlag, parsePartnerKind } from "../src/features/partners/lib/partner-excel";
 import { toAnalysisRow, type AnalysisRow, type AnalysisSettings } from "../src/features/analytics/types";
 import {
   buildReorderCsv,
@@ -1845,4 +1846,22 @@ assert.equal(g.documents[0]?.dong_dau, 2);
 assert.deepEqual(g.issues.map((i) => i.row), [4, 5]);
 const headerOnly = groupDocuments([row({ productCode: "", quantity: null, quantityRaw: "" })], {});
 assert.equal(headerOnly.documents[0]?.dong.length, 0, "dòng trống mã + số lượng = chỉ sửa đầu phiếu");
+}
+
+// --- Nhập đối tác từ Excel (0109) -------------------------------------------
+{
+  assert.equal(parsePartnerKind("Nhà cung cấp"), "NCC");
+  assert.equal(parsePartnerKind("khách hàng"), "KHACH");
+  assert.equal(parsePartnerKind("Cả hai"), "CA_HAI");
+  assert.equal(parsePartnerKind(""), null);
+  assert.equal(parsePartnerKind("đại lý"), "INVALID");
+  assert.equal(parseActiveFlag(1), true, "file KiotViet ghi 1 / 0");
+  assert.equal(parseActiveFlag(0), false);
+  assert.equal(parseActiveFlag("Không"), false);
+  assert.equal(parseActiveFlag(null), null);
+  assert.equal(parseActiveFlag("có lẽ"), "INVALID");
+  const h = mapPartnerHeaders(["ma_nha_cung_cap", "ten_nha_cung_cap", "loai", "dang_hoat_dong", "nguoi_tao"]);
+  assert.equal(h.code, "ma_nha_cung_cap");
+  assert.equal(h.name, "ten_nha_cung_cap");
+  assert.equal(h.isActive, "dang_hoat_dong");
 }

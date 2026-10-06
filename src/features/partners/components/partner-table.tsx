@@ -3,14 +3,14 @@
 import { Button, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 
 import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
 import { SummaryRow } from "@/shared/components/summary-row";
 import { isInteractiveTarget, readSelectedId, withSelectedId } from "@/shared/lib/selected-id";
 
-import { readPartnerFilterFromUrl, writePartnerFilterToUrl } from "../api/partner.api";
+import { readPartnerFilterFromUrl, writePartnerFilterToUrl } from "../lib/partner-filter-url";
 import { usePartners } from "../hooks/usePartners";
 import {
   DEFAULT_PARTNER_FILTER,
@@ -30,7 +30,7 @@ function hasActiveFilter(filter: PartnerFilter): boolean {
   return filter.q !== "" || filter.activeStatus !== DEFAULT_PARTNER_FILTER.activeStatus;
 }
 
-export function PartnerTable({ canEdit }: { canEdit: boolean }) {
+export function PartnerTable({ canEdit, excelActions }: { canEdit: boolean; excelActions?: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -123,6 +123,7 @@ export function PartnerTable({ canEdit }: { canEdit: boolean }) {
             canEdit={canEdit}
             onChange={changeFilter}
             onAdd={() => setAddOpen(true)}
+            excelActions={excelActions}
           />
         }
         activeFilterCount={countActivePartnerFilters(filter)}

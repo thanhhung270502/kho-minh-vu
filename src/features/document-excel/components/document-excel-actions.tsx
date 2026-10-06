@@ -1,15 +1,11 @@
 "use client";
 
-import { App, Button, Dropdown, Space } from "antd";
-import type { MenuProps } from "antd";
-import { useSearchParams } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import { downloadFile } from "@/shared/lib/download-file";
+import { ExcelActions } from "@/shared/components/excel-actions";
+import type { ExcelImportCopy } from "@/shared/components/excel-import-dialog";
 
-import { KIND_LABELS, type DocumentKind, type ImportMode } from "../lib/document-excel";
-import { DocumentExportButton } from "./document-export-button";
-import { DocumentImportDialog } from "./document-import-dialog";
+import { KIND_LABELS, type DocumentKind } from "../lib/document-excel";
 
 type Props = {
   kind: DocumentKind;
@@ -19,56 +15,26 @@ type Props = {
   exportButton?: ReactNode;
 };
 
-/**
- * Cụm nút Excel trên thanh công cụ của bảng: [Excel] xuất các phiếu đang lọc, [⋯]
- * nhập mới, tải mẫu nhập mới, cập nhật, tải mẫu cập nhật. Ba màn dùng chung một kiểu.
- */
+/** Cụm nút Excel của Đơn đặt / Duyệt đơn / Nhập kho — khuôn chung `ExcelActions`. */
 export function DocumentExcelActions({ kind, canImport, exportButton }: Props) {
-  const { message } = App.useApp();
-  const searchParams = useSearchParams();
-  const [mode, setMode] = useState<ImportMode | null>(null);
-  const [downloading, setDownloading] = useState(false);
-  const file = KIND_LABELS[kind].file;
-
-  async function download(kieu: ImportMode) {
-    setDownloading(true);
-    // Mẫu cập nhật = các phiếu đang lọc trên màn hình, đủ thông tin: gửi kèm bộ lọc.
-    const params = kieu === "cap_nhat" ? new URLSearchParams(searchParams.toString()) : new URLSearchParams();
-    params.delete("trang");
-    params.set("kieu", kieu);
-    const result = await downloadFile(`/api/chung-tu-excel/${kind}/mau?${params.toString()}`, `mau-${file}.xlsx`);
-    setDownloading(false);
-    if (!result.ok) message.error(result.message);
-  }
-
-  const items: MenuProps["items"] = [
-    ...(canImport ? [{ key: "import-new", label: "Nhập mới…" }] : []),
-    { key: "template-new", label: "Tải mẫu nhập mới" },
-    { type: "divider" as const },
-    ...(canImport ? [{ key: "import-update", label: "Cập nhật…" }] : []),
-    { key: "template-update", label: "Tải mẫu cập nhật" },
-  ];
-
-  const menu: MenuProps = {
-    items,
-    onClick: ({ key }) => {
-      if (key === "import-new") setMode("moi");
-      if (key === "import-update") setMode("cap_nhat");
-      if (key === "template-new") void download("moi");
-      if (key === "template-update") void download("cap_nhat");
+  const label = KIND_LABELS[kind].one;
+  const copy: ExcelImportCopy = {
+    label,
+    hint: {
+      moi: `Mỗi số phiếu thành một ${label} nháp — chưa đụng tồn, kiểm lại trên web rồi mới ghi sổ.`,
+      cap_nhat: `Sửa thông tin không ảnh hưởng tồn (người nhận, ghi chú, lý do xuất âm…) của mọi ${label}, kể cả đã ghi sổ. Mã hàng, số lượng, kho, ngày phải giữ nguyên. Ô trống = giữ nguyên. Lấy file bằng “Tải mẫu cập nhật” ở nút ⋯ — file có sẵn các phiếu đang lọc.`,
     },
+    createdSuffix: "nháp",
+    doneNote: "Mở từng phiếu để kiểm lại rồi ghi sổ.",
   };
 
   return (
-    <>
-      {/* `Dropdown.Button` đã bị antd v6 bỏ — ghép tay đúng khuyến nghị của nó. */}
-      <Space.Compact>
-        {exportButton ?? (kind === "don-dat" ? null : <DocumentExportButton kind={kind} />)}
-        <Dropdown menu={menu}>
-          <Button loading={downloading} aria-label="Nhập Excel và file mẫu">⋯</Button>
-        </Dropdown>
-      </Space.Compact>
-      <DocumentImportDialog kind={kind} mode={mode} onClose={() => setMode(null)} />
-    </>
+    <ExcelActions
+      apiBase={`/api/chung-tu-excel/${kind}`}
+      fileStem={KIND_LABELS[kind].file}
+      canImport={canImport}
+      copy={copy}
+      exportButton={exportButton}
+    />
   );
 }

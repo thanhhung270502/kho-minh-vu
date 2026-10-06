@@ -2,7 +2,7 @@
 
 import { SearchOutlined } from "@ant-design/icons";
 import { Button, Input } from "antd";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import type { PartnerFilter } from "../types";
 
@@ -11,10 +11,12 @@ type Props = {
   canEdit: boolean;
   onChange: (patch: Partial<PartnerFilter>) => void;
   onAdd: () => void;
+  /** Cụm nút Excel (xuất / nhập / file mẫu) — trang truyền vào. */
+  excelActions?: ReactNode;
 };
 
 /** Ô tìm + nút "Thêm đối tác" — phần trên của thanh công cụ, khớp trang danh mục. */
-export function PartnerToolbar({ filter, canEdit, onChange, onAdd }: Props) {
+export function PartnerToolbar({ filter, canEdit, onChange, onAdd, excelActions }: Props) {
   // Ô tìm gõ tới đâu hiện tới đó, nhưng chỉ đẩy lên URL sau 300ms để không
   // bắn một request mỗi phím.
   const [keyword, setKeyword] = useState(filter.q);
@@ -59,11 +61,14 @@ export function PartnerToolbar({ filter, canEdit, onChange, onAdd }: Props) {
         onPressEnter={searchNow}
       />
 
-      {canEdit ? (
-        <Button type="primary" className="ms-auto" onClick={onAdd}>
-          Thêm nhà cung cấp
-        </Button>
-      ) : null}
+      <div className="ms-auto flex flex-wrap items-center gap-2">
+        {excelActions}
+        {canEdit ? (
+          <Button type="primary" onClick={onAdd}>
+            Thêm nhà cung cấp
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 }
