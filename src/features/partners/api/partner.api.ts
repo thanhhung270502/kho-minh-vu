@@ -1,12 +1,13 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Page } from "@/shared/types";
 
-import { toPartnerInsert, type PartnerInput } from "../schemas/partner.schema";
+import { toPartnerInsert, toPartnerUpdate, type PartnerInput } from "../schemas/partner.schema";
 import {
   toPartnerDetail,
   toPartnerRow,
   toTransactionRow,
   type PartnerDetail,
+  NEW_PARTNER_KIND,
   type PartnerFilter,
   type PartnerFormKind,
   type PartnerRow,
@@ -50,8 +51,9 @@ export async function fetchPartnerDetail(id: string): Promise<PartnerDetail | nu
 
 export async function suggestPartnerCode(kind: PartnerFormKind): Promise<string> {
   if (kind === "NOI_BO") return suggestInternalCode();
+  // Đối tác mới lưu là CA_HAI → mã DT000001…
   const { data, error } = await getSupabaseBrowserClient().rpc("sinh_ma_doi_tac", {
-    p_loai: kind,
+    p_loai: NEW_PARTNER_KIND,
   });
   if (error) throw error;
   return data ?? "";
@@ -73,17 +75,16 @@ export async function savePartner(
   input: PartnerInput,
 ): Promise<string> {
   const supabase = getSupabaseBrowserClient();
-  const payload = toPartnerInsert(input);
 
   if (id) {
-    const { error } = await supabase.from("doi_tac").update(payload).eq("id", id);
+    const { error } = await supabase.from("doi_tac").update(toPartnerUpdate(input)).eq("id", id);
     if (error) throw error;
     return id;
   }
 
   const { data, error } = await supabase
     .from("doi_tac")
-    .insert(payload)
+    .insert(toPartnerInsert(input))
     .select("id")
     .single();
   if (error) throw error;

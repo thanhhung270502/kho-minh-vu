@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import type { Database } from "@/types/database.types";
 
-import { kindCodeMismatch, toPartnerKind } from "../types";
+import { NEW_PARTNER_KIND, kindCodeMismatch } from "../types";
 
 const emptyToNull = (value: string | undefined) =>
   value && value.trim() ? value.trim() : null;
@@ -17,7 +17,7 @@ export const partnerSchema = z
     .regex(/^[A-Za-z0-9._-]+$/, "Mã chỉ gồm chữ không dấu, số và . _ -")
     .transform((value) => value.toUpperCase()),
   name: z.string().trim().min(2, "Nhập tên đối tác"),
-  kind: z.enum(["NCC", "KHACH", "NOI_BO", "CA_HAI"]),
+  kind: z.enum(["DOI_TAC", "NOI_BO"]),
   phone: z
     .string()
     .trim()
@@ -44,13 +44,16 @@ export type PartnerFormValues = z.input<typeof partnerSchema>;
 export type PartnerInput = z.output<typeof partnerSchema>;
 
 type PartnerInsert = Database["public"]["Tables"]["doi_tac"]["Insert"];
+type PartnerUpdate = Database["public"]["Tables"]["doi_tac"]["Update"];
 
-/** Ranh giới duy nhất đổi khóa miền sang tên cột `doi_tac`. */
-export function toPartnerInsert(input: PartnerInput): PartnerInsert {
+/**
+ * Ranh giới duy nhất đổi khóa miền sang tên cột `doi_tac`. Sửa không đụng cột loai —
+ * Đối tác / Nội bộ chỉ là cách hiển thị, loại gốc của đối tác giữ nguyên.
+ */
+export function toPartnerUpdate(input: PartnerInput): PartnerUpdate {
   return {
     ma: input.code,
     ten: input.name,
-    loai: toPartnerKind(input.kind),
     dien_thoai: input.phone,
     email: input.email,
     dia_chi: input.address,
@@ -59,4 +62,8 @@ export function toPartnerInsert(input: PartnerInput): PartnerInsert {
     ghi_chu: input.note,
     dang_hoat_dong: input.isActive,
   };
+}
+
+export function toPartnerInsert(input: PartnerInput): PartnerInsert {
+  return { ...toPartnerUpdate(input), ma: input.code, ten: input.name, loai: NEW_PARTNER_KIND };
 }

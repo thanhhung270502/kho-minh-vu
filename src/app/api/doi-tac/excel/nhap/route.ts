@@ -1,5 +1,5 @@
 import { getCurrentUser } from "@/features/auth/api/current-user.server";
-import { assignInternalCodes, importPartners } from "@/features/partners/api/partner-excel.server";
+import { importPartners, prepareNewPartners } from "@/features/partners/api/partner-excel.server";
 import { readPartnerFile } from "@/features/partners/lib/partner-excel-file.server";
 import { explainError } from "@/shared/lib/errors";
 import { hasPermission } from "@/shared/lib/permissions";
@@ -59,7 +59,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    if (mode === "moi") await assignInternalCodes(parsed.rows, parsed.needsInternalCode);
+    if (mode === "moi") await prepareNewPartners(parsed.rows, parsed.needsInternalCode);
     const result = await importPartners(mode, parsed.rows, parsed.issues, commit);
     return Response.json({ result });
   } catch (error) {

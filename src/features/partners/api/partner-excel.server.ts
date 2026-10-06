@@ -10,7 +10,7 @@ import type { Json } from "@/types/database.types";
 
 import type { PartnerRpcRow } from "../lib/partner-excel";
 import { readPartnerFilterFromUrl } from "../lib/partner-filter-url";
-import { toPartnerDetail, type PartnerDetail } from "../types";
+import { NEW_PARTNER_KIND, toPartnerDetail, type PartnerDetail } from "../types";
 
 const DETAIL_COLUMNS =
   "id, ma, ten, loai, dien_thoai, email, dia_chi, khu_vuc, phuong_xa, ma_so_thue, ghi_chu, dang_hoat_dong, created_at, updated_at";
@@ -39,10 +39,12 @@ async function callRpc(mode: ExcelImportMode, rows: PartnerRpcRow[], checkOnly: 
 }
 
 /**
- * Dòng "Nội bộ" trống mã (chỉ khi nhập mới) nhận NB + số kế tiếp, 3 chữ số như NB001 —
- * tính từ mã NB lớn nhất trên hệ thống và trong chính file.
+ * Nhập mới: loại trống lưu CA_HAI; dòng "Nội bộ" trống mã nhận NB + số kế tiếp, 3 chữ số
+ * như NB001 — tính từ mã NB lớn nhất trên hệ thống và trong chính file.
  */
-export async function assignInternalCodes(rows: PartnerRpcRow[], rowNumbers: readonly number[]): Promise<void> {
+export async function prepareNewPartners(rows: PartnerRpcRow[], rowNumbers: readonly number[]): Promise<void> {
+  // Loại database trống (file ghi Đối tác / Nội bộ hoặc bỏ trống) → CA_HAI như form.
+  for (const row of rows) row.loai ??= NEW_PARTNER_KIND;
   if (rowNumbers.length === 0) return;
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.from("doi_tac").select("ma").ilike("ma", "NB%");

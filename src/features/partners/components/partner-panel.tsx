@@ -39,7 +39,7 @@ function PartnerInfo({ partner }: { partner: PartnerDetail }) {
           label: "Loại",
           children: (
             <span>
-              <Tag>{partnerKindLabel(partner.kind, partner.code)}</Tag>
+              <Tag>{partnerKindLabel(partner.code)}</Tag>
               {partner.isActive ? null : <Tag>Ngừng hoạt động</Tag>}
             </span>
           ),

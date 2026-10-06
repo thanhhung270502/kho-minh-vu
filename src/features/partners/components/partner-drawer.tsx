@@ -23,7 +23,7 @@ import { PARTNER_FORM_KINDS, PARTNER_FORM_KIND_LABELS, toPartnerFormKind } from 
 const EMPTY_FORM: PartnerFormValues = {
   code: "",
   name: "",
-  kind: "NCC",
+  kind: "DOI_TAC",
   phone: "",
   email: "",
   address: "",
@@ -69,7 +69,7 @@ export function PartnerDrawer({ id, open, onClose }: Props) {
       reset({
         code: detail.data.code,
         name: detail.data.name,
-        kind: toPartnerFormKind(detail.data.kind, detail.data.code),
+        kind: toPartnerFormKind(detail.data.code),
         phone: detail.data.phone ?? "",
         email: detail.data.email ?? "",
         address: detail.data.address ?? "",

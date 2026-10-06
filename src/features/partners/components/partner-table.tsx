@@ -95,7 +95,7 @@ export function PartnerTable({ canEdit, excelActions }: { canEdit: boolean; exce
       width: 130,
       render: (kind: PartnerRow["kind"], row) => (
         <>
-          <Tag>{partnerKindLabel(kind, row.code)}</Tag>
+          <Tag>{partnerKindLabel(row.code)}</Tag>
           {row.isActive ? null : <Tag>Ngừng</Tag>}
         </>
       ),

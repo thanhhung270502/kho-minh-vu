@@ -16,7 +16,7 @@ import {
   type PartnerField,
   type PartnerRpcRow,
 } from "./partner-excel";
-import { kindCodeMismatch, toPartnerFormKind, toPartnerKind, type PartnerDetail } from "../types";
+import { kindCodeMismatch, toPartnerFormKind, type PartnerDetail } from "../types";
 
 const MAX_ROWS = 5_000;
 
@@ -55,11 +55,12 @@ export async function readPartnerFile(
     const kindText = str(c, "kind") ?? "";
     const kind = parsePartnerKind(kindText);
     if (kind === "INVALID") {
-      issues.push({ row: raw.rowNumber, docNo: code ?? "", message: `Loại "${kindText}" không đọc được — ghi Nhà cung cấp, Đối tác, Nội bộ hoặc Cả hai` });
-    } else if (kind) {
-      const mismatch = kindCodeMismatch(kind, code);
+      issues.push({ row: raw.rowNumber, docNo: code ?? "", message: `Loại "${kindText}" không đọc được — ghi Đối tác hoặc Nội bộ` });
+    } else if (kind?.kind) {
+      // Chỉ kiểm khi file ghi rõ Đối tác / Nội bộ; chữ cũ của KiotViet thì loại suy theo mã.
+      const mismatch = kindCodeMismatch(kind.kind, code);
       if (mismatch) issues.push({ row: raw.rowNumber, docNo: code ?? "", message: mismatch });
-      if (kind === "NOI_BO" && !code) needsInternalCode.push(raw.rowNumber);
+      if (kind.kind === "NOI_BO" && !code) needsInternalCode.push(raw.rowNumber);
     }
     const active = parseActiveFlag(cell(c, "isActive"));
     if (active === "INVALID") {
@@ -69,7 +70,7 @@ export async function readPartnerFile(
       dong: raw.rowNumber,
       ma: code,
       ten: str(c, "name")?.replace(/\s+/g, " ") ?? null,
-      loai: kind === "INVALID" || kind === null ? null : toPartnerKind(kind),
+      loai: kind === "INVALID" || kind === null ? null : kind.dbKind,
       dien_thoai: str(c, "phone"),
       email: str(c, "email"),
       dia_chi: str(c, "address"),
@@ -110,7 +111,7 @@ export async function buildPartnerWorkbook(
     ws.addRow({
       code: p.code,
       name: p.name,
-      kind: PARTNER_KIND_EXCEL[toPartnerFormKind(p.kind, p.code)],
+      kind: PARTNER_KIND_EXCEL[toPartnerFormKind(p.code)],
       phone: p.phone,
       email: p.email,
       address: p.address,

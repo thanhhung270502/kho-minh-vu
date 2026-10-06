@@ -29,7 +29,7 @@ export type PartnerColumn = {
 export const PARTNER_COLUMNS: PartnerColumn[] = [
   { key: "code", title: "Mã nhà cung cấp", width: 16, match: ["ma_nha_cung_cap", "ma_doi_tac", "ma_khach_hang", "ma"], hint: "Nhập mới: để trống thì hệ thống tự cấp mã theo loại. Cập nhật: bắt buộc — tìm đối tác theo mã." },
   { key: "name", title: "Tên nhà cung cấp", width: 36, required: true, match: ["ten_nha_cung_cap", "ten_doi_tac", "ten_khach_hang", "ten"], hint: "Tên đối tác." },
-  { key: "kind", title: "Loại", width: 14, match: ["loai"], hint: "Nhà cung cấp, Đối tác, Nội bộ hoặc Cả hai. Nội bộ dùng mã NB… (để trống thì tự cấp NB003…). Nhập mới để trống = Nhà cung cấp." },
+  { key: "kind", title: "Loại", width: 14, match: ["loai"], hint: "Đối tác hoặc Nội bộ. Nội bộ dùng mã NB… (nhập mới để trống mã thì tự cấp NB kế tiếp). Để trống = theo mã: NB… là Nội bộ, còn lại là Đối tác." },
   { key: "phone", title: "Điện thoại", width: 14, match: ["dien_thoai", "so_dien_thoai"], hint: "Chỉ gồm số và + ( ) . -" },
   { key: "email", title: "Email", width: 24, match: ["email"], hint: "" },
   { key: "address", title: "Địa chỉ", width: 32, match: ["dia_chi"], hint: "" },
@@ -64,23 +64,26 @@ const plain = (s: string) =>
   s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/gi, "d").toLowerCase().trim();
 
 export const PARTNER_KIND_EXCEL: Record<PartnerFormKind, string> = {
-  NCC: "Nhà cung cấp",
-  KHACH: "Đối tác",
+  DOI_TAC: "Đối tác",
   NOI_BO: "Nội bộ",
-  CA_HAI: "Cả hai",
 };
 
 /**
- * "Nhà cung cấp" / "Đối tác" / "Nội bộ" / "Cả hai" → loại trên form; nhận cả chữ cũ
- * "Khách hàng" của file KiotViet. Trống → null; lạ → "INVALID".
+ * Ô Loại → { kind: loại người dùng thấy (null = suy theo mã), dbKind: loại database ghi
+ * thẳng (null = mới thì CA_HAI, sửa thì giữ nguyên) }. Chữ cũ của file KiotViet
+ * ("Nhà cung cấp", "Khách hàng", "Cả hai") vẫn nhận và giữ đúng loại database đó.
+ * Trống → null; lạ → "INVALID".
  */
-export function parsePartnerKind(text: string): PartnerFormKind | null | "INVALID" {
+export function parsePartnerKind(
+  text: string,
+): { kind: PartnerFormKind | null; dbKind: PartnerKind | null } | null | "INVALID" {
   const t = plain(text);
   if (t === "") return null;
-  if (t === "ncc" || t.startsWith("nha cung cap")) return "NCC";
-  if (t === "nb" || t.startsWith("noi bo")) return "NOI_BO";
-  if (t === "kh" || t === "khach" || t.startsWith("khach hang") || t.startsWith("doi tac")) return "KHACH";
-  if (t.startsWith("ca hai") || t === "ca_hai") return "CA_HAI";
+  if (t === "nb" || t.startsWith("noi bo")) return { kind: "NOI_BO", dbKind: null };
+  if (t.startsWith("doi tac")) return { kind: "DOI_TAC", dbKind: null };
+  if (t === "ncc" || t.startsWith("nha cung cap")) return { kind: null, dbKind: "NCC" };
+  if (t === "kh" || t === "khach" || t.startsWith("khach hang")) return { kind: null, dbKind: "KHACH" };
+  if (t.startsWith("ca hai") || t === "ca_hai") return { kind: null, dbKind: "CA_HAI" };
   return "INVALID";
 }
 

@@ -1863,9 +1863,12 @@ assert.equal(headerOnly.documents[0]?.dong.length, 0, "dòng trống mã + số 
 
 // --- Nhập đối tác từ Excel (0109) -------------------------------------------
 {
-  assert.equal(parsePartnerKind("Nhà cung cấp"), "NCC");
-  assert.equal(parsePartnerKind("khách hàng"), "KHACH");
-  assert.equal(parsePartnerKind("Cả hai"), "CA_HAI");
+  assert.deepEqual(parsePartnerKind("Đối tác"), { kind: "DOI_TAC", dbKind: null });
+  assert.deepEqual(parsePartnerKind("noi bo"), { kind: "NOI_BO", dbKind: null });
+  // Chữ cũ của KiotViet: giữ loại database, loại hiển thị suy theo mã.
+  assert.deepEqual(parsePartnerKind("Nhà cung cấp"), { kind: null, dbKind: "NCC" });
+  assert.deepEqual(parsePartnerKind("khách hàng"), { kind: null, dbKind: "KHACH" });
+  assert.deepEqual(parsePartnerKind("Cả hai"), { kind: null, dbKind: "CA_HAI" });
   assert.equal(parsePartnerKind(""), null);
   assert.equal(parsePartnerKind("đại lý"), "INVALID");
   assert.equal(parseActiveFlag(1), true, "file KiotViet ghi 1 / 0");
