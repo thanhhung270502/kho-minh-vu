@@ -149,7 +149,7 @@ export function PartnerTable({ canEdit, excelActions }: { canEdit: boolean; exce
                 </Button>
               </div>
             ) : (
-              "Chưa có nhà cung cấp nào. Bấm “Thêm nhà cung cấp” để tạo nhà cung cấp đầu tiên."
+              "Chưa có đối tác nào. Bấm “Thêm đối tác” để tạo đối tác đầu tiên."
             )
           }
         >

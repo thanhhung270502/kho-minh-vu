@@ -65,7 +65,7 @@ export function PartnerToolbar({ filter, canEdit, onChange, onAdd, excelActions 
         {excelActions}
         {canEdit ? (
           <Button type="primary" onClick={onAdd}>
-            Thêm nhà cung cấp
+            Thêm đối tác
           </Button>
         ) : null}
       </div>
