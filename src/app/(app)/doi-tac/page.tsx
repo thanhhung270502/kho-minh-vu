@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 
 import { requirePermission } from "@/features/auth/api/current-user.server";
@@ -19,9 +18,6 @@ export default async function PartnersPage() {
       <PageHeader
         title="Đối tác"
         description="Danh sách nhà cung cấp."
-        actions={
-          canEdit ? <Link href="/doi-tac/ra-ghi-chu">Rà ghi chú KiotViet</Link> : null
-        }
       />
 
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}
