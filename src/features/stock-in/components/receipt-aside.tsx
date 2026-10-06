@@ -1,6 +1,6 @@
 "use client";
 
-import { App, DatePicker, Input, Segmented, Select, Typography } from "antd";
+import { App, DatePicker, Input, Select, Typography } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 
@@ -11,14 +11,12 @@ import { StatusDot } from "@/shared/components/status-dot";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 import { filterByLabel } from "@/shared/lib/text";
 
-import { useChangeReceiptSource, useUpdateReceiptHeader } from "../hooks/useReceipts";
+import { useUpdateReceiptHeader } from "../hooks/useReceipts";
 import type { DocumentHeaderInput } from "../schemas/receipt.schema";
 import {
   DOC_STATUS_LABELS,
   DOC_STATUS_TONES,
-  RECEIPT_SOURCE_LABELS,
   type DocumentDetail,
-  type ReceiptSource,
 } from "../types";
 
 type Props = { receipt: DocumentDetail; canEdit: boolean };
@@ -28,9 +26,8 @@ type Props = { receipt: DocumentDetail; canEdit: boolean };
  * hoặc đã hủy thì chỉ đọc — khóa thật nằm ở policy 0016.
  */
 export function ReceiptAside({ receipt, canEdit }: Props) {
-  const { message, modal } = App.useApp();
+  const { message } = App.useApp();
   const update = useUpdateReceiptHeader(receipt.id);
-  const changeSource = useChangeReceiptSource(receipt.id);
   const lookups = useLookups();
   const suppliers = usePartners({ ...DEFAULT_PARTNER_FILTER, kind: "NCC" });
   const [justSaved, setJustSaved] = useState<string | null>(null);
@@ -63,24 +60,6 @@ export function ReceiptAside({ receipt, canEdit }: Props) {
     } catch (error) {
       reportError(error);
     }
-  }
-
-  function pickSource(source: ReceiptSource) {
-    if (source === receipt.source) return;
-    modal.confirm({
-      title: `Đổi nguồn nhập sang “${RECEIPT_SOURCE_LABELS[source]}”?`,
-      content: "Nguồn nhập quyết định dãy số phiếu — phiếu sẽ được cấp số mới, số hiện tại bỏ trống.",
-      okText: "Đổi nguồn",
-      cancelText: "Giữ nguyên",
-      onOk: async () => {
-        try {
-          await changeSource.mutateAsync(source);
-          markSaved("source");
-        } catch (error) {
-          reportError(error);
-        }
-      },
-    });
   }
 
   function label(field: string, text: string) {
@@ -124,21 +103,6 @@ export function ReceiptAside({ receipt, canEdit }: Props) {
           <span className="text-[13.5px]">
             {`${receipt.partnerCode ?? ""} ${receipt.partnerName ?? "—"}`.trim()}
           </span>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        {label("source", "Nguồn nhập")}
-        {editable ? (
-          <Segmented<ReceiptSource>
-            block
-            value={receipt.source ?? "NCC"}
-            disabled={changeSource.isPending}
-            options={(["NCC", "NHA_MAY"] as const).map((s) => ({ value: s, label: RECEIPT_SOURCE_LABELS[s] }))}
-            onChange={pickSource}
-          />
-        ) : (
-          <span className="text-[13.5px]">{receipt.source ? RECEIPT_SOURCE_LABELS[receipt.source] : "—"}</span>
         )}
       </div>
 

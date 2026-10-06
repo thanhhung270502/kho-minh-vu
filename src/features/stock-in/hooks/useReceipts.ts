@@ -17,14 +17,13 @@ import {
 } from "@/features/documents/api/document.api";
 import { productKeys } from "@/features/products/api/product.keys";
 
-import { changeReceiptSource, createReceipt, fetchReceipts, type NewReceiptHeader } from "../api/receipt.api";
+import { createReceipt, fetchReceipts, type NewReceiptHeader } from "../api/receipt.api";
 import { receiptKeys } from "../api/receipt.keys";
 import type {
   DocumentHeaderInput,
   DocumentLineInput,
   ReceiptFilter,
 } from "../schemas/receipt.schema";
-import type { ReceiptSource } from "../types";
 
 export function useReceipts(filter: ReceiptFilter) {
   return useQuery({
@@ -68,14 +67,6 @@ export function useCreateReceipt() {
   const refresh = useRefreshReceipt();
   return useMutation({
     mutationFn: (header: NewReceiptHeader) => createReceipt(header),
-    onSuccess: refresh,
-  });
-}
-
-export function useChangeReceiptSource(id: string) {
-  const refresh = useRefreshReceipt(id);
-  return useMutation({
-    mutationFn: (source: ReceiptSource) => changeReceiptSource(id, source),
     onSuccess: refresh,
   });
 }

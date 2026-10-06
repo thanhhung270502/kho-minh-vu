@@ -81,9 +81,9 @@ export const KIND_COLUMNS: Record<DocumentKind, ColumnSpec[]> = {
   "phieu-nhap": [
     { key: "docNo", title: "Mã nhập hàng", width: 14, required: true, match: ["ma_nhap_hang", "ma_phieu_nhap", "so_phieu"], hint: NO_HINT },
     { key: "date", title: "Ngày nhập", width: 12, required: true, match: ["ngay_nhap", "ngay"], hint: "dd/mm/yyyy." },
-    { key: "source", title: "Nguồn nhập", width: 12, match: ["nguon_nhap"], hint: "NCC hoặc Nhà máy. Trống = NCC." },
-    { key: "partnerCode", title: "Mã NCC", width: 14, required: true, match: ["ma_ncc", "ma_nha_cung_cap"], hint: "Mã nhà cung cấp trên hệ thống." },
-    { key: "warehouse", title: "Kho", width: 10, match: ["kho"], hint: "K1, K2 hoặc tên kho. Trống: kho mặc định của mã đầu tiên." },
+    { key: "source", title: "Nguồn nhập", width: 12, readOnly: true, match: ["nguon_nhap"], hint: "NCC hoặc Nhà máy. Trống = NCC." },
+    { key: "partnerCode", title: "Mã NCC", width: 14, match: ["ma_ncc", "ma_nha_cung_cap"], hint: "Mã nhà cung cấp trên hệ thống. Nhập mới để trống = NCC000001 (Vũ Trụ)." },
+    { key: "warehouse", title: "Kho", width: 10, match: ["kho"], hint: "K1, K2 hoặc tên kho. Nhập mới để trống = Kho 1." },
     { key: "note", title: "Ghi chú phiếu", width: 24, match: ["ghi_chu_phieu"], hint: "Ghi chú đầu phiếu." },
     { key: "productCode", title: "Mã hàng", width: 18, required: true, match: ["ma_hang"], hint: "Mã hàng trên hệ thống." },
     { key: "quantity", title: "Số lượng", width: 10, required: true, match: ["so_luong"], hint: "Lớn hơn 0." },

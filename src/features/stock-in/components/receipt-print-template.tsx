@@ -4,7 +4,6 @@ import { Button } from "antd";
 import dayjs from "dayjs";
 
 import type { DocumentDetail, DocumentLine } from "../types";
-import { RECEIPT_SOURCE_LABELS } from "../types";
 
 function formatNumber(value: number | string | null): string {
   return value === null ? "" : Number(value).toLocaleString("vi-VN");
@@ -58,10 +57,6 @@ export function ReceiptPrintTemplate({
         <div>
           <span className="text-gray-600">Kho: </span>
           {receipt.warehouseName ?? "—"}
-        </div>
-        <div>
-          <span className="text-gray-600">Nguồn nhập: </span>
-          {receipt.source ? RECEIPT_SOURCE_LABELS[receipt.source] : "—"}
         </div>
         <div>
           <span className="text-gray-600">Người lập: </span>

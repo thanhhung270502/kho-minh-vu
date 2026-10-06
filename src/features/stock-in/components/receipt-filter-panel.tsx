@@ -14,7 +14,7 @@ import {
   countActiveReceiptFilters,
   type ReceiptFilter,
 } from "../schemas/receipt.schema";
-import { DOC_STATUS_LABELS, RECEIPT_SOURCE_LABELS } from "../types";
+import { DOC_STATUS_LABELS } from "../types";
 
 function FilterGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -71,20 +71,6 @@ export function ReceiptFilterPanel({
             label: supplier.name,
           }))}
           onChange={(value) => change({ partnerId: value ?? null })}
-        />
-      </FilterGroup>
-
-      <FilterGroup label="Nguồn nhập">
-        <Select
-          allowClear
-          className="w-full"
-          placeholder="Tất cả"
-          value={filter.source}
-          options={(["NCC", "NHA_MAY"] as const).map((source) => ({
-            value: source,
-            label: RECEIPT_SOURCE_LABELS[source],
-          }))}
-          onChange={(value) => change({ source: value ?? null })}
         />
       </FilterGroup>
 

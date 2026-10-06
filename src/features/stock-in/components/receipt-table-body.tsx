@@ -1,6 +1,6 @@
 "use client";
 
-import { Table, Tag } from "antd";
+import { Table } from "antd";
 import type { TableColumnsType } from "antd";
 import dayjs from "dayjs";
 import Link from "next/link";
@@ -11,7 +11,6 @@ import { RECEIPT_PAGE_SIZE, type ReceiptFilter } from "../schemas/receipt.schema
 import {
   DOC_STATUS_TONES,
   DOC_STATUS_LABELS,
-  RECEIPT_SOURCE_LABELS,
   type DocumentRow,
 } from "../types";
 import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
@@ -37,17 +36,6 @@ const COLUMNS: TableColumnsType<DocumentRow> = [
     dataIndex: "docDate",
     width: 110,
     render: (date: string) => dayjs(date).format("DD/MM/YYYY"),
-  },
-  {
-    title: "Nguồn",
-    dataIndex: "source",
-    width: 110,
-    render: (source: DocumentRow["source"]) =>
-      source ? (
-        <Tag>
-          {RECEIPT_SOURCE_LABELS[source]}
-        </Tag>
-      ) : null,
   },
   { title: "Nhà cung cấp", dataIndex: "partnerName", width: 240, ellipsis: true },
   { title: "Kho", dataIndex: "warehouseName", width: 110 },
