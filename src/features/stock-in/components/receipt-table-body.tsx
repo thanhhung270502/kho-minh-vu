@@ -43,7 +43,7 @@ const COLUMNS: TableColumnsType<DocumentRow> = [
     dataIndex: "status",
     width: 140,
     render: (status: DocumentRow["status"]) => (
-      <StatusDot tone={DOC_STATUS_TONES[status]} strike={status === "DA_HUY"}>{DOC_STATUS_LABELS[status]}</StatusDot>
+      <StatusDot variant="badge" tone={DOC_STATUS_TONES[status]} strike={status === "DA_HUY"}>{DOC_STATUS_LABELS[status]}</StatusDot>
     ),
   },
   { title: "Người tạo", dataIndex: "createdByName", width: 160, ellipsis: true },
