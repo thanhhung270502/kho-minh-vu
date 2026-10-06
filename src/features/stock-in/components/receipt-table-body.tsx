@@ -4,6 +4,7 @@ import { Table } from "antd";
 import type { TableColumnsType } from "antd";
 import dayjs from "dayjs";
 import Link from "next/link";
+import { useState } from "react";
 
 import { StatusDot } from "@/shared/components/status-dot";
 
@@ -12,8 +13,12 @@ import {
   DOC_STATUS_TONES,
   DOC_STATUS_LABELS,
   type DocumentRow,
+  type ReceiptPermissions,
 } from "../types";
 import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
+import { isInteractiveTarget } from "@/shared/lib/selected-id";
+
+import { ReceiptExpanded } from "./receipt-expanded";
 
 function formatNumber(value: number | string | null): string {
   return value === null ? "—" : Number(value).toLocaleString("vi-VN");
@@ -69,6 +74,7 @@ type Props = {
   filter: ReceiptFilter;
   loading: boolean;
   onFilterChange: (filter: ReceiptFilter) => void;
+  permissions: ReceiptPermissions;
 };
 
 export function ReceiptTableBody({
@@ -77,8 +83,11 @@ export function ReceiptTableBody({
   filter,
   loading,
   onFilterChange,
+  permissions,
 }: Props) {
   const offsetHeader = useStickyTableOffset();
+  // Bấm dòng = mở / gập phần xem nhanh ngay dưới dòng (một dòng mở một lúc).
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   return (
     <Table<DocumentRow>
       rowKey="id"
@@ -87,6 +96,19 @@ export function ReceiptTableBody({
       columns={COLUMNS}
       dataSource={rows}
       loading={loading}
+      expandable={{
+        expandedRowKeys: expandedId ? [expandedId] : [],
+        expandedRowRender: (row) => <ReceiptExpanded id={row.id} permissions={permissions} />,
+        showExpandColumn: false,
+        expandedRowClassName: () => "[&>td]:bg-brand-25",
+      }}
+      rowClassName={(row) => (row.id === expandedId ? "cursor-pointer [&>td]:bg-brand-50" : "cursor-pointer")}
+      onRow={(row) => ({
+        onClick: (event) => {
+          if (isInteractiveTarget(event.target as Element)) return;
+          setExpandedId((current) => (current === row.id ? null : row.id));
+        },
+      })}
       scroll={{ x: 890 }}
       pagination={{
         current: filter.page,

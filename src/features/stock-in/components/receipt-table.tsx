@@ -15,12 +15,20 @@ import {
   writeReceiptFilterToUrl,
   type ReceiptFilter,
 } from "../schemas/receipt.schema";
+import type { ReceiptPermissions } from "../types";
 import { CreateReceiptButton } from "./create-receipt-button";
 import { ReceiptFilterPanel } from "./receipt-filter-panel";
 import { ReceiptTableBody } from "./receipt-table-body";
 import { ReceiptToolbar } from "./receipt-toolbar";
 
-export function ReceiptTable({ canCreate, excelActions }: { canCreate: boolean; excelActions?: ReactNode }) {
+export function ReceiptTable({
+  permissions,
+  excelActions,
+}: {
+  permissions: ReceiptPermissions;
+  excelActions?: ReactNode;
+}) {
+  const canCreate = permissions.canEdit;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -93,6 +101,7 @@ export function ReceiptTable({ canCreate, excelActions }: { canCreate: boolean; 
               filter={filter}
               loading={receipts.isFetching && !receipts.isPending}
               onFilterChange={changeFilter}
+              permissions={permissions}
             />
           )}
         </QueryState>

@@ -23,7 +23,11 @@ export default async function StockInPage() {
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}
       <Suspense fallback={null}>
         <ReceiptTable
-          canCreate={can(user, "nhap_kho")}
+          permissions={{
+            canEdit: can(user, "nhap_kho"),
+            // D-11: chỉ quản lý hủy phiếu đã ghi sổ. Chặn thật ở database.
+            canVoid: user.role === "quan_ly",
+          }}
           excelActions={<DocumentExcelActions kind="phieu-nhap" canImport={canImportDocuments(user, "phieu-nhap")} />}
         />
       </Suspense>
