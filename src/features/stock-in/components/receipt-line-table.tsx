@@ -199,34 +199,17 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
 
   const totalQuantity = lines.reduce((sum, line) => sum + Number(line.quantity), 0);
 
+  // Cùng khuôn bảng "Hàng đặt" của đơn đặt: MỘT khối (tiêu đề → ô nhập → bảng) để
+  // lưới hai cột của trang phiếu không tách ô nhập sang cột phải.
   return (
-    <>
-      {/* scroll.x của antd tự cuộn ngang trong khung bảng; bọc overflow-x sẽ kéo theo thanh cuộn dọc thừa. */}
-      <div>
-        <Table<DocumentLine>
-          rowKey="id"
-          size="small"
-          columns={columns}
-          dataSource={lines}
-          pagination={false}
-          // Bảng nằm cột trái (khung Thông tin phiếu bên phải) — đủ hẹp để thấy cột Số lượng.
-          scroll={{ x: 680 }}
-          locale={{ emptyText: "Chưa có dòng nào. Gõ mã hàng ở ô bên dưới để thêm." }}
-          summary={() =>
-            lines.length > 0 ? (
-              <SummaryRow
-                columns={columns}
-                hasSelection={false}
-                label={`Tổng cộng — ${lines.length} dòng`}
-                totals={{ quantity: totalQuantity }}
-              />
-            ) : null
-          }
-        />
+    <section className="min-w-0 overflow-hidden rounded-the border border-vien">
+      <div className="px-5 py-4 text-[15px] font-extrabold">
+        Hàng nhập{" "}
+        <span className="font-semibold text-trung-tinh-300">· {lines.length} dòng</span>
       </div>
 
       {editable ? (
-        <div className="mt-3 flex flex-wrap items-end gap-2 rounded-the border border-vien bg-nen-tong p-3">
+        <div className="flex flex-wrap items-end gap-2 border-t border-vien bg-nen-tong p-4">
           <div className="min-w-56 flex-1">
             <label className="mb-1 block text-[13px] text-chu-phu">Mã hàng</label>
             <ProductSearchInput
@@ -289,10 +272,33 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
           </Button>
 
           <Typography.Text type="secondary" className="w-full text-xs">
-            Gõ mã → Enter → số lượng → Enter là xong một dòng.
+            Gõ mã → Enter → số lượng → Enter là xong một dòng, con trỏ quay về ô mã.
           </Typography.Text>
         </div>
       ) : null}
-    </>
+
+      <div className="overflow-x-auto">
+        <Table<DocumentLine>
+          rowKey="id"
+          size="small"
+          columns={columns}
+          dataSource={lines}
+          pagination={false}
+          // Bảng nằm cột trái (khung Thông tin phiếu bên phải) — đủ hẹp để thấy cột Số lượng.
+          scroll={{ x: 680 }}
+          locale={{ emptyText: "Chưa có dòng nào. Gõ mã hàng ở ô phía trên để thêm." }}
+          summary={() =>
+            lines.length > 0 ? (
+              <SummaryRow
+                columns={columns}
+                hasSelection={false}
+                label={`Tổng cộng — ${lines.length} dòng`}
+                totals={{ quantity: totalQuantity }}
+              />
+            ) : null
+          }
+        />
+      </div>
+    </section>
   );
 }
