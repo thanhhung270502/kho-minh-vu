@@ -1,6 +1,6 @@
 // File thuần (bẫy 9): cột file Excel đối tác, đọc ô loại / đang hoạt động. Route
 // handler, bộ dựng file và scripts/test-pure-functions.ts cùng import.
-import type { PartnerKind } from "../types";
+import type { PartnerFormKind, PartnerKind } from "../types";
 
 export type PartnerField =
   | "code"
@@ -29,7 +29,7 @@ export type PartnerColumn = {
 export const PARTNER_COLUMNS: PartnerColumn[] = [
   { key: "code", title: "Mã nhà cung cấp", width: 16, match: ["ma_nha_cung_cap", "ma_doi_tac", "ma_khach_hang", "ma"], hint: "Nhập mới: để trống thì hệ thống tự cấp mã theo loại. Cập nhật: bắt buộc — tìm đối tác theo mã." },
   { key: "name", title: "Tên nhà cung cấp", width: 36, required: true, match: ["ten_nha_cung_cap", "ten_doi_tac", "ten_khach_hang", "ten"], hint: "Tên đối tác." },
-  { key: "kind", title: "Loại", width: 14, match: ["loai"], hint: "Nhà cung cấp, Khách hàng hoặc Cả hai. Nhập mới để trống = Nhà cung cấp." },
+  { key: "kind", title: "Loại", width: 14, match: ["loai"], hint: "Nhà cung cấp, Đối tác, Nội bộ hoặc Cả hai. Nội bộ dùng mã NB… (để trống thì tự cấp NB003…). Nhập mới để trống = Nhà cung cấp." },
   { key: "phone", title: "Điện thoại", width: 14, match: ["dien_thoai", "so_dien_thoai"], hint: "Chỉ gồm số và + ( ) . -" },
   { key: "email", title: "Email", width: 24, match: ["email"], hint: "" },
   { key: "address", title: "Địa chỉ", width: 32, match: ["dia_chi"], hint: "" },
@@ -63,18 +63,23 @@ export function mapPartnerHeaders(headers: readonly string[]): Partial<Record<Pa
 const plain = (s: string) =>
   s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/gi, "d").toLowerCase().trim();
 
-export const PARTNER_KIND_EXCEL: Record<PartnerKind, string> = {
+export const PARTNER_KIND_EXCEL: Record<PartnerFormKind, string> = {
   NCC: "Nhà cung cấp",
-  KHACH: "Khách hàng",
+  KHACH: "Đối tác",
+  NOI_BO: "Nội bộ",
   CA_HAI: "Cả hai",
 };
 
-/** "Nhà cung cấp" / "NCC" / "Khách hàng" / "Cả hai" → enum; trống → null; lạ → "INVALID". */
-export function parsePartnerKind(text: string): PartnerKind | null | "INVALID" {
+/**
+ * "Nhà cung cấp" / "Đối tác" / "Nội bộ" / "Cả hai" → loại trên form; nhận cả chữ cũ
+ * "Khách hàng" của file KiotViet. Trống → null; lạ → "INVALID".
+ */
+export function parsePartnerKind(text: string): PartnerFormKind | null | "INVALID" {
   const t = plain(text);
   if (t === "") return null;
   if (t === "ncc" || t.startsWith("nha cung cap")) return "NCC";
-  if (t === "kh" || t === "khach" || t.startsWith("khach hang")) return "KHACH";
+  if (t === "nb" || t.startsWith("noi bo")) return "NOI_BO";
+  if (t === "kh" || t === "khach" || t.startsWith("khach hang") || t.startsWith("doi tac")) return "KHACH";
   if (t.startsWith("ca hai") || t === "ca_hai") return "CA_HAI";
   return "INVALID";
 }

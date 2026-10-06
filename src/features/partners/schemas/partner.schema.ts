@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import type { Database } from "@/types/database.types";
 
+import { kindCodeMismatch, toPartnerKind } from "../types";
+
 const emptyToNull = (value: string | undefined) =>
   value && value.trim() ? value.trim() : null;
 
@@ -33,16 +35,9 @@ export const partnerSchema = z
   note: z.string().trim().optional().transform(emptyToNull),
   isActive: z.boolean(),
   })
-  // Mã NB… là dấu hiệu nội bộ ở mọi màn đơn hàng — loại và mã phải khớp nhau.
   .superRefine((value, ctx) => {
-    const internalCode = /^NB\d/i.test(value.code);
-    if (value.kind === "NOI_BO" && !internalCode) {
-      ctx.addIssue({ code: "custom", path: ["code"], message: "Mã nội bộ bắt đầu bằng NB và một chữ số (vd. NB003)" });
-    }
-    // Khách mã NB… sẽ hiện là "Nội bộ"; NB002 (Cả hai) có sẵn nên chỉ chặn loại Đối tác.
-    if (value.kind === "KHACH" && internalCode) {
-      ctx.addIssue({ code: "custom", path: ["code"], message: "Mã NB… dành cho nội bộ — chọn loại Nội bộ hoặc đổi mã khác" });
-    }
+    const message = kindCodeMismatch(value.kind, value.code);
+    if (message) ctx.addIssue({ code: "custom", path: ["code"], message });
   });
 
 export type PartnerFormValues = z.input<typeof partnerSchema>;
@@ -55,8 +50,7 @@ export function toPartnerInsert(input: PartnerInput): PartnerInsert {
   return {
     ma: input.code,
     ten: input.name,
-    // "Nội bộ" lưu là KHACH, nhận ra bằng mã NB (xem PartnerFormKind).
-    loai: input.kind === "NOI_BO" ? "KHACH" : input.kind,
+    loai: toPartnerKind(input.kind),
     dien_thoai: input.phone,
     email: input.email,
     dia_chi: input.address,

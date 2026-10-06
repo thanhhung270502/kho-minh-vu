@@ -16,11 +16,17 @@ import {
   type PartnerField,
   type PartnerRpcRow,
 } from "./partner-excel";
-import type { PartnerDetail } from "../types";
+import { kindCodeMismatch, toPartnerFormKind, toPartnerKind, type PartnerDetail } from "../types";
 
 const MAX_ROWS = 5_000;
 
-export async function readPartnerFile(buf: Buffer): Promise<{ rows: PartnerRpcRow[]; issues: RowIssue[] }> {
+/**
+ * `needsInternalCode`: dòng "Nội bộ" để trống mã — RPC chỉ cấp mã theo loại database
+ * (KHACH → KH…), nên lớp api cấp mã NB… trước khi gửi.
+ */
+export async function readPartnerFile(
+  buf: Buffer,
+): Promise<{ rows: PartnerRpcRow[]; issues: RowIssue[]; needsInternalCode: number[] }> {
   const sheet = await readFirstSheet(buf);
   const map = mapPartnerHeaders(sheet.headers);
   if (!map.code && !map.name) {
@@ -31,6 +37,7 @@ export async function readPartnerFile(buf: Buffer): Promise<{ rows: PartnerRpcRo
   }
 
   const issues: RowIssue[] = [];
+  const needsInternalCode: number[] = [];
   const cell = (cells: Record<string, unknown>, key: PartnerField): unknown => {
     const col = map[key];
     return col ? cells[col] : undefined;
@@ -48,7 +55,11 @@ export async function readPartnerFile(buf: Buffer): Promise<{ rows: PartnerRpcRo
     const kindText = str(c, "kind") ?? "";
     const kind = parsePartnerKind(kindText);
     if (kind === "INVALID") {
-      issues.push({ row: raw.rowNumber, docNo: code ?? "", message: `Loại "${kindText}" không đọc được — ghi Nhà cung cấp, Khách hàng hoặc Cả hai` });
+      issues.push({ row: raw.rowNumber, docNo: code ?? "", message: `Loại "${kindText}" không đọc được — ghi Nhà cung cấp, Đối tác, Nội bộ hoặc Cả hai` });
+    } else if (kind) {
+      const mismatch = kindCodeMismatch(kind, code);
+      if (mismatch) issues.push({ row: raw.rowNumber, docNo: code ?? "", message: mismatch });
+      if (kind === "NOI_BO" && !code) needsInternalCode.push(raw.rowNumber);
     }
     const active = parseActiveFlag(cell(c, "isActive"));
     if (active === "INVALID") {
@@ -58,7 +69,7 @@ export async function readPartnerFile(buf: Buffer): Promise<{ rows: PartnerRpcRo
       dong: raw.rowNumber,
       ma: code,
       ten: str(c, "name")?.replace(/\s+/g, " ") ?? null,
-      loai: kind === "INVALID" ? null : kind,
+      loai: kind === "INVALID" || kind === null ? null : toPartnerKind(kind),
       dien_thoai: str(c, "phone"),
       email: str(c, "email"),
       dia_chi: str(c, "address"),
@@ -69,7 +80,7 @@ export async function readPartnerFile(buf: Buffer): Promise<{ rows: PartnerRpcRo
       dang_hoat_dong: active === "INVALID" ? null : active,
     };
   });
-  return { rows, issues };
+  return { rows, issues, needsInternalCode };
 }
 
 export type PartnerTemplateMode = "moi" | "cap_nhat";
@@ -99,7 +110,7 @@ export async function buildPartnerWorkbook(
     ws.addRow({
       code: p.code,
       name: p.name,
-      kind: PARTNER_KIND_EXCEL[p.kind],
+      kind: PARTNER_KIND_EXCEL[toPartnerFormKind(p.kind, p.code)],
       phone: p.phone,
       email: p.email,
       address: p.address,

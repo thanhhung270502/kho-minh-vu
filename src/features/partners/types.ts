@@ -80,6 +80,23 @@ export function toPartnerFormKind(kind: PartnerKind, code: string): PartnerFormK
   return kind === "KHACH" && isInternalPartnerCode(code) ? "NOI_BO" : kind;
 }
 
+/**
+ * Mã NB… là dấu hiệu nội bộ ở mọi màn đơn hàng — loại và mã phải khớp nhau. NB002 (Cả hai)
+ * có sẵn nên chỉ chặn loại Đối tác. Trả câu báo lỗi, null = hợp lệ. Mã trống: không kiểm.
+ */
+export function kindCodeMismatch(kind: PartnerFormKind, code: string | null): string | null {
+  if (!code) return null;
+  const internalCode = isInternalPartnerCode(code);
+  if (kind === "NOI_BO" && !internalCode) return "Mã nội bộ bắt đầu bằng NB và một chữ số (vd. NB003)";
+  if (kind === "KHACH" && internalCode) return "Mã NB… dành cho nội bộ — chọn loại Nội bộ hoặc đổi mã khác";
+  return null;
+}
+
+/** "Nội bộ" lưu là KHACH (nhận ra bằng mã NB). */
+export function toPartnerKind(kind: PartnerFormKind): PartnerKind {
+  return kind === "NOI_BO" ? "KHACH" : kind;
+}
+
 /** Nhãn loại hiện ở bảng / panel: khách mã NB… là "Nội bộ". */
 export function partnerKindLabel(kind: PartnerKind, code: string): string {
   return PARTNER_FORM_KIND_LABELS[toPartnerFormKind(kind, code)];

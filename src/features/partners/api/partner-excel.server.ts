@@ -38,6 +38,23 @@ async function callRpc(mode: ExcelImportMode, rows: PartnerRpcRow[], checkOnly: 
   return rpcResultSchema.parse(data);
 }
 
+/**
+ * Dòng "Nội bộ" trống mã (chỉ khi nhập mới) nhận NB + số kế tiếp, 3 chữ số như NB001 —
+ * tính từ mã NB lớn nhất trên hệ thống và trong chính file.
+ */
+export async function assignInternalCodes(rows: PartnerRpcRow[], rowNumbers: readonly number[]): Promise<void> {
+  if (rowNumbers.length === 0) return;
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.from("doi_tac").select("ma").ilike("ma", "NB%");
+  if (error) throw error;
+  const numberOf = (code: string | null) => Number(/^NB(\d+)$/i.exec(code ?? "")?.[1] ?? 0);
+  let next = Math.max(0, ...(data ?? []).map((r) => numberOf(r.ma)), ...rows.map((r) => numberOf(r.ma))) + 1;
+  const wanted = new Set(rowNumbers);
+  for (const row of rows) {
+    if (wanted.has(row.dong) && !row.ma) row.ma = `NB${String(next++).padStart(3, "0")}`;
+  }
+}
+
 /** Kiểm tra (`commit` false) hoặc nạp. Đối tác ít nên một lần gọi là đủ, không chia lô. */
 export async function importPartners(
   mode: ExcelImportMode,
