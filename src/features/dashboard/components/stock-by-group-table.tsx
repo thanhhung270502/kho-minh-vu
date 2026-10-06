@@ -6,7 +6,10 @@ import Link from "next/link";
 
 import type { StockStatus } from "@/features/products/schemas/filter.schema";
 
-import { buildCatalogDrilldownUrl, type StockGroupBy } from "../lib/stock-drilldown";
+import {
+  buildCatalogDrilldownUrl,
+  type StockGroupBy,
+} from "../lib/stock-drilldown";
 import { groupShare } from "../lib/overview-format";
 import type { StockByGroupRow } from "../types";
 
@@ -53,14 +56,19 @@ export function StockByGroupTable({ rows, groupBy }: Props) {
       title: groupTitle,
       dataIndex: "groupName",
       key: "groupName",
+      width: 170,
+      ellipsis: true,
       sorter: (a, b) =>
-        (a.groupName ?? unassignedLabel).localeCompare(b.groupName ?? unassignedLabel, "vi"),
+        (a.groupName ?? unassignedLabel).localeCompare(
+          b.groupName ?? unassignedLabel,
+          "vi",
+        ),
       render: (_: string | null, row) => row.groupName ?? unassignedLabel,
     },
     {
       title: "Tỷ trọng",
       key: "share",
-      width: 200,
+      width: 120,
       render: (_: unknown, row) => (
         <div className="h-1.5 w-full rounded-full bg-trung-tinh-75">
           <div
@@ -95,8 +103,11 @@ export function StockByGroupTable({ rows, groupBy }: Props) {
       className: "tabular-nums",
       sorter: (a: StockByGroupRow, b: StockByGroupRow) => a[key] - b[key],
       render: (value: number, row: StockByGroupRow) => {
-        const color = key === "negative" && value > 0 ? token.colorError : undefined;
-        const text = <span style={{ color }}>{value.toLocaleString("vi-VN")}</span>;
+        const color =
+          key === "negative" && value > 0 ? token.colorError : undefined;
+        const text = (
+          <span style={{ color }}>{value.toLocaleString("vi-VN")}</span>
+        );
 
         if (row.groupId === null || value === 0) return text;
 
@@ -118,34 +129,35 @@ export function StockByGroupTable({ rows, groupBy }: Props) {
   ];
 
   return (
-    <div className="overflow-x-auto">
-      <Table
-        rowKey="key"
-        size="small"
-        pagination={false}
-        scroll={{ x: "max-content", y: 480 }}
-        columns={columns}
-        dataSource={rows}
-        summary={(pageData) => (
-          <Table.Summary.Row>
-            <Table.Summary.Cell index={0}>
-              <strong>Tổng</strong>
+    // Một thanh cuộn dọc duy nhất (của bảng); bảng vừa bề ngang thẻ, không cuộn ngang.
+    <Table
+      rowKey="key"
+      size="small"
+      pagination={false}
+      scroll={{ y: 480 }}
+      columns={columns}
+      dataSource={rows}
+      summary={(pageData) => (
+        <Table.Summary.Row>
+          <Table.Summary.Cell index={0}>
+            <strong>Tổng</strong>
+          </Table.Summary.Cell>
+          <Table.Summary.Cell index={1} />
+          <Table.Summary.Cell index={2} align="right">
+            <strong>
+              {pageData
+                .reduce((total, row) => total + row.totalQuantity, 0)
+                .toLocaleString("vi-VN")}
+            </strong>
+          </Table.Summary.Cell>
+          <Table.Summary.Cell index={3} />
+          {COUNT_COLUMNS.map(({ key }, index) => (
+            <Table.Summary.Cell key={key} index={index + 4} align="right">
+              <strong>{sumBy(pageData, key).toLocaleString("vi-VN")}</strong>
             </Table.Summary.Cell>
-            <Table.Summary.Cell index={1} />
-            <Table.Summary.Cell index={2} align="right">
-              <strong>
-                {pageData.reduce((total, row) => total + row.totalQuantity, 0).toLocaleString("vi-VN")}
-              </strong>
-            </Table.Summary.Cell>
-            <Table.Summary.Cell index={3} />
-            {COUNT_COLUMNS.map(({ key }, index) => (
-              <Table.Summary.Cell key={key} index={index + 4} align="right">
-                <strong>{sumBy(pageData, key).toLocaleString("vi-VN")}</strong>
-              </Table.Summary.Cell>
-            ))}
-          </Table.Summary.Row>
-        )}
-      />
-    </div>
+          ))}
+        </Table.Summary.Row>
+      )}
+    />
   );
 }
