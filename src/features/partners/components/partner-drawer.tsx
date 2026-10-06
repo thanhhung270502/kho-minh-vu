@@ -18,7 +18,7 @@ import {
   type PartnerFormValues,
   type PartnerInput,
 } from "../schemas/partner.schema";
-import { PARTNER_KIND_LABELS, type PartnerKind } from "../types";
+import { PARTNER_FORM_KINDS, PARTNER_FORM_KIND_LABELS, toPartnerFormKind } from "../types";
 
 const EMPTY_FORM: PartnerFormValues = {
   code: "",
@@ -32,8 +32,6 @@ const EMPTY_FORM: PartnerFormValues = {
   note: "",
   isActive: true,
 };
-
-const SUPPLIER_KINDS: PartnerKind[] = ["NCC", "CA_HAI"];
 
 type Props = { id: string | null; open: boolean; onClose: () => void };
 
@@ -71,7 +69,7 @@ export function PartnerDrawer({ id, open, onClose }: Props) {
       reset({
         code: detail.data.code,
         name: detail.data.name,
-        kind: detail.data.kind,
+        kind: toPartnerFormKind(detail.data.kind, detail.data.code),
         phone: detail.data.phone ?? "",
         email: detail.data.email ?? "",
         address: detail.data.address ?? "",
@@ -84,7 +82,7 @@ export function PartnerDrawer({ id, open, onClose }: Props) {
   }, [open, id, detail.data, reset]);
 
   // Gợi ý mã theo loại, nhưng không đè lên mã người dùng đã tự gõ.
-  const suggestedCode = useSuggestedPartnerCode(kind as PartnerKind, open && isNew);
+  const suggestedCode = useSuggestedPartnerCode(kind, open && isNew);
   useEffect(() => {
     if (!open || !isNew || !suggestedCode.data) return;
     if (getFieldState("code").isDirty) return;
@@ -128,15 +126,11 @@ export function PartnerDrawer({ id, open, onClose }: Props) {
               control={control}
               render={({ field }) => (
                 <Radio.Group {...field} optionType="button" buttonStyle="solid">
-                  {/* Thêm mới từ trang Đối tác chỉ ra nhà cung cấp; sửa một khách
-                      (mở qua ?chon= từ màn rà ghi chú) vẫn giữ đủ ba loại. */}
-                  {(isNew ? SUPPLIER_KINDS : (Object.keys(PARTNER_KIND_LABELS) as PartnerKind[])).map(
-                    (option) => (
-                      <Radio.Button key={option} value={option}>
-                        {PARTNER_KIND_LABELS[option]}
-                      </Radio.Button>
-                    ),
-                  )}
+                  {PARTNER_FORM_KINDS.map((option) => (
+                    <Radio.Button key={option} value={option}>
+                      {PARTNER_FORM_KIND_LABELS[option]}
+                    </Radio.Button>
+                  ))}
                 </Radio.Group>
               )}
             />

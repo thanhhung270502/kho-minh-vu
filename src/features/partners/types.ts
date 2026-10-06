@@ -1,3 +1,4 @@
+import { isInternalPartnerCode } from "@/shared/lib/recipient";
 import type { Database } from "@/types/database.types";
 
 type Fn = Database["public"]["Functions"];
@@ -58,9 +59,31 @@ export type TransactionRow = {
 
 export const PARTNER_KIND_LABELS: Record<PartnerKind, string> = {
   NCC: "Nhà cung cấp",
-  KHACH: "Khách hàng",
+  KHACH: "Đối tác",
   CA_HAI: "Cả hai",
 };
+
+/**
+ * Loại trên form Thêm/Sửa đối tác. "Nội bộ" không phải giá trị riêng của database:
+ * lưu là KHACH với mã NB… — đơn gửi mã NB đã được tính là nội bộ (isInternalPartnerCode).
+ */
+export type PartnerFormKind = PartnerKind | "NOI_BO";
+
+export const PARTNER_FORM_KINDS: PartnerFormKind[] = ["NCC", "KHACH", "NOI_BO", "CA_HAI"];
+
+export const PARTNER_FORM_KIND_LABELS: Record<PartnerFormKind, string> = {
+  ...PARTNER_KIND_LABELS,
+  NOI_BO: "Nội bộ",
+};
+
+export function toPartnerFormKind(kind: PartnerKind, code: string): PartnerFormKind {
+  return kind === "KHACH" && isInternalPartnerCode(code) ? "NOI_BO" : kind;
+}
+
+/** Nhãn loại hiện ở bảng / panel: khách mã NB… là "Nội bộ". */
+export function partnerKindLabel(kind: PartnerKind, code: string): string {
+  return PARTNER_FORM_KIND_LABELS[toPartnerFormKind(kind, code)];
+}
 
 /** Khóa là giá trị enum `loai_ct` trong database. */
 const DOC_TYPE_LABELS: Record<string, string> = {

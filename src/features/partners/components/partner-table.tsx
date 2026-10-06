@@ -15,7 +15,7 @@ import { usePartners } from "../hooks/usePartners";
 import {
   DEFAULT_PARTNER_FILTER,
   countActivePartnerFilters,
-  PARTNER_KIND_LABELS,
+  partnerKindLabel,
   type PartnerFilter,
   type PartnerRow,
 } from "../types";
@@ -38,9 +38,9 @@ export function PartnerTable({ canEdit, excelActions }: { canEdit: boolean; exce
   // Bỏ `?loai=` của link cũ — trang này không còn lọc theo loại.
   const filter: PartnerFilter = { ...readPartnerFilterFromUrl(searchParams), kind: null };
   const selectedId = readSelectedId(searchParams);
-  // Trang Đối tác chỉ còn nhà cung cấp — RPC lọc "NCC" trả cả đối tác "Cả hai".
-  // Khách hàng vẫn chọn được khi tạo đơn đặt, chỉ không liệt kê ở đây.
-  const partners = usePartners({ ...filter, kind: "NCC" });
+  // Liệt kê mọi loại: nhà cung cấp, đối tác, nội bộ (mã NB…), cả hai — thêm được ở đây
+  // thì phải thấy được ở đây (xuất Excel cũng không lọc loại).
+  const partners = usePartners(filter);
   // Sửa đối tác nằm trong panel chi tiết — ngăn kéo ở đây chỉ còn để thêm mới.
   const [addOpen, setAddOpen] = useState(false);
 
@@ -95,7 +95,7 @@ export function PartnerTable({ canEdit, excelActions }: { canEdit: boolean; exce
       width: 130,
       render: (kind: PartnerRow["kind"], row) => (
         <>
-          <Tag>{PARTNER_KIND_LABELS[kind]}</Tag>
+          <Tag>{partnerKindLabel(kind, row.code)}</Tag>
           {row.isActive ? null : <Tag>Ngừng</Tag>}
         </>
       ),

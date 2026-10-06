@@ -17,7 +17,7 @@ export default async function PartnersPage() {
     <>
       <PageHeader
         title="Đối tác"
-        description="Danh sách nhà cung cấp."
+        description="Nhà cung cấp, đối tác và bộ phận nội bộ."
       />
 
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}

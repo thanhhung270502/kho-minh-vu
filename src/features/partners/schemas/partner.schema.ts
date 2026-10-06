@@ -5,7 +5,8 @@ import type { Database } from "@/types/database.types";
 const emptyToNull = (value: string | undefined) =>
   value && value.trim() ? value.trim() : null;
 
-export const partnerSchema = z.object({
+export const partnerSchema = z
+  .object({
   code: z
     .string()
     .trim()
@@ -14,7 +15,7 @@ export const partnerSchema = z.object({
     .regex(/^[A-Za-z0-9._-]+$/, "Mã chỉ gồm chữ không dấu, số và . _ -")
     .transform((value) => value.toUpperCase()),
   name: z.string().trim().min(2, "Nhập tên đối tác"),
-  kind: z.enum(["NCC", "KHACH", "CA_HAI"]),
+  kind: z.enum(["NCC", "KHACH", "NOI_BO", "CA_HAI"]),
   phone: z
     .string()
     .trim()
@@ -31,7 +32,18 @@ export const partnerSchema = z.object({
   taxCode: z.string().trim().max(20).optional().transform(emptyToNull),
   note: z.string().trim().optional().transform(emptyToNull),
   isActive: z.boolean(),
-});
+  })
+  // Mã NB… là dấu hiệu nội bộ ở mọi màn đơn hàng — loại và mã phải khớp nhau.
+  .superRefine((value, ctx) => {
+    const internalCode = /^NB\d/i.test(value.code);
+    if (value.kind === "NOI_BO" && !internalCode) {
+      ctx.addIssue({ code: "custom", path: ["code"], message: "Mã nội bộ bắt đầu bằng NB và một chữ số (vd. NB003)" });
+    }
+    // Khách mã NB… sẽ hiện là "Nội bộ"; NB002 (Cả hai) có sẵn nên chỉ chặn loại Đối tác.
+    if (value.kind === "KHACH" && internalCode) {
+      ctx.addIssue({ code: "custom", path: ["code"], message: "Mã NB… dành cho nội bộ — chọn loại Nội bộ hoặc đổi mã khác" });
+    }
+  });
 
 export type PartnerFormValues = z.input<typeof partnerSchema>;
 export type PartnerInput = z.output<typeof partnerSchema>;
@@ -43,7 +55,8 @@ export function toPartnerInsert(input: PartnerInput): PartnerInsert {
   return {
     ma: input.code,
     ten: input.name,
-    loai: input.kind,
+    // "Nội bộ" lưu là KHACH, nhận ra bằng mã NB (xem PartnerFormKind).
+    loai: input.kind === "NOI_BO" ? "KHACH" : input.kind,
     dien_thoai: input.phone,
     email: input.email,
     dia_chi: input.address,

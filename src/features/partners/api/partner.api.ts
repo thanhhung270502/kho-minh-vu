@@ -8,7 +8,7 @@ import {
   toTransactionRow,
   type PartnerDetail,
   type PartnerFilter,
-  type PartnerKind,
+  type PartnerFormKind,
   type PartnerRow,
   type TransactionRow,
 } from "../types";
@@ -48,12 +48,24 @@ export async function fetchPartnerDetail(id: string): Promise<PartnerDetail | nu
   return data ? toPartnerDetail(data) : null;
 }
 
-export async function suggestPartnerCode(kind: PartnerKind): Promise<string> {
+export async function suggestPartnerCode(kind: PartnerFormKind): Promise<string> {
+  if (kind === "NOI_BO") return suggestInternalCode();
   const { data, error } = await getSupabaseBrowserClient().rpc("sinh_ma_doi_tac", {
     p_loai: kind,
   });
   if (error) throw error;
   return data ?? "";
+}
+
+/** NB + số lớn nhất hiện có + 1, giữ 3 chữ số như NB001, NB002. */
+async function suggestInternalCode(): Promise<string> {
+  const { data, error } = await getSupabaseBrowserClient().from("doi_tac").select("ma").ilike("ma", "NB%");
+  if (error) throw error;
+  const max = (data ?? []).reduce((m, row) => {
+    const n = /^NB(\d+)$/i.exec(row.ma)?.[1];
+    return n ? Math.max(m, Number(n)) : m;
+  }, 0);
+  return `NB${String(max + 1).padStart(3, "0")}`;
 }
 
 export async function savePartner(
