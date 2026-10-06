@@ -9,7 +9,7 @@ import { StatusDot } from "@/shared/components/status-dot";
 import { partnerLabel, showsStaffOnly } from "@/shared/lib/recipient";
 
 import { ORDER_STATUS_TONES, ORDER_STATUS_LABELS } from "../lib/order-status";
-import { OrderProgressBar } from "./order-progress-bar";
+import { OrderProgress } from "./order-progress";
 import { ORDER_PAGE_SIZE, type OrderFilter } from "../schemas/order.schema";
 import type { OrderPermissions, OrderRow } from "../types";
 import { useExpandableRows } from "@/shared/hooks/use-expandable-rows";
@@ -76,10 +76,10 @@ const COLUMNS: TableColumnsType<OrderRow> = [
   {
     title: "Tiến độ",
     key: "progress",
-    width: 150,
+    width: 100,
     // D-04: trục giao tính khi đọc, không phải enum.
     render: (_, row) => (
-      <OrderProgressBar shipped={row.shippedQuantity} ordered={row.orderedQuantity} />
+      <OrderProgress shipped={row.shippedQuantity} ordered={row.orderedQuantity} />
     ),
   },
   {
@@ -136,7 +136,7 @@ export function OrderTableBody({ rows, total, filter, loading, onFilterChange, p
       dataSource={rows}
       loading={loading}
       {...expandable}
-      scroll={{ x: 980 }}
+      scroll={{ x: 930 }}
       pagination={{
         current: filter.page,
         pageSize: ORDER_PAGE_SIZE,

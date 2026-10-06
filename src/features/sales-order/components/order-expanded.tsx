@@ -19,7 +19,7 @@ import { useOrderDetail, useOrderLines, useUpdateOrderHeader } from "../hooks/us
 import { ORDER_STATUS_LABELS, ORDER_STATUS_TONES } from "../lib/order-status";
 import type { OrderLine, OrderPermissions } from "../types";
 import { OrderActions } from "./order-actions";
-import { OrderProgressBar } from "./order-progress-bar";
+import { OrderProgress } from "./order-progress";
 
 type Props = { id: string; permissions: OrderPermissions };
 
@@ -59,7 +59,7 @@ export function OrderExpanded({ id, permissions }: Props) {
               <Field label="Người nhận">{recipients === "—" ? "Chưa chọn" : recipients}</Field>
               <Field label="Ngày đơn">{dayjs(order.orderDate).format("DD/MM/YYYY")}</Field>
               <Field label="Tiến độ">
-                <OrderProgressBar shipped={order.shippedQuantity} ordered={order.orderedQuantity} />
+                <OrderProgress shipped={order.shippedQuantity} ordered={order.orderedQuantity} />
               </Field>
               <Field label="Hóa đơn">
                 {order.invoice ? (
