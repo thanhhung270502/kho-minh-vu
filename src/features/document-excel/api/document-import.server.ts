@@ -8,6 +8,7 @@
 import { z } from "zod";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isPostgrestError } from "@/shared/lib/errors";
 import type { Json } from "@/types/database.types";
 
 import { KIND_LABELS, type DocumentKind, type ImportMode, type RowIssue, type RpcDocument } from "../lib/document-excel";
@@ -117,7 +118,8 @@ export async function importDocuments(
       result.partial = {
         done,
         total: documents.length,
-        message: e instanceof Error ? e.message : "Lỗi không xác định",
+        // Lỗi PostgREST là object thường, không phải Error (bẫy 8).
+        message: e instanceof Error ? e.message : isPostgrestError(e) ? e.message : "Lỗi không xác định",
       };
       break;
     }
