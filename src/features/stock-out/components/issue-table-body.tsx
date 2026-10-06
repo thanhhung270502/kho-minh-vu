@@ -14,10 +14,6 @@ import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
 
 import { IssueExpanded } from "./issue-expanded";
 
-function formatNumber(value: number | string | null): string {
-  return value === null ? "—" : Number(value).toLocaleString("vi-VN");
-}
-
 const COLUMNS: TableColumnsType<IssueRow> = [
   {
     title: "Số phiếu",
@@ -49,20 +45,6 @@ const COLUMNS: TableColumnsType<IssueRow> = [
       ) : (
         "—"
       ),
-  },
-  {
-    title: "Số dòng",
-    dataIndex: "lineCount",
-    width: 90,
-    align: "right",
-    render: formatNumber,
-  },
-  {
-    title: "Tổng số lượng",
-    dataIndex: "totalQuantity",
-    width: 130,
-    align: "right",
-    render: formatNumber,
   },
   {
     title: "Trạng thái",
@@ -103,7 +85,7 @@ export function IssueTableBody({
       dataSource={rows}
       loading={loading}
       {...expandable}
-      scroll={{ x: 1050 }}
+      scroll={{ x: 830 }}
       pagination={{
         current: filter.page,
         pageSize: ISSUE_PAGE_SIZE,
