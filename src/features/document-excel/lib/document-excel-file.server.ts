@@ -70,6 +70,7 @@ export async function readDocumentFile(buf: Buffer, kind: DocumentKind): Promise
       quantityRaw: str(c, "quantity"),
       lineNote: str(c, "lineNote"),
       negativeReason: str(c, "negativeReason"),
+      receiver: str(c, "receiver"),
     };
   });
 }
@@ -88,7 +89,7 @@ export async function buildDocumentWorkbook(
   /** Tên sheet dữ liệu — mặc định theo kiểu file mẫu; file xuất dùng "Danh sách". */
   sheetName?: string,
 ): Promise<Buffer> {
-  const columns = KIND_COLUMNS[kind].filter((c) => !c.readOnly);
+  const columns = KIND_COLUMNS[kind].filter((c) => !c.readOnly && !(mode === "moi" && c.infoOnly));
   const wb = new ExcelJS.Workbook();
   wb.creator = "Kho Minh Vũ";
   wb.created = new Date();
@@ -132,7 +133,8 @@ export async function buildDocumentWorkbook(
           "Số phiếu đã có trên hệ thống sẽ bị báo lỗi — muốn sửa thì dùng file mẫu cập nhật.",
         ]
       : [
-          "Cập nhật chỉ sửa thông tin KHÔNG ảnh hưởng tồn: đối tác, loại người nhận, nhân viên nhận, mã đặt hàng, nguồn nhập, ghi chú phiếu, ghi chú dòng, lý do xuất âm (đơn đặt thêm ngày đặt, ngày giao dự kiến). Sửa được cả phiếu đã ghi sổ.",
+          "Cập nhật chỉ sửa thông tin KHÔNG ảnh hưởng tồn: đối tác, nhân viên nhận, mã đặt hàng, người nhập, ghi chú phiếu, ghi chú dòng, lý do xuất âm (đơn đặt thêm ngày đặt, ngày giao dự kiến). Sửa được cả phiếu đã ghi sổ.",
+          "Người tạo và Trạng thái chỉ để xem — sửa trong file không có tác dụng.",
           "Mã hàng, số lượng, số dòng, kho và ngày phiếu phải GIỮ NGUYÊN — khác là báo lỗi. Muốn đổi những thứ này thì hủy phiếu rồi lập phiếu mới.",
           "Ô để trống = giữ nguyên giá trị đang có.",
           "Chỉ sửa đầu phiếu: xóa trống cột Mã hàng và Số lượng ở mọi dòng của phiếu đó.",

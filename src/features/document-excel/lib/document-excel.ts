@@ -34,7 +34,10 @@ export type FieldKey =
   | "productCode"
   | "quantity"
   | "lineNote"
-  | "negativeReason";
+  | "negativeReason"
+  | "receiver"
+  | "createdBy"
+  | "status";
 
 export type ColumnSpec = {
   key: FieldKey;
@@ -44,6 +47,8 @@ export type ColumnSpec = {
   required?: boolean;
   /** Chỉ đọc khi nhập (file KiotViet còn cột này), không ghi ra file mẫu / file xuất. */
   readOnly?: boolean;
+  /** Chỉ để xem: ghi ra file cập nhật / file xuất, không có trong mẫu nhập mới, không đọc khi nhập. */
+  infoOnly?: boolean;
   /** Tên cột đã chuẩn hóa (bỏ dấu, gạch dưới) mà bộ đọc nhận — tiền tố khớp là đủ. */
   match: string[];
   hint: string;
@@ -84,10 +89,13 @@ export const KIND_COLUMNS: Record<DocumentKind, ColumnSpec[]> = {
     { key: "source", title: "Nguồn nhập", width: 12, readOnly: true, match: ["nguon_nhap"], hint: "NCC hoặc Nhà máy. Trống = NCC." },
     { key: "partnerCode", title: "Mã NCC", width: 14, match: ["ma_ncc", "ma_nha_cung_cap"], hint: "Mã nhà cung cấp trên hệ thống. Nhập mới để trống = NCC000001 (Vũ Trụ)." },
     { key: "warehouse", title: "Kho", width: 10, match: ["kho"], hint: "K1, K2 hoặc tên kho. Nhập mới để trống = Kho 1." },
-    { key: "note", title: "Ghi chú phiếu", width: 24, match: ["ghi_chu_phieu"], hint: "Ghi chú đầu phiếu." },
     { key: "productCode", title: "Mã hàng", width: 18, required: true, match: ["ma_hang"], hint: "Mã hàng trên hệ thống." },
     { key: "quantity", title: "Số lượng", width: 10, required: true, match: ["so_luong"], hint: "Lớn hơn 0." },
+    { key: "note", title: "Ghi chú phiếu", width: 24, match: ["ghi_chu_phieu"], hint: "Ghi chú đầu phiếu." },
     { key: "lineNote", title: "Ghi chú dòng", width: 24, match: ["ghi_chu_dong"], hint: "Ghi chú từng dòng hàng." },
+    { key: "receiver", title: "Người nhập", width: 18, match: ["nguoi_nhap"], hint: "Người nhận hàng vào kho. Trống: nhập mới không ghi, cập nhật giữ nguyên." },
+    { key: "createdBy", title: "Người tạo", width: 18, infoOnly: true, match: ["nguoi_tao"], hint: "Chỉ để xem — nhập lại không đổi." },
+    { key: "status", title: "Trạng thái", width: 14, infoOnly: true, match: ["trang_thai"], hint: "Chỉ để xem — ghi sổ / hủy phiếu làm trên web." },
   ],
 };
 
@@ -215,6 +223,7 @@ export type DocumentFileRow = {
   quantityRaw: string;
   lineNote: string;
   negativeReason: string;
+  receiver: string;
 };
 
 export type RowIssue = { row: number; docNo: string; message: string };
@@ -242,6 +251,8 @@ export type RpcDocument = {
   ghi_chu: string | null;
   ly_do_xuat_am: string | null;
   ghi_chu_ly_do: string | null;
+  /** Người nhập của phiếu nhập — RPC ghép thành đoạn "Người nhập: X" của ghi chú. */
+  nguoi_nhap: string | null;
   nhan_vien: string[];
   dong: RpcLine[];
 };
@@ -289,6 +300,7 @@ export function groupDocuments(
         ghi_chu: orNull(r.note),
         ly_do_xuat_am: reason.code,
         ghi_chu_ly_do: reason.note,
+        nguoi_nhap: orNull(r.receiver),
         nhan_vien: staff,
         dong: [],
       };

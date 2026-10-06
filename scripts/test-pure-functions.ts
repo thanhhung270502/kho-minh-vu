@@ -1827,11 +1827,12 @@ assert.equal(h.orderNo, "ma_dat_hang");
 const p = mapHeaders("phieu-nhap", ["ma_nhap_hang", "ngay_nhap", "ma_ncc", "ghi_chu_phieu", "ma_hang", "so_luong", "ghi_chu_dong"]);
 assert.equal(p.note, "ghi_chu_phieu");
 assert.equal(p.lineNote, "ghi_chu_dong");
+assert.equal(mapHeaders("phieu-nhap", ["nguoi_nhap", "nguoi_tao"]).receiver, "nguoi_nhap");
 
 const row = (o: Partial<DocumentFileRow>): DocumentFileRow => ({
   row: 2, docNo: "HD1", orderNo: "", date: "2026-10-03", dateRaw: "03/10/2026", dueDate: null, recipientKind: "",
   partnerCode: "NB001", staff: "", source: "", warehouse: "", note: "", productCode: "A", quantity: 1, quantityRaw: "1",
-  lineNote: "", negativeReason: "", ...o,
+  lineNote: "", negativeReason: "", receiver: "", ...o,
 });
 const g = groupDocuments([
   row({ row: 2, staff: "NGỌC" }),

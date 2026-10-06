@@ -8,6 +8,7 @@
 import { z } from "zod";
 
 import { NEGATIVE_REASON_LABELS } from "@/features/documents/lib/negative-reasons";
+import { DOC_STATUS_LABELS } from "@/features/documents/types";
 import { readOrderFilterFromUrl, toOrderListRpcArgs } from "@/features/sales-order/schemas/order.schema";
 import { readReceiptFilterFromUrl, toReceiptListRpcArgs } from "@/features/stock-in/schemas/receipt.schema";
 import { readIssueFilterFromUrl, toIssueListRpcArgs } from "@/features/stock-out/schemas/issue.schema";
@@ -34,6 +35,9 @@ const rowSchema = z.object({
   so_luong: z.coerce.number().nullable(),
   ghi_chu_dong: z.string().nullable(),
   nv_dong: z.string().nullable(),
+  nguoi_nhap: z.string().nullable(),
+  nguoi_tao: z.string().nullable(),
+  trang_thai: z.enum(["NHAP_LIEU", "HOAN_THANH", "DA_HUY"]),
 });
 const resultSchema = z.object({ tong: z.number(), dong: z.array(rowSchema) });
 
@@ -130,6 +134,9 @@ async function fetchDocumentRows(kind: "hoa-don" | "phieu-nhap", params: URLSear
       productCode: r.ma_hang,
       quantity: r.so_luong,
       lineNote: r.ghi_chu_dong,
+      receiver: r.nguoi_nhap,
+      createdBy: r.nguoi_tao,
+      status: DOC_STATUS_LABELS[r.trang_thai],
     })),
   };
 }
