@@ -49,7 +49,7 @@ const TRADING_STATUS_OPTIONS: Array<{ value: TradingStatus; label: string }> = [
 function FilterGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <label className="mb-1 block text-[13px] text-chu-phu">{label}</label>
+      <label className="mb-1 block text-[14px] text-chu-phu">{label}</label>
       {children}
     </div>
   );

@@ -21,7 +21,7 @@ export function QuickViewField({ label, children }: { label: string; children: R
   return (
     <div className="min-w-0">
       <div className="text-xs text-chu-phu">{label}</div>
-      <div className="truncate text-[13.5px] font-semibold">{children}</div>
+      <div className="truncate text-[14.5px] font-semibold">{children}</div>
     </div>
   );
 }
@@ -31,7 +31,7 @@ export type QuickViewSummaryItem = { label: string; value: ReactNode };
 /** Tóm tắt cạnh ô ghi chú: số dòng, tổng số lượng, người nhận… */
 export function QuickViewSummary({ items }: { items: QuickViewSummaryItem[] }) {
   return (
-    <dl className="m-0 grid min-w-64 grid-cols-[auto_1fr] content-start gap-x-6 gap-y-1.5 text-[13.5px]">
+    <dl className="m-0 grid min-w-64 grid-cols-[auto_1fr] content-start gap-x-6 gap-y-1.5 text-[14.5px]">
       {items.map((item) => (
         <div key={item.label} className="contents">
           <dt className="text-chu-phu">{item.label}</dt>

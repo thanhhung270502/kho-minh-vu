@@ -24,7 +24,7 @@ function ActivityRow({ event }: { event: ActivityEvent }) {
     <li className="flex gap-2.5 border-t border-vien-input py-2.5">
       <span className={`mt-[7px] size-1.5 shrink-0 rounded-full ${ACTIVITY_DOT[event.action]}`} />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <div className="text-[13px] leading-snug">
+        <div className="text-[14px] leading-snug">
           {/* Hủy chứng từ chưa lưu người hủy — câu không có chủ ngữ. */}
           {event.actor ? <span className="font-bold">{event.actor} </span> : null}
           {event.actor ? verb : verb.charAt(0).toUpperCase() + verb.slice(1)}{" "}
@@ -37,7 +37,7 @@ function ActivityRow({ event }: { event: ActivityEvent }) {
             <span className="font-semibold">{target}</span>
           )}
         </div>
-        <div className="truncate text-[12px] text-chu-phu" title={event.detail ?? undefined}>
+        <div className="truncate text-[13px] text-chu-phu" title={event.detail ?? undefined}>
           {activityTime(event.at)}
           {event.detail ? ` · ${event.detail}` : ""}
         </div>
@@ -55,12 +55,12 @@ export function ActivityFeed() {
   const feed = useActivityFeed(group);
 
   return (
-    <section className="flex flex-col gap-1 rounded-[18px] bg-nen-phu p-5">
+    <section className="flex flex-col gap-1 rounded-[18px] border border-vien bg-nen-the p-5">
       <div className="flex items-center justify-between gap-2 pb-2">
-        <span className="text-[15px] font-extrabold">Hoạt động gần đây</span>
+        <span className="whitespace-nowrap text-[15px] font-extrabold">Hoạt động gần đây</span>
         <Select
           size="small"
-          className="w-32"
+          className="w-28"
           value={group}
           onChange={setGroup}
           options={ACTIVITY_GROUPS.map((g) => ({ value: g.key, label: g.label }))}

@@ -48,7 +48,7 @@ export function TopNav({ user, entries, activeHref, search }: TopNavProps) {
           href="/"
           className="flex shrink-0 items-center gap-2.5 text-chu-chinh hover:text-chu-chinh lg:w-65"
         >
-          <span className="flex size-7 items-center justify-center rounded-full bg-chu-chinh text-[10.5px] font-extrabold text-white">
+          <span className="flex size-7 items-center justify-center rounded-full bg-chu-chinh text-[11.5px] font-extrabold text-white">
             MV
           </span>
           <span className="text-[15px] font-extrabold tracking-[-0.02em]">

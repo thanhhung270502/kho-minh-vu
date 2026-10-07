@@ -76,7 +76,7 @@ export function ReceiptAside({ receipt, canEdit }: Props) {
   }
 
   const metaLabel = "text-xs text-trung-tinh-350";
-  const metaValue = "text-[13.5px] font-semibold";
+  const metaValue = "text-[14.5px] font-semibold";
 
   return (
     <aside className="flex flex-col gap-4 rounded-the border border-vien p-5">
@@ -100,7 +100,7 @@ export function ReceiptAside({ receipt, canEdit }: Props) {
             onChange={(value: string) => void save("partnerId", { partnerId: value })}
           />
         ) : (
-          <span className="text-[13.5px]">
+          <span className="text-[14.5px]">
             {`${receipt.partnerCode ?? ""} ${receipt.partnerName ?? "—"}`.trim()}
           </span>
         )}
@@ -120,7 +120,7 @@ export function ReceiptAside({ receipt, canEdit }: Props) {
               onChange={(value: string) => void save("warehouseId", { warehouseId: value })}
             />
           ) : (
-            <span className="text-[13.5px]">{receipt.warehouseName ?? "—"}</span>
+            <span className="text-[14.5px]">{receipt.warehouseName ?? "—"}</span>
           )}
         </div>
         <div className="flex flex-col gap-1.5">
@@ -136,7 +136,7 @@ export function ReceiptAside({ receipt, canEdit }: Props) {
               }
             />
           ) : (
-            <span className="text-[13.5px]">{dayjs(receipt.docDate).format("DD/MM/YYYY")}</span>
+            <span className="text-[14.5px]">{dayjs(receipt.docDate).format("DD/MM/YYYY")}</span>
           )}
         </div>
       </div>
@@ -151,7 +151,7 @@ export function ReceiptAside({ receipt, canEdit }: Props) {
             onBlur={(event) => void save("note", { note: event.target.value || null })}
           />
         ) : (
-          <span className="text-[13.5px]">{receipt.note ?? "—"}</span>
+          <span className="text-[14.5px]">{receipt.note ?? "—"}</span>
         )}
       </div>
 

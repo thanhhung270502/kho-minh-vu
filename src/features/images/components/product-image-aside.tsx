@@ -84,7 +84,7 @@ export function ProductImageAside({
                 />
               </div>
               {current.isPrimary ? (
-                <span className="text-[12.5px] font-bold">★ Ảnh chính</span>
+                <span className="text-[13.5px] font-bold">★ Ảnh chính</span>
               ) : canEdit ? (
                 <Button
                   size="small"
@@ -107,7 +107,7 @@ export function ProductImageAside({
       </QueryState>
 
       {queue.items.length > 0 ? (
-        <p className="mt-2 text-[12.5px] text-chu-phu">Đang tải {queue.items.length} ảnh…</p>
+        <p className="mt-2 text-[13.5px] text-chu-phu">Đang tải {queue.items.length} ảnh…</p>
       ) : null}
 
       <Modal

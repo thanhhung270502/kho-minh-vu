@@ -15,7 +15,7 @@ import { OrderStatusFilter } from "./order-status-filter";
 function FilterGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <div className="mb-[7px] text-[12px] font-bold text-chu-phu">{label}</div>
+      <div className="mb-[7px] text-[13px] font-bold text-chu-phu">{label}</div>
       {children}
     </div>
   );
@@ -40,7 +40,7 @@ export function OrderFilterPanel({
         {countActiveOrderFilters(filter) > 0 ? (
           <button
             type="button"
-            className="cursor-pointer border-0 bg-transparent text-[12.5px] font-semibold text-trung-tinh-350 hover:text-chu-chinh"
+            className="cursor-pointer border-0 bg-transparent text-[13.5px] font-semibold text-trung-tinh-350 hover:text-chu-chinh"
             onClick={() => onChange({ ...DEFAULT_ORDER_FILTER, q: filter.q })}
           >
             Xóa

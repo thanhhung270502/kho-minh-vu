@@ -22,7 +22,7 @@ const STATUSES: DocStatus[] = ["NHAP_LIEU", "HOAN_THANH", "DA_HUY"];
 function FilterGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <label className="mb-1 block text-[13px] text-chu-phu">{label}</label>
+      <label className="mb-1 block text-[14px] text-chu-phu">{label}</label>
       {children}
     </div>
   );

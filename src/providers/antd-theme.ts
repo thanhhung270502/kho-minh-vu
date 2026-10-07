@@ -10,6 +10,10 @@ import type { ThemeConfig } from "antd";
  * với `--color-brand-500` trong src/app/globals.css.
  */
 const INK = "#0A0A0A";
+// Chữ thường dịu hơn mực của nút/viền chọn: đen tuyền trên trắng tinh bị góp ý là chói.
+const TEXT = "#1F1F1F";
+// Nền trang trắng ngà — thẻ vẫn trắng nên tách lớp rõ mà đỡ chói.
+const PAGE_BG = "#F7F7F5";
 const WARNING = "#BF6600"; // oklch(0.6 0.15 60) trong design
 const DANGER = "#CC2827"; // oklch(0.55 0.2 27)
 const SUCCESS = "#2F9E5B";
@@ -36,15 +40,16 @@ export const antdTheme: ThemeConfig = {
     colorSuccess: SUCCESS,
     colorWarning: WARNING,
     colorError: DANGER,
-    colorText: INK,
-    colorTextSecondary: "#737373",
-    colorTextTertiary: "#8C8C8C",
-    colorTextQuaternary: "#A3A3A3",
-    colorTextPlaceholder: "#A3A3A3",
+    colorText: TEXT,
+    // Chữ phụ đậm hơn (góp ý: chữ xám nhạt nhỏ khó đọc).
+    colorTextSecondary: "#5E5E5E",
+    colorTextTertiary: "#737373",
+    colorTextQuaternary: "#8C8C8C",
+    colorTextPlaceholder: "#8C8C8C",
     colorBorder: "#E5E5E5",
     colorBorderSecondary: "#EDEDED",
     colorSplit: "#F3F3F3",
-    colorBgLayout: "#FFFFFF",
+    colorBgLayout: PAGE_BG,
     colorBgContainer: "#FFFFFF",
     colorBgElevated: "#FFFFFF",
     colorFillSecondary: "#F3F3F3",
@@ -52,12 +57,11 @@ export const antdTheme: ThemeConfig = {
     controlItemBgActive: "#F3F3F3",
     controlItemBgActiveHover: "#EBEBEB",
     controlOutline: "rgba(10,10,10,.08)",
-    // Màn hình kho chủ yếu là bảng số liệu dày đặc, cỡ chữ 14 dễ đọc trên
-    // máy văn phòng lẫn điện thoại thủ kho.
-    fontSize: 14,
-    fontSizeSM: 12,
-    fontSizeLG: 16,
-    lineHeight: 1.45,
+    // Góp ý người dùng: chữ 14 / 12 nhỏ — nâng lên 15 / 13 cho bảng dày đọc lâu không mỏi.
+    fontSize: 15,
+    fontSizeSM: 13,
+    fontSizeLG: 17,
+    lineHeight: 1.5,
     fontFamily: "var(--font-sans)",
     fontFamilyCode: "var(--font-mono)",
     borderRadius: 10,
@@ -74,7 +78,7 @@ export const antdTheme: ThemeConfig = {
   components: {
     Table: {
       headerBg: "#FAFAFA",
-      headerColor: "#8C8C8C",
+      headerColor: "#5E5E5E",
       headerSplitColor: "transparent",
       headerSortActiveBg: "#F5F5F5",
       headerSortHoverBg: "#F5F5F5",
@@ -90,7 +94,7 @@ export const antdTheme: ThemeConfig = {
       footerBg: "#FAFAFA",
     },
     Layout: {
-      bodyBg: "#FFFFFF",
+      bodyBg: PAGE_BG,
       headerBg: "#FFFFFF",
       headerHeight: 60,
     },
@@ -156,7 +160,7 @@ export const antdTheme: ThemeConfig = {
     Card: {
       borderRadiusLG: 16,
       colorBorderSecondary: "#EDEDED",
-      headerFontSize: 15,
+      headerFontSize: 16,
     },
     Checkbox: {
       borderRadiusSM: 4,
@@ -164,7 +168,7 @@ export const antdTheme: ThemeConfig = {
     Segmented: {
       itemSelectedBg: "#FFFFFF",
       itemSelectedColor: INK,
-      itemColor: "#737373",
+      itemColor: "#5E5E5E",
       itemHoverColor: INK,
       trackBg: "#F5F5F5",
       borderRadius: 9,
@@ -184,8 +188,8 @@ export const antdTheme: ThemeConfig = {
       contentFontSize: 28,
     },
     Form: {
-      labelColor: "#737373",
-      labelFontSize: 12,
+      labelColor: "#5E5E5E",
+      labelFontSize: 13,
       labelRequiredMarkColor: DANGER,
       itemMarginBottom: 16,
     },

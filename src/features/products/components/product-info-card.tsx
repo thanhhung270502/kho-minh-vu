@@ -66,12 +66,12 @@ export function ProductInfoCard({ product }: { product: ProductDetail }) {
               key={field.label}
               className="-ml-px flex min-w-0 flex-col gap-1 border-t border-l border-vien px-5 py-3.5"
             >
-              <span className="text-[12px] font-semibold text-trung-tinh-350">{field.label}</span>
+              <span className="text-[13px] font-semibold text-trung-tinh-350">{field.label}</span>
               <span
                 className={
                   empty
-                    ? "text-[13.5px] font-bold text-trung-tinh-250"
-                    : "text-[13.5px] font-bold break-words"
+                    ? "text-[14.5px] font-bold text-trung-tinh-250"
+                    : "text-[14.5px] font-bold break-words"
                 }
               >
                 {empty ? "—" : field.value}

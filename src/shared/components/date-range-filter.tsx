@@ -31,7 +31,7 @@ export function DateRangeFilter({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex gap-0.5 rounded-[9px] bg-nen-phu p-[3px] text-[12px] font-semibold">
+      <div className="flex gap-0.5 rounded-[9px] bg-nen-phu p-[3px] text-[13px] font-semibold">
         {DATE_PRESETS.map((preset) => {
           const selected = active === preset || (preset === "custom" && customOpen);
           return (
@@ -66,7 +66,8 @@ export function DateRangeFilter({
       </div>
       <DatePicker.RangePicker
         className="w-full"
-        format="DD/MM/YYYY"
+        // Cột bộ lọc hẹp: hiện năm 2 chữ số cho vừa ô; gõ tay vẫn nhận năm 4 chữ số.
+        format={["DD/MM/YY", "DD/MM/YYYY"]}
         placeholder={["Từ", "Đến"]}
         allowClear
         value={fromDate && toDate ? [dayjs(fromDate), dayjs(toDate)] : null}

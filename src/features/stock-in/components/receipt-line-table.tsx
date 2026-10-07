@@ -211,7 +211,7 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
       {editable ? (
         <div className="flex flex-wrap items-end gap-2 border-t border-vien bg-nen-tong p-4">
           <div className="min-w-56 flex-1">
-            <label className="mb-1 block text-[13px] text-chu-phu">Mã hàng</label>
+            <label className="mb-1 block text-[14px] text-chu-phu">Mã hàng</label>
             <ProductSearchInput
               inputRef={codeInput}
               disabled={addLine.isPending}
@@ -229,7 +229,7 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
 
           {hasMultipleWarehouses ? (
             <div className="w-36">
-              <label className="mb-1 block text-[13px] text-chu-phu">Kho</label>
+              <label className="mb-1 block text-[14px] text-chu-phu">Kho</label>
               <Select
                 className="w-full"
                 placeholder={receipt.warehouseName ?? "Kho phiếu"}
@@ -247,7 +247,7 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
           ) : null}
 
           <div className="w-28">
-            <label className="mb-1 block text-[13px] text-chu-phu">Số lượng</label>
+            <label className="mb-1 block text-[14px] text-chu-phu">Số lượng</label>
             <InputNumber
               ref={quantityInput}
               className="w-full"

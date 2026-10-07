@@ -54,10 +54,10 @@ export function OrderStatusFilter({
             key={status}
             checked={checked}
             onChange={() => toggle(status)}
-            className="m-0 flex h-9 w-full items-center rounded-[9px] px-2.5 text-[13.5px] hover:bg-nen-phu [&>span:last-child]:flex [&>span:last-child]:flex-1 [&>span:last-child]:items-center"
+            className="m-0 flex h-9 w-full items-center rounded-[9px] px-2.5 text-[14.5px] hover:bg-nen-phu [&>span:last-child]:flex [&>span:last-child]:flex-1 [&>span:last-child]:items-center"
           >
             <StatusDot tone={ORDER_STATUS_TONES[status]}>{ORDER_STATUS_LABELS[status]}</StatusDot>
-            <span className="ms-auto text-[12px] font-semibold text-trung-tinh-350 tabular-nums" title={errorTitle}>
+            <span className="ms-auto text-[13px] font-semibold text-trung-tinh-350 tabular-nums" title={errorTitle}>
               {countText(counts.data?.byStatus[status])}
             </span>
           </Checkbox>

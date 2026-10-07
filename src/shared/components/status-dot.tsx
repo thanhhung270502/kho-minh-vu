@@ -68,7 +68,7 @@ export function StatusDot({
     return (
       <span
         className={cn(
-          "inline-flex h-6 items-center gap-[7px] rounded-full px-2.5 text-[12.5px] font-bold whitespace-nowrap",
+          "inline-flex h-6 items-center gap-[7px] rounded-full px-2.5 text-[13.5px] font-bold whitespace-nowrap",
           BADGE[tone],
           className,
         )}
@@ -82,7 +82,7 @@ export function StatusDot({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-[7px] text-[13px] font-medium whitespace-nowrap",
+        "inline-flex items-center gap-[7px] text-[14px] font-medium whitespace-nowrap",
         TEXT[tone],
         strike && "line-through decoration-trung-tinh-250",
         className,

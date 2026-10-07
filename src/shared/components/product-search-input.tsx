@@ -111,7 +111,7 @@ export function ProductSearchInput({ onSelect, selected, inputRef, disabled }: P
           if (!product) return option.label;
           return (
             <div className="flex flex-col">
-              <span className="font-mono text-[13px]">{product.code}</span>
+              <span className="font-mono text-[14px]">{product.code}</span>
               <Typography.Text type="secondary" className="truncate text-xs">
                 {product.name}
               </Typography.Text>

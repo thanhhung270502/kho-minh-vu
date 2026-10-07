@@ -64,7 +64,7 @@ export function buildOrderLineColumns({
       key: "productCode",
       width: 150,
       render: (code: string) => (
-        <span className="font-mono text-[12.5px] font-medium">{code}</span>
+        <span className="font-mono text-[13.5px] font-medium">{code}</span>
       ),
     },
     {

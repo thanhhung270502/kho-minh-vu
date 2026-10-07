@@ -59,7 +59,7 @@ export function OrderToolbar({ filter, onChange, addButton, excelActions, total 
       />
       <div className="ms-auto flex flex-wrap items-center gap-2">
         {excelActions}
-        <span className="text-[13px] text-trung-tinh-350 tabular-nums">
+        <span className="text-[14px] text-trung-tinh-350 tabular-nums">
           {total === null ? "" : `${total.toLocaleString("vi-VN")} đơn`}
         </span>
         {addButton}
