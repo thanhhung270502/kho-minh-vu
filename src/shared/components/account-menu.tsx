@@ -69,10 +69,10 @@ export function AccountMenu({ user }: AccountMenuProps) {
         type="button"
         className="flex cursor-pointer items-center gap-2.5 rounded-full border-0 bg-transparent py-1 ps-2 pe-1 text-left hover:bg-trung-tinh-75"
       >
-        <span className="hidden text-[14px] font-semibold whitespace-nowrap text-chu-chinh sm:inline">
+        <span className="hidden text-[15px] font-semibold whitespace-nowrap text-chu-chinh sm:inline">
           {user.fullName}
         </span>
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-trung-tinh-150 text-[12.5px] font-bold text-chu-chinh">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-trung-tinh-150 text-[13.5px] font-bold text-chu-chinh">
           {initials(user.fullName)}
         </span>
       </button>

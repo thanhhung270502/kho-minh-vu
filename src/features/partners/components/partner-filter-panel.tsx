@@ -24,7 +24,7 @@ const ACTIVE_STATUS_OPTIONS: Array<{ label: string; value: ActiveStatus }> = [
 function FilterGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <label className="mb-1 block text-[14px] text-chu-phu">{label}</label>
+      <label className="mb-1 block text-[15px] text-chu-phu">{label}</label>
       {children}
     </div>
   );

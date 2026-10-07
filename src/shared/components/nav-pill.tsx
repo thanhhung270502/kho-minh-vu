@@ -16,7 +16,7 @@ import { NAV_ICONS } from "./nav-icons";
  * không cần `!`. Kiểu 3b: tab chữ, mục đang chọn gạch chân 2px đen.
  */
 export const PILL_CLASS =
-  "-mb-px flex h-full shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 text-[14.5px] transition-colors duration-150";
+  "-mb-px flex h-full shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 text-[15.5px] transition-colors duration-150";
 
 /** Lớp màu theo trạng thái — tách khỏi PILL_CLASS để hàng đo ẩn dùng chung kích thước. */
 export function pillTone(active: boolean): string {
@@ -33,7 +33,7 @@ export function DropdownLabel({ label }: { label: string }) {
   return (
     <>
       <PillLabel label={label} />
-      <DownOutlined className="text-[10px] text-trung-tinh-300" />
+      <DownOutlined className="text-[11px] text-trung-tinh-300" />
     </>
   );
 }

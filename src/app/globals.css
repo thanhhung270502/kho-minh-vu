@@ -75,22 +75,22 @@
 
   /* Nền/chữ/viền dùng chung — khớp colorBgLayout/colorText/colorBorderSecondary ở antd-theme.ts */
   /* Nền trang trắng ngà (khớp colorBgLayout) — thẻ vẫn trắng (--color-nen-the). */
-  --color-nen-trang: #F7F7F5;
+  --color-nen-trang: #F3F2EF;
   --color-nen-phu: #F5F5F5;
   --color-vien-input: #E5E5E5;
   --color-nen-the: #FFFFFF;
   --color-vien: #EDEDED;
   /* Chữ đen dịu + chữ phụ đậm hơn — góp ý "chói và nhỏ". Khớp colorText(Secondary). */
-  --color-chu-chinh: #1F1F1F;
+  --color-chu-chinh: #262626;
   --color-chu-phu: #5E5E5E;
   --color-header-bang: #FAFAFA;
   --color-nen-tong: #FAFAFA;
 
-  /* Cỡ chữ Tailwind nâng 1 bậc (góp ý chữ nhỏ): xs 12→13, sm 14→15. */
-  --text-xs: 0.8125rem;
-  --text-xs--line-height: 1.25rem;
-  --text-sm: 0.9375rem;
-  --text-sm--line-height: 1.4rem;
+  /* Cỡ chữ Tailwind nâng 2 bậc (góp ý chữ nhỏ): xs 12→14, sm 14→16. */
+  --text-xs: 0.875rem;
+  --text-xs--line-height: 1.3rem;
+  --text-sm: 1rem;
+  --text-sm--line-height: 1.5rem;
 
   /* Thẻ chỉ có viền mảnh, không đổ bóng — giữ biến để class cũ không gãy. */
   --shadow-the: none;
@@ -120,13 +120,13 @@ body {
 }
 
 /*
- * Tiêu đề cột bảng kiểu 3b: chữ thường 13/600, màu xám đậm. antd không có
+ * Tiêu đề cột bảng kiểu 3b: chữ thường 14/600, màu xám đậm. antd không có
  * token cho text-transform/letter-spacing nên đặt ở đây, trong @layer
  * components (đứng sau @layer antd nên thắng mà không cần !important).
  */
 @layer components {
   .ant-table-wrapper .ant-table-thead > tr > th {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     letter-spacing: 0;
     text-transform: none;

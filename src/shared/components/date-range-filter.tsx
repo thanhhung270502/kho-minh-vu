@@ -31,7 +31,7 @@ export function DateRangeFilter({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex gap-0.5 rounded-[9px] bg-nen-phu p-[3px] text-[13px] font-semibold">
+      <div className="flex gap-0.5 rounded-[9px] bg-nen-phu p-[3px] text-[14px] font-semibold">
         {DATE_PRESETS.map((preset) => {
           const selected = active === preset || (preset === "custom" && customOpen);
           return (

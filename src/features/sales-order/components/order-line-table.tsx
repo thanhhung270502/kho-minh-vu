@@ -112,7 +112,7 @@ export function OrderLineTable({ orderId, lines, editable, staff }: Props) {
 
   return (
     <section className="min-w-0 overflow-hidden rounded-the border border-vien">
-      <div className="px-5 py-4 text-[15px] font-extrabold">
+      <div className="px-5 py-4 text-[16px] font-extrabold">
         Hàng đặt{" "}
         <span className="font-semibold text-trung-tinh-300">· {lines.length} dòng</span>
       </div>

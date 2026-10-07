@@ -19,7 +19,7 @@ import { SearchResultList } from "./search-result-list";
 
 type GlobalSearchModalProps = { open: boolean; onClose: () => void };
 
-const KBD = "rounded border border-[#E5E5E5] bg-white px-1.5 font-mono text-[12px]";
+const KBD = "rounded border border-[#E5E5E5] bg-white px-1.5 font-mono text-[13px]";
 
 export function GlobalSearchModal({ open, onClose }: GlobalSearchModalProps) {
   const router = useRouter();
@@ -73,7 +73,7 @@ export function GlobalSearchModal({ open, onClose }: GlobalSearchModalProps) {
   let body;
   if (tooShort) {
     body = (
-      <p className="m-0 px-4 py-4 text-[14px] text-trung-tinh-350">
+      <p className="m-0 px-4 py-4 text-[15px] text-trung-tinh-350">
         Gõ ít nhất 2 ký tự · <kbd className={KBD}>↑</kbd> <kbd className={KBD}>↓</kbd> chọn ·{" "}
         <kbd className={KBD}>Enter</kbd> mở · <kbd className={KBD}>Esc</kbd> đóng
       </p>
@@ -81,7 +81,7 @@ export function GlobalSearchModal({ open, onClose }: GlobalSearchModalProps) {
   } else if (search.isError) {
     const explained = explainError(search.error);
     body = (
-      <div className="flex items-center justify-between gap-3 px-4 py-4 text-[14px]">
+      <div className="flex items-center justify-between gap-3 px-4 py-4 text-[15px]">
         <span>
           {explained.title}. {explained.action}
         </span>
@@ -98,7 +98,7 @@ export function GlobalSearchModal({ open, onClose }: GlobalSearchModalProps) {
     );
   } else if (flat.length === 0) {
     body = (
-      <p className="m-0 px-4 py-4 text-[14px] text-trung-tinh-350">
+      <p className="m-0 px-4 py-4 text-[15px] text-trung-tinh-350">
         Không tìm thấy “{search.debouncedQuery}”. Thử mã đầy đủ hoặc số phiếu.
       </p>
     );

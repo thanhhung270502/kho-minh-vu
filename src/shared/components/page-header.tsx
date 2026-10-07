@@ -20,7 +20,7 @@ export function PageHeader({ title, description, actions }: PageHeaderProps) {
           {title}
         </Typography.Title>
         {description ? (
-          <Typography.Text type="secondary" className="text-[14.5px]">
+          <Typography.Text type="secondary" className="text-[15.5px]">
             {description}
           </Typography.Text>
         ) : null}

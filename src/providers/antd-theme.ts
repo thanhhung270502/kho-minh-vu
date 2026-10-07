@@ -11,9 +11,9 @@ import type { ThemeConfig } from "antd";
  */
 const INK = "#0A0A0A";
 // Chữ thường dịu hơn mực của nút/viền chọn: đen tuyền trên trắng tinh bị góp ý là chói.
-const TEXT = "#1F1F1F";
+const TEXT = "#262626";
 // Nền trang trắng ngà — thẻ vẫn trắng nên tách lớp rõ mà đỡ chói.
-const PAGE_BG = "#F7F7F5";
+const PAGE_BG = "#F3F2EF";
 const WARNING = "#BF6600"; // oklch(0.6 0.15 60) trong design
 const DANGER = "#CC2827"; // oklch(0.55 0.2 27)
 const SUCCESS = "#2F9E5B";
@@ -57,10 +57,10 @@ export const antdTheme: ThemeConfig = {
     controlItemBgActive: "#F3F3F3",
     controlItemBgActiveHover: "#EBEBEB",
     controlOutline: "rgba(10,10,10,.08)",
-    // Góp ý người dùng: chữ 14 / 12 nhỏ — nâng lên 15 / 13 cho bảng dày đọc lâu không mỏi.
-    fontSize: 15,
-    fontSizeSM: 13,
-    fontSizeLG: 17,
+    // Góp ý người dùng (2 lần): chữ nhỏ — 14/12 → 16/14 cho bảng dày đọc lâu không mỏi.
+    fontSize: 16,
+    fontSizeSM: 14,
+    fontSizeLG: 18,
     lineHeight: 1.5,
     fontFamily: "var(--font-sans)",
     fontFamilyCode: "var(--font-mono)",
@@ -73,7 +73,7 @@ export const antdTheme: ThemeConfig = {
     boxShadowTertiary: "none",
     boxShadowSecondary: "0 6px 24px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06)",
     fontWeightStrong: 700,
-    controlHeight: 34,
+    controlHeight: 38,
   },
   components: {
     Table: {
@@ -88,7 +88,7 @@ export const antdTheme: ThemeConfig = {
       rowHoverBg: "#EDEDED",
       rowSelectedBg: "#F3F3F3",
       rowSelectedHoverBg: "#E5E5E5",
-      cellPaddingBlock: 9,
+      cellPaddingBlock: 10,
       cellPaddingInline: 12,
       headerBorderRadius: 0,
       footerBg: "#FAFAFA",
@@ -100,7 +100,7 @@ export const antdTheme: ThemeConfig = {
     },
     Modal: {
       borderRadiusLG: 16,
-      titleFontSize: 17,
+      titleFontSize: 18,
       titleColor: INK,
       contentBg: "#FFFFFF",
       headerBg: "#FFFFFF",
@@ -160,7 +160,7 @@ export const antdTheme: ThemeConfig = {
     Card: {
       borderRadiusLG: 16,
       colorBorderSecondary: "#EDEDED",
-      headerFontSize: 16,
+      headerFontSize: 17,
     },
     Checkbox: {
       borderRadiusSM: 4,
@@ -189,7 +189,7 @@ export const antdTheme: ThemeConfig = {
     },
     Form: {
       labelColor: "#5E5E5E",
-      labelFontSize: 13,
+      labelFontSize: 14,
       labelRequiredMarkColor: DANGER,
       itemMarginBottom: 16,
     },

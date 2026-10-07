@@ -40,7 +40,7 @@ export function IssueLineEntryRow({
   return (
     <div className="mt-3 flex flex-wrap items-end gap-2 rounded-the border border-vien bg-nen-tong p-3">
       <div className="min-w-56 flex-1">
-        <label className="mb-1 block text-[14px] text-chu-phu">Mã hàng</label>
+        <label className="mb-1 block text-[15px] text-chu-phu">Mã hàng</label>
         <ProductSearchInput
           inputRef={codeInputRef}
           disabled={pending}
@@ -51,7 +51,7 @@ export function IssueLineEntryRow({
 
 
       <div className="w-28">
-        <label className="mb-1 block text-[14px] text-chu-phu">Số lượng</label>
+        <label className="mb-1 block text-[15px] text-chu-phu">Số lượng</label>
         <InputNumber
           ref={quantityInputRef}
           className="w-full"

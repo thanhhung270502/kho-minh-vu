@@ -50,7 +50,7 @@ export function OrderDetailView({
 
         return (
           <>
-            <Link href="/don-dat" className="mb-2 inline-block text-[14px] font-semibold text-chu-phu">
+            <Link href="/don-dat" className="mb-2 inline-block text-[15px] font-semibold text-chu-phu">
               ← Đơn đặt
             </Link>
 

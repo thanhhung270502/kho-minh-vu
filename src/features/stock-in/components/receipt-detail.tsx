@@ -50,7 +50,7 @@ export function ReceiptDetailView({
 
         return (
           <>
-            <Link href="/nhap-hang" className="mb-2 inline-block text-[14px] font-semibold text-chu-phu">
+            <Link href="/nhap-hang" className="mb-2 inline-block text-[15px] font-semibold text-chu-phu">
               ← Phiếu nhập
             </Link>
 

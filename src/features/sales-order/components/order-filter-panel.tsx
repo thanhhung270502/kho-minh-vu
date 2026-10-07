@@ -15,7 +15,7 @@ import { OrderStatusFilter } from "./order-status-filter";
 function FilterGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <div className="mb-[7px] text-[13px] font-bold text-chu-phu">{label}</div>
+      <div className="mb-[7px] text-[14px] font-bold text-chu-phu">{label}</div>
       {children}
     </div>
   );
@@ -36,11 +36,11 @@ export function OrderFilterPanel({
   return (
     <div className="flex flex-col gap-[18px]">
       <div className="flex items-baseline justify-between">
-        <span className="text-[14.5px] font-extrabold">Bộ lọc</span>
+        <span className="text-[15.5px] font-extrabold">Bộ lọc</span>
         {countActiveOrderFilters(filter) > 0 ? (
           <button
             type="button"
-            className="cursor-pointer border-0 bg-transparent text-[13.5px] font-semibold text-trung-tinh-350 hover:text-chu-chinh"
+            className="cursor-pointer border-0 bg-transparent text-[14.5px] font-semibold text-trung-tinh-350 hover:text-chu-chinh"
             onClick={() => onChange({ ...DEFAULT_ORDER_FILTER, q: filter.q })}
           >
             Xóa
