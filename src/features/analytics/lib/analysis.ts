@@ -22,7 +22,7 @@ export type StockStatus = "urgent" | "soon" | "ok" | "no-sales";
 
 export const STOCK_STATUS_LABELS: Record<StockStatus, string> = {
   urgent: "Dưới định mức",
-  soon: "Nên nhập",
+  soon: "Sắp thiếu hàng",
   ok: "Trên định mức",
   "no-sales": "Không xuất",
 };
@@ -30,7 +30,7 @@ export const STOCK_STATUS_LABELS: Record<StockStatus, string> = {
 /**
  * Theo định mức (Phân tích › Định mức):
  * - Dưới định mức (đỏ): tồn < định mức.
- * - Nên nhập (cam): không dưới định mức nhưng theo tốc độ xuất / đơn đặt sẽ thiếu
+ * - Sắp thiếu hàng (cam): không dưới định mức nhưng theo tốc độ xuất / đơn đặt sẽ thiếu
  *   trong Y ngày dự trữ (đề nghị nhập > 0) — gồm cả mã đã hết mà chưa đặt định mức.
  * - Trên định mức (xanh): không dưới định mức và đủ xuất Y ngày.
  * - Không xuất: không xuất, không đơn đặt trong kỳ và không dưới định mức.

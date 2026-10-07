@@ -177,7 +177,7 @@ export function ReorderTable({
           },
           {
             key: "soon",
-            label: `Nên nhập (${tabs.soon.length})`,
+            label: `Sắp thiếu hàng (${tabs.soon.length})`,
             children: table(tabs.soon),
           },
           {
