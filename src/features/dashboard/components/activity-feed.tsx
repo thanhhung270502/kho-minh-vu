@@ -47,7 +47,8 @@ function ActivityRow({ event }: { event: ActivityEvent }) {
 }
 
 /**
- * Hoạt động gần đây — ai tạo / sửa / xác nhận / ghi sổ / hủy gì, lúc nào (0116).
+ * Hoạt động gần đây — ai tạo / sửa / xác nhận / ghi sổ / hủy gì, lúc nào (0116); chỉ
+ * hôm nay và hôm qua.
  * Lọc theo nhóm; "Xem thêm" lấy tiếp các sự kiện cũ hơn.
  */
 export function ActivityFeed() {
@@ -57,7 +58,10 @@ export function ActivityFeed() {
   return (
     <section className="flex flex-col gap-1 rounded-[18px] border border-vien bg-nen-the p-5">
       <div className="flex items-center justify-between gap-2 pb-2">
-        <span className="whitespace-nowrap text-[16px] font-extrabold">Hoạt động gần đây</span>
+        <span className="flex flex-col">
+          <span className="whitespace-nowrap text-[16px] font-extrabold">Hoạt động gần đây</span>
+          <span className="text-xs text-chu-phu">Hôm nay và hôm qua</span>
+        </span>
         <Select
           size="small"
           className="w-28"
@@ -69,7 +73,7 @@ export function ActivityFeed() {
       <QueryState
         query={feed}
         isEmpty={(data) => data.pages.every((page) => page.length === 0)}
-        emptyDescription="Chưa có hoạt động nào."
+        emptyDescription="Hôm nay và hôm qua chưa có hoạt động nào."
         skeleton={<Skeleton active paragraph={{ rows: 6 }} />}
       >
         {(data) => (

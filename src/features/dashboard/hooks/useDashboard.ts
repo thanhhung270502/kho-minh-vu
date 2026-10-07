@@ -15,6 +15,7 @@ import {
   fetchStockByGroup,
 } from "../api/dashboard.api";
 import { dashboardKeys } from "../api/dashboard.keys";
+import { activityCutoff } from "../lib/activity-format";
 import type { StockGroupBy } from "../lib/stock-drilldown";
 import type { ActivityGroup } from "../types";
 
@@ -74,7 +75,12 @@ export function useRefreshDashboard() {
 export function useActivityFeed(group: ActivityGroup) {
   return useInfiniteQuery({
     queryKey: dashboardKeys.activity(group),
-    queryFn: ({ pageParam }) => fetchActivity(group, pageParam),
+    // Chỉ hôm nay + hôm qua: danh sách xếp mới → cũ nên cắt ở mốc là đủ; trang bị cắt
+    // ngắn hơn cỡ trang thì getNextPageParam tự dừng "Xem thêm".
+    queryFn: async ({ pageParam }) => {
+      const cutoff = activityCutoff().getTime();
+      return (await fetchActivity(group, pageParam)).filter((e) => new Date(e.at).getTime() >= cutoff);
+    },
     initialPageParam: null as string | null,
     getNextPageParam: (last) => (last.length < ACTIVITY_PAGE_SIZE ? undefined : (last.at(-1)?.at ?? undefined)),
     placeholderData: keepPreviousData,

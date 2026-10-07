@@ -109,3 +109,8 @@ export function activityTime(at: string, now: Date = new Date()): string {
   if (time >= startOfYesterday) return `Hôm qua ${hhmm}`;
   return `${pad(time.getDate())}/${pad(time.getMonth() + 1)} ${hhmm}`;
 }
+
+/** Khối Hoạt động gần đây chỉ hiện hôm nay và hôm qua: mốc = 0 giờ hôm qua (giờ máy). */
+export function activityCutoff(now: Date = new Date()): Date {
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+}
