@@ -103,7 +103,6 @@ export function OrderExpanded({ id, permissions }: Props) {
               summary={[
                 { label: "Số dòng", value: formatQuantity(all.length) },
                 { label: "Tổng số lượng đặt", value: formatQuantity(order.orderedQuantity) },
-                { label: "Đã giao", value: formatQuantity(order.shippedQuantity) },
                 // formatOrderRecipients đã trả "Chưa chọn người nhận" khi đơn trống người nhận.
                 { label: "Người nhận", value: recipients },
               ]}
