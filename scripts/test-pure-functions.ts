@@ -1884,3 +1884,20 @@ assert.equal(headerOnly.documents[0]?.dong.length, 0, "dòng trống mã + số 
   assert.equal(h.name, "ten_nha_cung_cap");
   assert.equal(h.isActive, "dang_hoat_dong");
 }
+
+// --- Hoạt động gần đây (0116) -----------------------------------------------
+{
+  const { activityPhrase, activityHref, activityTime } = await import("../src/features/dashboard/lib/activity-format");
+  const base = { key: "k", at: "2026-10-07T07:00:00Z", targetId: "id-1", code: "DH1", detail: null, count: 1, viaImport: false, actor: "An" } as const;
+  assert.deepEqual(activityPhrase({ ...base, kind: "DON_DAT", action: "xac_nhan" }), { verb: "xác nhận", object: "đơn" });
+  assert.deepEqual(activityPhrase({ ...base, kind: "NHAP", action: "ghi_so", count: 86, targetId: null, code: null }), { verb: "ghi sổ", object: "86 phiếu nhập" });
+  assert.deepEqual(activityPhrase({ ...base, kind: "SAN_PHAM", action: "tao", count: 24, viaImport: true }), { verb: "nhập Excel", object: "24 mã hàng" });
+  assert.equal(activityHref({ ...base, kind: "NHAP", action: "tao" }), "/nhap-hang/id-1");
+  assert.equal(activityHref({ ...base, kind: "DOI_TAC", action: "sua" }), "/doi-tac?chon=id-1");
+  assert.equal(activityHref({ ...base, kind: "NHAP", action: "ghi_so", count: 5, targetId: null }), "/nhap-hang", "gộp nhiều phiếu → danh sách");
+  assert.equal(activityHref({ ...base, kind: "CHUYEN_KHO", action: "tao" }), null, "chưa có màn chuyển kho");
+  const now = new Date(2026, 9, 7, 15, 0);
+  assert.equal(activityTime(new Date(2026, 9, 7, 14, 55).toISOString(), now), "5 phút trước");
+  assert.equal(activityTime(new Date(2026, 9, 6, 9, 5).toISOString(), now), "Hôm qua 09:05");
+  assert.equal(activityTime(new Date(2026, 9, 3, 8, 0).toISOString(), now), "03/10 08:00");
+}

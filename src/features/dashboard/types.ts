@@ -143,3 +143,57 @@ export function toFlowDay(row: FlowRowDb): FlowDay {
     issueQuantity: Number(row.sl_xuat),
   };
 }
+
+// --- Hoạt động gần đây (0116) --------------------------------------------------
+
+type ActivityRowDb = Fn["hoat_dong_gan_day"]["Returns"][number];
+
+/** Nhóm lọc — khóa tiếng Anh; ánh xạ sang p_nhom của RPC ở lớp api. */
+export type ActivityGroup = "all" | "orders" | "receipts" | "issues" | "other" | "catalog";
+
+export type ActivityKind =
+  | "DON_DAT"
+  | "NHAP"
+  | "XUAT"
+  | "TRA_NCC"
+  | "TRA_KHACH"
+  | "KIEM_KE"
+  | "DIEU_CHINH"
+  | "CHUYEN_KHO"
+  | "SAN_PHAM"
+  | "DOI_TAC";
+
+export type ActivityAction = "tao" | "sua" | "xac_nhan" | "mo_khoa" | "hoan_thanh" | "huy" | "ghi_so";
+
+export type ActivityEvent = {
+  /** Khóa React: thời điểm + loại + thao tác + đối tượng (một lần gộp nhiều bản ghi không có id). */
+  key: string;
+  at: string;
+  kind: ActivityKind;
+  action: ActivityAction;
+  /** null khi nhiều bản ghi gộp một sự kiện (count > 1). */
+  targetId: string | null;
+  code: string | null;
+  detail: string | null;
+  count: number;
+  /** "import" = nhập từ Excel. */
+  viaImport: boolean;
+  actor: string | null;
+};
+
+export function toActivityEvent(row: ActivityRowDb): ActivityEvent {
+  // RPC trả null cho cột không có dù type sinh tự động khai `string`.
+  const targetId = (row.doi_tuong_id as string | null) ?? null;
+  return {
+    key: `${row.thoi_gian}|${row.loai}|${row.hanh_dong}|${targetId ?? row.so_luong}`,
+    at: row.thoi_gian,
+    kind: row.loai as ActivityKind,
+    action: row.hanh_dong as ActivityAction,
+    targetId,
+    code: (row.ma as string | null) ?? null,
+    detail: (row.chi_tiet as string | null) ?? null,
+    count: Number(row.so_luong),
+    viaImport: row.nguon === "import",
+    actor: (row.nguoi as string | null) ?? null,
+  };
+}

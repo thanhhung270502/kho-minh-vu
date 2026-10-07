@@ -1,11 +1,14 @@
 import {
   keepPreviousData,
+  useInfiniteQuery,
   useIsFetching,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 
 import {
+  ACTIVITY_PAGE_SIZE,
+  fetchActivity,
   fetchFlowByDay,
   fetchNegativeStockReport,
   fetchOverviewKpis,
@@ -13,6 +16,7 @@ import {
 } from "../api/dashboard.api";
 import { dashboardKeys } from "../api/dashboard.keys";
 import type { StockGroupBy } from "../lib/stock-drilldown";
+import type { ActivityGroup } from "../types";
 
 export function useOverviewKpis() {
   return useQuery({ queryKey: dashboardKeys.overview(), queryFn: fetchOverviewKpis });
@@ -61,4 +65,18 @@ export function useRefreshDashboard() {
       queryClient.invalidateQueries({ queryKey: dashboardKeys.all }),
     isRefreshing,
   };
+}
+
+/**
+ * Hoạt động gần đây — trang theo mốc thời gian (dòng cuối trang trước). Không tự
+ * cập nhật: nằm dưới dashboardKeys.all nên nút "Làm mới" tải lại cùng cả trang (D-14).
+ */
+export function useActivityFeed(group: ActivityGroup) {
+  return useInfiniteQuery({
+    queryKey: dashboardKeys.activity(group),
+    queryFn: ({ pageParam }) => fetchActivity(group, pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => (last.length < ACTIVITY_PAGE_SIZE ? undefined : (last.at(-1)?.at ?? undefined)),
+    placeholderData: keepPreviousData,
+  });
 }

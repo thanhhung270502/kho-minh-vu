@@ -1,11 +1,15 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
+import { ACTIVITY_GROUP_TO_RPC } from "../lib/activity-format";
 import type { StockGroupBy } from "../lib/stock-drilldown";
 import {
+  toActivityEvent,
   toFlowDay,
   toNegativeStockLine,
   toOverviewKpis,
   toStockByGroupRow,
+  type ActivityEvent,
+  type ActivityGroup,
   type FlowDay,
   type NegativeStockLine,
   type OverviewKpis,
@@ -62,4 +66,17 @@ export async function fetchFlowByDay(days: number): Promise<FlowDay[]> {
   const { data, error } = await supabase.rpc("nhap_xuat_theo_ngay", { p_so_ngay: days });
   if (error) throw error;
   return (data ?? []).map(toFlowDay);
+}
+
+export const ACTIVITY_PAGE_SIZE = 20;
+
+/** Hoạt động gần đây (0116). `before` = thời điểm dòng cuối của trang trước. */
+export async function fetchActivity(group: ActivityGroup, before: string | null): Promise<ActivityEvent[]> {
+  const { data, error } = await getSupabaseBrowserClient().rpc("hoat_dong_gan_day", {
+    p_nhom: ACTIVITY_GROUP_TO_RPC[group],
+    p_truoc: before ?? undefined,
+    p_gioi_han: ACTIVITY_PAGE_SIZE,
+  });
+  if (error) throw error;
+  return (data ?? []).map(toActivityEvent);
 }

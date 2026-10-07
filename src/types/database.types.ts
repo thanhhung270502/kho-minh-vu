@@ -2346,6 +2346,20 @@ export type Database = {
         }
       }
       hoan_thanh_duoc_don: { Args: never; Returns: boolean }
+      hoat_dong_gan_day: {
+        Args: { p_gioi_han?: number; p_nhom?: string; p_truoc?: string }
+        Returns: {
+          chi_tiet: string
+          doi_tuong_id: string
+          hanh_dong: string
+          loai: string
+          ma: string
+          nguoi: string
+          nguon: string
+          so_luong: number
+          thoi_gian: string
+        }[]
+      }
       huy_chung_tu: {
         Args: { p_chung_tu_id: string; p_ly_do: string }
         Returns: {
