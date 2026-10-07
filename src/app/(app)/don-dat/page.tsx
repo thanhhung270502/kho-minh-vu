@@ -28,7 +28,7 @@ export default async function SalesOrderPage() {
           permissions={{
             canEdit: can(user, "tao_don"),
             canApprove: can(user, "xac_nhan_don"),
-            canComplete: can(user, "hoan_thanh_don"),
+            canComplete: can(user, "xac_nhan_don"),
             canCancel: user.role === "quan_ly",
           }}
           excelActions={

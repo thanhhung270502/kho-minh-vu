@@ -53,9 +53,9 @@ import { buildCsv } from "../src/shared/lib/csv";
 import { fetchAllPages } from "../src/shared/lib/fetch-all-pages";
 import { isInteractiveTarget, readSelectedId, withSelectedId } from "../src/shared/lib/selected-id";
 import { docTypeLabel, toPartnerRow } from "../src/features/partners/types";
-import { BUSINESS_PERMISSIONS, SCOPE_LABELS, allows, type BusinessPermission, type PermissionSubject, type Role } from "../src/shared/lib/permissions";
-import { jobTitleSchema, titleCodeFromName } from "../src/features/settings/schemas/job-title.schema";
+import { BUSINESS_PERMISSIONS, SCOPE_LABELS, allows, isAdmin, type BusinessPermission, type PermissionSubject, type Role } from "../src/shared/lib/permissions";
 import { editUserFormSchema } from "../src/features/settings/schemas/user.schema";
+import { activityHref, activityPhrase, activityTime } from "../src/features/dashboard/lib/activity-format";
 import { duplicateProblemsInFile } from "../src/features/products/lib/new-product-file";
 import { fillNamesFromSheet, readProductNameSheet } from "../src/features/products/lib/product-name-sheet";
 import { fromSharedVehiclesDb, toSharedVehiclesDb, usageLine, vehicleColumns, vehicleLabels, withUsageLine } from "../src/features/products/lib/shared-vehicles";
@@ -214,11 +214,11 @@ for (const xau of [
 }
 
 
-/** Người dùng giữ chức vụ MẶC ĐỊNH của vai trò — đúng dữ liệu 0082. */
+/** Bộ quyền mẫu (0117): Admin luôn đủ 9 quyền (quyen_cua_toi), nhân viên theo người tích. */
 const DEFAULT_TITLE: Record<Role, BusinessPermission[]> = {
-  quan_ly: ["xem_dashboard", "nhap_kho", "tao_don", "xac_nhan_don", "hoan_thanh_don", "sua_hoa_don", "tao_ma_hang", "tao_nhan_vien", "kiem_kho"],
-  van_phong: ["nhap_kho", "tao_don", "hoan_thanh_don", "tao_ma_hang", "tao_nhan_vien", "kiem_kho"],
-  thu_kho: ["nhap_kho", "kiem_kho"],
+  quan_ly: BUSINESS_PERMISSIONS.map((p) => p.key),
+  van_phong: ["nhap_kho", "tao_don", "xac_nhan_don", "tao_ma_hang"],
+  thu_kho: ["nhap_kho"],
   chi_xem: [],
 };
 const as = (role: Role, extra: BusinessPermission[] = []): PermissionSubject => ({
@@ -245,8 +245,8 @@ assert.equal(allows(as("quan_ly"), "xem_dashboard"), true);
 assert.equal(allows(as("van_phong"), "xem_dashboard"), false);
 assert.equal(allows(as("thu_kho", ["xem_dashboard"]), "xem_dashboard"), true, "bật cho Thủ kho thì thủ kho xem được");
 assert.equal(allows(as("chi_xem"), "view-catalog"), true, "quyền theo phạm vi vẫn đọc vai trò");
-assert.equal(allows(as("van_phong"), ["manage-users", "tao_nhan_vien"]), true, "mảng = có một trong các quyền");
-assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
+assert.equal(allows(as("van_phong", ["phan_quyen"]), ["manage-users", "phan_quyen"]), true, "mảng = có một trong các quyền");
+assert.equal(allows(as("thu_kho"), ["manage-users", "phan_quyen"]), false);
 
 // Phase 10 (GON-02): màn Lịch sử KiotViet đã gỡ khỏi giao diện — không còn
 // mục menu nào trỏ tới, và filterNavItems không còn nhận công tắc theo người.
@@ -294,12 +294,13 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
 {
 
   const nvpt = "/cai-dat/nhan-vien-phu-trach";
-  assert.ok(tabsFor(as("van_phong")).some((t) => t.duongDan === nvpt), "văn phòng có tab Nhân viên phụ trách");
+  assert.ok(!tabsFor(as("van_phong")).some((t) => t.duongDan === nvpt), "0117: nhân viên không có tab Nhân viên phụ trách");
   assert.ok(tabsFor(as("quan_ly")).some((t) => t.duongDan === nvpt), "quản lý có tab Nhân viên phụ trách");
   assert.ok(!tabsFor(as("thu_kho")).some((t) => t.duongDan === nvpt), "thủ kho không có tab này");
-  // Phase 16: tab theo quyền Tạo nhân viên — bật cho Thủ kho thì thủ kho có tab, và có menu Cài đặt.
-  assert.ok(tabsFor(as("thu_kho", ["tao_nhan_vien"])).some((t) => t.duongDan === nvpt));
-  assert.ok(filterNavItems(as("thu_kho", ["tao_nhan_vien"]), NAV_ITEMS).some((i) => i.href === "/cai-dat"));
+  // 0117: tab Nhân viên phụ trách chỉ Admin; quyền Phân quyền mở menu Cài đặt (tab Người dùng).
+  assert.ok(!tabsFor(as("thu_kho", ["phan_quyen"])).some((t) => t.duongDan === nvpt));
+  assert.ok(tabsFor(as("thu_kho", ["phan_quyen"])).some((t) => t.duongDan === "/cai-dat/nguoi-dung"));
+  assert.ok(filterNavItems(as("thu_kho", ["phan_quyen"]), NAV_ITEMS).some((i) => i.href === "/cai-dat"));
   assert.ok(filterNavItems(as("thu_kho", ["xem_dashboard"]), NAV_ITEMS).some((i) => i.href === "/"));
 
   const ok = staffSchema.safeParse({ shortName: "  An ", fullName: " Nguyễn Văn An ", isActive: true });
@@ -410,7 +411,7 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
   const entries = buildNavEntries(filterNavItems(as("quan_ly"), NAV_ITEMS));
   assert.deepEqual(
     entries.map((e) => e.label),
-    ["Tổng quan", "Đơn hàng", "Nhập hàng", "Hàng hóa", "Đối tác", "Phân tích", "Cài đặt"],
+    ["Tổng quan", "Hàng hóa", "Đơn hàng", "Nhập hàng", "Đối tác", "Phân tích", "Cài đặt"],
     "thứ tự menu cấp 1 của quản lý (Phase 13 thêm Phân tích)",
   );
   const groupHrefs = (label: string) => {
@@ -434,16 +435,16 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
   const chiXem = buildNavEntries(filterNavItems(as("chi_xem"), NAV_ITEMS));
   assert.deepEqual(
     chiXem.map((e) => e.label),
-    ["Đơn hàng", "Nhập hàng", "Hàng hóa", "Đối tác"],
+    ["Hàng hóa", "Đơn hàng", "Nhập hàng", "Đối tác"],
     "chỉ xem không có Tổng quan, Cài đặt",
   );
   assert.ok(
-    buildNavEntries(filterNavItems(as("van_phong"), NAV_ITEMS)).some((e) => e.label === "Phân tích"),
-    "văn phòng thấy Phân tích (đi đặt hàng NCC)",
+    buildNavEntries(filterNavItems(as("thu_kho", ["xem_phan_tich"]), NAV_ITEMS)).some((e) => e.label === "Phân tích"),
+    "0117: tích Xem trang Phân tích thì thấy menu",
   );
   assert.ok(
-    !buildNavEntries(filterNavItems(as("thu_kho"), NAV_ITEMS)).some((e) => e.label === "Phân tích"),
-    "thủ kho không thấy Phân tích (tồn mọi kho)",
+    !buildNavEntries(filterNavItems(as("van_phong"), NAV_ITEMS)).some((e) => e.label === "Phân tích"),
+    "0117: chưa tích Xem trang Phân tích thì không thấy",
   );
 }
 
@@ -1419,22 +1420,22 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.equal(slow.noSalesQty, 90, "tổng tồn của mã không bán");
 }
 
-// --- Phase 16: chức vụ & quyền (QUYEN-01/02) ------------------------------
+// --- 0117: quyền tích theo người (QUYEN-01/02) ------------------------------
 {
-  // Khóa = giá trị CHECK của chuc_vu_quyen.quyen (0082) — đúng 9, đúng thứ tự yêu cầu.
+  // Khóa = giá trị CHECK của nguoi_dung_quyen.quyen (0117) — đúng 9, đúng thứ tự yêu cầu.
   assert.deepEqual(
     BUSINESS_PERMISSIONS.map((p) => p.key),
-    ["xem_dashboard", "nhap_kho", "tao_don", "xac_nhan_don", "hoan_thanh_don",
-     "sua_hoa_don", "tao_ma_hang", "tao_nhan_vien", "kiem_kho"],
+    ["tao_tai_khoan", "phan_quyen", "tao_don", "xac_nhan_don", "nhap_kho",
+     "tao_doi_tac", "tao_ma_hang", "xem_dashboard", "xem_phan_tich"],
   );
-  assert.equal(BUSINESS_PERMISSIONS[1].label, "Nhập đơn hàng");
   assert.equal(Object.keys(SCOPE_LABELS).length, 4, "4 phạm vi = 4 vai trò cũ");
+  assert.equal(isAdmin(as("quan_ly")), true);
+  assert.equal(isAdmin(as("van_phong", BUSINESS_PERMISSIONS.map((p) => p.key))), false, "đủ 9 quyền vẫn không phải Admin");
 
-  assert.equal(titleCodeFromName("  Kế toán kho "), "KE_TOAN_KHO");
-  assert.equal(titleCodeFromName("Đội giao-hàng 2"), "DOI_GIAO_HANG_2");
-  const ok = jobTitleSchema.safeParse({ name: "  Kế toán ", scope: "van_phong" });
-  assert.ok(ok.success && ok.data.name === "Kế toán");
-  assert.ok(!jobTitleSchema.safeParse({ name: " ", scope: "van_phong" }).success, "tên bắt buộc");
+  const base = { fullName: "An", jobTitleId: "11111111-1111-4111-8111-111111111111", role: "van_phong", warehouseIds: [] };
+  const noPerms = editUserFormSchema.safeParse(base);
+  assert.ok(noPerms.success && noPerms.data.permissions.length === 0, "mặc định không có quyền nào");
+  assert.ok(!editUserFormSchema.safeParse({ ...base, permissions: ["kiem_kho"] }).success, "khóa cũ bị từ chối");
 
   // Form người dùng chọn CHỨC VỤ; phạm vi thủ kho vẫn bắt buộc có kho.
   const title = "11111111-1111-4111-8111-111111111111";
@@ -1888,7 +1889,6 @@ assert.equal(headerOnly.documents[0]?.dong.length, 0, "dòng trống mã + số 
 
 // --- Hoạt động gần đây (0116) -----------------------------------------------
 {
-  const { activityPhrase, activityHref, activityTime } = await import("../src/features/dashboard/lib/activity-format");
   const base = { key: "k", at: "2026-10-07T07:00:00Z", targetId: "id-1", code: "DH1", detail: null, count: 1, viaImport: false, actor: "An" } as const;
   assert.deepEqual(activityPhrase({ ...base, kind: "DON_DAT", action: "xac_nhan" }), { verb: "xác nhận", object: "đơn" });
   assert.deepEqual(activityPhrase({ ...base, kind: "NHAP", action: "ghi_so", count: 86, targetId: null, code: null }), { verb: "ghi sổ", object: "86 phiếu nhập" });

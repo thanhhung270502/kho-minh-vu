@@ -1217,6 +1217,24 @@ export type Database = {
           },
         ]
       }
+      nguoi_dung_quyen: {
+        Row: {
+          created_at: string
+          nguoi_dung_id: string
+          quyen: string
+        }
+        Insert: {
+          created_at?: string
+          nguoi_dung_id: string
+          quyen: string
+        }
+        Update: {
+          created_at?: string
+          nguoi_dung_id?: string
+          quyen?: string
+        }
+        Relationships: []
+      }
       nhan_vien_phu_trach: {
         Row: {
           created_at: string
@@ -2056,6 +2074,10 @@ export type Database = {
           p_nguoi_nhan_ids?: string[]
         }
         Returns: undefined
+      }
+      dat_quyen_nguoi_dung: {
+        Args: { p_id: string; p_quyen: string[] }
+        Returns: string[]
       }
       de_xuat_dinh_muc: {
         Args: {

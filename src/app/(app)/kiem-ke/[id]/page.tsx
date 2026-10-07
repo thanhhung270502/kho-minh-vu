@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { requirePermission } from "@/features/auth/api/current-user.server";
-import { can } from "@/shared/lib/permissions";
+import { isAdmin } from "@/shared/lib/permissions";
 import { SessionDetail } from "@/features/stocktake/components/session-detail";
 
 export const metadata: Metadata = { title: "Phiên kiểm kê" };
@@ -21,7 +21,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     <Suspense>
       <SessionDetail
         sessionId={id}
-        canCount={can(user, "kiem_kho")}
+        canCount={isAdmin(user)}
         canApprove={user.canApproveStocktake}
       />
     </Suspense>

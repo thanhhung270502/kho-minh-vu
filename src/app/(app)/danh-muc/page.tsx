@@ -5,7 +5,7 @@ import { ProductTable } from "@/features/products/components/product-table";
 import { LookupManagerButton } from "@/features/settings/components/lookup-manager-button";
 import { requirePermission } from "@/features/auth/api/current-user.server";
 import { PageHeader } from "@/shared/components/page-header";
-import { can, hasPermission } from "@/shared/lib/permissions";
+import { can } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Danh sách hàng hóa" };
 
@@ -30,7 +30,7 @@ export default async function ProductsPage() {
           // Danh mục phụ đi cùng quyền Tạo mã hàng (RLS 0083).
           extraActions={can(user, "tao_ma_hang") ? <LookupManagerButton /> : null}
           // Thủ kho không thấy đơn đặt / dự kiến hết hàng (PANEL-01).
-          showForecast={hasPermission(user.role, "view-analysis")}
+          showForecast={can(user, "xem_phan_tich")}
         />
       </Suspense>
     </>

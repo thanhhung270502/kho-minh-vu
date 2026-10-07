@@ -36,35 +36,42 @@ export function hasPermission(
 }
 
 /**
- * 9 quyền nghiệp vụ bật/tắt theo CHỨC VỤ (Phase 16). Khóa là giá trị CHECK của
- * `chuc_vu_quyen.quyen` (0082) — hợp đồng với database, giữ tiếng Việt. Chặn
- * thật ở `co_quyen()` (0083); ở đây chỉ để ẩn/hiện giao diện.
+ * 9 quyền nghiệp vụ tích theo TỪNG NGƯỜI (0117). Khóa là giá trị CHECK của
+ * `nguoi_dung_quyen.quyen` — hợp đồng với database, giữ tiếng Việt. Tài khoản
+ * Quản lý/Admin luôn đủ cả 9 (quyen_cua_toi trả đủ). Chặn thật ở `co_quyen()`;
+ * ở đây chỉ để ẩn/hiện giao diện. Việc chỉ Admin làm (kiểm kho, nhân viên phụ
+ * trách, hủy hóa đơn đã ghi sổ) kiểm bằng `isAdmin`.
  */
 export type BusinessPermission =
-  | "xem_dashboard"
-  | "nhap_kho"
+  | "tao_tai_khoan"
+  | "phan_quyen"
   | "tao_don"
   | "xac_nhan_don"
-  | "hoan_thanh_don"
-  | "sua_hoa_don"
+  | "nhap_kho"
+  | "tao_doi_tac"
   | "tao_ma_hang"
-  | "tao_nhan_vien"
-  | "kiem_kho";
+  | "xem_dashboard"
+  | "xem_phan_tich";
 
 export const BUSINESS_PERMISSIONS: ReadonlyArray<{ key: BusinessPermission; label: string; hint: string }> = [
-  { key: "xem_dashboard", label: "Xem dashboard", hint: "Trang Tổng quan" },
-  { key: "nhap_kho", label: "Nhập đơn hàng", hint: "Tạo, sửa, ghi sổ phiếu nhập kho" },
+  { key: "tao_tai_khoan", label: "Tạo tài khoản", hint: "Thêm, sửa, khóa tài khoản nhân viên, đặt lại mật khẩu" },
+  { key: "phan_quyen", label: "Phân quyền", hint: "Tích quyền cho tài khoản nhân viên" },
   { key: "tao_don", label: "Tạo đơn đặt hàng", hint: "Tạo và sửa đơn còn tạm" },
-  { key: "xac_nhan_don", label: "Xác nhận", hint: "Xác nhận, mở khóa, đóng sớm đơn" },
-  { key: "hoan_thanh_don", label: "Hoàn thành", hint: "Hoàn thành đơn, tạo hóa đơn" },
-  { key: "sua_hoa_don", label: "Sửa hóa đơn", hint: "Hủy hóa đơn đã ghi sổ" },
+  { key: "xac_nhan_don", label: "Xác nhận / duyệt đơn", hint: "Xác nhận, mở khóa, đóng sớm, hoàn thành đơn" },
+  { key: "nhap_kho", label: "Nhập kho", hint: "Tạo, sửa, ghi sổ phiếu nhập" },
+  { key: "tao_doi_tac", label: "Tạo đối tác", hint: "Thêm, sửa đối tác, nhập Excel đối tác" },
   { key: "tao_ma_hang", label: "Tạo mã hàng", hint: "Thêm, sửa mã hàng, ảnh, danh mục phụ, nhập Excel" },
-  { key: "tao_nhan_vien", label: "Tạo nhân viên", hint: "Danh sách nhân viên phụ trách" },
-  { key: "kiem_kho", label: "Kiểm kho", hint: "Mở phiên, đếm, nhập số đếm" },
+  { key: "xem_dashboard", label: "Xem trang Tổng quan", hint: "" },
+  { key: "xem_phan_tich", label: "Xem trang Phân tích", hint: "" },
 ];
 
-/** Người dùng hiện tại tối thiểu cho các hàm kiểm quyền — vai trò (phạm vi) + quyền chức vụ. */
+/** Người dùng hiện tại tối thiểu cho các hàm kiểm quyền — vai trò (phạm vi) + quyền theo người. */
 export type PermissionSubject = { role: Role; permissions: readonly BusinessPermission[] };
+
+/** Quản lý/Admin — việc chỉ Admin làm: kiểm kho, nhân viên phụ trách, hủy chứng từ đã ghi sổ (0117). */
+export function isAdmin(user: PermissionSubject | null | undefined): boolean {
+  return user?.role === "quan_ly";
+}
 
 export function can(user: PermissionSubject | null | undefined, permission: BusinessPermission): boolean {
   return !!user && user.permissions.includes(permission);
@@ -91,15 +98,15 @@ export function allows(
 
 /** Phạm vi của chức vụ = enum vai_tro cũ. */
 export const SCOPE_LABELS: Record<Role, string> = {
-  quan_ly: "Quản trị — mọi kho, quản lý tài khoản",
-  van_phong: "Văn phòng — mọi kho",
-  thu_kho: "Thủ kho — chỉ kho được giao",
+  quan_ly: "Quản lý/Admin — mọi kho, đủ mọi quyền",
+  van_phong: "Nhân viên — mọi kho",
+  thu_kho: "Nhân viên — chỉ kho được giao",
   chi_xem: "Chỉ xem",
 };
 
 export const ROLE_LABELS: Record<Role, string> = {
-  quan_ly: "Quản lý",
-  van_phong: "Văn phòng",
-  thu_kho: "Thủ kho",
+  quan_ly: "Quản lý/Admin",
+  van_phong: "Nhân viên",
+  thu_kho: "Nhân viên (kho được giao)",
   chi_xem: "Chỉ xem",
 };

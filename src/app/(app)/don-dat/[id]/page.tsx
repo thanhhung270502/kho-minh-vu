@@ -24,7 +24,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         // Xác nhận / mở lại / đóng sớm theo quyền chức vụ "Xác nhận". Chặn thật
         // ở ba RPC (co_quyen, 0083); đây chỉ để ẩn nút.
         canApprove: can(user, "xac_nhan_don"),
-        canComplete: can(user, "hoan_thanh_don"),
+        canComplete: can(user, "xac_nhan_don"),
         // Hủy đơn chỉ phạm vi quản trị (huy_duoc_don, 0078).
         canCancel: user.role === "quan_ly",
       }}

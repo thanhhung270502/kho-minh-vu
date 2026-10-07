@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Phân tích tồn kho" };
 
 export default async function Page() {
   // Chặn thật ở xem_duoc_phan_tich() (0079) — tồn mọi kho nên thủ kho không vào.
-  await requirePermission("view-analysis");
+  await requirePermission("xem_phan_tich");
 
   return (
     <>

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { IssueDetailView } from "@/features/stock-out/components/issue-detail";
 import { requirePermission } from "@/features/auth/api/current-user.server";
-import { can, hasPermission } from "@/shared/lib/permissions";
+import { can, hasPermission, isAdmin } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Duyệt đơn" };
 
@@ -23,7 +23,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         canEdit: hasPermission(user.role, "edit-catalog"),
         // D-06: chỉ quản lý hủy phiếu đã ghi sổ. Chặn thật ở database (0046).
         // Hủy hóa đơn đã ghi sổ = quyền "Sửa hóa đơn" (huy_chung_tu, 0083).
-        canVoid: can(user, "sua_hoa_don"),
+        canVoid: isAdmin(user),
       }}
     />
   );

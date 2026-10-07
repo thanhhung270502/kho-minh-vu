@@ -1,6 +1,7 @@
 import { allows, type AnyPermission, type PermissionSubject } from "@/shared/lib/permissions";
 
-export type SettingsTab = { duongDan: string; label: string; quyen: AnyPermission };
+/** Mảng = cần MỘT trong các quyền. */
+export type SettingsTab = { duongDan: string; label: string; quyen: AnyPermission | readonly AnyPermission[] };
 
 /**
  * Danh sách tab + hàm chọn tab mặc định để ở module THUẦN (không `"use client"`).
@@ -11,10 +12,10 @@ export type SettingsTab = { duongDan: string; label: string; quyen: AnyPermissio
  * firstTabForRole is on the client". Bấm menu Cài đặt ra page lỗi (UAT Phase 2).
  */
 export const SETTINGS_TABS: SettingsTab[] = [
-  { duongDan: "/cai-dat/nguoi-dung", label: "Người dùng", quyen: "manage-users" },
-  { duongDan: "/cai-dat/chuc-vu", label: "Chức vụ", quyen: "manage-users" },
+  // Quyền theo từng người (0117) — tab Chức vụ bỏ, tích quyền ngay trong tài khoản.
+  { duongDan: "/cai-dat/nguoi-dung", label: "Người dùng", quyen: ["tao_tai_khoan", "phan_quyen"] },
   { duongDan: "/cai-dat/kho", label: "Kho", quyen: "manage-warehouses" },
-  { duongDan: "/cai-dat/nhan-vien-phu-trach", label: "Nhân viên phụ trách", quyen: "tao_nhan_vien" },
+  { duongDan: "/cai-dat/nhan-vien-phu-trach", label: "Nhân viên phụ trách", quyen: "manage-users" },
   // Tab "Số chứng từ" (/cai-dat/so-chung-tu) đã ẩn — trang vẫn còn, vào bằng đường dẫn.
 ];
 
@@ -23,7 +24,7 @@ export function tabsFor(user: PermissionSubject): SettingsTab[] {
 }
 
 /** Quyền để vào /cai-dat: có ít nhất một tab. */
-export const SETTINGS_ANY_PERMISSION: AnyPermission[] = SETTINGS_TABS.map((t) => t.quyen);
+export const SETTINGS_ANY_PERMISSION: AnyPermission[] = SETTINGS_TABS.flatMap((t) => (typeof t.quyen === "string" ? [t.quyen] : [...t.quyen]));
 
 // Nhóm hàng / ĐVT / Công đoạn rời Cài đặt ở Phase 11 — quản lý bằng nút "Danh
 // mục phụ" ở Danh sách hàng hóa. Tab ít quyền nhất còn lại là Nhân viên phụ trách.

@@ -25,7 +25,7 @@ export type CurrentUser = {
    * `duyet_duoc_kiem_ke()` (0063).
    */
   canApproveStocktake: boolean;
-  /** 9 quyền của chức vụ (Phase 16) — đọc từ bảng nên đổi là có hiệu lực ở lần tải trang kế tiếp. */
+  /** 9 quyền theo người (0117) — đọc từ bảng nên đổi là có hiệu lực ở lần tải trang kế tiếp. */
   permissions: BusinessPermission[];
 };
 

@@ -5,13 +5,13 @@ import { requirePermission } from "@/features/auth/api/current-user.server";
 import { PartnerTable } from "@/features/partners/components/partner-table";
 import { ExcelActions } from "@/shared/components/excel-actions";
 import { PageHeader } from "@/shared/components/page-header";
-import { hasPermission } from "@/shared/lib/permissions";
+import { can } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Đối tác" };
 
 export default async function PartnersPage() {
   const user = await requirePermission("view-catalog");
-  const canEdit = hasPermission(user.role, "edit-catalog");
+  const canEdit = can(user, "tao_doi_tac");
 
   return (
     <>

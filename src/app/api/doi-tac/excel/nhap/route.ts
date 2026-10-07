@@ -2,7 +2,7 @@ import { getCurrentUser } from "@/features/auth/api/current-user.server";
 import { importPartners, prepareNewPartners } from "@/features/partners/api/partner-excel.server";
 import { readPartnerFile } from "@/features/partners/lib/partner-excel-file.server";
 import { explainError } from "@/shared/lib/errors";
-import { hasPermission } from "@/shared/lib/permissions";
+import { can } from "@/shared/lib/permissions";
 
 /** exceljs cần Node (stream, zip) — Edge runtime không chạy được. */
 export const runtime = "nodejs";
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   if (!user) {
     return errorResponse("Phiên đăng nhập đã hết hạn", "Đăng nhập lại rồi tải file lên lần nữa.", 401);
   }
-  if (!hasPermission(user.role, "edit-catalog")) {
+  if (!can(user, "tao_doi_tac")) {
     return errorResponse("Tài khoản không có quyền nhập đối tác", "Chỉ quản lý và văn phòng nhập được đối tác.", 403);
   }
 

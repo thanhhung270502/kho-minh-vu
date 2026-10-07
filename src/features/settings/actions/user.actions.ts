@@ -27,12 +27,18 @@ const INDEFINITE_BAN = "876000h";
 type AdminSession = {
   supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>;
   userId: string;
+  /** Quản lý/Admin — luôn đủ quyền, và là người duy nhất đụng được tài khoản Admin. */
+  isAdmin: boolean;
+  /** Tạo / sửa hồ sơ, khóa, đặt lại mật khẩu (quyền Tạo tài khoản). */
+  canProfile: boolean;
+  /** Tích quyền cho tài khoản nhân viên (quyền Phân quyền). */
+  canAssign: boolean;
 };
 
 /**
- * Mọi hành động quản trị đều tự kiểm người gọi bằng `getUser()` + bảng `nguoi_dung`,
- * KHÔNG tin dữ liệu client gửi lên và cũng không tin claim trong JWT (claim có thể
- * cũ hơn bảng — xem D-05).
+ * Mọi hành động quản trị đều tự kiểm người gọi bằng `getUser()` + bảng (vai_tro,
+ * quyen_cua_toi) — KHÔNG tin dữ liệu client gửi lên và cũng không tin claim trong
+ * JWT (claim có thể cũ hơn bảng — xem D-05). RPC ở database kiểm lại lần nữa (0117).
  */
 async function getAdminSession(): Promise<AdminSession | { error: string }> {
   const supabase = await createSupabaseServerClient();
@@ -42,18 +48,33 @@ async function getAdminSession(): Promise<AdminSession | { error: string }> {
 
   if (!user) return { error: "Phiên đăng nhập đã hết hạn. Đăng nhập lại để tiếp tục." };
 
-  const { data, error } = await supabase
-    .from("nguoi_dung")
-    .select("vai_tro, dang_hoat_dong")
-    .eq("id", user.id)
-    .maybeSingle();
+  const [profile, grants] = await Promise.all([
+    supabase.from("nguoi_dung").select("vai_tro, dang_hoat_dong").eq("id", user.id).maybeSingle(),
+    supabase.rpc("quyen_cua_toi"),
+  ]);
 
-  if (error) return { error: explainError(error).action };
-  if (!data?.dang_hoat_dong || data.vai_tro !== "quan_ly") {
-    return { error: "Chỉ quản lý được quản trị tài khoản." };
+  if (profile.error) return { error: explainError(profile.error).action };
+  if (grants.error) return { error: explainError(grants.error).action };
+  if (!profile.data?.dang_hoat_dong) return { error: "Tài khoản đã bị vô hiệu hóa." };
+
+  const isAdmin = profile.data.vai_tro === "quan_ly";
+  const granted = grants.data ?? [];
+  const canProfile = isAdmin || granted.includes("tao_tai_khoan");
+  const canAssign = isAdmin || granted.includes("phan_quyen");
+  if (!canProfile && !canAssign) {
+    return { error: "Tài khoản chưa có quyền Tạo tài khoản hoặc Phân quyền." };
   }
 
-  return { supabase, userId: user.id };
+  return { supabase, userId: user.id, isAdmin, canProfile, canAssign };
+}
+
+const NOT_ADMIN_TARGET = "Chỉ Quản lý/Admin được sửa tài khoản Quản lý/Admin.";
+const NEED_PROFILE = "Tài khoản chưa có quyền Tạo tài khoản.";
+
+/** Ghi trọn bộ quyền theo người (dat_quyen_nguoi_dung, 0117). Admin không cần ghi. */
+async function savePermissions(session: AdminSession, id: string, permissions: string[]) {
+  const { error } = await session.supabase.rpc("dat_quyen_nguoi_dung", { p_id: id, p_quyen: permissions });
+  if (error) throw error;
 }
 
 /** Giữ ít nhất một quản lý đang hoạt động, nếu không sẽ không ai vào được Cài đặt nữa. */
@@ -103,7 +124,7 @@ function firstIssue(issues: { path: PropertyKey[]; message: string }[]): ActionR
   };
 }
 
-/** Phạm vi của chức vụ đọc từ DB — không tin `role` client gửi lên. */
+/** Phạm vi của loại tài khoản đọc từ DB — không tin `role` client gửi lên. */
 async function scopeOfJobTitle({ supabase }: AdminSession, jobTitleId: string) {
   const { data, error } = await supabase.from("chuc_vu").select("pham_vi").eq("id", jobTitleId).maybeSingle();
   if (error) throw error;
@@ -132,10 +153,17 @@ async function revokeSessions(userId: string) {
 export async function createUser(input: CreateUserInput): Promise<ActionResult> {
   const session = await getAdminSession();
   if ("error" in session) return { ok: false, message: session.error };
+  if (!session.canProfile) return { ok: false, message: NEED_PROFILE };
 
   const parsed = createUserSchema.safeParse(input);
   if (!parsed.success) return firstIssue(parsed.error.issues);
   const values = parsed.data;
+
+  const scope = await scopeOfJobTitle(session, values.jobTitleId);
+  if (!scope) return { ok: false, field: "jobTitleId", message: "Chọn lại loại tài khoản." };
+  if (scope === "quan_ly" && !session.isAdmin) {
+    return { ok: false, field: "jobTitleId", message: "Chỉ Quản lý/Admin được tạo tài khoản Quản lý/Admin." };
+  }
 
   const admin = createSupabaseAdminClient();
   const { data: created, error: createError } = await admin.auth.admin.createUser({
@@ -172,6 +200,16 @@ export async function createUser(input: CreateUserInput): Promise<ActionResult> 
     return { ok: false, message: describeProfileError(profileError) };
   }
 
+  // Không có quyền Phân quyền thì tài khoản mới bắt đầu không có quyền nào.
+  if (scope !== "quan_ly" && session.canAssign) {
+    try {
+      await savePermissions(session, created.user.id, values.permissions);
+    } catch (error) {
+      revalidatePath("/cai-dat/nguoi-dung");
+      return { ok: false, message: `Đã tạo tài khoản nhưng chưa lưu được quyền: ${explainError(error).action}` };
+    }
+  }
+
   revalidatePath("/cai-dat/nguoi-dung");
   return { ok: true };
 }
@@ -188,16 +226,31 @@ export async function updateUser(
 
   const previous = await readProfile(session, values.id);
   if (!previous) return { ok: false, message: "Không tìm thấy tài khoản này." };
+  if (previous.vai_tro === "quan_ly" && !session.isAdmin) return { ok: false, message: NOT_ADMIN_TARGET };
+
+  // Chỉ có quyền Phân quyền: giữ nguyên hồ sơ, chỉ ghi quyền.
+  if (!session.canProfile) {
+    try {
+      await savePermissions(session, values.id, values.permissions);
+    } catch (error) {
+      return { ok: false, message: explainError(error).action };
+    }
+    revalidatePath("/cai-dat/nguoi-dung");
+    return { ok: true };
+  }
 
   const nextScope = await scopeOfJobTitle(session, values.jobTitleId);
-  if (!nextScope) return { ok: false, field: "jobTitleId", message: "Chức vụ không còn tồn tại. Chọn lại chức vụ." };
+  if (!nextScope) return { ok: false, field: "jobTitleId", message: "Chọn lại loại tài khoản." };
+  if (nextScope === "quan_ly" && !session.isAdmin) {
+    return { ok: false, field: "jobTitleId", message: "Chỉ Quản lý/Admin được cấp loại Quản lý/Admin." };
+  }
 
   const losingManagerRole = previous.vai_tro === "quan_ly" && nextScope !== "quan_ly";
   if (losingManagerRole && !(await hasOtherManager(session, values.id))) {
     return {
       ok: false,
       field: "jobTitleId",
-      message: "Phải còn ít nhất một quản lý đang hoạt động.",
+      message: "Phải còn ít nhất một Quản lý/Admin đang hoạt động.",
     };
   }
 
@@ -214,11 +267,19 @@ export async function updateUser(
 
   if (error) return { ok: false, message: describeProfileError(error) };
 
+  if (nextScope !== "quan_ly" && session.canAssign) {
+    try {
+      await savePermissions(session, values.id, values.permissions);
+    } catch (permissionError) {
+      return { ok: false, message: `Đã lưu hồ sơ nhưng chưa lưu được quyền: ${explainError(permissionError).action}` };
+    }
+  }
+
   const warehousesChanged =
     previous.warehouseIds.length !== values.warehouseIds.length ||
     previous.warehouseIds.some((k) => !values.warehouseIds.includes(k));
 
-  // Đổi chức vụ cùng phạm vi chỉ đổi 9 quyền — có hiệu lực ngay, không cần thu
+  // Chỉ đổi quyền thì có hiệu lực ngay (co_quyen đọc bảng), không cần thu
   // hồi phiên. Đổi phạm vi / kho thì claim JWT cũ lệch bảng: thu hồi để ép làm mới.
   if (previous.vai_tro !== nextScope || warehousesChanged) await revokeSessions(values.id);
 
@@ -233,21 +294,26 @@ export async function setUserActive(input: {
   const session = await getAdminSession();
   if ("error" in session) return { ok: false, message: session.error };
 
+  if (!session.canProfile) return { ok: false, message: NEED_PROFILE };
+
   const previous = await readProfile(session, input.id);
   if (!previous) return { ok: false, message: "Không tìm thấy tài khoản này." };
+  if (previous.vai_tro === "quan_ly" && !session.isAdmin) return { ok: false, message: NOT_ADMIN_TARGET };
 
   if (!input.isActive && previous.vai_tro === "quan_ly" && !(await hasOtherManager(session, input.id))) {
-    return { ok: false, message: "Phải còn ít nhất một quản lý đang hoạt động." };
+    return { ok: false, message: "Phải còn ít nhất một Quản lý/Admin đang hoạt động." };
   }
 
-  const { error } = await session.supabase
+  // Người có quyền Tạo tài khoản (không phải Admin) không qua được RLS ghi nguoi_dung
+  // — quyền đã kiểm ở trên nên ghi bằng service role.
+  const admin = createSupabaseAdminClient();
+  const { error } = await admin
     .from("nguoi_dung")
     .update({ dang_hoat_dong: input.isActive })
     .eq("id", input.id);
 
   if (error) return { ok: false, message: explainError(error).action };
 
-  const admin = createSupabaseAdminClient();
   const { error: banError } = await admin.auth.admin.updateUserById(input.id, {
     ban_duration: input.isActive ? "none" : INDEFINITE_BAN,
   });
@@ -269,8 +335,11 @@ export async function resetPassword(
   if (!parsed.success) return firstIssue(parsed.error.issues);
   const values = parsed.data;
 
+  if (!session.canProfile) return { ok: false, message: NEED_PROFILE };
+
   const previous = await readProfile(session, values.id);
   if (!previous) return { ok: false, message: "Không tìm thấy tài khoản này." };
+  if (previous.vai_tro === "quan_ly" && !session.isAdmin) return { ok: false, message: NOT_ADMIN_TARGET };
 
   const admin = createSupabaseAdminClient();
   const { error: passwordError } = await admin.auth.admin.updateUserById(values.id, {

@@ -125,7 +125,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Phân tích",
     shortLabel: "Phân tích",
     icon: "analytics",
-    permission: "view-analysis",
+    permission: "xem_phan_tich",
     mobilePriority: null,
   },
   {
@@ -133,8 +133,8 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Cài đặt",
     shortLabel: "Cài đặt",
     icon: "settings",
-    // Cài đặt có tab quản trị (quản lý) và tab Nhân viên phụ trách (quyền chức vụ).
-    permission: ["manage-users", "tao_nhan_vien"],
+    // Cài đặt: Admin, hoặc người có quyền Tạo tài khoản / Phân quyền (tab Người dùng).
+    permission: ["manage-users", "tao_tai_khoan", "phan_quyen"],
     // Thủ kho hiếm dùng, đẩy vào "Khác" thay vì chiếm một ô của thanh tab đáy.
     mobilePriority: null,
   },

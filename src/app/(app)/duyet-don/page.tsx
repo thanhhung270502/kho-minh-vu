@@ -6,7 +6,7 @@ import { requirePermission } from "@/features/auth/api/current-user.server";
 import { DocumentExcelActions } from "@/features/document-excel/components/document-excel-actions";
 import { canImportDocuments } from "@/features/document-excel/lib/document-access";
 import { PageHeader } from "@/shared/components/page-header";
-import { can, hasPermission } from "@/shared/lib/permissions";
+import { can, hasPermission, isAdmin } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Duyệt đơn" };
 
@@ -26,7 +26,7 @@ export default async function StockOutPage() {
           // Giống trang chi tiết hóa đơn — phần xem nhanh dùng chung các nút của phiếu.
           permissions={{
             canEdit: hasPermission(user.role, "edit-catalog"),
-            canVoid: can(user, "sua_hoa_don"),
+            canVoid: isAdmin(user),
           }}
           excelActions={<DocumentExcelActions kind="hoa-don" canImport={canImportDocuments(user, "hoa-don")} />}
         />
