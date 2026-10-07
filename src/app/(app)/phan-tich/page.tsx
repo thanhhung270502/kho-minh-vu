@@ -15,7 +15,7 @@ export default async function Page() {
     <>
       <PageHeader
         title="Phân tích tồn kho"
-        description="Bán bao nhiêu, nhập bao nhiêu theo tuần, tháng, quý, năm — mã nào sắp hết, cần nhập bao nhiêu."
+        description="Xuất bao nhiêu, nhập bao nhiêu theo tuần, tháng, quý, năm — mã nào sắp hết, cần nhập bao nhiêu."
       />
       {/* `useSearchParams()` (bộ lọc trên URL) bắt buộc có ranh giới Suspense. */}
       <Suspense fallback={null}>

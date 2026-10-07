@@ -63,7 +63,7 @@ function TopProductsTable({ rows }: { rows: PeriodRow[] }) {
   ];
 
   return (
-    <Card size="small" className="rounded-xl" title="Bán chạy nhất">
+    <Card size="small" className="rounded-xl" title="Xuất nhiều nhất">
       <Highlights
         items={[
           { label: `Top ${LIMIT} chiếm`, value: total > 0 ? `${pct(topSum / total)} tổng xuất` : "—" },
@@ -71,7 +71,7 @@ function TopProductsTable({ rows }: { rows: PeriodRow[] }) {
           { label: "Mã có xuất", value: fmt(rows.filter((r) => r.sold > 0).length) },
         ]}
       />
-      <CompactTable rowKey="productId" columns={columns} data={top} empty="Kỳ này chưa có mã nào bán." />
+      <CompactTable rowKey="productId" columns={columns} data={top} empty="Kỳ này chưa có mã nào xuất." />
     </Card>
   );
 }
@@ -105,15 +105,15 @@ function TopCategoriesTable({ rows }: { rows: PeriodRow[] }) {
   ];
 
   return (
-    <Card size="small" className="rounded-xl" title="Nhóm hàng bán nhiều nhất">
+    <Card size="small" className="rounded-xl" title="Nhóm hàng xuất nhiều nhất">
       <Highlights
         items={[
           { label: "Nhóm có xuất", value: fmt(all.length) },
           { label: "Top 3 nhóm chiếm", value: all.length > 0 ? pct(top3Share) : "—" },
-          { label: "Nhóm bán tăng", value: `${fmt(growing)} / ${fmt(all.length)}`, tone: "green" },
+          { label: "Nhóm xuất tăng", value: `${fmt(growing)} / ${fmt(all.length)}`, tone: "green" },
         ]}
       />
-      <CompactTable rowKey="key" columns={columns} data={top} empty="Kỳ này chưa có nhóm nào bán." />
+      <CompactTable rowKey="key" columns={columns} data={top} empty="Kỳ này chưa có nhóm nào xuất." />
     </Card>
   );
 }

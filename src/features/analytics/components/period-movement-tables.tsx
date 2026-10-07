@@ -61,8 +61,8 @@ export function MoversTable({ rows, limit }: { rows: PeriodRow[]; limit: number 
     >
       <Highlights
         items={[
-          { label: "Mã bán tăng", value: fmt(movers.upCount), tone: "green" },
-          { label: "Mã bán giảm", value: fmt(movers.downCount), tone: "red" },
+          { label: "Mã xuất tăng", value: fmt(movers.upCount), tone: "green" },
+          { label: "Mã xuất giảm", value: fmt(movers.downCount), tone: "red" },
           { label: "Tổng xuất thay đổi", value: `${net >= 0 ? "+" : "−"}${fmt(Math.abs(net))}`, tone: net >= 0 ? "green" : "red" },
         ]}
       />
@@ -70,7 +70,7 @@ export function MoversTable({ rows, limit }: { rows: PeriodRow[]; limit: number 
         rowKey="productId"
         columns={columns}
         data={list}
-        empty={dir === "up" ? "Không mã nào bán nhiều hơn kỳ trước." : "Không mã nào bán ít hơn kỳ trước."}
+        empty={dir === "up" ? "Không mã nào xuất nhiều hơn kỳ trước." : "Không mã nào xuất ít hơn kỳ trước."}
       />
     </Card>
   );
@@ -107,12 +107,12 @@ export function SlowStockTable({ rows, days, limit }: { rows: PeriodRow[]; days:
       ),
     },
     {
-      title: "Đủ bán",
+      title: "Đủ xuất",
       key: "cover",
       width: 110,
       align: "right",
       render: (_: unknown, s) =>
-        s.coverDays === null ? <Tag className="m-0">Không bán</Tag> : `~${fmt(s.coverDays)} ngày`,
+        s.coverDays === null ? <Tag className="m-0">Không xuất</Tag> : `~${fmt(s.coverDays)} ngày`,
     },
   ];
 
@@ -127,7 +127,7 @@ export function SlowStockTable({ rows, days, limit }: { rows: PeriodRow[]; days:
           value={kind}
           onChange={setKind}
           options={[
-            { value: "noSales", label: "Không bán" },
+            { value: "noSales", label: "Không xuất" },
             { value: "overstock", label: "Tồn > 1 năm" },
           ]}
         />
@@ -135,16 +135,16 @@ export function SlowStockTable({ rows, days, limit }: { rows: PeriodRow[]; days:
     >
       <Highlights
         items={[
-          { label: "Mã còn tồn, không bán", value: fmt(slow.noSalesCount), tone: "orange" },
+          { label: "Mã còn tồn, không xuất", value: fmt(slow.noSalesCount), tone: "orange" },
           { label: "Tồn của các mã đó", value: fmt(slow.noSalesQty) },
-          { label: "Mã tồn > 1 năm bán", value: fmt(slow.overstockCount), tone: "orange" },
+          { label: "Mã tồn > 1 năm xuất", value: fmt(slow.overstockCount), tone: "orange" },
         ]}
       />
       <CompactTable
         rowKey="key"
         columns={columns}
         data={list}
-        empty={kind === "noSales" ? "Mã nào còn tồn cũng có bán trong kỳ." : "Không mã nào tồn quá một năm bán."}
+        empty={kind === "noSales" ? "Mã nào còn tồn cũng có xuất trong kỳ." : "Không mã nào tồn quá một năm xuất."}
       />
     </Card>
   );

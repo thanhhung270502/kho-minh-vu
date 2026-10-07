@@ -147,7 +147,7 @@ export type StockOutlook = { level: "out" | "red" | "yellow" | "ok" | "no-sales"
 export function stockOutlook(row: PeriodRow, days: number, settings: AnalysisSettings): StockOutlook {
   if (row.closingStock <= 0) return { level: "out", label: "Hết hàng", days: 0 };
   const perDay = days > 0 ? row.sold / days : 0;
-  if (perDay <= 0) return { level: "no-sales", label: "Không bán", days: null };
+  if (perDay <= 0) return { level: "no-sales", label: "Không xuất", days: null };
   const left = Math.floor(row.closingStock / perDay);
   const label = left < 1 ? "Còn dưới 1 ngày" : `Còn ${left.toLocaleString("vi-VN")} ngày`;
   if (left <= settings.redDays) return { level: "red", label, days: left };
