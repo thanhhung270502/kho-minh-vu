@@ -9,6 +9,23 @@ import { productKeys } from "../api/product.keys";
 import type { ProductFormValues } from "../schemas/product.schema";
 
 /**
+ * Sheet tên hàng chuẩn (~7.000 dòng). Màn Danh sách hàng hóa gọi sẵn khi người dùng
+ * được thêm mã — lúc mở "Thêm mã hàng" sheet đã có, gõ mã là điền tên ngay. Trước đây
+ * sheet chỉ tải khi mở form, gõ nhanh hơn ~1 giây tải thì ô tên trống mà không báo gì.
+ */
+export function useProductNameSheet(enabled: boolean) {
+  return useQuery({
+    queryKey: productKeys.nameSheet,
+    queryFn: fetchProductNameSheet,
+    enabled,
+    staleTime: 60 * 60 * 1000,
+  });
+}
+
+/** Trạng thái ô tên, để dòng gợi ý dưới ô nói rõ vì sao tên chưa điền. */
+export type NameSheetStatus = "idle" | "loading" | "filled" | "not-found";
+
+/**
  * Ô "Thêm mã hàng": gõ mã có trong sheet tên hàng chuẩn thì điền sẵn Tên hàng.
  * Chỉ ghi đè khi ô tên đang trống hoặc vẫn là tên tự điền lần trước — tên người
  * dùng đã gõ/sửa thì giữ nguyên. `fromSheet`: tên đang hiện là tên tự điền.
@@ -25,13 +42,8 @@ export function useAutoFillName({
   setValue: UseFormSetValue<ProductFormValues>;
   getValues: UseFormGetValues<ProductFormValues>;
   enabled: boolean;
-}): { fromSheet: boolean; error: string | null; retrying: boolean; retry: () => void } {
-  const sheet = useQuery({
-    queryKey: productKeys.nameSheet,
-    queryFn: fetchProductNameSheet,
-    enabled,
-    staleTime: 60 * 60 * 1000,
-  });
+}): { status: NameSheetStatus; error: string | null; retrying: boolean; retry: () => void } {
+  const sheet = useProductNameSheet(enabled);
   const code = useWatch({ control, name: "code" });
   const name = useWatch({ control, name: "name" });
   const lastAuto = useRef<string | null>(null);
@@ -49,14 +61,25 @@ export function useAutoFillName({
     setValue("name", found, { shouldDirty: true, shouldValidate: found !== "" });
   }, [code, enabled, sheet.data, getValues, setValue]);
 
-  const sheetName = sheet.data?.names.get((code ?? "").trim().toLowerCase());
+  const typedCode = (code ?? "").trim();
+  const sheetName = sheet.data?.names.get(typedCode.toLowerCase());
   const error = !enabled
     ? null
     : sheet.isError
       ? explainError(sheet.error).title
       : (sheet.data?.error ?? null);
+  const status: NameSheetStatus =
+    !enabled || error || typedCode === ""
+      ? "idle"
+      : sheet.isPending
+        ? "loading"
+        : name !== "" && name === sheetName
+          ? "filled"
+          : sheetName === undefined
+            ? "not-found"
+            : "idle";
   return {
-    fromSheet: enabled && name !== "" && name === sheetName,
+    status,
     error,
     retrying: sheet.isFetching,
     retry: () => void sheet.refetch(),
