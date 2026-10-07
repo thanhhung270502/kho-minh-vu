@@ -172,7 +172,7 @@ export function ReorderTable({
         items={[
           {
             key: "urgent",
-            label: `Cần nhập ngay (${tabs.urgent.length})`,
+            label: `Dưới định mức (${tabs.urgent.length})`,
             children: table(tabs.urgent),
           },
           {

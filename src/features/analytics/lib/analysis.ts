@@ -21,25 +21,24 @@ export function suggestedOrder(row: AnalysisRow, coverDays: number): number {
 export type StockStatus = "urgent" | "soon" | "ok" | "no-sales";
 
 export const STOCK_STATUS_LABELS: Record<StockStatus, string> = {
-  urgent: "Cần nhập ngay",
+  urgent: "Dưới định mức",
   soon: "Nên nhập",
-  ok: "Đủ hàng",
+  ok: "Trên định mức",
   "no-sales": "Không xuất",
 };
 
 /**
  * Theo định mức (Phân tích › Định mức):
- * - Cần nhập ngay (đỏ): tồn dưới định mức, hoặc đã hết mà vẫn có xuất / đơn đặt.
- * - Nên nhập (cam): còn trên định mức nhưng theo tốc độ xuất sẽ thiếu trong Y ngày
- *   dự trữ (đề nghị nhập > 0).
- * - Đủ hàng (xanh): trên định mức và đủ xuất Y ngày.
+ * - Dưới định mức (đỏ): tồn < định mức.
+ * - Nên nhập (cam): không dưới định mức nhưng theo tốc độ xuất / đơn đặt sẽ thiếu
+ *   trong Y ngày dự trữ (đề nghị nhập > 0) — gồm cả mã đã hết mà chưa đặt định mức.
+ * - Trên định mức (xanh): không dưới định mức và đủ xuất Y ngày.
  * - Không xuất: không xuất, không đơn đặt trong kỳ và không dưới định mức.
  */
 export function stockStatus(row: AnalysisRow, settings: AnalysisSettings): StockStatus {
   if (row.stock < row.minStock) return "urgent";
   const hasDemand = row.avgDailySales !== null || row.customerOrdered > 0;
   if (!hasDemand) return "no-sales";
-  if (row.stock <= 0) return "urgent";
   return suggestedOrder(row, settings.coverDays) > 0 ? "soon" : "ok";
 }
 

@@ -1130,12 +1130,12 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
 
   // Trạng thái theo định mức (stock 10, minStock 0 mặc định).
   const st = (o: Partial<AnalysisRow>) => stockStatus(arow(o), ANALYSIS_SETTINGS);
-  assert.equal(st({ stock: 5, available: 5, minStock: 8, avgDailySales: null }), "urgent", "dưới định mức: Cần nhập ngay");
-  assert.equal(st({ stock: 0, available: 0, avgDailySales: 2 }), "urgent", "hết hàng mà có xuất: Cần nhập ngay");
+  assert.equal(st({ stock: 5, available: 5, minStock: 8, avgDailySales: null }), "urgent", "tồn < định mức: Dưới định mức");
+  assert.equal(st({ stock: 0, available: 0, avgDailySales: 2 }), "soon", "hết hàng, chưa đặt định mức: Nên nhập");
   assert.equal(st({ stock: 10, available: 10, minStock: 5, avgDailySales: 1 }), "soon", "trên định mức, thiếu cho 30 ngày: Nên nhập");
-  assert.equal(st({ stock: 100, available: 100, minStock: 5, avgDailySales: 1 }), "ok", "trên định mức, đủ 30 ngày: Đủ hàng");
+  assert.equal(st({ stock: 100, available: 100, minStock: 5, avgDailySales: 1 }), "ok", "trên định mức, đủ 30 ngày: Trên định mức");
   assert.equal(st({ stock: 5, avgDailySales: null }), "no-sales", "không xuất, không dưới định mức");
-  assert.equal(st({ stock: 0, avgDailySales: null, customerOrdered: 3, available: -3 }), "urgent", "hết hàng có đơn đặt");
+  assert.equal(st({ stock: 0, avgDailySales: null, customerOrdered: 3, available: -3 }), "soon", "hết hàng có đơn đặt: Nên nhập");
 
   assert.equal(finishOf("XI_MA"), "XI_MA");
   assert.equal(finishOf(null), "KHAC");
@@ -1150,8 +1150,8 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   ];
 
   const tabs = reorderTabs(rows, ANALYSIS_SETTINGS);
-  assert.deepEqual(tabs.urgent.map((r) => r.code), ["O1", "M1"], "dưới định mức / hết hàng, ít ngày nhất lên đầu");
-  assert.deepEqual(tabs.soon.map((r) => r.code), ["S1", "S2"], "Nên nhập");
+  assert.deepEqual(tabs.urgent.map((r) => r.code), ["M1"], "Dưới định mức");
+  assert.deepEqual(tabs.soon.map((r) => r.code), ["O1", "S1", "S2"], "Nên nhập, ít ngày nhất lên đầu");
   assert.deepEqual(tabs.outWithDemand.map((r) => r.code), ["O1"]);
 
 
