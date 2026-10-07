@@ -42,7 +42,7 @@ export function CreateReceiptButton({ label = "Tạo phiếu nhập" }: Props) {
         warehouseId: defaultWarehouse.id,
         source: "NCC",
       });
-      router.push(`/nhap-kho/${id}`);
+      router.push(`/nhap-hang/${id}`);
     } catch (caught) {
       if (errorCode(caught) === "42501") {
         message.error("Tài khoản không có quyền tạo phiếu nhập. Nhờ quản lý cấp quyền Nhập kho.");

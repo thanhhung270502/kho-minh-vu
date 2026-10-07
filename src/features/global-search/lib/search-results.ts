@@ -18,7 +18,7 @@ export const DOCUMENT_TYPE_LABELS: Record<string, string> = {
 };
 
 const DOCUMENT_BASE: Record<string, string> = {
-  NHAP: "/nhap-kho",
+  NHAP: "/nhap-hang",
   XUAT: "/duyet-don",
   TRA_NCC: "/tra-hang",
   TRA_KHACH: "/tra-hang",

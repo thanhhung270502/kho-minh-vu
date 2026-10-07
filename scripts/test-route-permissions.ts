@@ -52,14 +52,14 @@ const MA_TRAN: Dong[] = [
   // /cai-dat chỉ redirect sang tab đầu tiên theo quyền. UAT Phase 2 bắt được
   // lỗi page này crash vì gọi hàm client từ server — ma trận cũ thiếu đúng nó.
   { route: "/cai-dat", ky_vong: { quanly: "→/cai-dat/nguoi-dung", vanphong: "→/cai-dat/nhan-vien-phu-trach", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
-  { route: "/nhap-kho", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
-  // Cùng quyền xem với /nhap-kho — nút "Tạo đơn" ẩn/hiện là trang trí ở client
+  { route: "/nhap-hang", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
+  // Cùng quyền xem với /nhap-hang — nút "Tạo đơn" ẩn/hiện là trang trí ở client
   // (canCreate), chặn thật nằm ở bốn policy ghi trên don_dat_hang (plan 04-02).
   { route: "/don-dat", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   // Phase 12 (DON-01): bấm Tạo đơn vào thẳng trang tạo đơn — cùng quyền tạo
   // đơn của RLS (quản lý + văn phòng).
   { route: "/don-dat/moi", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
-  // Cùng quyền xem với /nhap-kho và /don-dat — nút "Tạo hóa đơn" ẩn/hiện
+  // Cùng quyền xem với /nhap-hang và /don-dat — nút "Tạo hóa đơn" ẩn/hiện
   // là trang trí ở client (canCreate), chặn thật ở policy ghi trên chung_tu (0016).
   { route: "/duyet-don", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   // Phase 17 (TEN-02): link cũ — redirect next.config chạy TRƯỚC proxy nên khách
@@ -663,8 +663,8 @@ async function main() {
   const idPhieu = await layIdPhieuNhap();
   if (idPhieu) {
     MA_TRAN.push(
-      { route: `/nhap-kho/${idPhieu}`, ky_vong: AI_CUNG_XEM },
-      { route: `/nhap-kho/${idPhieu}/in`, ky_vong: AI_CUNG_XEM },
+      { route: `/nhap-hang/${idPhieu}`, ky_vong: AI_CUNG_XEM },
+      { route: `/nhap-hang/${idPhieu}/in`, ky_vong: AI_CUNG_XEM },
     );
   } else {
     console.warn("⚠ chưa có phiếu nhập nào — bỏ qua 2 route chi tiết");

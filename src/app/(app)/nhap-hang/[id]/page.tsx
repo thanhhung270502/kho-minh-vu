@@ -5,7 +5,7 @@ import { ReceiptDetailView } from "@/features/stock-in/components/receipt-detail
 import { requirePermission } from "@/features/auth/api/current-user.server";
 import { can } from "@/shared/lib/permissions";
 
-export const metadata: Metadata = { title: "Phiếu nhập" };
+export const metadata: Metadata = { title: "Nhập hàng" };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

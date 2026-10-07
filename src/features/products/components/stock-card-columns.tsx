@@ -16,7 +16,7 @@ import { formatNumber } from "../lib/format";
  * Chưa có route: CHUYEN_KHO, DIEU_CHINH — route đến cùng giao diện của chúng khi có.
  */
 const DOC_TYPE_TO_ROUTE: Record<string, string> = {
-  NHAP: "/nhap-kho",
+  NHAP: "/nhap-hang",
   XUAT: "/duyet-don",
   // Cả hai chiều trả hàng dùng chung một trang chi tiết (features/returns).
   TRA_KHACH: "/tra-hang",

@@ -8,7 +8,7 @@ import { canImportDocuments } from "@/features/document-excel/lib/document-acces
 import { PageHeader } from "@/shared/components/page-header";
 import { can } from "@/shared/lib/permissions";
 
-export const metadata: Metadata = { title: "Phiếu nhập" };
+export const metadata: Metadata = { title: "Nhập hàng" };
 
 export default async function StockInPage() {
   const user = await requirePermission("view-catalog");
@@ -16,7 +16,7 @@ export default async function StockInPage() {
   return (
     <>
       <PageHeader
-        title="Phiếu nhập"
+        title="Nhập hàng"
         description="Hàng về kho — ghi sổ xong là tồn tăng và giá vốn tính lại."
       />
 

@@ -104,9 +104,9 @@ export const NAV_ITEMS: NavItem[] = [
     group: "orders",
   },
   {
-    href: "/nhap-kho",
+    href: "/nhap-hang",
     label: "Nhập hàng",
-    shortLabel: "Nhập",
+    shortLabel: "Nhập hàng",
     icon: "stock-in",
     permission: "view-catalog",
     mobilePriority: 3,

@@ -36,7 +36,7 @@ export function ReceiptDetailView({
           <span>
             Không tìm thấy phiếu này, hoặc phiếu không thuộc kho bạn được phân công.
           </span>
-          <Link href="/nhap-kho">
+          <Link href="/nhap-hang">
             <Button size="small">Về danh sách phiếu nhập</Button>
           </Link>
         </div>
@@ -50,7 +50,7 @@ export function ReceiptDetailView({
 
         return (
           <>
-            <Link href="/nhap-kho" className="mb-2 inline-block text-[13px] font-semibold text-chu-phu">
+            <Link href="/nhap-hang" className="mb-2 inline-block text-[13px] font-semibold text-chu-phu">
               ← Phiếu nhập
             </Link>
 
@@ -66,7 +66,7 @@ export function ReceiptDetailView({
               }
               actions={
                 <Space wrap>
-                  <Link href={`/nhap-kho/${id}/in`} target="_blank">
+                  <Link href={`/nhap-hang/${id}/in`} target="_blank">
                     <Button>In phiếu</Button>
                   </Link>
 

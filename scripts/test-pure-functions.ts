@@ -395,7 +395,7 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
   );
   assert.deepEqual(
     primary.map((i) => i.href),
-    ["/duyet-don", "/nhap-kho", "/danh-muc", "/don-dat"],
+    ["/duyet-don", "/nhap-hang", "/danh-muc", "/don-dat"],
     "mất ô Tổng quan thì mục ưu tiên 5 (Đơn đặt) đôn lên lấp đủ 4 ô; Danh sách hàng hóa thay ô Tồn kho",
   );
 }
@@ -1689,7 +1689,7 @@ async function kiemCsvPhanTich() {
   assert.equal(searchResultHref(r("product", "p1")), "/danh-muc/p1");
   assert.equal(searchResultHref(r("order", "o1")), "/don-dat/o1");
   assert.equal(searchResultHref(r("partner", "x", "Liên Hoa")), "/doi-tac?q=Li%C3%AAn%20Hoa");
-  assert.equal(searchResultHref(r("document", "d1", "L", "NHAP")), "/nhap-kho/d1");
+  assert.equal(searchResultHref(r("document", "d1", "L", "NHAP")), "/nhap-hang/d1");
   assert.equal(searchResultHref(r("document", "d1", "L", "XUAT")), "/duyet-don/d1");
   assert.equal(searchResultHref(r("document", "d1", "L", "TRA_NCC")), "/tra-hang/d1");
   assert.equal(searchResultHref(r("document", "d1", "L", "TRA_KHACH")), "/tra-hang/d1");

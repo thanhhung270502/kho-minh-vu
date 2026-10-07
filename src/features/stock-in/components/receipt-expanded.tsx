@@ -99,11 +99,11 @@ export function ReceiptExpanded({ id, permissions }: Props) {
                 ) : null}
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Link href={`/nhap-kho/${id}`}>
+                <Link href={`/nhap-hang/${id}`}>
                   <Button type="primary">Mở phiếu</Button>
                 </Link>
                 <ReturnButton document={receipt} canEdit={permissions.canEdit} />
-                <Link href={`/nhap-kho/${id}/in`} target="_blank">
+                <Link href={`/nhap-hang/${id}/in`} target="_blank">
                   <Button>In phiếu</Button>
                 </Link>
               </div>

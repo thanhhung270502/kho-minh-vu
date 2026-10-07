@@ -26,7 +26,7 @@ const COLUMNS: TableColumnsType<DocumentRow> = [
     width: 150,
     fixed: "left",
     render: (docNo: string, row) => (
-      <Link href={`/nhap-kho/${row.id}`} className="font-mono">
+      <Link href={`/nhap-hang/${row.id}`} className="font-mono">
         {docNo}
       </Link>
     ),

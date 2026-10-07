@@ -112,7 +112,7 @@ function buildItems(kpis: OverviewKpis, counts: Counts): Item[] {
       cta: "Ghi sổ",
       href:
         kpis.pendingReceipts > 0
-          ? "/nhap-kho?trang_thai=NHAP_LIEU"
+          ? "/nhap-hang?trang_thai=NHAP_LIEU"
           : "/duyet-don?trang_thai=NHAP_LIEU",
     },
   );
