@@ -15,7 +15,7 @@ export const SETTINGS_TABS: SettingsTab[] = [
   { duongDan: "/cai-dat/chuc-vu", label: "Chức vụ", quyen: "manage-users" },
   { duongDan: "/cai-dat/kho", label: "Kho", quyen: "manage-warehouses" },
   { duongDan: "/cai-dat/nhan-vien-phu-trach", label: "Nhân viên phụ trách", quyen: "tao_nhan_vien" },
-  { duongDan: "/cai-dat/so-chung-tu", label: "Số chứng từ", quyen: "manage-doc-numbering" },
+  // Tab "Số chứng từ" (/cai-dat/so-chung-tu) đã ẩn — trang vẫn còn, vào bằng đường dẫn.
 ];
 
 export function tabsFor(user: PermissionSubject): SettingsTab[] {
