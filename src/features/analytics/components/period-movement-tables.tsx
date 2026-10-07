@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Segmented, Tag } from "antd";
+import { Card, Segmented } from "antd";
 import type { TableColumnsType } from "antd";
 import { useMemo, useState } from "react";
 
@@ -9,6 +9,12 @@ import type { PeriodRow } from "../types";
 import { BarValue, CompactTable, Highlights, ProductCode, fmt, rankColumn } from "./ranking-parts";
 
 type Direction = "up" | "down";
+
+/** Số ngày tồn còn đủ xuất: từ 1 năm trở lên ghi theo năm cho dễ đọc. */
+function coverLabel(days: number): string {
+  if (days >= 365) return `~${(days / 365).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} năm`;
+  return `~${fmt(days)} ngày`;
+}
 
 /** Mã tăng / giảm mạnh nhất so với kỳ trước (theo chênh lệch số lượng). */
 export function MoversTable({ rows, limit }: { rows: PeriodRow[]; limit: number }) {
@@ -106,14 +112,18 @@ export function SlowStockTable({ rows, days, limit }: { rows: PeriodRow[]; days:
         />
       ),
     },
-    {
-      title: "Đủ xuất",
-      key: "cover",
-      width: 110,
-      align: "right",
-      render: (_: unknown, s) =>
-        s.coverDays === null ? <Tag className="m-0">Không xuất</Tag> : `~${fmt(s.coverDays)} ngày`,
-    },
+    // Tab "Không xuất": mọi dòng đều không xuất — cột này chỉ lặp lại chữ đó, bỏ đi.
+    ...(kind === "overstock"
+      ? [
+          {
+            title: "Tồn đủ xuất trong",
+            key: "cover",
+            width: 130,
+            align: "right" as const,
+            render: (_: unknown, s: SlowRow) => (s.coverDays === null ? "—" : coverLabel(s.coverDays)),
+          },
+        ]
+      : []),
   ];
 
   return (
