@@ -43,6 +43,9 @@ export type OrderDetail = {
   createdAt: string;
   /** Hóa đơn (XUAT chưa hủy) sinh khi Hoàn thành đơn — tối đa một (0078). */
   invoice: { id: string; number: string } | null;
+  /** Người bấm Xác nhận đơn gần nhất (0115); null nếu chưa xác nhận / xác nhận trước 0115. */
+  approvedByName: string | null;
+  approvedAt: string | null;
 };
 
 export type OrderLine = {
@@ -105,6 +108,8 @@ export function toOrderDetail(row: OrderDetailDb): OrderDetail {
     createdAt: row.created_at,
     // RPC trả null khi chưa có hóa đơn dù type sinh tự động khai `string`.
     invoice: row.hoa_don_id ? { id: row.hoa_don_id, number: row.so_hoa_don } : null,
+    approvedByName: row.ho_ten_nguoi_xac_nhan,
+    approvedAt: row.ngay_xac_nhan,
   };
 }
 

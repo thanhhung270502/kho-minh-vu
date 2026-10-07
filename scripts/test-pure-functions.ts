@@ -732,6 +732,7 @@ const internalOrderDetail = toOrderDetail({
   ghi_chu: null as unknown as string, tong_so_luong_dat: 0, tong_so_luong_da_xuat: 0,
   ho_ten_nguoi_tao: "Văn phòng", created_at: "2026-10-01T00:00:00Z",
   hoa_don_id: null as unknown as string, so_hoa_don: null as unknown as string,
+  ho_ten_nguoi_xac_nhan: null as unknown as string, ngay_xac_nhan: null as unknown as string,
 });
 // Phase 12 (DON-06): chi_tiet_don mang hóa đơn của đơn; chưa có thì null.
 assert.equal(internalOrderDetail.invoice, null, "đơn chưa hoàn thành: không có hóa đơn");
@@ -743,6 +744,7 @@ assert.deepEqual(
     ghi_chu: null as unknown as string, tong_so_luong_dat: 3, tong_so_luong_da_xuat: 3,
     ho_ten_nguoi_tao: "Văn phòng", created_at: "2026-10-01T00:00:00Z",
     hoa_don_id: "ct-9", so_hoa_don: "PX26-000009",
+    ho_ten_nguoi_xac_nhan: "Quản lý", ngay_xac_nhan: "2026-10-03T08:00:00Z",
   }).invoice,
   { id: "ct-9", number: "PX26-000009" },
   "đơn hoàn thành: link sang hóa đơn",
@@ -800,6 +802,7 @@ assert.equal(
     ghi_chu: null as unknown as string, tong_so_luong_dat: 0, tong_so_luong_da_xuat: 0,
     ho_ten_nguoi_tao: "Văn phòng", created_at: "2026-10-01T00:00:00Z",
     hoa_don_id: null as unknown as string, so_hoa_don: null as unknown as string,
+    ho_ten_nguoi_xac_nhan: null as unknown as string, ngay_xac_nhan: null as unknown as string,
   }).recipients.partner?.code,
   "KH01",
 );
@@ -872,7 +875,7 @@ const internalIssue = toDocumentDetail({
   don_dat_hang_id: "dh-1", so_dh: "DH26-000002", chung_tu_goc_id: null as unknown as string,
   so_ct_goc: null as unknown as string, ly_do_xuat_am: null as unknown as string,
   ghi_chu_ly_do: null as unknown as string, nguoi_duyet_id: null as unknown as string,
-  nguoi_nhan_ids: ["nd-1"], ten_nguoi_nhan: ["Thủ kho K1"], ho_ten_nguoi_duyet: "Quản lý",
+  nguoi_nhan_ids: ["nd-1"], ten_nguoi_nhan: ["Thủ kho K1"], ho_ten_nguoi_duyet: "Quản lý", ho_ten_nguoi_xac_nhan_don: "Quản lý",
 });
 assert.deepEqual(internalIssue.staffRecipients, [{ id: "nd-1", name: "Thủ kho K1" }]);
 assert.deepEqual(toDocumentUpdate({ note: "x" }), { ghi_chu: "x" });

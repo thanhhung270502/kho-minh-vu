@@ -55,8 +55,13 @@ export function OrderExpanded({ id, permissions }: Props) {
               </StatusDot>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
               <Field label="Người tạo">{order.createdByName ?? "—"}</Field>
+              <Field label="Người xác nhận">
+                {order.approvedByName
+                  ? `${order.approvedByName}${order.approvedAt ? ` · ${dayjs(order.approvedAt).format("HH:mm DD/MM")}` : ""}`
+                  : "—"}
+              </Field>
               <Field label="Ngày đơn">{dayjs(order.orderDate).format("DD/MM/YYYY")}</Field>
               <Field label="Tiến độ">
                 <OrderProgress shipped={order.shippedQuantity} ordered={order.orderedQuantity} />

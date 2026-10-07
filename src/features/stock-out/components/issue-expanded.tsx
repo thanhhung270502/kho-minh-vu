@@ -48,7 +48,8 @@ export function IssueExpanded({ id, permissions }: Props) {
         const editable = issue.status === "NHAP_LIEU" && permissions.canEdit;
         const recipients = formatOrderRecipients(issueRecipients(issue));
         // Hóa đơn nạp từ KiotViet ghi "Người bán: X" — đó là người duyệt đơn. Hóa đơn hệ mới
-        // không lưu ai xác nhận đơn nên lấy người ghi sổ (người bấm Hoàn thành đơn).
+        // lấy người xác nhận đơn gốc (0115); đơn xác nhận trước 0115 không lưu người duyệt
+        // nên lùi về người ghi sổ (người bấm Hoàn thành đơn).
         const note = splitNoteSegment(issue.note, "Người bán");
         const all = lines.data ?? [];
 
@@ -63,7 +64,7 @@ export function IssueExpanded({ id, permissions }: Props) {
 
             <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
               <Field label="Người tạo">{issue.createdByName ?? "—"}</Field>
-              <Field label="Người duyệt đơn">{note.value ?? issue.approvedByName ?? "—"}</Field>
+              <Field label="Người duyệt đơn">{note.value ?? issue.orderApprovedByName ?? issue.approvedByName ?? "—"}</Field>
               <Field label="Đơn gốc">
                 {issue.orderId ? (
                   <Link href={`/don-dat/${issue.orderId}`} className="font-mono">
