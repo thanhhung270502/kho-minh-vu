@@ -16,6 +16,7 @@ import {
   formatQuantity,
 } from "@/shared/components/quick-view";
 import { StatusDot } from "@/shared/components/status-dot";
+import { joinNoteSegment, splitNoteSegment } from "@/shared/lib/note-segment";
 import { formatOrderRecipients } from "@/shared/lib/recipient";
 
 import { useIssueDetail, useIssueLines, useUpdateIssueHeader } from "../hooks/useIssues";
@@ -46,6 +47,10 @@ export function IssueExpanded({ id, permissions }: Props) {
         if (!issue) return null;
         const editable = issue.status === "NHAP_LIEU" && permissions.canEdit;
         const recipients = formatOrderRecipients(issueRecipients(issue));
+        // Hóa đơn nạp từ KiotViet ghi "Người bán: X" — đó là người duyệt đơn. Hóa đơn hệ mới
+        // không lưu ai xác nhận đơn nên lấy người ghi sổ (người bấm Hoàn thành đơn).
+        const note = splitNoteSegment(issue.note, "Người bán");
+        const all = lines.data ?? [];
 
         return (
           <QuickViewFrame>
@@ -58,7 +63,7 @@ export function IssueExpanded({ id, permissions }: Props) {
 
             <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
               <Field label="Người tạo">{issue.createdByName ?? "—"}</Field>
-              <Field label="Người nhận">{recipients === "—" ? "Chưa chọn" : recipients}</Field>
+              <Field label="Người duyệt đơn">{note.value ?? issue.approvedByName ?? "—"}</Field>
               <Field label="Đơn gốc">
                 {issue.orderId ? (
                   <Link href={`/don-dat/${issue.orderId}`} className="font-mono">
@@ -79,13 +84,6 @@ export function IssueExpanded({ id, permissions }: Props) {
                 <QuickViewLineTable<IssueLine>
                   lines={all}
                   quantityColumns={[
-                    {
-                      title: "Người nhận",
-                      dataIndex: "recipientName",
-                      width: 140,
-                      ellipsis: true,
-                      render: (name: string | null) => name ?? <span className="text-chu-phu">Chung</span>,
-                    },
                     { title: "Số lượng", dataIndex: "quantity", width: 110, align: "right", render: formatQuantity },
                   ]}
                 />
@@ -93,9 +91,14 @@ export function IssueExpanded({ id, permissions }: Props) {
             </QueryState>
 
             <QuickViewNote
-              value={issue.note ?? ""}
+              value={note.rest}
               editable={editable}
-              onSave={(note) => update.mutateAsync({ note })}
+              onSave={(text) => update.mutateAsync({ note: joinNoteSegment(text, note.segment) })}
+              summary={[
+                { label: "Số dòng", value: formatQuantity(all.length) },
+                { label: "Tổng số lượng", value: formatQuantity(all.reduce((s, l) => s + Number(l.quantity), 0)) },
+                { label: "Người nhận", value: recipients === "—" ? "Chưa chọn" : recipients },
+              ]}
             />
 
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-vien pt-3">

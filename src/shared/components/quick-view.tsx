@@ -26,8 +26,46 @@ export function QuickViewField({ label, children }: { label: string; children: R
   );
 }
 
-/** Ghi chú lưu khi rời ô. Chỉ sửa được khi chứng từ còn nháp / tạm và người dùng có quyền. */
+export type QuickViewSummaryItem = { label: string; value: ReactNode };
+
+/** Tóm tắt cạnh ô ghi chú: số dòng, tổng số lượng, người nhận… */
+export function QuickViewSummary({ items }: { items: QuickViewSummaryItem[] }) {
+  return (
+    <dl className="m-0 grid min-w-64 grid-cols-[auto_1fr] content-start gap-x-6 gap-y-1.5 text-[13.5px]">
+      {items.map((item) => (
+        <div key={item.label} className="contents">
+          <dt className="text-chu-phu">{item.label}</dt>
+          <dd className="m-0 text-right font-semibold tabular-nums">{item.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
+/**
+ * Ghi chú lưu khi rời ô, tóm tắt (nếu có) nằm bên phải. Chỉ sửa được khi chứng từ còn
+ * nháp / tạm và người dùng có quyền.
+ */
 export function QuickViewNote({
+  value,
+  editable,
+  onSave,
+  summary,
+}: {
+  value: string;
+  editable: boolean;
+  onSave: (note: string | null) => Promise<void>;
+  summary?: QuickViewSummaryItem[];
+}) {
+  return (
+    <div className="flex flex-wrap items-start justify-between gap-4">
+      <NoteInput value={value} editable={editable} onSave={onSave} />
+      {summary ? <QuickViewSummary items={summary} /> : null}
+    </div>
+  );
+}
+
+function NoteInput({
   value,
   editable,
   onSave,
@@ -40,7 +78,7 @@ export function QuickViewNote({
   return (
     <Input.TextArea
       key={value}
-      className="max-w-2xl"
+      className="max-w-2xl flex-1 basis-80"
       autoSize={{ minRows: 3, maxRows: 6 }}
       placeholder={editable ? "Ghi chú…" : "Không có ghi chú"}
       defaultValue={value}

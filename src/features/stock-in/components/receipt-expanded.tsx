@@ -15,25 +15,11 @@ import {
   formatQuantity,
 } from "@/shared/components/quick-view";
 import { StatusDot } from "@/shared/components/status-dot";
+import { joinNoteSegment, splitNoteSegment } from "@/shared/lib/note-segment";
 
 import { useReceiptDetail, useReceiptLines, useUpdateReceiptHeader } from "../hooks/useReceipts";
 import { DOC_STATUS_LABELS, DOC_STATUS_TONES, type DocumentLine, type ReceiptPermissions } from "../types";
 import { VoidReceiptDialog } from "./void-receipt-dialog";
-
-// Phiếu nạp từ KiotViet ghi người nhập vào ghi chú ("… · Người nhập: X"). Tách ra để
-// hiện ở ô "Người nhập" và không lặp lại trong ghi chú; phiếu tạo trên hệ mới thì người
-// nhập là người ghi sổ.
-const RECEIVER_IN_NOTE = /(?:\s*·\s*)?Người nhập:\s*([^\n·]+)/;
-
-function splitNote(note: string | null): { receiver: string | null; segment: string; rest: string } {
-  const match = note?.match(RECEIVER_IN_NOTE);
-  if (!note || !match) return { receiver: null, segment: "", rest: note ?? "" };
-  return {
-    receiver: match[1]?.trim() || null,
-    segment: match[0].replace(/^\s*·\s*/, ""),
-    rest: note.replace(match[0], "").replace(/^\s*·\s*/, "").trim(),
-  };
-}
 
 type Props = { id: string; permissions: ReceiptPermissions };
 
@@ -58,7 +44,10 @@ export function ReceiptExpanded({ id, permissions }: Props) {
       {(receipt) => {
         if (!receipt) return null;
         const editable = receipt.status === "NHAP_LIEU" && permissions.canEdit;
-        const note = splitNote(receipt.note);
+        // Phiếu nạp từ KiotViet ghi "Người nhập: X" trong ghi chú; phiếu tạo trên hệ mới
+        // thì người nhập là người ghi sổ.
+        const note = splitNoteSegment(receipt.note, "Người nhập");
+        const all = lines.data ?? [];
 
         return (
           <QuickViewFrame>
@@ -71,7 +60,7 @@ export function ReceiptExpanded({ id, permissions }: Props) {
 
             <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
               <Field label="Người tạo">{receipt.createdByName ?? "—"}</Field>
-              <Field label="Người nhập">{note.receiver ?? receipt.approvedByName ?? "—"}</Field>
+              <Field label="Người nhập">{note.value ?? receipt.approvedByName ?? "—"}</Field>
               <Field label="Nhà cung cấp">{receipt.partnerName ?? "Chưa chọn"}</Field>
               <Field label="Ngày nhập">{dayjs(receipt.docDate).format("DD/MM/YYYY")}</Field>
               <Field label="Ghi sổ lúc">
@@ -94,7 +83,11 @@ export function ReceiptExpanded({ id, permissions }: Props) {
               value={note.rest}
               editable={editable}
               // Giữ lại phần "Người nhập: X" đã tách ra khỏi ô.
-              onSave={(text) => update.mutateAsync({ note: [text, note.segment].filter(Boolean).join(" · ") || null })}
+              onSave={(text) => update.mutateAsync({ note: joinNoteSegment(text, note.segment) })}
+              summary={[
+                { label: "Số dòng", value: formatQuantity(all.length) },
+                { label: "Tổng số lượng", value: formatQuantity(all.reduce((s, l) => s + Number(l.quantity), 0)) },
+              ]}
             />
 
             <div className="flex flex-wrap items-center justify-between gap-2 border-t border-vien pt-3">

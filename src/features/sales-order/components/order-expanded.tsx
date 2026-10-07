@@ -44,6 +44,7 @@ export function OrderExpanded({ id, permissions }: Props) {
         if (!order) return null;
         const editable = order.status === "TAM" && permissions.canEdit;
         const recipients = formatOrderRecipients(order.recipients);
+        const all = lines.data ?? [];
 
         return (
           <QuickViewFrame>
@@ -54,9 +55,8 @@ export function OrderExpanded({ id, permissions }: Props) {
               </StatusDot>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
               <Field label="Người tạo">{order.createdByName ?? "—"}</Field>
-              <Field label="Người nhận">{recipients === "—" ? "Chưa chọn" : recipients}</Field>
               <Field label="Ngày đơn">{dayjs(order.orderDate).format("DD/MM/YYYY")}</Field>
               <Field label="Tiến độ">
                 <OrderProgress shipped={order.shippedQuantity} ordered={order.orderedQuantity} />
@@ -95,13 +95,20 @@ export function OrderExpanded({ id, permissions }: Props) {
               value={order.note ?? ""}
               editable={editable}
               onSave={(note) => update.mutateAsync({ note })}
+              summary={[
+                { label: "Số dòng", value: formatQuantity(all.length) },
+                { label: "Tổng số lượng đặt", value: formatQuantity(order.orderedQuantity) },
+                { label: "Đã giao", value: formatQuantity(order.shippedQuantity) },
+                // formatOrderRecipients đã trả "Chưa chọn người nhận" khi đơn trống người nhận.
+                { label: "Người nhận", value: recipients },
+              ]}
             />
 
             <div className="flex flex-wrap items-center justify-end gap-2 border-t border-vien pt-3">
               <Link href={`/don-dat/${id}`}>
                 <Button type="primary">Mở đơn</Button>
               </Link>
-              <OrderActions orderId={id} order={order} lines={lines.data ?? []} permissions={permissions} />
+              <OrderActions orderId={id} order={order} lines={all} permissions={permissions} />
             </div>
           </QuickViewFrame>
         );
