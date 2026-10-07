@@ -410,7 +410,7 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
   const entries = buildNavEntries(filterNavItems(as("quan_ly"), NAV_ITEMS));
   assert.deepEqual(
     entries.map((e) => e.label),
-    ["Tổng quan", "Đơn hàng", "Nhập kho", "Hàng hóa", "Đối tác", "Phân tích", "Cài đặt"],
+    ["Tổng quan", "Đơn hàng", "Nhập hàng", "Hàng hóa", "Đối tác", "Phân tích", "Cài đặt"],
     "thứ tự menu cấp 1 của quản lý (Phase 13 thêm Phân tích)",
   );
   const groupHrefs = (label: string) => {
@@ -434,7 +434,7 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
   const chiXem = buildNavEntries(filterNavItems(as("chi_xem"), NAV_ITEMS));
   assert.deepEqual(
     chiXem.map((e) => e.label),
-    ["Đơn hàng", "Nhập kho", "Hàng hóa", "Đối tác"],
+    ["Đơn hàng", "Nhập hàng", "Hàng hóa", "Đối tác"],
     "chỉ xem không có Tổng quan, Cài đặt",
   );
   assert.ok(

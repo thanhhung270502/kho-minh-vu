@@ -97,7 +97,7 @@ export function kindCodeMismatch(kind: PartnerFormKind, code: string | null): st
 
 /** Khóa là giá trị enum `loai_ct` trong database. */
 const DOC_TYPE_LABELS: Record<string, string> = {
-  NHAP: "Nhập kho",
+  NHAP: "Nhập hàng",
   XUAT: "Hóa đơn",
   TRA_NCC: "Trả NCC",
   TRA_KHACH: "Khách trả",
