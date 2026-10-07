@@ -13,11 +13,11 @@ import { buildReorderCsv, reorderTabs, suggestedOrder } from "../lib/analysis";
 import { FINISH_LABELS, type AnalysisRow, type AnalysisSettings, type FinishType } from "../types";
 import { StatusTag, formatQty } from "./status-tag";
 
-type TabKey = "soon" | "outWithDemand" | "later";
+type TabKey = "urgent" | "soon" | "outWithDemand";
 
-/** Bảng "Danh sách cần nhập hàng" — 3 tab, tìm mã; Xuất Excel: mã, tên, số lượng cần nhập. */
+/** Bảng "Danh sách cần nhập hàng" — tab theo trạng thái định mức, tìm mã; Xuất Excel: mã, tên, số lượng cần nhập. */
 export function ReorderTable({ rows, settings }: { rows: AnalysisRow[]; settings: AnalysisSettings }) {
-  const [tab, setTab] = useState<TabKey>("soon");
+  const [tab, setTab] = useState<TabKey>("urgent");
   const [query, setQuery] = useState("");
 
   const tabs = useMemo(() => reorderTabs(rows, settings), [rows, settings]);
@@ -47,7 +47,8 @@ export function ReorderTable({ rows, settings }: { rows: AnalysisRow[]; settings
     { title: "Loại", dataIndex: "finish", width: 80, render: (f: FinishType) => FINISH_LABELS[f] },
     { title: "Tồn", dataIndex: "stock", width: 80, align: "right", render: (n: number) => formatQty(n) },
     { title: "Đơn đặt", dataIndex: "customerOrdered", width: 90, align: "right", render: (n: number) => formatQty(n) },
-    { title: "Bán TB/ngày", dataIndex: "avgDailySales", width: 100, align: "right", render: (n: number | null) => formatQty(n, 2) },
+    { title: "Định mức", dataIndex: "minStock", width: 90, align: "right", render: (n: number) => (n > 0 ? formatQty(n) : "—") },
+    { title: "Xuất TB/ngày", dataIndex: "avgDailySales", width: 100, align: "right", render: (n: number | null) => formatQty(n, 2) },
     { title: "Còn (ngày)", dataIndex: "daysOfCover", width: 90, align: "right", render: (n: number | null) => formatQty(n, 1) },
     {
       title: `Đề nghị nhập (${settings.coverDays} ngày)`,
@@ -66,7 +67,7 @@ export function ReorderTable({ rows, settings }: { rows: AnalysisRow[]; settings
         size="small"
         columns={columns}
         dataSource={filter(list)}
-        scroll={{ x: 1100 }}
+        scroll={{ x: 1190 }}
         pagination={{ pageSize: 50, showSizeChanger: false, hideOnSinglePage: true }}
         locale={{ emptyText: "Không có mã nào trong nhóm này." }}
       />
@@ -94,15 +95,12 @@ export function ReorderTable({ rows, settings }: { rows: AnalysisRow[]; settings
       }
     >
       <Tabs
-        activeKey={tab === "later" && settings.yellowDays >= 30 ? "soon" : tab}
+        activeKey={tab}
         onChange={(k) => setTab(k as TabKey)}
         items={[
-          { key: "soon", label: `Sắp hết ≤ ${settings.yellowDays} ngày (${tabs.soon.length})`, children: table(tabs.soon) },
+          { key: "urgent", label: `Cần nhập ngay (${tabs.urgent.length})`, children: table(tabs.urgent) },
+          { key: "soon", label: `Nên nhập (${tabs.soon.length})`, children: table(tabs.soon) },
           { key: "outWithDemand", label: `Đã hết, có khách mua (${tabs.outWithDemand.length})`, children: table(tabs.outWithDemand) },
-          // Ngưỡng vàng >= 30: khoảng "X+1–30" rỗng, ẩn tab (không hiện "31–30 ngày").
-          ...(settings.yellowDays < 30
-            ? [{ key: "later", label: `Còn ${settings.yellowDays + 1}–30 ngày (${tabs.later.length})`, children: table(tabs.later) }]
-            : []),
         ]}
       />
     </Card>

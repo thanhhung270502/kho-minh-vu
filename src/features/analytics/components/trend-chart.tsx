@@ -10,7 +10,7 @@ import type { FlowPoint } from "../types";
 import { ChangePill } from "./stat-card";
 
 type Metric = "sold" | "received";
-const METRIC_LABELS: Record<Metric, string> = { sold: "Xuất bán", received: "Nhập hàng" };
+const METRIC_LABELS: Record<Metric, string> = { sold: "Xuất hàng", received: "Nhập hàng" };
 const COLORS: Record<Metric, string> = { sold: "#2f54eb", received: "#13a8a8" };
 const STEP_TEXT: Record<SeriesStep, string> = { ngay: "theo ngày", tuan: "theo tuần", thang: "theo tháng" };
 
@@ -21,7 +21,7 @@ type Props = {
   previous: Record<Metric, number>;
 };
 
-/** "Xuất bán theo thời gian" — đường mềm có tô nền, tổng kỳ + % so kỳ trước ở đầu thẻ. */
+/** "Xuất hàng theo thời gian" — đường mềm có tô nền, tổng kỳ + % so kỳ trước ở đầu thẻ. */
 export function TrendChart({ points, step, previous }: Props) {
   const [metric, setMetric] = useState<Metric>("sold");
   const data = points.map((p) => ({ label: stepLabel(step, p.date), value: p[metric] }));

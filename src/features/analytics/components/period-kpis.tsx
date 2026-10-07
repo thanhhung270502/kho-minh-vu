@@ -19,7 +19,7 @@ export function PeriodKpiCards({ kpis, reorder }: Props) {
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
       <StatCard
         icon={<ShoppingCartOutlined />}
-        label="Xuất bán"
+        label="Xuất hàng"
         value={n(kpis.sold)}
         change={<ChangePill ratio={changeRatio(kpis.sold, kpis.soldPrev)} previous={n(kpis.soldPrev)} />}
         footnote={`${n(kpis.invoiceCount)} hóa đơn`}
@@ -33,7 +33,7 @@ export function PeriodKpiCards({ kpis, reorder }: Props) {
       />
       <StatCard
         icon={<AppstoreOutlined />}
-        label="Mã có bán"
+        label="Mã có xuất"
         value={n(kpis.sellingProducts)}
         change={<ChangePill ratio={changeRatio(kpis.sellingProducts, kpis.sellingProductsPrev)} previous={n(kpis.sellingProductsPrev)} />}
         footnote="số mã có hóa đơn trong kỳ"

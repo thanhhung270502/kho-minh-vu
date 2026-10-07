@@ -6,12 +6,10 @@ import { STOCK_STATUS_LABELS, stockStatus, type StockStatus } from "../lib/analy
 import type { AnalysisRow, AnalysisSettings } from "../types";
 
 const COLORS: Record<StockStatus, string> = {
-  out: "#a8071a",
   urgent: "red",
-  soon: "gold",
+  soon: "orange",
   ok: "green",
   "no-sales": "default",
-  stopped: "default",
 };
 
 export function StatusTag({ row, settings }: { row: AnalysisRow; settings: AnalysisSettings }) {

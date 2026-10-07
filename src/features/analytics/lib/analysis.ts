@@ -7,34 +7,40 @@ import { finishFromStageCode, type AnalysisRow, type AnalysisSettings } from "..
 
 export const finishOf = finishFromStageCode;
 
-/** Đề nghị nhập = ⌈ADU × Y − khả dụng⌉, âm thì 0; mã không bán không đề nghị. */
+/**
+ * Đề nghị nhập = đủ xuất Y ngày (⌈ADU × Y − khả dụng⌉) nhưng KHÔNG ÍT HƠN phần
+ * thiếu so với định mức (định mức − khả dụng). Âm thì 0. Mã không xuất trong kỳ
+ * chỉ đề nghị bù định mức.
+ */
 export function suggestedOrder(row: AnalysisRow, coverDays: number): number {
-  if (row.avgDailySales === null) return 0;
-  return Math.max(0, Math.ceil(row.avgDailySales * coverDays - row.available));
+  const toMinimum = row.minStock - row.available;
+  const toCover = row.avgDailySales === null ? 0 : row.avgDailySales * coverDays - row.available;
+  return Math.max(0, Math.ceil(Math.max(toMinimum, toCover)));
 }
 
-export type StockStatus = "out" | "urgent" | "soon" | "ok" | "no-sales" | "stopped";
+export type StockStatus = "urgent" | "soon" | "ok" | "no-sales";
 
 export const STOCK_STATUS_LABELS: Record<StockStatus, string> = {
-  out: "Hết hàng",
   urgent: "Cần nhập ngay",
-  soon: "Chuẩn bị nhập",
+  soon: "Nên nhập",
   ok: "Đủ hàng",
-  "no-sales": "Không bán",
-  stopped: "Ngừng bán?",
+  "no-sales": "Không xuất",
 };
 
 /**
- * Tồn <= 0 luôn "Hết hàng" (đỏ đậm). Mã không bán trong kỳ: còn tồn là "Không
- * bán" (tồn chậm), hết tồn là "Ngừng bán?" — cả hai không có đề nghị nhập.
+ * Theo định mức (Phân tích › Định mức):
+ * - Cần nhập ngay (đỏ): tồn dưới định mức, hoặc đã hết mà vẫn có xuất / đơn đặt.
+ * - Nên nhập (cam): còn trên định mức nhưng theo tốc độ xuất sẽ thiếu trong Y ngày
+ *   dự trữ (đề nghị nhập > 0).
+ * - Đủ hàng (xanh): trên định mức và đủ xuất Y ngày.
+ * - Không xuất: không xuất, không đơn đặt trong kỳ và không dưới định mức.
  */
 export function stockStatus(row: AnalysisRow, settings: AnalysisSettings): StockStatus {
-  if (row.avgDailySales === null) return row.stock > 0 ? "no-sales" : "stopped";
-  if (row.stock <= 0) return "out";
-  const cover = row.daysOfCover ?? 0;
-  if (cover <= settings.redDays) return "urgent";
-  if (cover <= settings.yellowDays) return "soon";
-  return "ok";
+  if (row.stock < row.minStock) return "urgent";
+  const hasDemand = row.avgDailySales !== null || row.customerOrdered > 0;
+  if (!hasDemand) return "no-sales";
+  if (row.stock <= 0) return "urgent";
+  return suggestedOrder(row, settings.coverDays) > 0 ? "soon" : "ok";
 }
 
 const byCover = (a: AnalysisRow, b: AnalysisRow) =>
@@ -42,15 +48,13 @@ const byCover = (a: AnalysisRow, b: AnalysisRow) =>
 const bySoldDesc = (a: AnalysisRow, b: AnalysisRow) =>
   b.soldInPeriod - a.soldInPeriod || a.code.localeCompare(b.code);
 
-/** Ba tab bảng "Cần nhập hàng". */
+/** Ba tab bảng "Cần nhập hàng" — theo trạng thái định mức. */
 export function reorderTabs(rows: AnalysisRow[], settings: AnalysisSettings) {
   const status = (r: AnalysisRow) => stockStatus(r, settings);
   return {
-    soon: rows.filter((r) => status(r) === "urgent" || status(r) === "soon").sort(byCover),
+    urgent: rows.filter((r) => status(r) === "urgent").sort(byCover),
+    soon: rows.filter((r) => status(r) === "soon").sort(byCover),
     outWithDemand: rows.filter((r) => r.stock <= 0 && r.soldInPeriod > 0).sort(bySoldDesc),
-    later: rows
-      .filter((r) => status(r) === "ok" && (r.daysOfCover ?? 0) <= 30)
-      .sort(byCover),
   };
 }
 

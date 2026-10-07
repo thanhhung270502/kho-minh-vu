@@ -1124,34 +1124,35 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   // Ví dụ kiểm chứng trong spec Notion: tồn 1, bán 59 trong 27 ngày -> ⌈2,19 × 30 − 1⌉ = 65.
   assert.equal(suggestedOrder(arow({ available: 1, avgDailySales: 59 / 27 }), 30), 65, "đề nghị nhập ví dụ RWT = 65");
   assert.equal(suggestedOrder(arow({ available: 500, avgDailySales: 1 }), 30), 0, "đủ hàng: đề nghị 0, không âm");
-  assert.equal(suggestedOrder(arow({ available: 0, avgDailySales: null }), 30), 0, "không bán: không đề nghị nhập");
+  assert.equal(suggestedOrder(arow({ available: 0, avgDailySales: null }), 30), 0, "không xuất, không định mức: không đề nghị");
+  assert.equal(suggestedOrder(arow({ available: 2, avgDailySales: null, minStock: 10 }), 30), 8, "không xuất: bù đủ định mức");
+  assert.equal(suggestedOrder(arow({ available: 5, avgDailySales: 0.1, minStock: 20 }), 30), 15, "định mức lớn hơn nhu cầu 30 ngày");
 
+  // Trạng thái theo định mức (stock 10, minStock 0 mặc định).
   const st = (o: Partial<AnalysisRow>) => stockStatus(arow(o), ANALYSIS_SETTINGS);
-  assert.equal(st({ stock: 0, avgDailySales: 2, daysOfCover: 0 }), "out", "tồn <= 0 luôn Hết hàng");
-  assert.equal(st({ stock: 5, avgDailySales: 1, daysOfCover: 7 }), "urgent", "<= ngưỡng đỏ");
-  assert.equal(st({ stock: 5, avgDailySales: 1, daysOfCover: 14 }), "soon", "<= ngưỡng vàng");
-  assert.equal(st({ stock: 5, avgDailySales: 1, daysOfCover: 15 }), "ok", "trên ngưỡng vàng");
-  assert.equal(st({ stock: 5, avgDailySales: null }), "no-sales", "còn tồn, không bán: Không bán");
-  assert.equal(st({ stock: 0, avgDailySales: null }), "stopped", "hết tồn, không bán: Ngừng bán?");
+  assert.equal(st({ stock: 5, available: 5, minStock: 8, avgDailySales: null }), "urgent", "dưới định mức: Cần nhập ngay");
+  assert.equal(st({ stock: 0, available: 0, avgDailySales: 2 }), "urgent", "hết hàng mà có xuất: Cần nhập ngay");
+  assert.equal(st({ stock: 10, available: 10, minStock: 5, avgDailySales: 1 }), "soon", "trên định mức, thiếu cho 30 ngày: Nên nhập");
+  assert.equal(st({ stock: 100, available: 100, minStock: 5, avgDailySales: 1 }), "ok", "trên định mức, đủ 30 ngày: Đủ hàng");
+  assert.equal(st({ stock: 5, avgDailySales: null }), "no-sales", "không xuất, không dưới định mức");
+  assert.equal(st({ stock: 0, avgDailySales: null, customerOrdered: 3, available: -3 }), "urgent", "hết hàng có đơn đặt");
 
   assert.equal(finishOf("XI_MA"), "XI_MA");
   assert.equal(finishOf(null), "KHAC");
 
   const rows = [
-    arow({ code: "S1", stock: 5, avgDailySales: 1, daysOfCover: 5, soldInPeriod: 30, categoryId: "g1" }),
-    arow({ code: "S2", stock: 10, avgDailySales: 1, daysOfCover: 10, soldInPeriod: 30, categoryId: "g1" }),
-    arow({ code: "L1", stock: 20, avgDailySales: 1, daysOfCover: 20, soldInPeriod: 30, categoryId: "g2", categoryName: "Nhóm 2" }),
-    arow({ code: "O1", stock: 0, avgDailySales: 2, daysOfCover: 0, soldInPeriod: 60, categoryId: "g2", categoryName: "Nhóm 2" }),
-    arow({ code: "O2", stock: -3, avgDailySales: null, soldInPeriod: 0 }),
+    arow({ code: "M1", stock: 3, available: 3, minStock: 10, avgDailySales: 1, daysOfCover: 3, soldInPeriod: 30 }),
+    arow({ code: "S1", stock: 5, available: 5, avgDailySales: 1, daysOfCover: 5, soldInPeriod: 30 }),
+    arow({ code: "S2", stock: 10, available: 10, avgDailySales: 1, daysOfCover: 10, soldInPeriod: 30 }),
+    arow({ code: "O1", stock: 0, available: 0, avgDailySales: 2, daysOfCover: 0, soldInPeriod: 60 }),
     arow({ code: "N1", stock: 40, avgDailySales: null, soldInPeriod: 0 }),
-    arow({ code: "N2", stock: 70, avgDailySales: null, soldInPeriod: 0 }),
-    arow({ code: "B1", stock: 400, avgDailySales: 1, daysOfCover: 400, soldInPeriod: 30, categoryId: "g3", categoryName: "Nhóm 3" }),
+    arow({ code: "B1", stock: 400, available: 400, avgDailySales: 1, daysOfCover: 400, soldInPeriod: 30 }),
   ];
 
   const tabs = reorderTabs(rows, ANALYSIS_SETTINGS);
-  assert.deepEqual(tabs.soon.map((r) => r.code), ["S1", "S2"], "sắp hết, ít ngày nhất lên đầu");
+  assert.deepEqual(tabs.urgent.map((r) => r.code), ["O1", "M1"], "dưới định mức / hết hàng, ít ngày nhất lên đầu");
+  assert.deepEqual(tabs.soon.map((r) => r.code), ["S1", "S2"], "Nên nhập");
   assert.deepEqual(tabs.outWithDemand.map((r) => r.code), ["O1"]);
-  assert.deepEqual(tabs.later.map((r) => r.code), ["L1"], "còn X+1..30 ngày");
 
 
 }
