@@ -52,6 +52,11 @@ export type ExplainedError = {
 
 /** Mã lỗi Postgres / PostgREST gặp thường xuyên. */
 const SESSION_EXPIRED_CODES = new Set(["PGRST301", "PGRST302"]);
+/**
+ * "JWT issued at future": token vừa được Supabase Auth cấp, đồng hồ PostgREST chậm
+ * hơn một chút — vài giây sau token hợp lệ. Lỗi tạm thời, thử lại là được.
+ */
+export const JWT_CLOCK_SKEW_CODE = "PGRST303";
 const FORBIDDEN_CODE = "42501";
 /** .single() nhưng truy vấn trả về 0 dòng (hoặc nhiều hơn 1 dòng). */
 const NOT_FOUND_CODE = "PGRST116";
@@ -103,6 +108,15 @@ export function explainError(error: unknown): ExplainedError {
   }
 
   if (isPostgrestError(error)) {
+    if (error.code === JWT_CLOCK_SKEW_CODE) {
+      return {
+        kind: "unknown",
+        title: "Máy chủ chưa nhận phiên đăng nhập vừa làm mới",
+        action: "Đợi vài giây rồi bấm Thử lại (hoặc tải lại trang).",
+        code: error.code,
+      };
+    }
+
     if (SESSION_EXPIRED_CODES.has(error.code)) {
       return {
         kind: "session-expired",
