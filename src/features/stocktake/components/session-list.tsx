@@ -9,7 +9,10 @@ import { useState } from "react";
 import { StatusDot } from "@/shared/components/status-dot";
 import { QueryState } from "@/shared/components/query-state";
 
-import { useStocktakeLookups, useStocktakeSessions } from "../hooks/useStocktake";
+import {
+  useStocktakeLookups,
+  useStocktakeSessions,
+} from "../hooks/useStocktake";
 import {
   SESSION_STATUS_TONES,
   SESSION_STATUS_LABELS,
@@ -29,7 +32,9 @@ const STATUS_OPTIONS: { value: StocktakeSessionState; label: string }[] = [
 
 function progressColumn(row: StocktakeSession) {
   const percent =
-    row.scopeCount > 0 ? Math.round((row.countedCount / row.scopeCount) * 100) : 0;
+    row.scopeCount > 0
+      ? Math.round((row.countedCount / row.scopeCount) * 100)
+      : 0;
   return (
     <div className="flex flex-col gap-1">
       <Progress percent={percent} size="small" showInfo={false} />
@@ -47,7 +52,11 @@ function statusColumn(row: StocktakeSession) {
     scope: row.scopeCount,
     recount: row.recountCount,
   });
-  return <StatusDot tone={SESSION_STATUS_TONES[status]} strike={status === "voided"}>{SESSION_STATUS_LABELS[status]}</StatusDot>;
+  return (
+    <StatusDot tone={SESSION_STATUS_TONES[status]} strike={status === "voided"}>
+      {SESSION_STATUS_LABELS[status]}
+    </StatusDot>
+  );
 }
 
 const COLUMNS: TableColumnsType<StocktakeSession> = [
@@ -129,7 +138,10 @@ export function SessionList({
             setWarehouseId(value ?? "");
             setPage(1);
           }}
-          options={warehouseOptions.map((w) => ({ value: w.id, label: w.name }))}
+          options={warehouseOptions.map((w) => ({
+            value: w.id,
+            label: w.name,
+          }))}
         />
         <Select
           allowClear
@@ -150,33 +162,33 @@ export function SessionList({
         ) : null}
       </div>
 
-      <div className="overflow-x-auto">
-        <QueryState
-          query={sessions}
-          isEmpty={(page) => page.rows.length === 0}
-          emptyDescription='Chưa có phiên kiểm kê nào. Bấm “Mở phiên kiểm kê” để bắt đầu.'
-        >
-          {() => (
-            <Table<StocktakeSession>
-              rowKey="id"
-              size="small"
-              sticky={{ offsetHeader }}
-              columns={COLUMNS}
-              dataSource={rows}
-              loading={sessions.isFetching && !sessions.isPending}
-              scroll={{ x: "max-content" }}
-              pagination={{
-                current: page,
-                pageSize: PAGE_SIZE,
-                total,
-                showSizeChanger: false,
-                showTotal: (count) => `${count.toLocaleString("vi-VN")} phiên`,
-                onChange: setPage,
-              }}
-            />
-          )}
-        </QueryState>
-      </div>
+      {/* Không bọc overflow-x-auto: khung cuộn bên ngoài làm tiêu đề dính (sticky) của antd
+          tính sai chỗ — tiêu đề nằm đè giữa danh sách. Bảng tự cuộn ngang bằng scroll.x. */}
+      <QueryState
+        query={sessions}
+        isEmpty={(page) => page.rows.length === 0}
+        emptyDescription="Chưa có phiên kiểm kê nào. Bấm “Mở phiên kiểm kê” để bắt đầu."
+      >
+        {() => (
+          <Table<StocktakeSession>
+            rowKey="id"
+            size="small"
+            sticky={{ offsetHeader }}
+            columns={COLUMNS}
+            dataSource={rows}
+            loading={sessions.isFetching && !sessions.isPending}
+            scroll={{ x: "max-content" }}
+            pagination={{
+              current: page,
+              pageSize: PAGE_SIZE,
+              total,
+              showSizeChanger: false,
+              showTotal: (count) => `${count.toLocaleString("vi-VN")} phiên`,
+              onChange: setPage,
+            }}
+          />
+        )}
+      </QueryState>
 
       <OpenSessionDrawer
         open={openDrawer}
