@@ -16,7 +16,8 @@ type Client = SupabaseClient<Database>;
 type LoaiCt = Database["public"]["Enums"]["loai_ct"];
 type Header = Database["public"]["Tables"]["chung_tu"]["Insert"];
 
-export type DocLine = { san_pham_id: string; so_luong: number; ghi_chu: string | null };
+/** `kho_id` vắng = kho của phiếu (hai script nạp cũ); script nạp mới truyền kho mặc định của mã. */
+export type DocLine = { san_pham_id: string; so_luong: number; ghi_chu: string | null; kho_id?: string };
 export type ExistingDoc = { id: string; so_ct: string; ghi_chu: string | null; trang_thai: string };
 
 /** Số lượng nạp được: số thật, dương. NaN (ô chữ), Infinity, 0, âm đều bỏ. */
@@ -47,7 +48,7 @@ export function taoGhiSo(user: Client, khoId: string) {
   async function insertLines(id: string, so: string, lines: DocLine[]): Promise<void> {
     // Một lệnh insert = một statement: hoặc đủ dòng, hoặc không dòng nào.
     const { error } = await user.from("chung_tu_dong").insert(
-      lines.map((l) => ({ chung_tu_id: id, san_pham_id: l.san_pham_id, so_luong: l.so_luong, don_gia: 0, thanh_tien: 0, kho_id: khoId, ghi_chu: l.ghi_chu })),
+      lines.map((l) => ({ chung_tu_id: id, san_pham_id: l.san_pham_id, so_luong: l.so_luong, don_gia: 0, thanh_tien: 0, kho_id: l.kho_id ?? khoId, ghi_chu: l.ghi_chu })),
     );
     if (error) throw new Error(`${so} dòng: ${error.message}`);
   }
