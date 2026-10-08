@@ -1,6 +1,6 @@
 "use client";
 
-import { App, Badge, Button, Dropdown, Segmented, Space, Table, Tag } from "antd";
+import { App, Button, Dropdown, Segmented, Space, Switch, Table, Tag, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useTransition } from "react";
@@ -122,18 +122,27 @@ export function UserTable({ currentUserId, access }: { currentUserId: string; ac
         ),
     },
     {
-      title: "Trạng thái",
+      title: "Hoạt động",
       key: "status",
-      width: 220,
-      render: (_, d) => (
-        <Space size={6}>
-          <Badge
-            status={d.dang_hoat_dong ? "success" : "default"}
-            text={d.dang_hoat_dong ? "Đang hoạt động" : "Đã vô hiệu hóa"}
-          />
-          {d.phai_doi_mat_khau ? <Tag color="orange">Chờ đổi mật khẩu</Tag> : null}
-        </Space>
-      ),
+      width: 230,
+      render: (_, d) => {
+        // Cùng điều kiện với menu thao tác: cần quyền Tạo tài khoản; tài khoản Admin chỉ Admin bật/tắt.
+        const locked = !access.canProfile || (d.vai_tro === "quan_ly" && !access.isAdmin);
+        return (
+          <Space size={8} wrap>
+            <Tooltip title={locked ? "Cần quyền Tạo tài khoản để bật/tắt" : undefined}>
+              <Switch
+                checked={d.dang_hoat_dong}
+                disabled={locked}
+                aria-label={d.dang_hoat_dong ? `Vô hiệu hóa ${d.ho_ten}` : `Mở lại ${d.ho_ten}`}
+                // Không đổi ngay: hỏi xác nhận trước, bảng tự cập nhật sau khi lưu xong.
+                onClick={() => toggleActive(d)}
+              />
+            </Tooltip>
+            {d.phai_doi_mat_khau ? <Tag color="orange" className="m-0">Chờ đổi mật khẩu</Tag> : null}
+          </Space>
+        );
+      },
     },
     {
       title: "",
@@ -151,18 +160,11 @@ export function UserTable({ currentUserId, access }: { currentUserId: string; ac
               ? [
                   { key: "sua", label: "Sửa" },
                   { key: "mat_khau", label: "Đặt lại mật khẩu" },
-                  { type: "divider" as const },
-                  {
-                    key: "status",
-                    label: d.dang_hoat_dong ? "Vô hiệu hóa" : "Mở lại",
-                    danger: d.dang_hoat_dong,
-                  },
                 ]
               : [{ key: "sua", label: "Phân quyền" }],
             onClick: ({ key }) => {
               if (key === "sua") setDrawer({ mo: true, nd: d });
               if (key === "mat_khau") setResetTarget(d);
-              if (key === "status") toggleActive(d);
             },
           }}
         >
