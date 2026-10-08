@@ -693,6 +693,7 @@ export type Database = {
           created_at: string
           don_dat_hang_id: string
           don_gia: number
+          ghi_chu: string | null
           id: string
           nguoi_nhan_id: string | null
           san_pham_id: string
@@ -703,6 +704,7 @@ export type Database = {
           created_at?: string
           don_dat_hang_id: string
           don_gia?: number
+          ghi_chu?: string | null
           id?: string
           nguoi_nhan_id?: string | null
           san_pham_id: string
@@ -713,6 +715,7 @@ export type Database = {
           created_at?: string
           don_dat_hang_id?: string
           don_gia?: number
+          ghi_chu?: string | null
           id?: string
           nguoi_nhan_id?: string | null
           san_pham_id?: string
@@ -2151,6 +2154,7 @@ export type Database = {
         Args: { p_id: string }
         Returns: {
           created_at: string
+          ghi_chu: string
           id: string
           kho_mac_dinh_id: string
           ma_hang: string
@@ -2898,6 +2902,7 @@ export type Database = {
       them_dong_don: {
         Args: {
           p_don_id: string
+          p_ghi_chu?: string
           p_nguoi_nhan_id?: string
           p_san_pham_id: string
           p_so_luong: number

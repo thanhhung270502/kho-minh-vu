@@ -663,6 +663,7 @@ function sampleOrderLine(overrides: Partial<OrderLine>): OrderLine {
     defaultWarehouseId: "kho-1",
     defaultWarehouseName: "Kho 1",
     createdAt: "2026-09-20T00:00:00Z",
+    note: null,
     ...overrides,
   };
 }
@@ -811,6 +812,7 @@ const orderLineRow = {
   id: "l1", san_pham_id: "p1", ma_hang: "A1", ten_hang: "Hàng", ten_dvt: null as unknown as string,
   so_luong_dat: 2, so_luong_da_xuat: 0, kho_mac_dinh_id: null as unknown as string,
   ten_kho_mac_dinh: null as unknown as string, created_at: "2026-10-01T00:00:00Z",
+  ghi_chu: null as unknown as string,
 };
 {
   const assigned = toOrderLine({ ...orderLineRow, nguoi_nhan_id: "nv-1", ten_nguoi_nhan: "An" });

@@ -104,7 +104,7 @@ export function OrderAside({ order, editable }: Props) {
         {editable ? (
           <Input.TextArea
             defaultValue={order.note ?? ""}
-            placeholder="Ghi chú cho đơn này"
+            placeholder="Gõ tên người nhận và ghi chú cho đơn"
             autoSize={{ minRows: 2, maxRows: 5 }}
             onBlur={(event) => void save("note", { note: event.target.value || null })}
           />

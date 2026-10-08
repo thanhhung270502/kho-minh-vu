@@ -57,6 +57,14 @@ export function useOrderLineActions(orderId: string, staff: StaffRef[]) {
     }
   }
 
+  async function editNote(id: string, note: string) {
+    try {
+      await update.mutateAsync({ id, values: { note } });
+    } catch (error) {
+      fail(error);
+    }
+  }
+
   async function editRecipient(
     id: string,
     recipientId: string | null,
@@ -79,5 +87,5 @@ export function useOrderLineActions(orderId: string, staff: StaffRef[]) {
     }
   }
 
-  return { addLine, editQuantity, editRecipient, removeLine, adding: add.isPending };
+  return { addLine, editQuantity, editNote, editRecipient, removeLine, adding: add.isPending };
 }

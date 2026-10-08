@@ -58,6 +58,8 @@ export const orderLineSchema = z.object({
     .number({ message: "Số lượng phải là số" })
     .positive("Số lượng phải lớn hơn 0"),
   recipientId: z.string().uuid().nullable().optional(),
+  /** Ghi chú riêng của dòng (0118) — chép sang dòng hóa đơn khi hoàn thành. */
+  note: z.string().nullable().optional(),
 });
 
 export type OrderHeaderInput = z.input<typeof orderHeaderSchema>;
@@ -83,6 +85,7 @@ export function toOrderLineUpdate(
   if (input.productId !== undefined) update.san_pham_id = input.productId;
   if (input.quantity !== undefined) update.so_luong_dat = input.quantity;
   if (input.recipientId !== undefined) update.nguoi_nhan_id = input.recipientId;
+  if (input.note !== undefined) update.ghi_chu = input.note?.trim() || null;
   return update;
 }
 
@@ -279,5 +282,6 @@ export function toAddOrderLineRpcArgs(
     p_san_pham_id: line.productId,
     p_so_luong: line.quantity,
     p_nguoi_nhan_id: line.recipientId ?? undefined,
+    p_ghi_chu: line.note?.trim() || undefined,
   };
 }

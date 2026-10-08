@@ -64,6 +64,7 @@ export type OrderLine = {
   defaultWarehouseId: string | null;
   defaultWarehouseName: string | null;
   createdAt: string;
+  note: string | null;
 };
 
 export function toOrderRow(row: OrderRowDb): OrderRow {
@@ -131,6 +132,7 @@ export function toOrderLine(row: OrderLineDb): OrderLine {
     defaultWarehouseId: row.kho_mac_dinh_id,
     defaultWarehouseName: row.ten_kho_mac_dinh,
     createdAt: row.created_at,
+    note: row.ghi_chu ?? null,
   };
 }
 
