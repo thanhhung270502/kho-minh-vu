@@ -65,6 +65,8 @@ export type OrderLine = {
   defaultWarehouseName: string | null;
   createdAt: string;
   note: string | null;
+  /** Tên nhóm hàng (vd. "PÔ E - 12") — phiếu in ghi dưới mã hàng (0121). */
+  groupName: string | null;
 };
 
 export function toOrderRow(row: OrderRowDb): OrderRow {
@@ -133,6 +135,7 @@ export function toOrderLine(row: OrderLineDb): OrderLine {
     defaultWarehouseName: row.ten_kho_mac_dinh,
     createdAt: row.created_at,
     note: row.ghi_chu ?? null,
+    groupName: row.ten_nhom_hang ?? null,
   };
 }
 

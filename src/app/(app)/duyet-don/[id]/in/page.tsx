@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { DeliveryPrintPage } from "@/features/stock-out/components/delivery-print-page";
 import { requirePermission } from "@/features/auth/api/current-user.server";
 
-export const metadata: Metadata = { title: "In phiếu giao hàng" };
+export const metadata: Metadata = { title: "In phiếu duyệt đơn" };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

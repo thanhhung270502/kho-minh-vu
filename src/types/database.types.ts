@@ -2166,6 +2166,7 @@ export type Database = {
           ten_hang: string
           ten_kho_mac_dinh: string
           ten_nguoi_nhan: string
+          ten_nhom_hang: string
         }[]
       }
       dong_don_som: {

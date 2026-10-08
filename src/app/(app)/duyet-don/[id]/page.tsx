@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { IssueDetailView } from "@/features/stock-out/components/issue-detail";
 import { requirePermission } from "@/features/auth/api/current-user.server";
-import { can, hasPermission, isAdmin } from "@/shared/lib/permissions";
+import { hasPermission, isAdmin } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Duyệt đơn" };
 

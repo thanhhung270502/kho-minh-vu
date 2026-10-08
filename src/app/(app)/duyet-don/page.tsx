@@ -6,7 +6,7 @@ import { requirePermission } from "@/features/auth/api/current-user.server";
 import { DocumentExcelActions } from "@/features/document-excel/components/document-excel-actions";
 import { canImportDocuments } from "@/features/document-excel/lib/document-access";
 import { PageHeader } from "@/shared/components/page-header";
-import { can, hasPermission, isAdmin } from "@/shared/lib/permissions";
+import { hasPermission, isAdmin } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Duyệt đơn" };
 
