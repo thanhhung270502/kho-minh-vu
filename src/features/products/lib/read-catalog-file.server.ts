@@ -61,7 +61,8 @@ function parseTemplateRow(o: Record<string, unknown>, rowNumber: number): Import
     dvt: readString(o["don_vi_tinh"]),
     cong_doan: readString(o["xu_ly"] ?? o["cong_doan"]),
     quy_doi: readNumber(o["quy_doi"]),
-    kho_mac_dinh: readString(o["kho_mac_dinh"]),
+    // Mẫu 08/10/2026 gọi kho mặc định là "Vị trí" (như KiotViet); file cũ là "Kho mặc định".
+    kho_mac_dinh: readString(o["vi_tri"]) ?? readString(o["kho_mac_dinh"]),
     ton_toi_thieu: readNumber(o["ton_toi_thieu"]),
     ton_toi_da: toiDa,
     dang_kinh_doanh: docCo(o["dang_kinh_doanh"]),
@@ -123,8 +124,9 @@ const HUONG_DAN: Array<[string, string]> = [
     "Nhóm hàng / Đơn vị tính / Xử lý / Kho mặc định",
     "Phải là tên hoặc mã đã có (Danh sách hàng hóa → Danh mục phụ; kho ở Cài đặt). Chưa có thì tạo trước, file sẽ báo lỗi dòng.",
   ],
-  ["Đang kinh doanh", "Ghi Có / Không (hoặc 1 / 0)."],
-  ["Tồn hiện tại", "Chỉ để xem. Nhập vào sẽ bị bỏ qua — tồn chỉ đổi bằng chứng từ."],
+  ["Vị trí", "Kho mặc định của mã — tên hoặc mã kho (Kho 1, Kho 2…)."],
+  ["Đang kinh doanh", "Ghi 1 / 0 (hoặc Có / Không)."],
+  ["Tồn kho", "Chỉ để xem. Nhập vào sẽ bị bỏ qua — tồn chỉ đổi bằng chứng từ."],
 ];
 
 /** Ghi file mẫu hệ mới. Dùng workbook thường (ghi không gặp bẫy styles như khi đọc). */
@@ -146,7 +148,8 @@ export async function buildTemplateWorkbook(dong: ExportRowPayload[]): Promise<B
       Object.fromEntries(
         cot.map((c) => {
           const v = (d as Record<string, unknown>)[c.key] ?? null;
-          if (c.key === "dang_kinh_doanh") return [c.key, v === false ? "Không" : "Có"];
+          // 1 / 0 như file KiotViet (mẫu 08/10/2026); đọc vào nhận cả Có / Không.
+          if (c.key === "dang_kinh_doanh") return [c.key, v === false ? 0 : 1];
           return [c.key, v];
         }),
       ),
