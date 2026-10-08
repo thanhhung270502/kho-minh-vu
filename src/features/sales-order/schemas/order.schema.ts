@@ -282,6 +282,6 @@ export function toAddOrderLineRpcArgs(
     p_san_pham_id: line.productId,
     p_so_luong: line.quantity,
     p_nguoi_nhan_id: line.recipientId ?? undefined,
-    p_ghi_chu: line.note?.trim() || undefined,
+    ...(line.note?.trim() ? { p_ghi_chu: line.note.trim() } : {}),
   };
 }
