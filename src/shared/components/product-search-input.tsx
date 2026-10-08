@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Select, Typography } from "antd";
 import type { RefSelectProps } from "antd/es/select";
-import { useState, type Ref } from "react";
+import { useRef, useState, type Ref } from "react";
 
 import {
   productSearchKeys,
@@ -31,6 +31,16 @@ type Props = {
  */
 export function ProductSearchInput({ onSelect, selected, inputRef, disabled }: Props) {
   const [query, setQuery] = useState("");
+  // Dòng đang tô trong danh sách (rc-select báo qua onActive) và việc người dùng
+  // đã tự đi tới nó bằng ↑/↓ chưa. Ref, không phải state: chỉ đọc lúc bấm Enter.
+  const activeId = useRef<string | null>(null);
+  const navigated = useRef(false);
+
+  function search(next: string) {
+    // Gõ thêm chữ là danh sách mới — quay về luật "mã khớp đúng, không thì dòng đầu".
+    navigated.current = false;
+    setQuery(next);
+  }
 
   const results = useQuery({
     queryKey: productSearchKeys.search(query),
@@ -47,12 +57,15 @@ export function ProductSearchInput({ onSelect, selected, inputRef, disabled }: P
     // `lan_phat_sinh_cuoi` trước rồi mới tới độ giống — hợp lý khi gõ dở, nhưng
     // khiến mã chạy nhiều đè lên mã khớp tuyệt đối. Kho gõ mã đầy đủ suốt ngày,
     // chọn nhầm ở đây là nhập sai hàng.
+    // Ngoại lệ: người dùng đã dùng ↑/↓ chọn một dòng thì Enter lấy ĐÚNG dòng đó.
+    const picked = navigated.current ? items.find((item) => item.id === activeId.current) : undefined;
     const normalized = query.trim().toLowerCase();
     const exactMatch = items.find(
       (item) => item.code.toLowerCase() === normalized,
     );
 
-    onSelect(exactMatch ?? items[0]);
+    onSelect(picked ?? exactMatch ?? items[0]);
+    navigated.current = false;
     setQuery("");
     return true;
   }
@@ -66,6 +79,10 @@ export function ProductSearchInput({ onSelect, selected, inputRef, disabled }: P
     <div
       className="w-full"
       onKeyDownCapture={(event) => {
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+          navigated.current = true;
+          return;
+        }
         if (event.key !== "Enter") return;
         if (selectFirstMatch()) {
           event.preventDefault();
@@ -92,7 +109,10 @@ export function ProductSearchInput({ onSelect, selected, inputRef, disabled }: P
         placeholder="Gõ mã hoặc tên hàng"
         filterOption={false}
         loading={results.isFetching}
-        onSearch={setQuery}
+        onSearch={search}
+        onActive={(id) => {
+          activeId.current = typeof id === "string" ? id : null;
+        }}
         notFoundContent={
           results.isFetching
             ? "Đang tìm…"
@@ -123,6 +143,7 @@ export function ProductSearchInput({ onSelect, selected, inputRef, disabled }: P
             (item) => item.id === picked?.value,
           );
           if (product) onSelect(product);
+          navigated.current = false;
           setQuery("");
         }}
       />

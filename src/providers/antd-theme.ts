@@ -148,6 +148,8 @@ export const antdTheme: ThemeConfig = {
       activeBorderColor: INK,
       activeOutlineColor: "rgba(10,10,10,.08)",
       optionSelectedBg: "#F3F3F3",
+      // Dòng đang trỏ bằng ↑/↓ phải nhìn thấy rõ — Enter sẽ chọn đúng dòng này.
+      optionActiveBg: "#E2E2E2",
       colorBgContainerDisabled: "#F3F3F3",
     },
     DatePicker: {

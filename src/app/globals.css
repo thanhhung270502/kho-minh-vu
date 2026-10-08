@@ -125,6 +125,12 @@ body {
  * components (đứng sau @layer antd nên thắng mà không cần !important).
  */
 @layer components {
+  /* Dòng gợi ý đang trỏ bằng ↑/↓ (Enter chọn đúng dòng này): nền đậm ở token
+     optionActiveBg, chữ đậm ở đây — antd không có token độ đậm cho option. */
+  .ant-select-item-option-active {
+    font-weight: 600;
+  }
+
   .ant-table-wrapper .ant-table-thead > tr > th {
     font-size: 14px;
     font-weight: 600;
