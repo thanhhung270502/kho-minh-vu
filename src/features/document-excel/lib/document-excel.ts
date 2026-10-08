@@ -38,6 +38,8 @@ export type FieldKey =
   | "receiver"
   | "approver"
   | "createdBy"
+  | "totalQuantity"
+  | "itemCount"
   | "status";
 
 export type ColumnSpec = {
@@ -98,19 +100,23 @@ export const KIND_COLUMNS: Record<DocumentKind, ColumnSpec[]> = {
     { key: "warehouse", title: "Kho", width: 10, readOnly: true, match: ["kho"], hint: "Trống: mỗi mã lấy kho mặc định của mã đó." },
     { key: "negativeReason", title: "Lý do xuất âm", width: 22, readOnly: true, match: ["ly_do_xuat_am"], hint: "" },
   ],
+  // Theo mẫu "DanhSachChiTietNhapHang đã process" (08/10/2026). Nguồn nhập, Kho, Ghi chú dòng
+  // không còn trong mẫu nhưng file cũ có cột đó vẫn đọc được.
   "phieu-nhap": [
     { key: "docNo", title: "Mã nhập hàng", width: 14, required: true, match: ["ma_nhap_hang", "ma_phieu_nhap", "so_phieu"], hint: NO_HINT },
     { key: "date", title: "Ngày nhập", width: 12, required: true, match: ["ngay_nhap", "ngay"], hint: "dd/mm/yyyy." },
-    { key: "source", title: "Nguồn nhập", width: 12, readOnly: true, match: ["nguon_nhap"], hint: "NCC hoặc Nhà máy. Trống = NCC." },
-    { key: "partnerCode", title: "Mã NCC", width: 14, match: ["ma_ncc", "ma_nha_cung_cap"], hint: "Mã nhà cung cấp trên hệ thống. Nhập mới để trống = NCC000001 (Vũ Trụ)." },
-    { key: "warehouse", title: "Kho", width: 10, match: ["kho"], hint: "K1, K2 hoặc tên kho. Nhập mới để trống = Kho 1." },
-    { key: "productCode", title: "Mã hàng", width: 18, required: true, match: ["ma_hang"], hint: "Mã hàng trên hệ thống." },
-    { key: "quantity", title: "Số lượng", width: 10, required: true, match: ["so_luong"], hint: "Lớn hơn 0." },
-    { key: "note", title: "Ghi chú phiếu", width: 24, match: ["ghi_chu_phieu"], hint: "Ghi chú đầu phiếu." },
-    { key: "lineNote", title: "Ghi chú dòng", width: 24, match: ["ghi_chu_dong"], hint: "Ghi chú từng dòng hàng." },
+    { key: "partnerCode", title: "Mã nhà cung cấp", width: 16, match: ["ma_nha_cung_cap", "ma_ncc"], hint: "Mã nhà cung cấp trên hệ thống. Nhập mới để trống = NCC000001 (Vũ Trụ)." },
     { key: "receiver", title: "Người nhập", width: 18, match: ["nguoi_nhap"], hint: "Người nhận hàng vào kho. Trống: nhập mới không ghi, cập nhật giữ nguyên." },
     { key: "createdBy", title: "Người tạo", width: 18, infoOnly: true, match: ["nguoi_tao"], hint: "Chỉ để xem — nhập lại không đổi." },
+    { key: "note", title: "Ghi chú", width: 24, match: ["ghi_chu_phieu", "ghi_chu"], hint: "Ghi chú đầu phiếu." },
+    { key: "totalQuantity", title: "Tổng số lượng", width: 14, infoOnly: true, match: ["tong_so_luong"], hint: "Chỉ để xem — tổng số lượng của cả phiếu." },
+    { key: "itemCount", title: "Tổng số mặt hàng", width: 16, infoOnly: true, match: ["tong_so_mat_hang"], hint: "Chỉ để xem — số dòng hàng của phiếu." },
     { key: "status", title: "Trạng thái", width: 14, infoOnly: true, match: ["trang_thai"], hint: "Chỉ để xem — ghi sổ / hủy phiếu làm trên web." },
+    { key: "productCode", title: "Mã hàng", width: 18, required: true, match: ["ma_hang"], hint: "Mã hàng trên hệ thống." },
+    { key: "quantity", title: "Số lượng", width: 10, required: true, match: ["so_luong"], hint: "Lớn hơn 0." },
+    { key: "source", title: "Nguồn nhập", width: 12, readOnly: true, match: ["nguon_nhap"], hint: "" },
+    { key: "warehouse", title: "Kho", width: 10, readOnly: true, match: ["kho"], hint: "" },
+    { key: "lineNote", title: "Ghi chú dòng", width: 24, readOnly: true, match: ["ghi_chu_dong"], hint: "" },
   ],
 };
 

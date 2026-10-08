@@ -1802,6 +1802,15 @@ const p = mapHeaders("phieu-nhap", ["ma_nhap_hang", "ngay_nhap", "ma_ncc", "ghi_
 assert.equal(p.note, "ghi_chu_phieu");
 assert.equal(p.lineNote, "ghi_chu_dong");
 assert.equal(mapHeaders("phieu-nhap", ["nguoi_nhap", "nguoi_tao"]).receiver, "nguoi_nhap");
+// Mẫu Nhập kho 08/10/2026: "Tổng số lượng" không ăn nhầm cột Số lượng; Ghi chú = ghi chú phiếu.
+{
+  const pn = mapHeaders("phieu-nhap", ["ma_nhap_hang", "ngay_nhap", "ma_nha_cung_cap", "nguoi_nhap", "nguoi_tao", "ghi_chu", "tong_so_luong", "tong_so_mat_hang", "trang_thai", "ma_hang", "so_luong"]);
+  assert.equal(pn.quantity, "so_luong");
+  assert.equal(pn.totalQuantity, "tong_so_luong");
+  assert.equal(pn.note, "ghi_chu");
+  assert.equal(pn.partnerCode, "ma_nha_cung_cap");
+  assert.equal(pn.lineNote, undefined);
+}
 // 0122: mẫu Duyệt đơn — "Người duyệt đơn" là trường riêng, "Ghi chú dòng" không bị cột Ghi chú ăn mất.
 {
   const hd = mapHeaders("hoa-don", ["ma_dat_hang", "ma_hoa_don", "ngay", "ma_khach_hang", "nguoi_duyet_don", "nguoi_tao", "ghi_chu", "trang_thai", "ma_hang", "ghi_chu_dong", "so_luong"]);

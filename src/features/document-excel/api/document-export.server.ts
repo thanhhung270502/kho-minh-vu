@@ -118,6 +118,17 @@ async function fetchDocumentRows(kind: "hoa-don" | "phieu-nhap", params: URLSear
   if (error) throw error;
   const result = resultSchema.parse(data);
 
+  // "Tổng số lượng" / "Tổng số mặt hàng" của phiếu lặp lại ở mọi dòng như file KiotViet.
+  const totals = new Map<string, { quantity: number; items: number }>();
+  for (const r of result.dong) {
+    const t = totals.get(r.so) ?? { quantity: 0, items: 0 };
+    if (r.ma_hang) {
+      t.quantity += r.so_luong ?? 0;
+      t.items += 1;
+    }
+    totals.set(r.so, t);
+  }
+
   return {
     total: result.tong,
     rows: result.dong.map((r) => ({
@@ -140,6 +151,8 @@ async function fetchDocumentRows(kind: "hoa-don" | "phieu-nhap", params: URLSear
       receiver: r.nguoi_nhap,
       approver: r.nguoi_ban ?? null,
       createdBy: r.nguoi_tao,
+      totalQuantity: totals.get(r.so)?.quantity ?? 0,
+      itemCount: totals.get(r.so)?.items ?? 0,
       status: DOC_STATUS_LABELS[r.trang_thai],
     })),
   };
