@@ -56,31 +56,41 @@ export type ColumnSpec = {
 
 const NO_HINT = "Các dòng cùng số được gom thành một phiếu. Thông tin đầu phiếu lấy ở dòng đầu tiên.";
 
+// Đơn đặt / hóa đơn theo cách làm đơn trên web (08/10/2026): người nhận là đối tác mã NB…,
+// tên người nhận thật gõ ở Ghi chú, có ghi chú từng dòng, không còn nhân viên nhận.
+const NB_HINT = "Mã đối tác nội bộ (NB001, NB002…). Nhập mới để trống = NB001.";
+const NOTE_HINT = "Tên người nhận và ghi chú đơn.";
+const LINE_NOTE: ColumnSpec = { key: "lineNote", title: "Ghi chú dòng", width: 24, match: ["ghi_chu_dong"], hint: "Ghi chú từng dòng hàng. Khác ghi chú thì tách dòng." };
+/** File cũ còn cột Nhân viên nhận vẫn đọc được; mẫu mới không ghi cột này. */
+const STAFF_LEGACY: ColumnSpec = { key: "staff", title: "Nhân viên nhận", width: 16, readOnly: true, match: ["nhan_vien_nhan"], hint: "Không cần — người nhận ghi ở Ghi chú." };
+
 export const KIND_COLUMNS: Record<DocumentKind, ColumnSpec[]> = {
   "don-dat": [
     { key: "docNo", title: "Mã đặt hàng", width: 14, required: true, match: ["ma_dat_hang", "so_don"], hint: NO_HINT },
     { key: "date", title: "Ngày", width: 12, required: true, match: ["ngay_dat", "ngay"], hint: "Ngày đặt — dd/mm/yyyy." },
     { key: "dueDate", title: "Ngày giao dự kiến", width: 16, match: ["ngay_giao"], hint: "Không bắt buộc." },
     { key: "recipientKind", title: "Loại người nhận", width: 14, readOnly: true, match: ["loai_nguoi_nhan"], hint: "Không cần — có Mã khách hàng là đơn cho đối tác, không có là đơn cho nhân viên." },
-    { key: "partnerCode", title: "Mã khách hàng", width: 14, match: ["ma_khach_hang", "ma_doi_tac"], hint: "Mã đối tác trên hệ thống (vd. NB001)." },
+    { key: "partnerCode", title: "Mã khách hàng", width: 14, match: ["ma_khach_hang", "ma_doi_tac"], hint: NB_HINT },
     { key: "partnerName", title: "Tên khách hàng", width: 28, match: ["ten_khach_hang"], hint: "Chỉ để đọc — hệ thống tra theo Mã khách hàng." },
-    { key: "staff", title: "Nhân viên nhận", width: 16, match: ["nhan_vien_nhan"], hint: "Tên viết tắt nhân viên (vd. NGỌC). Nhiều người: NGỌC - QUỲNH." },
-    { key: "note", title: "Ghi chú", width: 24, match: ["ghi_chu"], hint: "Ghi chú đơn." },
+    STAFF_LEGACY,
+    { key: "note", title: "Ghi chú", width: 24, match: ["ghi_chu_don", "ghi_chu"], hint: NOTE_HINT },
     { key: "productCode", title: "Mã hàng", width: 18, required: true, match: ["ma_hang"], hint: "Mã hàng trên hệ thống." },
     { key: "quantity", title: "Số lượng", width: 10, required: true, match: ["so_luong"], hint: "Lớn hơn 0." },
+    LINE_NOTE,
   ],
   "hoa-don": [
     { key: "orderNo", title: "Mã đặt hàng", width: 14, match: ["ma_dat_hang"], hint: "Có đơn đặt trên hệ thống thì hóa đơn gắn vào đơn đó." },
     { key: "docNo", title: "Mã hóa đơn", width: 14, required: true, match: ["ma_hoa_don", "so_hoa_don"], hint: NO_HINT },
     { key: "date", title: "Ngày", width: 12, required: true, match: ["ngay"], hint: "dd/mm/yyyy." },
     { key: "recipientKind", title: "Loại người nhận", width: 14, readOnly: true, match: ["loai_nguoi_nhan"], hint: "Không cần — có Mã khách hàng là đơn cho đối tác, không có là đơn cho nhân viên." },
-    { key: "partnerCode", title: "Mã khách hàng", width: 14, match: ["ma_khach_hang", "ma_doi_tac"], hint: "Mã đối tác trên hệ thống (vd. NB001)." },
+    { key: "partnerCode", title: "Mã khách hàng", width: 14, match: ["ma_khach_hang", "ma_doi_tac"], hint: `${NB_HINT} Có Mã đặt hàng thì lấy theo đơn đặt.` },
     { key: "partnerName", title: "Tên khách hàng", width: 28, match: ["ten_khach_hang"], hint: "Chỉ để đọc — hệ thống tra theo Mã khách hàng." },
-    { key: "staff", title: "Nhân viên nhận", width: 16, match: ["nhan_vien_nhan"], hint: "Tên viết tắt nhân viên (vd. NGỌC). Nhiều người: NGỌC - QUỲNH." },
+    STAFF_LEGACY,
     { key: "warehouse", title: "Kho", width: 10, match: ["kho"], hint: "Để trống: mỗi mã lấy kho mặc định của mã đó." },
-    { key: "note", title: "Ghi chú", width: 24, match: ["ghi_chu"], hint: "Ghi chú hóa đơn." },
+    { key: "note", title: "Ghi chú", width: 24, match: ["ghi_chu_don", "ghi_chu_hoa_don", "ghi_chu"], hint: NOTE_HINT },
     { key: "productCode", title: "Mã hàng", width: 18, required: true, match: ["ma_hang"], hint: "Mã hàng trên hệ thống." },
     { key: "quantity", title: "Số lượng", width: 10, required: true, match: ["so_luong"], hint: "Lớn hơn 0." },
+    LINE_NOTE,
     { key: "negativeReason", title: "Lý do xuất âm", width: 22, match: ["ly_do_xuat_am"], hint: "Không bắt buộc — chọn lại được lúc ghi sổ." },
   ],
   "phieu-nhap": [

@@ -51,6 +51,7 @@ const orderRowSchema = z.object({
   ma_hang: z.string().nullable(),
   so_luong: z.coerce.number().nullable(),
   nv_dong: z.string().nullable(),
+  ghi_chu_dong: z.string().nullable().optional(),
 });
 const orderResultSchema = z.object({ tong: z.number(), dong: z.array(orderRowSchema) });
 
@@ -82,6 +83,7 @@ async function fetchOrderRows(params: URLSearchParams): Promise<ExportRows> {
       staff: r.nv_dong ?? r.nv_phieu,
       productCode: r.ma_hang,
       quantity: r.so_luong,
+      lineNote: r.ghi_chu_dong ?? null,
     })),
   };
 }
