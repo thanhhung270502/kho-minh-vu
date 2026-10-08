@@ -16,7 +16,7 @@ type Props = {
   onChange: (partnerId: string | undefined) => void;
 };
 
-/** Ô Người nhận của đơn: chỉ các đối tác nội bộ mã NB… (yêu cầu 08/10/2026). */
+/** Ô Người nhận của đơn: chỉ các đối tác nội bộ mã NB…, đơn mới tự là NB001 (0119). */
 export function InternalPartnerSelect({ value, current, onChange }: Props) {
   const partners = useQuery({ queryKey: orderKeys.internalPartners, queryFn: fetchInternalPartners });
 
@@ -28,7 +28,7 @@ export function InternalPartnerSelect({ value, current, onChange }: Props) {
   return (
     <Select
       showSearch
-      allowClear
+      // Không cho xóa trắng: đơn mặc định NB001 (0119), chỉ đổi qua mã NB khác.
       className="w-full"
       placeholder="Chọn mã NB"
       value={value}

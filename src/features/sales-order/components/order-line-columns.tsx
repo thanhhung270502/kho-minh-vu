@@ -134,7 +134,7 @@ export function buildOrderLineColumns({
       title: "Ghi chú",
       dataIndex: "note",
       key: "note",
-      width: 220,
+      width: 150,
       render: (note: string | null, line: OrderLine) =>
         editable ? (
           <Input

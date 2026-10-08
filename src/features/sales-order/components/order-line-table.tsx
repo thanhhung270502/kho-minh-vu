@@ -153,7 +153,7 @@ export function OrderLineTable({ orderId, lines, editable, staff }: Props) {
           columns={columns}
           dataSource={lines}
           pagination={false}
-          scroll={{ x: 980 }}
+          scroll={{ x: 910 }}
           locale={{ emptyText: "Chưa có dòng nào. Gõ mã hàng ở ô phía trên để thêm." }}
           summary={() =>
             lines.length > 0 ? (

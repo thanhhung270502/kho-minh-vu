@@ -78,11 +78,11 @@ export function OrderLineEntryRow({
         />
       </div>
 
-      <div className="w-56">
+      <div className="w-36">
         <label className="mb-1 block text-[15px] text-chu-phu">Ghi chú dòng</label>
         <Input
           value={note}
-          placeholder="Không bắt buộc"
+          placeholder="Tùy chọn"
           onChange={(event) => onNoteChange(event.target.value)}
           onPressEnter={(event) => {
             event.preventDefault();
