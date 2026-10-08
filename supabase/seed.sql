@@ -25,7 +25,9 @@ begin
     select * from (values
       ('quanly@khominhvu.local',      'Quản lý demo',    'QUAN_LY',     array[]::text[],    true,  false, false),
       ('vanphong@khominhvu.local',    'Văn phòng demo',  'NHAN_VIEN',   array[]::text[],    false, false, true),
-      ('chixem@khominhvu.local',      'Chỉ xem demo',    'CHI_XEM',     array[]::text[],    false, false, false)
+      ('chixem@khominhvu.local',      'Chỉ xem demo',    'CHI_XEM',     array[]::text[],    false, false, false),
+      ('thukho1@khominhvu.local',     'Thủ kho K1',      'THU_KHO',     array['K1'],        false, false, false),
+      ('thukho2@khominhvu.local',     'Thủ kho K1 + K2', 'THU_KHO',     array['K1','K2'],   false, false, false)
     ) as t(email, ho_ten, ma_chuc_vu, ma_kho, duyet_kiem_ke, phai_doi_mat_khau, xem_lich_su_kiotviet)
   loop
     select id into v_id from auth.users where email = r.email;
@@ -69,6 +71,15 @@ begin
     delete from public.nguoi_dung_kho where nguoi_dung_id = v_id;
     insert into public.nguoi_dung_kho (nguoi_dung_id, kho_id)
     select v_id, k.id from public.kho k where k.ma = any(r.ma_kho);
+
+    -- 0117: quyền theo người. Đặt lại đúng bộ quyền cũ của chức vụ (0082) để pgTAP
+    -- đăng nhập văn phòng/thủ kho vẫn làm được việc của họ.
+    delete from public.nguoi_dung_quyen where nguoi_dung_id = v_id;
+    insert into public.nguoi_dung_quyen (nguoi_dung_id, quyen)
+    select v_id, q from unnest(case r.ma_chuc_vu
+      when 'NHAN_VIEN' then array['nhap_kho', 'tao_don', 'tao_ma_hang']
+      when 'THU_KHO' then array['nhap_kho']
+      else array[]::text[] end) as q;
   end loop;
 end $$;
 
