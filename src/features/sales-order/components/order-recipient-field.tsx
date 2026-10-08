@@ -1,10 +1,10 @@
 "use client";
 
+import { InternalPartnerSelect } from "@/shared/components/internal-partner-select";
 import { partnerLabel, staffNames, type OrderRecipients } from "@/shared/lib/recipient";
 
 import { useRecipientSaveQueue } from "../hooks/use-recipient-save-queue";
 import type { OrderRecipientsInput } from "../schemas/order.schema";
-import { InternalPartnerSelect } from "./internal-partner-select";
 
 type Props = {
   recipients: OrderRecipients;

@@ -1,12 +1,12 @@
 "use client";
 
-import { App, Descriptions, Input, Tag, Typography } from "antd";
+import { App, Descriptions, Input, Typography } from "antd";
 import dayjs from "dayjs";
 import Link from "next/link";
 import { useState } from "react";
 
 import { StatusDot } from "@/shared/components/status-dot";
-import { PartnerSearchInput } from "@/shared/components/partner-search-input";
+import { InternalPartnerSelect } from "@/shared/components/internal-partner-select";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 
 import { useUpdateIssueHeader } from "../hooks/useIssues";
@@ -65,44 +65,26 @@ export function IssueHeader({ issue, canEdit }: Props) {
     );
   }
 
-  const hasStaff = issue.staffRecipients.length > 0;
+  // Như đơn đặt (08/10/2026): người nhận chỉ là đối tác mã NB…, tên người nhận thật
+  // gõ ở Ghi chú; nhân viên phụ trách không hiện nữa.
   const recipientItems = [
-    ...(issue.partnerId !== null || !hasStaff
-      ? [
-          {
-            key: "partner",
-            label: fieldLabel("partnerId", hasStaff ? "Đối tác" : "Người nhận"),
-            children: editable ? (
-              <PartnerSearchInput
-                value={issue.partnerId ?? undefined}
-                onChange={(value) =>
-                  value ? void save("partnerId", { partnerId: value }) : null
-                }
-              />
-            ) : (
-              `${issue.partnerCode ?? ""} ${issue.partnerName ?? "—"}`.trim()
-            ),
-          },
-        ]
-      : []),
-    ...(hasStaff
-      ? [
-          {
-            // Người nhận đi theo đơn gốc (hóa đơn từ đơn đã ghi sổ) nên chỉ đọc.
-            key: "staff",
-            label: issue.partnerId ? "Nhân viên nhận" : "Người nhận",
-            children: (
-              <span className="flex flex-wrap gap-1">
-                {issue.staffRecipients.map((p) => (
-                  <Tag key={p.id} className="m-0">
-                    {p.name}
-                  </Tag>
-                ))}
-              </span>
-            ),
-          },
-        ]
-      : []),
+    {
+      key: "partner",
+      label: fieldLabel("partnerId", "Người nhận"),
+      children: editable ? (
+        <InternalPartnerSelect
+          value={issue.partnerId ?? undefined}
+          current={
+            issue.partnerId
+              ? { id: issue.partnerId, code: issue.partnerCode, name: issue.partnerName }
+              : null
+          }
+          onChange={(value) => (value ? void save("partnerId", { partnerId: value }) : null)}
+        />
+      ) : (
+        `${issue.partnerCode ?? ""} ${issue.partnerName ?? "—"}`.trim()
+      ),
+    },
   ];
 
   return (
@@ -158,7 +140,7 @@ export function IssueHeader({ issue, canEdit }: Props) {
           children: editable ? (
             <Input.TextArea
               defaultValue={issue.note ?? ""}
-              placeholder="Ghi chú cho phiếu này"
+              placeholder="Gõ tên người nhận và ghi chú cho phiếu"
               autoSize={{ minRows: 1, maxRows: 3 }}
               onBlur={(event) =>
                 void save("note", { note: event.target.value || null })

@@ -11,5 +11,4 @@ export const orderKeys = {
   statusCounts: (key: OrderStatusCountKey) => ["orders", "status-counts", key] as const,
   detail: (id: string) => ["orders", "detail", id] as const,
   lines: (id: string) => ["orders", "lines", id] as const,
-  internalPartners: ["orders", "internal-partners"] as const,
 };

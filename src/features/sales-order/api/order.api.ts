@@ -1,5 +1,4 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { isInternalPartnerCode, type PartnerRef } from "@/shared/lib/recipient";
 
 import {
   toCreateOrderRpcArgs,
@@ -73,23 +72,6 @@ export async function fetchOrderLines(id: string): Promise<OrderLine[]> {
   });
   if (error) throw error;
   return (data ?? []).map(toOrderLine);
-}
-
-/**
- * Người nhận của đơn chỉ chọn trong các đối tác nội bộ mã NB… (yêu cầu 08/10/2026);
- * tên người nhận thật gõ tay ở Ghi chú.
- */
-export async function fetchInternalPartners(): Promise<PartnerRef[]> {
-  const { data, error } = await getSupabaseBrowserClient()
-    .from("doi_tac")
-    .select("id, ma, ten")
-    .ilike("ma", "NB%")
-    .eq("dang_hoat_dong", true)
-    .order("ma");
-  if (error) throw error;
-  return (data ?? [])
-    .filter((row) => isInternalPartnerCode(row.ma))
-    .map((row) => ({ id: row.id, code: row.ma, name: row.ten }));
 }
 
 // --- Ghi: đầu đơn / dòng đơn --------------------------------------------------

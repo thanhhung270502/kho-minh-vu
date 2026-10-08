@@ -1,7 +1,7 @@
 "use client";
 
 import type { InputNumberRef } from "@rc-component/input-number";
-import { Button, InputNumber, Typography } from "antd";
+import { Button, Input, InputNumber, Typography } from "antd";
 import type { RefSelectProps } from "antd/es/select";
 import type { Ref } from "react";
 
@@ -14,10 +14,12 @@ type Props = {
   codeInputRef: Ref<RefSelectProps>;
   quantityInputRef: Ref<InputNumberRef>;
   quantity: number | null;
+  note: string;
   selectedProduct: ProductSearchResult | null;
   pending: boolean;
   onSelectProduct: (product: ProductSearchResult) => void;
   onQuantityChange: (value: number | null) => void;
+  onNoteChange: (value: string) => void;
   onSubmit: () => void;
 };
 
@@ -31,10 +33,12 @@ export function IssueLineEntryRow({
   codeInputRef,
   quantityInputRef,
   quantity,
+  note,
   selectedProduct,
   pending,
   onSelectProduct,
   onQuantityChange,
+  onNoteChange,
   onSubmit,
 }: Props) {
   return (
@@ -65,13 +69,26 @@ export function IssueLineEntryRow({
         />
       </div>
 
+      <div className="w-36">
+        <label className="mb-1 block text-[15px] text-chu-phu">Ghi chú dòng</label>
+        <Input
+          value={note}
+          placeholder="Tùy chọn"
+          onChange={(event) => onNoteChange(event.target.value)}
+          onPressEnter={(event) => {
+            event.preventDefault();
+            onSubmit();
+          }}
+        />
+      </div>
+
       <Button type="primary" loading={pending} onClick={onSubmit}>
         Thêm dòng
       </Button>
 
       <Typography.Text type="secondary" className="w-full text-xs">
         Gõ mã → Enter → số lượng → Enter là xong một dòng, con trỏ quay về ô
-        mã.
+        mã. Cần ghi chú cho dòng thì gõ vào ô Ghi chú dòng trước khi Enter.
       </Typography.Text>
     </div>
   );
