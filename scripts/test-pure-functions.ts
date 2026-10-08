@@ -295,7 +295,7 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "phan_quyen"]), false);
 
   const nvpt = "/cai-dat/nhan-vien-phu-trach";
   assert.ok(!tabsFor(as("van_phong")).some((t) => t.duongDan === nvpt), "0117: nhân viên không có tab Nhân viên phụ trách");
-  assert.ok(tabsFor(as("quan_ly")).some((t) => t.duongDan === nvpt), "quản lý có tab Nhân viên phụ trách");
+  assert.ok(!tabsFor(as("quan_ly")).some((t) => t.duongDan === nvpt), "08/10/2026: tab Nhân viên phụ trách ẩn với mọi người");
   assert.ok(!tabsFor(as("thu_kho")).some((t) => t.duongDan === nvpt), "thủ kho không có tab này");
   // 0117: tab Nhân viên phụ trách chỉ Admin; quyền Phân quyền mở menu Cài đặt (tab Người dùng).
   assert.ok(!tabsFor(as("thu_kho", ["phan_quyen"])).some((t) => t.duongDan === nvpt));
@@ -320,7 +320,7 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "phan_quyen"]), false);
   for (const old of ["/cai-dat/nhom-hang", "/cai-dat/don-vi-tinh", "/cai-dat/cong-doan"]) {
     assert.ok(!SETTINGS_TABS.some((t) => t.duongDan === old), `Cài đặt không còn ${old}`);
   }
-  assert.equal(firstTabFor(as("van_phong")), "/cai-dat/nhan-vien-phu-trach");
+  assert.equal(firstTabFor(as("van_phong")), "/cai-dat/nguoi-dung", "không có tab nào thì về Người dùng");
   assert.equal(firstTabFor(as("quan_ly")), "/cai-dat/nguoi-dung");
 }
 

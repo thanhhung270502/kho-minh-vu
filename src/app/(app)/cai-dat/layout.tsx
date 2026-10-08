@@ -13,7 +13,7 @@ export default async function SettingsLayout({ children }: { children: ReactNode
     <>
       <PageHeader
         title="Cài đặt"
-        description="Tài khoản & phân quyền, kho, nhân viên phụ trách."
+        description="Tài khoản & phân quyền, kho."
       />
 
       <SettingsTabs user={{ role: nd.role, permissions: nd.permissions }} />

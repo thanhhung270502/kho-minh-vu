@@ -15,7 +15,7 @@ export const SETTINGS_TABS: SettingsTab[] = [
   // Quyền theo từng người (0117) — tab Chức vụ bỏ, tích quyền ngay trong tài khoản.
   { duongDan: "/cai-dat/nguoi-dung", label: "Người dùng", quyen: ["tao_tai_khoan", "phan_quyen"] },
   { duongDan: "/cai-dat/kho", label: "Kho", quyen: "manage-warehouses" },
-  { duongDan: "/cai-dat/nhan-vien-phu-trach", label: "Nhân viên phụ trách", quyen: "manage-users" },
+  // Tab "Nhân viên phụ trách" đã ẩn (08/10/2026) — người nhận đơn là mã NB…, trang vẫn còn cho Admin.
   // Tab "Số chứng từ" (/cai-dat/so-chung-tu) đã ẩn — trang vẫn còn, vào bằng đường dẫn.
 ];
 
@@ -26,8 +26,7 @@ export function tabsFor(user: PermissionSubject): SettingsTab[] {
 /** Quyền để vào /cai-dat: có ít nhất một tab. */
 export const SETTINGS_ANY_PERMISSION: AnyPermission[] = SETTINGS_TABS.flatMap((t) => (typeof t.quyen === "string" ? [t.quyen] : [...t.quyen]));
 
-// Nhóm hàng / ĐVT / Công đoạn rời Cài đặt ở Phase 11 — quản lý bằng nút "Danh
-// mục phụ" ở Danh sách hàng hóa. Tab ít quyền nhất còn lại là Nhân viên phụ trách.
+// Không có tab nào thì về Người dùng — chính trang đó báo thiếu quyền.
 export function firstTabFor(user: PermissionSubject): string {
-  return tabsFor(user)[0]?.duongDan ?? "/cai-dat/nhan-vien-phu-trach";
+  return tabsFor(user)[0]?.duongDan ?? "/cai-dat/nguoi-dung";
 }
