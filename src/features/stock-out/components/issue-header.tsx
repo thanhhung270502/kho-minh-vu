@@ -91,6 +91,9 @@ export function IssueHeader({ issue, canEdit }: Props) {
     <Descriptions
       bordered
       size="small"
+      // Nền trắng cả ô nhãn — khối đầu phiếu thành thẻ trắng như màn đơn đặt.
+      className="overflow-hidden rounded-the bg-white"
+      styles={{ label: { background: "#fff" } }}
       column={{ xs: 1, sm: 2, lg: 3 }}
       items={[
         {
