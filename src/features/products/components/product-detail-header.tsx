@@ -39,7 +39,7 @@ export function ProductDetailHeader({ product, canEdit, onEdit }: Props) {
 
   return (
     <div>
-      <Link href="/danh-muc" className="text-[13px] font-semibold text-chu-phu">
+      <Link href="/danh-muc" className="text-[15px] font-semibold text-chu-phu">
         ← Danh mục
       </Link>
       <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
@@ -52,7 +52,7 @@ export function ProductDetailHeader({ product, canEdit, onEdit }: Props) {
               {product.isActive ? "Đang kinh doanh" : "Ngừng kinh doanh"}
             </StatusDot>
           </div>
-          <div className="mt-1 text-[13.5px] text-chu-phu">{product.name}</div>
+          <div className="mt-1 text-[15.5px] text-chu-phu">{product.name}</div>
         </div>
         {canEdit ? (
           <div className="flex gap-2">

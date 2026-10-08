@@ -1,7 +1,7 @@
 "use client";
 
 import type { InputNumberRef } from "@rc-component/input-number";
-import { Button, InputNumber, Select, Typography } from "antd";
+import { Button, Input, InputNumber, Select, Typography } from "antd";
 import type { RefSelectProps } from "antd/es/select";
 import type { Ref } from "react";
 
@@ -16,6 +16,7 @@ type Props = {
   codeInputRef: Ref<RefSelectProps>;
   quantityInputRef: Ref<InputNumberRef>;
   quantity: number | null;
+  note: string;
   selectedProduct: ProductSearchResult | null;
   pending: boolean;
   staff: StaffRef[];
@@ -24,6 +25,7 @@ type Props = {
   onRecipientChange: (id: string | null) => void;
   onSelectProduct: (product: ProductSearchResult) => void;
   onQuantityChange: (value: number | null) => void;
+  onNoteChange: (value: string) => void;
   onSubmit: () => void;
 };
 
@@ -37,6 +39,7 @@ export function OrderLineEntryRow({
   codeInputRef,
   quantityInputRef,
   quantity,
+  note,
   selectedProduct,
   pending,
   staff,
@@ -45,12 +48,13 @@ export function OrderLineEntryRow({
   onRecipientChange,
   onSelectProduct,
   onQuantityChange,
+  onNoteChange,
   onSubmit,
 }: Props) {
   return (
     <div className="mt-3 flex flex-wrap items-end gap-2 rounded-the border border-vien bg-nen-tong p-3">
       <div className="min-w-56 flex-1">
-        <label className="mb-1 block text-[13px] text-chu-phu">Mã hàng</label>
+        <label className="mb-1 block text-[15px] text-chu-phu">Mã hàng</label>
         <ProductSearchInput
           inputRef={codeInputRef}
           disabled={pending}
@@ -60,7 +64,7 @@ export function OrderLineEntryRow({
       </div>
 
       <div className="w-28">
-        <label className="mb-1 block text-[13px] text-chu-phu">Số lượng</label>
+        <label className="mb-1 block text-[15px] text-chu-phu">Số lượng</label>
         <InputNumber
           ref={quantityInputRef}
           className="w-full"
@@ -74,9 +78,22 @@ export function OrderLineEntryRow({
         />
       </div>
 
+      <div className="w-36">
+        <label className="mb-1 block text-[15px] text-chu-phu">Ghi chú dòng</label>
+        <Input
+          value={note}
+          placeholder="Tùy chọn"
+          onChange={(event) => onNoteChange(event.target.value)}
+          onPressEnter={(event) => {
+            event.preventDefault();
+            onSubmit();
+          }}
+        />
+      </div>
+
       {showRecipient ? (
         <div className="w-48">
-          <label className="mb-1 block text-[13px] text-chu-phu">Người nhận</label>
+          <label className="mb-1 block text-[15px] text-chu-phu">Người nhận</label>
           <Select
             allowClear
             showSearch
@@ -96,7 +113,7 @@ export function OrderLineEntryRow({
 
       <Typography.Text type="secondary" className="w-full text-xs">
         Gõ mã → Enter → số lượng → Enter là xong một dòng, con trỏ quay về ô
-        mã.
+        mã. Cần ghi chú cho dòng thì gõ vào ô Ghi chú dòng trước khi Enter.
         {showRecipient
           ? " Ô Người nhận giữ nguyên cho các dòng tiếp theo; để trống = hàng chung."
           : ""}

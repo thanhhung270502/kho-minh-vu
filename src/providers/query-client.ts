@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-query";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { explainError, isPostgrestError } from "@/shared/lib/errors";
+import { JWT_CLOCK_SKEW_CODE, explainError, isPostgrestError } from "@/shared/lib/errors";
 
 const MAX_RETRIES = 2;
 
@@ -17,7 +17,8 @@ const MAX_RETRIES = 2;
  */
 function shouldRetry(failureCount: number, error: unknown): boolean {
   if (isPostgrestError(error)) {
-    return false;
+    // Ngoại lệ: token "cấp ở tương lai" (lệch giờ vài giây) — thử lại là qua.
+    return error.code === JWT_CLOCK_SKEW_CODE && failureCount < MAX_RETRIES;
   }
 
   return failureCount < MAX_RETRIES;

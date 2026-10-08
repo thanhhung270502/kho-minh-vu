@@ -26,6 +26,8 @@ export const documentLineSchema = z.object({
     .number({ message: "Đơn giá phải là số" })
     .min(0, "Đơn giá không được âm"),
   warehouseId: z.string().uuid().nullable(),
+  /** Ghi chú dòng (chung_tu_dong.ghi_chu) — hóa đơn sửa trên web từ 08/10/2026. */
+  note: z.string().nullable().optional(),
 });
 
 export type DocumentHeaderInput = z.input<typeof documentHeaderSchema>;
@@ -79,5 +81,6 @@ export function toDocumentLineUpdate(
   if (input.quantity !== undefined) update.so_luong = input.quantity;
   if (input.unitPrice !== undefined) update.don_gia = input.unitPrice;
   if (input.warehouseId !== undefined) update.kho_id = input.warehouseId;
+  if (input.note !== undefined) update.ghi_chu = input.note?.trim() || null;
   return update;
 }

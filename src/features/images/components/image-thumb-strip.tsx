@@ -41,7 +41,7 @@ export function ImageThumbStrip({
             className="size-full object-cover"
           />
           {image.isPrimary ? (
-            <StarFilled className="absolute left-0.5 top-0.5 text-[11px] text-amber-400" />
+            <StarFilled className="absolute left-0.5 top-0.5 text-[13px] text-amber-400" />
           ) : null}
         </button>
       ))}

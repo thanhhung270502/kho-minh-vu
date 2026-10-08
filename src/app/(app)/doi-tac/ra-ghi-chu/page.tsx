@@ -8,7 +8,7 @@ import { PageHeader } from "@/shared/components/page-header";
 export const metadata: Metadata = { title: "Rà ghi chú KiotViet" };
 
 export default async function NoteReviewPage() {
-  await requirePermission("edit-catalog");
+  await requirePermission("tao_doi_tac");
 
   return (
     <>

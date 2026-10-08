@@ -48,19 +48,38 @@ export function staffNames(staff: readonly StaffRef[]): string {
   );
 }
 
+/**
+ * Đối tác nội bộ: mã bắt đầu "NB" (NB001 Bộ phận điều phối đơn, NB002 Nhập bù —
+ * tồn nội bộ). Hàng của các đơn này thật ra giao qua nhân viên nhận, rồi nhân viên
+ * giao tận tay khách — trên giấy tờ không ghi tên khách.
+ */
+export function isInternalPartnerCode(code: string | null | undefined): boolean {
+  return /^NB\d/i.test(code?.trim() ?? "");
+}
+
+/** Đơn của đối tác nội bộ có nhân viên nhận: chỉ hiện tên nhân viên, ẩn tên đối tác. */
+export function showsStaffOnly(recipients: OrderRecipients): boolean {
+  return (
+    recipients.partner !== null &&
+    isInternalPartnerCode(recipients.partner.code) &&
+    recipients.staff.length > 0
+  );
+}
+
 export function partnerLabel(partner: PartnerRef): string {
   return [partner.code, partner.name].filter(Boolean).join(" ") || "—";
 }
 
 export function formatOrderRecipients(recipients: OrderRecipients): string {
   const { partner, staff } = recipients;
+  if (showsStaffOnly(recipients)) return staffNames(staff);
   if (partner) {
     return staff.length > 0
       ? `${partnerLabel(partner)} · ${staffNames(staff)}`
       : partnerLabel(partner);
   }
   // 0097: đơn tạm được tạo trước, người nhận chọn sau trong trang đơn.
-  return staff.length > 0 ? `Nội bộ — ${staffNames(staff)}` : "Chưa chọn người nhận";
+  return staff.length > 0 ? staffNames(staff) : "Chưa chọn người nhận";
 }
 
 export function lineRecipientLabel(

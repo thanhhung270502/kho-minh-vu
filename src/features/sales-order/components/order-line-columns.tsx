@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, InputNumber, Tooltip } from "antd";
+import { Button, Input, InputNumber, Tooltip } from "antd";
 import type { TableColumnsType } from "antd";
 
 import { StatusDot } from "@/shared/components/status-dot";
@@ -32,6 +32,7 @@ type Params = {
     name: string | undefined,
   ) => void;
   onEditQuantity: (id: string, quantity: number) => void;
+  onEditNote: (id: string, note: string) => void;
   onDelete: (id: string) => void;
 };
 
@@ -47,6 +48,7 @@ export function buildOrderLineColumns({
   extraStaff,
   onEditRecipient,
   onEditQuantity,
+  onEditNote,
   onDelete,
 }: Params): TableColumnsType<OrderLine> {
   return [
@@ -64,7 +66,7 @@ export function buildOrderLineColumns({
       key: "productCode",
       width: 150,
       render: (code: string) => (
-        <span className="font-mono text-[12.5px] font-medium">{code}</span>
+        <span className="font-mono text-[14.5px] font-medium">{code}</span>
       ),
     },
     {
@@ -126,6 +128,29 @@ export function buildOrderLineColumns({
           />
         ) : (
           formatNumber(value)
+        ),
+    },
+    {
+      title: "Ghi chú",
+      dataIndex: "note",
+      key: "note",
+      width: 150,
+      render: (note: string | null, line: OrderLine) =>
+        editable ? (
+          <Input
+            // Không kiểm soát, lưu khi rời ô — key theo giá trị để dựng lại sau khi lưu (bẫy 20).
+            key={`${line.id}-${note ?? ""}`}
+            size="small"
+            defaultValue={note ?? ""}
+            placeholder="—"
+            onBlur={(event) => {
+              const next = event.target.value.trim();
+              if (next !== (note ?? "")) onEditNote(line.id, next);
+            }}
+            onPressEnter={(event) => event.currentTarget.blur()}
+          />
+        ) : (
+          <span className="text-chu-phu">{note ?? ""}</span>
         ),
     },
     ...(showProgress

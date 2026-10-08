@@ -51,15 +51,15 @@ const MA_TRAN: Dong[] = [
   { route: "/", ky_vong: { quanly: "200", vanphong: "→/duyet-don", thukho1: "→/danh-muc", chixem: "→/danh-muc", khach: "dangnhap" } },
   // /cai-dat chỉ redirect sang tab đầu tiên theo quyền. UAT Phase 2 bắt được
   // lỗi page này crash vì gọi hàm client từ server — ma trận cũ thiếu đúng nó.
-  { route: "/cai-dat", ky_vong: { quanly: "→/cai-dat/nguoi-dung", vanphong: "→/cai-dat/nhan-vien-phu-trach", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
-  { route: "/nhap-kho", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
-  // Cùng quyền xem với /nhap-kho — nút "Tạo đơn" ẩn/hiện là trang trí ở client
+  { route: "/cai-dat", ky_vong: { quanly: "→/cai-dat/nguoi-dung", vanphong: "quyen", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
+  { route: "/nhap-hang", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
+  // Cùng quyền xem với /nhap-hang — nút "Tạo đơn" ẩn/hiện là trang trí ở client
   // (canCreate), chặn thật nằm ở bốn policy ghi trên don_dat_hang (plan 04-02).
   { route: "/don-dat", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   // Phase 12 (DON-01): bấm Tạo đơn vào thẳng trang tạo đơn — cùng quyền tạo
   // đơn của RLS (quản lý + văn phòng).
   { route: "/don-dat/moi", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
-  // Cùng quyền xem với /nhap-kho và /don-dat — nút "Tạo hóa đơn" ẩn/hiện
+  // Cùng quyền xem với /nhap-hang và /don-dat — nút "Tạo hóa đơn" ẩn/hiện
   // là trang trí ở client (canCreate), chặn thật ở policy ghi trên chung_tu (0016).
   { route: "/duyet-don", ky_vong: { quanly: "200", vanphong: "200", thukho1: "200", chixem: "200", khach: "dangnhap" } },
   // Phase 17 (TEN-02): link cũ — redirect next.config chạy TRƯỚC proxy nên khách
@@ -86,9 +86,10 @@ const MA_TRAN: Dong[] = [
   // Job cron: proxy miễn kiểm phiên, route tự gác bằng CRON_SECRET — có đăng nhập
   // mà không có "Authorization: Bearer <CRON_SECRET>" cũng 401.
   { route: "/api/cron/ma-hoa", ky_vong: ALL("401") },
-  { route: "/cai-dat/chuc-vu", ky_vong: { quanly: "200", vanphong: "quyen", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
+  // Bỏ màn Chức vụ (0117): ai đăng nhập cũng được đẩy sang Người dùng; màn đó tự chặn quyền.
+  { route: "/cai-dat/chuc-vu", ky_vong: { quanly: "→/cai-dat/nguoi-dung", vanphong: "→/cai-dat/nguoi-dung", thukho1: "→/cai-dat/nguoi-dung", chixem: "→/cai-dat/nguoi-dung", khach: "dangnhap" } },
   // Nhân viên phụ trách (0077): cùng nhóm quyền ghi với danh mục — quản lý + văn phòng.
-  { route: "/cai-dat/nhan-vien-phu-trach", ky_vong: { quanly: "200", vanphong: "200", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
+  { route: "/cai-dat/nhan-vien-phu-trach", ky_vong: { quanly: "200", vanphong: "quyen", thukho1: "quyen", chixem: "quyen", khach: "dangnhap" } },
   // Phase 11 (NVPT-04): ba danh mục phụ rời Cài đặt, quản lý ở Danh sách hàng hóa.
   { route: "/cai-dat/nhom-hang", ky_vong: ALL("→/danh-muc") },
   { route: "/cai-dat/don-vi-tinh", ky_vong: ALL("→/danh-muc") },
@@ -571,33 +572,33 @@ async function kiemChuyenHuongDayDu(
 }
 
 /**
- * QUYEN-04 (Phase 16): ma trận chạy THEO CHỨC VỤ. Bật/tắt quyền của chức vụ
- * bằng service role rồi gọi lại bằng ĐÚNG cookie đã đăng nhập từ trước — đổi
- * quyền không cần token mới. Luôn trả quyền về như cũ, kể cả khi lỗi giữa chừng.
+ * QUYEN-04 (0117): quyền tích THEO NGƯỜI. Đặt quyền của tài khoản test bằng service
+ * role rồi gọi lại bằng ĐÚNG cookie đã đăng nhập từ trước — đổi quyền không cần token
+ * mới. Luôn trả bộ quyền cũ của từng người, kể cả khi lỗi giữa chừng.
  */
-async function kiemTheoChucVu(cookie: Record<VaiTroTest, string>): Promise<{ tong: number; lech: string[] }> {
+async function kiemTheoNguoi(cookie: Record<VaiTroTest, string>): Promise<{ tong: number; lech: string[] }> {
   const admin = taoAdminClient();
-  const { data: chucVu, error } = await admin.from("chuc_vu").select("id, ma");
+  const { data: nguoiDung, error } = await admin.from("nguoi_dung").select("id, ten_dang_nhap");
   if (error) throw error;
-  const idCua = (ma: string) => {
-    const id = chucVu?.find((c) => c.ma === ma)?.id;
-    if (!id) throw new Error(`Không có chức vụ ${ma} — chạy migration 0082.`);
+  const idCua = (vt: Exclude<VaiTroTest, "khach">) => {
+    const ten = TAI_KHOAN[vt].split("@")[0];
+    const id = nguoiDung?.find((n) => n.ten_dang_nhap === ten)?.id;
+    if (!id) throw new Error(`Không có tài khoản ${ten} — chạy npm run seed:users.`);
     return id;
   };
 
-  const doi: Array<{ ma: string; quyen: BusinessPermission; bat: boolean }> = [
-    { ma: "NHAN_VIEN", quyen: "xem_dashboard", bat: true },
-    { ma: "THU_KHO", quyen: "tao_don", bat: true },
-    { ma: "THU_KHO", quyen: "tao_nhan_vien", bat: true },
-    { ma: "THU_KHO", quyen: "kiem_kho", bat: false },
-    { ma: "NHAN_VIEN", quyen: "tao_ma_hang", bat: false },
-    { ma: "QUAN_LY", quyen: "xem_dashboard", bat: false },
+  const thu: Array<{ vt: "vanphong" | "thukho1"; quyen: BusinessPermission[] }> = [
+    { vt: "vanphong", quyen: ["xem_dashboard"] },
+    { vt: "thukho1", quyen: ["tao_don", "nhap_kho"] },
   ];
-  const datQuyen = async (ma: string, quyen: BusinessPermission, bat: boolean) => {
-    const bang = admin.from("chuc_vu_quyen");
-    const { error: loi } = bat
-      ? await bang.upsert({ chuc_vu_id: idCua(ma), quyen }, { ignoreDuplicates: true })
-      : await bang.delete().eq("chuc_vu_id", idCua(ma)).eq("quyen", quyen);
+  const cu = new Map<string, string[]>();
+  const datQuyen = async (id: string, quyen: string[]) => {
+    const { error: loiXoa } = await admin.from("nguoi_dung_quyen").delete().eq("nguoi_dung_id", id);
+    if (loiXoa) throw loiXoa;
+    if (quyen.length === 0) return;
+    const { error: loi } = await admin
+      .from("nguoi_dung_quyen")
+      .insert(quyen.map((q) => ({ nguoi_dung_id: id, quyen: q })));
     if (loi) throw loi;
   };
 
@@ -617,25 +618,27 @@ async function kiemTheoChucVu(cookie: Record<VaiTroTest, string>): Promise<{ ton
       })).status,
     );
 
-  try {
-    for (const d of doi) await datQuyen(d.ma, d.quyen, d.bat);
-
-    so("vanphong / (bật Xem dashboard)", String(await doMot("/", cookie.vanphong)), "200");
-    // Tắt cho quản lý: về /duyet-don, KHÔNG chuyển hướng vòng tròn về "/".
-    so("quanly / (tắt Xem dashboard)", String(await doMot("/", cookie.quanly)), "→/duyet-don");
-    so("thukho1 /don-dat/moi (bật Tạo đơn)", String(await doMot("/don-dat/moi", cookie.thukho1)), "200");
-    so("thukho1 /cai-dat (bật Tạo nhân viên)", String(await doMot("/cai-dat", cookie.thukho1)), "→/cai-dat/nhan-vien-phu-trach");
-    so("thukho1 /cai-dat/nhan-vien-phu-trach", String(await doMot("/cai-dat/nhan-vien-phu-trach", cookie.thukho1)), "200");
-    so("thukho1 POST kiem-ke/nhap-excel (tắt Kiểm kho)", await postRong("/api/kiem-ke/nhap-excel", "thukho1"), "403");
-    so("vanphong POST doc-file-nhap-moi (tắt Tạo mã)", await postRong("/api/danh-muc/doc-file-nhap-moi", "vanphong"), "403");
-    so("vanphong /cai-dat/nhan-vien-phu-trach (vẫn có)", String(await doMot("/cai-dat/nhan-vien-phu-trach", cookie.vanphong)), "200");
-  } finally {
-    for (const d of doi) await datQuyen(d.ma, d.quyen, !d.bat);
+  for (const t of thu) {
+    const id = idCua(t.vt);
+    const { data, error: loi } = await admin.from("nguoi_dung_quyen").select("quyen").eq("nguoi_dung_id", id);
+    if (loi) throw loi;
+    cu.set(id, (data ?? []).map((r) => r.quyen));
   }
 
-  // Trả về như cũ: route quay lại đúng hành vi mặc định ngay, cùng phiên.
-  so("vanphong / (trả quyền)", String(await doMot("/", cookie.vanphong)), "→/duyet-don");
-  so("thukho1 /don-dat/moi (trả quyền)", String(await doMot("/don-dat/moi", cookie.thukho1)), "quyen");
+  try {
+    for (const t of thu) await datQuyen(idCua(t.vt), t.quyen);
+
+    so("vanphong / (có Xem Tổng quan)", String(await doMot("/", cookie.vanphong)), "200");
+    so("quanly / (Admin luôn đủ quyền)", String(await doMot("/", cookie.quanly)), "200");
+    so("thukho1 /don-dat/moi (có Tạo đơn)", String(await doMot("/don-dat/moi", cookie.thukho1)), "200");
+    // Chỉ Admin: kiểm kho, nhân viên phụ trách — tích quyền nào cũng không mở được.
+    so("thukho1 /cai-dat/nhan-vien-phu-trach", String(await doMot("/cai-dat/nhan-vien-phu-trach", cookie.thukho1)), "quyen");
+    so("thukho1 POST kiem-ke/nhap-excel (chỉ Admin)", await postRong("/api/kiem-ke/nhap-excel", "thukho1"), "403");
+    so("vanphong POST doc-file-nhap-moi (không Tạo mã)", await postRong("/api/danh-muc/doc-file-nhap-moi", "vanphong"), "403");
+    so("vanphong /phan-tich (không Xem Phân tích)", String(await doMot("/phan-tich", cookie.vanphong)), "quyen");
+  } finally {
+    for (const [id, quyen] of cu) await datQuyen(id, quyen);
+  }
 
   return { tong, lech };
 }
@@ -663,8 +666,8 @@ async function main() {
   const idPhieu = await layIdPhieuNhap();
   if (idPhieu) {
     MA_TRAN.push(
-      { route: `/nhap-kho/${idPhieu}`, ky_vong: AI_CUNG_XEM },
-      { route: `/nhap-kho/${idPhieu}/in`, ky_vong: AI_CUNG_XEM },
+      { route: `/nhap-hang/${idPhieu}`, ky_vong: AI_CUNG_XEM },
+      { route: `/nhap-hang/${idPhieu}/in`, ky_vong: AI_CUNG_XEM },
     );
   } else {
     console.warn("⚠ chưa có phiếu nhập nào — bỏ qua 2 route chi tiết");
@@ -739,7 +742,7 @@ async function main() {
   tong += anh.tong;
   lech.push(...anh.lech);
 
-  const theoChucVu = await kiemTheoChucVu(cookie);
+  const theoChucVu = await kiemTheoNguoi(cookie);
   tong += theoChucVu.tong;
   lech.push(...theoChucVu.lech);
 

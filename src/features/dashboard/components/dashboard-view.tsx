@@ -8,6 +8,7 @@ import { PageHeader } from "@/shared/components/page-header";
 
 import { useOverviewKpis, useRefreshDashboard } from "../hooks/useDashboard";
 import { formatUpdatedAt } from "../lib/overview-format";
+import { ActivityFeed } from "./activity-feed";
 import { AttentionPanel } from "./attention-panel";
 import { KpiStrip } from "./kpi-strip";
 import { NegativeStockSection } from "./negative-stock-section";
@@ -15,7 +16,7 @@ import { StockByGroupSection } from "./stock-by-group-section";
 
 /**
  * Tổng quan = việc của HÔM NAY: số trong ngày so hôm qua, tồn theo nhóm, xuất âm,
- * và cột "Cần xử lý". Phân tích theo tuần / tháng / quý / năm (biểu đồ, xếp hạng,
+ * cột "Cần xử lý" và "Hoạt động gần đây" (ai làm gì, lúc nào). Phân tích theo tuần / tháng / quý / năm (biểu đồ, xếp hạng,
  * tồn chậm) nằm ở trang Phân tích — không lặp lại ở đây. Nút "Làm mới" gọi lại
  * cả trang bằng một lần invalidate — không polling, không Realtime (D-14).
  */
@@ -56,6 +57,7 @@ export function DashboardView({ canViewAnalysis }: { canViewAnalysis: boolean })
         </div>
         <aside className="flex min-w-0 flex-col gap-4">
           <AttentionPanel canViewAnalysis={canViewAnalysis} />
+          <ActivityFeed />
         </aside>
       </div>
     </>

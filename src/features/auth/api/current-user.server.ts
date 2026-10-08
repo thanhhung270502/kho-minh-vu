@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { JWT_CLOCK_SKEW_CODE } from "@/shared/lib/errors";
 import {
   allows,
   BUSINESS_PERMISSIONS,
@@ -24,7 +25,7 @@ export type CurrentUser = {
    * `duyet_duoc_kiem_ke()` (0063).
    */
   canApproveStocktake: boolean;
-  /** 9 quyền của chức vụ (Phase 16) — đọc từ bảng nên đổi là có hiệu lực ở lần tải trang kế tiếp. */
+  /** 9 quyền theo người (0117) — đọc từ bảng nên đổi là có hiệu lực ở lần tải trang kế tiếp. */
   permissions: BusinessPermission[];
 };
 
@@ -46,16 +47,25 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   if (!user) return null;
 
   // Hai truy vấn độc lập (RPC tự lọc theo auth.uid()) — chạy song song thay vì nối tiếp.
-  const [profile, grants] = await Promise.all([
-    supabase
-      .from("nguoi_dung")
-      .select(
-        "id, ho_ten, vai_tro, dang_hoat_dong, phai_doi_mat_khau, duyet_kiem_ke",
-      )
-      .eq("id", user.id)
-      .maybeSingle(),
-    supabase.rpc("quyen_cua_toi"),
-  ]);
+  const load = () =>
+    Promise.all([
+      supabase
+        .from("nguoi_dung")
+        .select(
+          "id, ho_ten, vai_tro, dang_hoat_dong, phai_doi_mat_khau, duyet_kiem_ke",
+        )
+        .eq("id", user.id)
+        .maybeSingle(),
+      supabase.rpc("quyen_cua_toi"),
+    ]);
+  let [profile, grants] = await load();
+
+  // Token vừa làm mới mà đồng hồ PostgREST chậm hơn Auth vài giây → PGRST303 "JWT
+  // issued at future". Lỗi ở đây làm sập cả trang (màn lỗi đỏ) — đợi rồi thử lại một lần.
+  if (profile.error?.code === JWT_CLOCK_SKEW_CODE || grants.error?.code === JWT_CLOCK_SKEW_CODE) {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    [profile, grants] = await load();
+  }
 
   const { data, error } = profile;
   if (error) throw error;

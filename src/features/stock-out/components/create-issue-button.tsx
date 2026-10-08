@@ -3,9 +3,9 @@
 import { Alert, Button, DatePicker, Form, Modal, Typography } from "antd";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
-import { PartnerSearchInput } from "@/shared/components/partner-search-input";
+import { InternalPartnerSelect } from "@/shared/components/internal-partner-select";
 import { useLookups } from "@/features/products/hooks/useProducts";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 
@@ -29,6 +29,12 @@ export function CreateIssueButton({ label = "Tạo hóa đơn" }: Props) {
   // Kho ẩn trên hóa đơn (04/10/2026): phiếu lấy kho đang hoạt động đầu tiên (K1);
   // từng dòng vẫn theo kho mặc định của mã.
   const warehouseId = lookups.data?.warehouses[0]?.id;
+
+  // Ổn định tham chiếu để effect chọn sẵn NB001 trong ô không chạy lại mỗi lần render.
+  const choosePartner = useCallback((id: string | undefined) => {
+    setPartnerId(id);
+    setPartnerError(null);
+  }, []);
 
   function reset() {
     setPartnerId(undefined);
@@ -113,13 +119,11 @@ export function CreateIssueButton({ label = "Tạo hóa đơn" }: Props) {
             validateStatus={partnerError ? "error" : undefined}
             help={partnerError}
           >
-            <PartnerSearchInput
-              autoFocus
+            <InternalPartnerSelect
               value={partnerId}
-              onChange={(id) => {
-                setPartnerId(id);
-                setPartnerError(null);
-              }}
+              current={null}
+              autoDefault={open}
+              onChange={choosePartner}
             />
           </Form.Item>
 

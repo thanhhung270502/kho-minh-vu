@@ -10,6 +10,10 @@ import type { ThemeConfig } from "antd";
  * với `--color-brand-500` trong src/app/globals.css.
  */
 const INK = "#0A0A0A";
+// Chữ thường dịu hơn mực của nút/viền chọn: đen tuyền trên trắng tinh bị góp ý là chói.
+const TEXT = "#262626";
+// Nền trang trắng ngà — thẻ vẫn trắng nên tách lớp rõ mà đỡ chói.
+const PAGE_BG = "#F3F2EF";
 const WARNING = "#BF6600"; // oklch(0.6 0.15 60) trong design
 const DANGER = "#CC2827"; // oklch(0.55 0.2 27)
 const SUCCESS = "#2F9E5B";
@@ -36,15 +40,16 @@ export const antdTheme: ThemeConfig = {
     colorSuccess: SUCCESS,
     colorWarning: WARNING,
     colorError: DANGER,
-    colorText: INK,
-    colorTextSecondary: "#737373",
-    colorTextTertiary: "#8C8C8C",
-    colorTextQuaternary: "#A3A3A3",
-    colorTextPlaceholder: "#A3A3A3",
+    colorText: TEXT,
+    // Chữ phụ đậm hơn (góp ý: chữ xám nhạt nhỏ khó đọc).
+    colorTextSecondary: "#5E5E5E",
+    colorTextTertiary: "#737373",
+    colorTextQuaternary: "#8C8C8C",
+    colorTextPlaceholder: "#8C8C8C",
     colorBorder: "#E5E5E5",
     colorBorderSecondary: "#EDEDED",
     colorSplit: "#F3F3F3",
-    colorBgLayout: "#FFFFFF",
+    colorBgLayout: PAGE_BG,
     colorBgContainer: "#FFFFFF",
     colorBgElevated: "#FFFFFF",
     colorFillSecondary: "#F3F3F3",
@@ -52,12 +57,11 @@ export const antdTheme: ThemeConfig = {
     controlItemBgActive: "#F3F3F3",
     controlItemBgActiveHover: "#EBEBEB",
     controlOutline: "rgba(10,10,10,.08)",
-    // Màn hình kho chủ yếu là bảng số liệu dày đặc, cỡ chữ 14 dễ đọc trên
-    // máy văn phòng lẫn điện thoại thủ kho.
-    fontSize: 14,
-    fontSizeSM: 12,
-    fontSizeLG: 16,
-    lineHeight: 1.45,
+    // Góp ý người dùng (2 lần): chữ nhỏ — 14/12 → 16/14 cho bảng dày đọc lâu không mỏi.
+    fontSize: 16,
+    fontSizeSM: 14,
+    fontSizeLG: 18,
+    lineHeight: 1.5,
     fontFamily: "var(--font-sans)",
     fontFamilyCode: "var(--font-mono)",
     borderRadius: 10,
@@ -69,32 +73,34 @@ export const antdTheme: ThemeConfig = {
     boxShadowTertiary: "none",
     boxShadowSecondary: "0 6px 24px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06)",
     fontWeightStrong: 700,
-    controlHeight: 34,
+    controlHeight: 38,
   },
   components: {
     Table: {
       headerBg: "#FAFAFA",
-      headerColor: "#8C8C8C",
+      headerColor: "#5E5E5E",
       headerSplitColor: "transparent",
       headerSortActiveBg: "#F5F5F5",
       headerSortHoverBg: "#F5F5F5",
       borderColor: "#F3F3F3",
-      rowHoverBg: "#FAFAFA",
+      // Rê chuột phải thấy rõ đang ở dòng nào trên bảng dày (#FAFAFA cũ gần như
+      // trùng nền trắng). Vẫn là xám — màu chỉ dùng để báo hiệu.
+      rowHoverBg: "#EDEDED",
       rowSelectedBg: "#F3F3F3",
-      rowSelectedHoverBg: "#EBEBEB",
-      cellPaddingBlock: 9,
+      rowSelectedHoverBg: "#E5E5E5",
+      cellPaddingBlock: 10,
       cellPaddingInline: 12,
       headerBorderRadius: 0,
       footerBg: "#FAFAFA",
     },
     Layout: {
-      bodyBg: "#FFFFFF",
+      bodyBg: PAGE_BG,
       headerBg: "#FFFFFF",
       headerHeight: 60,
     },
     Modal: {
       borderRadiusLG: 16,
-      titleFontSize: 17,
+      titleFontSize: 18,
       titleColor: INK,
       contentBg: "#FFFFFF",
       headerBg: "#FFFFFF",
@@ -142,7 +148,14 @@ export const antdTheme: ThemeConfig = {
       activeBorderColor: INK,
       activeOutlineColor: "rgba(10,10,10,.08)",
       optionSelectedBg: "#F3F3F3",
+      // Dòng đang trỏ bằng ↑/↓ phải nhìn thấy rõ — Enter sẽ chọn đúng dòng này.
+      optionActiveBg: "#E2E2E2",
       colorBgContainerDisabled: "#F3F3F3",
+    },
+    // Công tắc bật = đang hoạt động / đang dùng: xanh lá, không dùng màu đen chủ đạo.
+    Switch: {
+      colorPrimary: SUCCESS,
+      colorPrimaryHover: "#268A4E",
     },
     DatePicker: {
       borderRadius: 10,
@@ -154,7 +167,7 @@ export const antdTheme: ThemeConfig = {
     Card: {
       borderRadiusLG: 16,
       colorBorderSecondary: "#EDEDED",
-      headerFontSize: 15,
+      headerFontSize: 17,
     },
     Checkbox: {
       borderRadiusSM: 4,
@@ -162,7 +175,7 @@ export const antdTheme: ThemeConfig = {
     Segmented: {
       itemSelectedBg: "#FFFFFF",
       itemSelectedColor: INK,
-      itemColor: "#737373",
+      itemColor: "#5E5E5E",
       itemHoverColor: INK,
       trackBg: "#F5F5F5",
       borderRadius: 9,
@@ -182,8 +195,8 @@ export const antdTheme: ThemeConfig = {
       contentFontSize: 28,
     },
     Form: {
-      labelColor: "#737373",
-      labelFontSize: 12,
+      labelColor: "#5E5E5E",
+      labelFontSize: 14,
       labelRequiredMarkColor: DANGER,
       itemMarginBottom: 16,
     },

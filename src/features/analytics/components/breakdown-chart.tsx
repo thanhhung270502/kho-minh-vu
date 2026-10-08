@@ -15,7 +15,7 @@ import {
 } from "../lib/period-analysis";
 import type { PeriodRow } from "../types";
 
-/** Cơ cấu xuất bán theo hãng / dòng / linh kiện / xử lý / nhóm — thanh ngang, top 8. */
+/** Cơ cấu xuất hàng theo hãng / dòng / linh kiện / xử lý / nhóm — thanh ngang, top 8. */
 export function BreakdownChart({ rows }: { rows: PeriodRow[] }) {
   const [dimension, setDimension] = useState<BreakdownDimension>("hang");
   const { dictionary } = useCodeDictionary();
@@ -33,7 +33,7 @@ export function BreakdownChart({ rows }: { rows: PeriodRow[] }) {
     <Card
       size="small"
       className="rounded-xl"
-      title={`Xuất bán theo ${BREAKDOWN_LABELS[dimension].toLowerCase()}`}
+      title={`Xuất hàng theo ${BREAKDOWN_LABELS[dimension].toLowerCase()}`}
       extra={
         <Select<BreakdownDimension>
           size="small"
@@ -45,7 +45,7 @@ export function BreakdownChart({ rows }: { rows: PeriodRow[] }) {
       }
     >
       {data.length === 0 ? (
-        <div className="flex h-72 items-center justify-center text-sm text-chu-phu">Không có xuất bán trong kỳ.</div>
+        <div className="flex h-72 items-center justify-center text-sm text-chu-phu">Không có xuất hàng trong kỳ.</div>
       ) : (
         <div style={{ height: Math.max(288, data.length * 46 + 32) }}>
           <ResponsiveContainer width="100%" height="100%">

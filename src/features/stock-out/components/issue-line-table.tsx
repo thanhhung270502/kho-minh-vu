@@ -25,9 +25,10 @@ type Props = { issue: IssueDetail; lines: IssueLine[]; editable: boolean };
 type DraftLine = {
   product: ProductSearchResult | null;
   quantity: number | null;
+  note: string;
 };
 
-const EMPTY_DRAFT: DraftLine = { product: null, quantity: null };
+const EMPTY_DRAFT: DraftLine = { product: null, quantity: null, note: "" };
 
 /**
  * Bảng dòng phiếu xuất (XUAT-07): gõ mã → Enter (bắt ở `onKeyDownCapture`
@@ -89,13 +90,13 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
   }
 
   function handleSelectProduct(product: ProductSearchResult) {
-    setDraft({ product, quantity: null });
+    setDraft((current) => ({ ...current, product, quantity: null }));
     lineWarehouse.prefetch(product);
     setTimeout(() => quantityInput.current?.focus(), 0);
   }
 
   async function saveDraftLine() {
-    const { product, quantity } = draft;
+    const { product, quantity, note } = draft;
     if (savingDraft) return;
     if (!product || !quantity || quantity <= 0) {
       message.warning("Nhập mã hàng và số lượng lớn hơn 0.");
@@ -111,7 +112,7 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
         message.warning(`Mã ${product.code} chưa gán kho mặc định và không kho nào còn hàng. Gán kho cho mã ở Danh mục rồi thêm lại.`);
         return;
       }
-      await addLine.mutateAsync({ productId: product.id, quantity, warehouseId });
+      await addLine.mutateAsync({ productId: product.id, quantity, warehouseId, note });
       if (stockedWarehouseName && warehouseId !== issue.warehouseId) {
         message.info(`Mã ${product.code} chưa gán kho — xuất từ ${stockedWarehouseName}, nơi đang còn hàng.`);
       }
@@ -139,6 +140,7 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
     currentQuantity,
     onQuantityInput: handleQuantityInput,
     onEditQuantity: (id, quantity) => void editQuantity(id, quantity),
+    onEditNote: (id, note) => void runMutation(() => updateLine.mutateAsync({ id, values: { note } })),
     onDelete: (id) => void runMutation(() => deleteLine.mutateAsync(id)),
   });
 
@@ -146,14 +148,14 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
 
   return (
     <>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-the border border-vien bg-white">
         <Table<IssueLine>
           rowKey="id"
           size="small"
           columns={columns}
           dataSource={lines}
           pagination={false}
-          scroll={{ x: 760 }}
+          scroll={{ x: 910 }}
           // D-12 lớp 1: nền đỏ nhạt ngay khi dòng vượt tồn, tính khi render
           // (CLAUDE.md Bước 6) — không giữ state riêng cho việc tô màu.
           rowClassName={(line) => (isOverStock(line) ? "bg-red-50" : "")}
@@ -176,12 +178,14 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
           codeInputRef={codeInput}
           quantityInputRef={quantityInput}
           quantity={draft.quantity}
+          note={draft.note}
           selectedProduct={draft.product}
           pending={savingDraft || addLine.isPending}
           onSelectProduct={handleSelectProduct}
           onQuantityChange={(value) =>
             setDraft((current) => ({ ...current, quantity: value }))
           }
+          onNoteChange={(value) => setDraft((current) => ({ ...current, note: value }))}
           onSubmit={() => void saveDraftLine()}
         />
       ) : null}

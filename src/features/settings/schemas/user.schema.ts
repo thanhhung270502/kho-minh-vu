@@ -1,6 +1,9 @@
 import { z } from "zod";
 
+import { BUSINESS_PERMISSIONS, type BusinessPermission } from "@/shared/lib/permissions";
 import { normalizeUsername } from "@/shared/lib/text";
+
+const PERMISSION_KEYS = BUSINESS_PERMISSIONS.map((p) => p.key) as [BusinessPermission, ...BusinessPermission[]];
 
 export const ROLES = ["quan_ly", "van_phong", "thu_kho", "chi_xem"] as const;
 
@@ -25,16 +28,19 @@ const password = z
 export const userProfileSchema = z
   .object({
     fullName: z.string().trim().min(2, "Nhập họ tên"),
-    jobTitleId: z.string({ message: "Chọn chức vụ" }).uuid("Chọn chức vụ"),
-    /** Phạm vi của chức vụ đang chọn — form tự điền, chỉ dùng để kiểm luật kho. */
+    /** Loại tài khoản (chuc_vu: QUAN_LY / NHAN_VIEN / THU_KHO — 0117). */
+    jobTitleId: z.string({ message: "Chọn loại tài khoản" }).uuid("Chọn loại tài khoản"),
+    /** Phạm vi của loại đang chọn — form tự điền, chỉ dùng để kiểm luật kho. */
     role: z.enum(ROLES),
     warehouseIds: z.array(z.string().uuid()).default([]),
-    /** Công tắc quyền theo người (D-13/D-14) — không thuộc PERMISSION_MATRIX. */
+    /** Cờ cũ (0063) — kiểm kho nay chỉ Admin; giữ để truyền lại giá trị đang có. */
     approveStocktake: z.boolean().default(false),
+    /** 9 quyền tích theo người (0117); bỏ qua khi là Admin. */
+    permissions: z.array(z.enum(PERMISSION_KEYS)).default([]),
   })
   .refine((v) => v.role !== "thu_kho" || v.warehouseIds.length > 0, {
     path: ["warehouseIds"],
-    message: "Thủ kho phải được gán ít nhất một kho",
+    message: "Chọn ít nhất một kho được vào",
   });
 
 export const createUserSchema = z

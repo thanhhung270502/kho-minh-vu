@@ -7,13 +7,12 @@ import Link from "next/link";
 
 import { StatusDot } from "@/shared/components/status-dot";
 
-import { DOC_STATUS_TONES, DOC_STATUS_LABELS, type IssueRow } from "../types";
+import { DOC_STATUS_TONES, DOC_STATUS_LABELS, type IssuePermissions, type IssueRow } from "../types";
 import { ISSUE_PAGE_SIZE, type IssueFilter } from "../schemas/issue.schema";
+import { useExpandableRows } from "@/shared/hooks/use-expandable-rows";
 import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
 
-function formatNumber(value: number | string | null): string {
-  return value === null ? "—" : Number(value).toLocaleString("vi-VN");
-}
+import { IssueExpanded } from "./issue-expanded";
 
 const COLUMNS: TableColumnsType<IssueRow> = [
   {
@@ -48,25 +47,11 @@ const COLUMNS: TableColumnsType<IssueRow> = [
       ),
   },
   {
-    title: "Số dòng",
-    dataIndex: "lineCount",
-    width: 90,
-    align: "right",
-    render: formatNumber,
-  },
-  {
-    title: "Tổng số lượng",
-    dataIndex: "totalQuantity",
-    width: 130,
-    align: "right",
-    render: formatNumber,
-  },
-  {
     title: "Trạng thái",
     dataIndex: "status",
     width: 140,
     render: (status: IssueRow["status"]) => (
-      <StatusDot tone={DOC_STATUS_TONES[status]} strike={status === "DA_HUY"}>{DOC_STATUS_LABELS[status]}</StatusDot>
+      <StatusDot variant="badge" tone={DOC_STATUS_TONES[status]} strike={status === "DA_HUY"}>{DOC_STATUS_LABELS[status]}</StatusDot>
     ),
   },
   { title: "Người tạo", dataIndex: "createdByName", width: 160, ellipsis: true },
@@ -78,6 +63,7 @@ type Props = {
   filter: IssueFilter;
   loading: boolean;
   onFilterChange: (filter: IssueFilter) => void;
+  permissions: IssuePermissions;
 };
 
 export function IssueTableBody({
@@ -86,8 +72,10 @@ export function IssueTableBody({
   filter,
   loading,
   onFilterChange,
+  permissions,
 }: Props) {
   const offsetHeader = useStickyTableOffset();
+  const expandable = useExpandableRows<IssueRow>((row) => <IssueExpanded id={row.id} permissions={permissions} />);
   return (
     <Table<IssueRow>
       rowKey="id"
@@ -96,7 +84,8 @@ export function IssueTableBody({
       columns={COLUMNS}
       dataSource={rows}
       loading={loading}
-      scroll={{ x: 1050 }}
+      {...expandable}
+      scroll={{ x: 830 }}
       pagination={{
         current: filter.page,
         pageSize: ISSUE_PAGE_SIZE,

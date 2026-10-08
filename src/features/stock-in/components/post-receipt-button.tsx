@@ -26,7 +26,12 @@ export function PostReceiptButton({ receipt, lines, canEdit }: Props) {
 
   // Không bắt buộc đơn giá (chốt 24/09: người dùng không dùng giá, mọi giá = 0).
   // D-04 cũ chặn ghi sổ khi đơn giá <= 0 — database chưa từng chặn, chỉ giao diện.
-  const blockedReason = lines.length === 0 ? "Phiếu chưa có dòng nào." : null;
+  // Phiếu tạo nhanh chưa có nhà cung cấp (giống Tạo đơn) — phải chọn trước khi ghi sổ.
+  const blockedReason = !receipt.partnerId
+    ? "Chọn nhà cung cấp ở khung Thông tin phiếu trước khi ghi sổ."
+    : lines.length === 0
+      ? "Phiếu chưa có dòng nào."
+      : null;
 
   function confirmThenPost() {
     const totalQuantity = lines.reduce((sum, line) => sum + Number(line.quantity), 0);

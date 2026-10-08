@@ -27,11 +27,11 @@ type Props = {
 
 function emptyForm(name: string): PartnerFormValues {
   // `kind`/`isActive` không hiện trên form — mọi đối tác tạo tại chỗ từ ô này
-  // đều là khách (D-03), không cho chọn loại.
+  // đều là đối tác (D-03, lưu CA_HAI như form Đối tác), không cho chọn loại.
   return {
     code: "",
     name,
-    kind: "KHACH",
+    kind: "DOI_TAC",
     phone: "",
     email: "",
     address: "",
@@ -144,7 +144,7 @@ export function CreatePartnerModal({
   onCreated: (id: string) => void;
 }) {
   const save = useSavePartner();
-  const suggestedCode = useSuggestedPartnerCode("KHACH", open);
+  const suggestedCode = useSuggestedPartnerCode("DOI_TAC", open);
 
   const {
     control,

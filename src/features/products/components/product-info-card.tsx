@@ -57,7 +57,7 @@ export function ProductInfoCard({ product }: { product: ProductDetail }) {
 
   return (
     <section className="overflow-hidden rounded-the border border-vien">
-      <h2 className="m-0 px-5 py-4 text-[15px] font-extrabold">Thông tin hàng</h2>
+      <h2 className="m-0 px-5 py-4 text-[16px] font-extrabold">Thông tin hàng</h2>
       <div className="grid grid-cols-2 lg:grid-cols-4">
         {fields.map((field) => {
           const empty = field.value === null || field.value === undefined || field.value === "";
@@ -66,12 +66,12 @@ export function ProductInfoCard({ product }: { product: ProductDetail }) {
               key={field.label}
               className="-ml-px flex min-w-0 flex-col gap-1 border-t border-l border-vien px-5 py-3.5"
             >
-              <span className="text-[12px] font-semibold text-trung-tinh-350">{field.label}</span>
+              <span className="text-[14px] font-semibold text-trung-tinh-350">{field.label}</span>
               <span
                 className={
                   empty
-                    ? "text-[13.5px] font-bold text-trung-tinh-250"
-                    : "text-[13.5px] font-bold break-words"
+                    ? "text-[15.5px] font-bold text-trung-tinh-250"
+                    : "text-[15.5px] font-bold break-words"
                 }
               >
                 {empty ? "—" : field.value}

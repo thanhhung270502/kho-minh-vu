@@ -28,7 +28,7 @@ function useColumns(): TableColumnsType<NegativeStockLine> {
       render: (_, row) => (
         <div>
           <div className="font-mono">{row.productCode}</div>
-          <Typography.Text type="secondary" className="text-[13px]">
+          <Typography.Text type="secondary" className="text-[15px]">
             {row.productName}
           </Typography.Text>
         </div>
@@ -77,7 +77,7 @@ function useColumns(): TableColumnsType<NegativeStockLine> {
         <div>
           <div>{negativeReasonLabel(row.reasonCode) ?? "Chưa ghi lý do"}</div>
           {row.reasonNote ? (
-            <Typography.Text type="secondary" className="text-[13px]">
+            <Typography.Text type="secondary" className="text-[15px]">
               {row.reasonNote}
             </Typography.Text>
           ) : null}

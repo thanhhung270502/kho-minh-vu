@@ -82,11 +82,11 @@ export function OrderAside({ order, editable }: Props) {
   }
 
   const metaLabel = "text-xs text-trung-tinh-350";
-  const metaValue = "text-[13.5px] font-semibold";
+  const metaValue = "text-[15.5px] font-semibold";
 
   return (
-    <aside className="flex flex-col gap-4 rounded-the border border-vien p-5">
-      <h2 className="m-0 text-[15px] font-extrabold">Thông tin đơn</h2>
+    <aside className="flex flex-col gap-4 rounded-the border border-vien bg-white p-5">
+      <h2 className="m-0 text-[16px] font-extrabold">Thông tin đơn</h2>
 
       <div className="flex flex-col gap-1.5">
         <div className="text-xs font-bold text-chu-phu">
@@ -104,12 +104,12 @@ export function OrderAside({ order, editable }: Props) {
         {editable ? (
           <Input.TextArea
             defaultValue={order.note ?? ""}
-            placeholder="Ghi chú cho đơn này"
+            placeholder="Gõ tên người nhận và ghi chú cho đơn"
             autoSize={{ minRows: 2, maxRows: 5 }}
             onBlur={(event) => void save("note", { note: event.target.value || null })}
           />
         ) : (
-          <span className="text-[13.5px]">{order.note ?? "—"}</span>
+          <span className="text-[15.5px]">{order.note ?? "—"}</span>
         )}
       </div>
 

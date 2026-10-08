@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { readDate, readUuid } from "@/features/documents/lib/url-filter";
+import { isDefaultDateRange, readDateRangeOrThisMonth } from "@/shared/lib/date-presets";
 import type { Database } from "@/types/database.types";
 
 import type { DocStatus } from "../types";
@@ -47,7 +48,8 @@ export function countActiveIssueFilters(filter: IssueFilter): number {
   let count = 0;
   if (filter.status !== null) count++;
   if (filter.partnerId !== null) count++;
-  if (filter.fromDate !== null || filter.toDate !== null) count++;
+  // Mặc định tháng này không tính là đang lọc.
+  if ((filter.fromDate !== null || filter.toDate !== null) && !isDefaultDateRange(filter.fromDate, filter.toDate)) count++;
   return count;
 }
 
@@ -63,8 +65,8 @@ export function readIssueFilterFromUrl(params: {
     q: params.get("q")?.trim() ?? "",
     status: STATUSES.includes(status as DocStatus) ? (status as DocStatus) : null,
     partnerId: readUuid(params.get("doi_tac")),
-    fromDate: readDate(params.get("tu_ngay")),
-    toDate: readDate(params.get("den_ngay")),
+    // URL chưa chọn ngày → tháng này.
+    ...readDateRangeOrThisMonth(params, readDate),
     page: Number.isFinite(page) && page >= 1 ? Math.trunc(page) : 1,
   };
 }
@@ -74,8 +76,11 @@ export function writeIssueFilterToUrl(filter: IssueFilter): URLSearchParams {
   if (filter.q) params.set("q", filter.q);
   if (filter.status) params.set("trang_thai", filter.status);
   if (filter.partnerId) params.set("doi_tac", filter.partnerId);
-  if (filter.fromDate) params.set("tu_ngay", filter.fromDate);
-  if (filter.toDate) params.set("den_ngay", filter.toDate);
+  // Tháng này là mặc định — không ghi lên URL để link lưu lại vẫn "tháng này" khi sang tháng.
+  if (!isDefaultDateRange(filter.fromDate, filter.toDate)) {
+    if (filter.fromDate) params.set("tu_ngay", filter.fromDate);
+    if (filter.toDate) params.set("den_ngay", filter.toDate);
+  }
   if (filter.page !== 1) params.set("trang", String(filter.page));
   return params;
 }

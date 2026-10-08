@@ -47,7 +47,7 @@ export function BottomTabBar({ primary, overflow, activeHref }: BottomTabBarProp
               ].join(" ")}
             >
               <span className="text-xl leading-none">{NAV_ICONS[item.icon]}</span>
-              <span className="text-[11px] leading-none">{item.shortLabel}</span>
+              <span className="text-[13px] leading-none">{item.shortLabel}</span>
             </Link>
           ))}
 
@@ -63,7 +63,7 @@ export function BottomTabBar({ primary, overflow, activeHref }: BottomTabBarProp
               <span className="text-xl leading-none">
                 <EllipsisOutlined />
               </span>
-              <span className="text-[11px] leading-none">Khác</span>
+              <span className="text-[13px] leading-none">Khác</span>
             </button>
           ) : null}
         </div>

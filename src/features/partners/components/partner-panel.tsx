@@ -8,7 +8,7 @@ import { DetailPanel } from "@/shared/components/detail-panel";
 import { explainError } from "@/shared/lib/errors";
 
 import { usePartnerDetail } from "../hooks/usePartners";
-import { PARTNER_KIND_LABELS, type PartnerDetail } from "../types";
+import { partnerKindLabel, type PartnerDetail } from "../types";
 import { PartnerDrawer } from "./partner-drawer";
 import { TransactionHistory } from "./transaction-history";
 
@@ -39,7 +39,7 @@ function PartnerInfo({ partner }: { partner: PartnerDetail }) {
           label: "Loại",
           children: (
             <span>
-              <Tag>{PARTNER_KIND_LABELS[partner.kind]}</Tag>
+              <Tag>{partnerKindLabel(partner.code)}</Tag>
               {partner.isActive ? null : <Tag>Ngừng hoạt động</Tag>}
             </span>
           ),

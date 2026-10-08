@@ -1,18 +1,14 @@
 "use client";
 
-import { Button } from "antd";
-import dayjs from "dayjs";
+import { PrintSheet, printCell } from "@/shared/components/print-sheet";
+import { COMPANY_ADDRESS, COMPANY_NAME } from "@/shared/lib/print-info";
 
 import type { DocumentDetail, DocumentLine } from "../types";
-import { RECEIPT_SOURCE_LABELS } from "../types";
-
-function formatNumber(value: number | string | null): string {
-  return value === null ? "" : Number(value).toLocaleString("vi-VN");
-}
 
 /**
- * D-14: bản in KHÔNG có đơn giá và thành tiền. Đây là giấy ký nhận hàng ở kho,
- * không phải chứng từ kế toán — giá xem trên màn hình.
+ * Phiếu nhập hàng, theo "Phiếu Mẫu - Nhập hàng" (08/10/2026). KHÔNG có đơn giá và
+ * thành tiền — giấy nhận hàng ở kho, giá xem trên màn hình. Ghi chú cột = ghi chú
+ * dòng; Ghi chú cuối phiếu = ghi chú phiếu.
  */
 export function ReceiptPrintTemplate({
   receipt,
@@ -21,102 +17,51 @@ export function ReceiptPrintTemplate({
   receipt: DocumentDetail;
   lines: DocumentLine[];
 }) {
-  const totalQuantity = lines.reduce((sum, line) => sum + Number(line.quantity), 0);
-
   return (
-    <div className="mx-auto max-w-[210mm] bg-white p-6 text-black">
-      <style>{`
-        @page { size: A4; margin: 12mm; }
-        @media print {
-          body { background: #fff; }
-          /* Đầu bảng lặp lại ở page sau — phiếu 48 dòng tràn sang page hai. */
-          thead { display: table-header-group; }
-          tr { break-inside: avoid; }
-        }
-      `}</style>
+    <PrintSheet>
+      {(printedAt) => (
+        <>
+          <header className="mb-6 text-center">
+            <div className="text-xl font-bold">{COMPANY_NAME}</div>
+            <div className="text-sm">Địa Chỉ : {COMPANY_ADDRESS}</div>
+            <h1 className="my-2 text-lg font-bold">PHIẾU NHẬP HÀNG</h1>
+            <div className="text-xs font-bold">Mã phiếu: {receipt.docNo}</div>
+            <div className="text-xs italic">Ngày: {printedAt}</div>
+          </header>
 
-      <div data-no-print className="mb-4 flex justify-end">
-        <Button type="primary" onClick={() => window.print()}>
-          In phiếu
-        </Button>
-      </div>
+          <section className="mb-4 flex flex-col gap-5 text-sm font-bold">
+            <div>Người Lập Phiếu : {receipt.createdByName ?? ""}</div>
+            <div>Nhà Cung Cấp : {receipt.partnerName ?? ""}</div>
+          </section>
 
-      <header className="mb-4 text-center">
-        <div className="text-sm uppercase">CTY TNHH SX-TM P.Tùng Xe Máy Minh Vũ</div>
-        <h1 className="my-2 text-xl font-bold uppercase">Phiếu nhập kho</h1>
-        <div className="text-sm">
-          Số: <strong className="font-mono">{receipt.docNo}</strong> · Ngày{" "}
-          {dayjs(receipt.docDate).format("DD/MM/YYYY")}
-        </div>
-      </header>
+          <table className="w-full border-collapse text-[15px]">
+            <thead>
+              <tr>
+                <th className={`${printCell} w-10`}>STT</th>
+                <th className={`${printCell} w-36`}>Mã hàng</th>
+                <th className={printCell}>Tên hàng</th>
+                <th className={`${printCell} w-20`}>Số lượng</th>
+                <th className={`${printCell} w-16`}>Ghi Chú</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lines.map((line, index) => (
+                <tr key={line.id}>
+                  <td className={`${printCell} text-center`}>{index + 1}</td>
+                  <td className={`${printCell} text-center font-bold`}>{line.productCode}</td>
+                  <td className={`${printCell} text-center`}>{line.productName}</td>
+                  <td className={`${printCell} text-center`}>
+                    {Number(line.quantity).toLocaleString("vi-VN")}
+                  </td>
+                  <td className={`${printCell} text-center`}>{line.note ?? ""}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-      <section className="mb-4 grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
-        <div>
-          <span className="text-gray-600">Nhà cung cấp: </span>
-          <strong>{receipt.partnerName ?? "—"}</strong>
-        </div>
-        <div>
-          <span className="text-gray-600">Kho: </span>
-          {receipt.warehouseName ?? "—"}
-        </div>
-        <div>
-          <span className="text-gray-600">Nguồn nhập: </span>
-          {receipt.source ? RECEIPT_SOURCE_LABELS[receipt.source] : "—"}
-        </div>
-        <div>
-          <span className="text-gray-600">Người lập: </span>
-          {receipt.createdByName ?? "—"}
-        </div>
-        {receipt.note ? (
-          <div className="col-span-2">
-            <span className="text-gray-600">Ghi chú: </span>
-            {receipt.note}
-          </div>
-        ) : null}
-      </section>
-
-      <table className="w-full border-collapse text-sm">
-        <thead>
-          <tr className="border-y border-black">
-            <th className="border border-gray-400 p-1 text-left">STT</th>
-            <th className="border border-gray-400 p-1 text-left">Mã hàng</th>
-            <th className="border border-gray-400 p-1 text-left">Tên hàng</th>
-            <th className="border border-gray-400 p-1 text-left">ĐVT</th>
-            <th className="border border-gray-400 p-1 text-left">Kho</th>
-            <th className="border border-gray-400 p-1 text-right">Số lượng</th>
-          </tr>
-        </thead>
-        <tbody>
-          {lines.map((line, index) => (
-            <tr key={line.id}>
-              <td className="border border-gray-400 p-1">{index + 1}</td>
-              <td className="border border-gray-400 p-1 font-mono">{line.productCode}</td>
-              <td className="border border-gray-400 p-1">{line.productName}</td>
-              <td className="border border-gray-400 p-1">{line.unitName}</td>
-              <td className="border border-gray-400 p-1">{line.warehouseName}</td>
-              <td className="border border-gray-400 p-1 text-right">{formatNumber(line.quantity)}</td>
-            </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr className="font-semibold">
-            <td className="border border-gray-400 p-1" colSpan={5}>
-              Tổng cộng — {lines.length} dòng
-            </td>
-            <td className="border border-gray-400 p-1 text-right">{formatNumber(totalQuantity)}</td>
-          </tr>
-        </tfoot>
-      </table>
-
-      <section className="mt-10 grid grid-cols-3 gap-4 text-center text-sm">
-        {["Người giao hàng", "Thủ kho", "Người lập phiếu"].map((role) => (
-          <div key={role}>
-            <div className="font-semibold">{role}</div>
-            <div className="text-xs text-gray-600">(ký, ghi rõ họ tên)</div>
-            <div className="h-16" />
-          </div>
-        ))}
-      </section>
-    </div>
+          <div className="mt-8 text-sm font-bold">Ghi Chú : {receipt.note ?? ""}</div>
+        </>
+      )}
+    </PrintSheet>
   );
 }

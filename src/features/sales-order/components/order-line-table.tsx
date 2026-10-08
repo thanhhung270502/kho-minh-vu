@@ -25,9 +25,10 @@ type Props = {
 type DraftLine = {
   product: ProductSearchResult | null;
   quantity: number | null;
+  note: string;
 };
 
-const EMPTY_DRAFT: DraftLine = { product: null, quantity: null };
+const EMPTY_DRAFT: DraftLine = { product: null, quantity: null, note: "" };
 
 /**
  * Luồng bàn phím (XUAT-07): gõ mã → Enter → ô số lượng → Enter → lưu dòng,
@@ -83,6 +84,7 @@ export function OrderLineTable({ orderId, lines, editable, staff }: Props) {
         productId: draft.product.id,
         quantity: draft.quantity,
         recipientId: showRecipient ? effectiveRecipientId : null,
+        note: draft.note,
       },
       draft.product.code,
     );
@@ -102,6 +104,7 @@ export function OrderLineTable({ orderId, lines, editable, staff }: Props) {
     onEditRecipient: (id, recipientId, name) =>
       void actions.editRecipient(id, recipientId, name),
     onEditQuantity: (id, quantity) => void actions.editQuantity(id, quantity),
+    onEditNote: (id, note) => void actions.editNote(id, note),
     onDelete: (id) => void actions.removeLine(id),
   });
 
@@ -111,18 +114,19 @@ export function OrderLineTable({ orderId, lines, editable, staff }: Props) {
   );
 
   return (
-    <section className="min-w-0 overflow-hidden rounded-the border border-vien">
-      <div className="px-5 py-4 text-[15px] font-extrabold">
+    <section className="min-w-0 overflow-hidden rounded-the border border-vien bg-white">
+      <div className="px-5 py-4 text-[16px] font-extrabold">
         Hàng đặt{" "}
         <span className="font-semibold text-trung-tinh-300">· {lines.length} dòng</span>
       </div>
 
       {editable ? (
-        <div className="border-t border-vien bg-nen-tong p-4 [&>div]:mt-0 [&>div]:rounded-none [&>div]:border-0 [&>div]:bg-transparent [&>div]:p-0">
+        <div className="border-t border-vien bg-white p-4 [&>div]:mt-0 [&>div]:rounded-none [&>div]:border-0 [&>div]:bg-transparent [&>div]:p-0">
         <OrderLineEntryRow
           codeInputRef={codeInput}
           quantityInputRef={quantityInput}
           quantity={draft.quantity}
+          note={draft.note}
           selectedProduct={draft.product}
           pending={actions.adding}
           staff={staff}
@@ -136,6 +140,7 @@ export function OrderLineTable({ orderId, lines, editable, staff }: Props) {
           onQuantityChange={(value) =>
             setDraft((current) => ({ ...current, quantity: value }))
           }
+          onNoteChange={(value) => setDraft((current) => ({ ...current, note: value }))}
           onSubmit={() => void saveDraftLine()}
         />
         </div>
@@ -148,7 +153,7 @@ export function OrderLineTable({ orderId, lines, editable, staff }: Props) {
           columns={columns}
           dataSource={lines}
           pagination={false}
-          scroll={{ x: 760 }}
+          scroll={{ x: 910 }}
           locale={{ emptyText: "Chưa có dòng nào. Gõ mã hàng ở ô phía trên để thêm." }}
           summary={() =>
             lines.length > 0 ? (

@@ -31,7 +31,7 @@ export function WarehouseStockTable({
       title="Tồn theo kho"
       extra={
         stocks.data ? (
-          <span className="text-[13px] text-chu-phu">
+          <span className="text-[15px] text-chu-phu">
             Tổng tồn: <b className="text-chu-chinh">{fmt(total)}</b>
             {unitName ? ` ${unitName}` : ""}
           </span>

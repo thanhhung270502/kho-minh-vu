@@ -55,7 +55,7 @@ export function ReturnDetailView({
         const typeLabel = isTraNcc ? "Trả hàng NCC" : "Khách trả hàng";
         // TRA_KHACH sinh từ phiếu XUAT; TRA_NCC sinh từ phiếu NHAP (0057).
         const sourceHref = isTraNcc
-          ? `/nhap-kho/${doc.sourceDocId}`
+          ? `/nhap-hang/${doc.sourceDocId}`
           : `/duyet-don/${doc.sourceDocId}`;
 
         return (

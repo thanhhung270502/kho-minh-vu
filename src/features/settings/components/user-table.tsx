@@ -1,12 +1,12 @@
 "use client";
 
-import { App, Badge, Button, Dropdown, Segmented, Space, Table, Tag } from "antd";
+import { App, Button, Dropdown, Segmented, Space, Switch, Table, Tag, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useTransition } from "react";
 
 import { QueryState } from "@/shared/components/query-state";
-import { ROLE_LABELS } from "@/shared/lib/permissions";
+import { BUSINESS_PERMISSIONS } from "@/shared/lib/permissions";
 
 import { setUserActive } from "../actions/user.actions";
 import {
@@ -16,11 +16,13 @@ import {
   type UserRow,
 } from "../api/user.api";
 import { ResetPasswordDialog } from "./reset-password-dialog";
-import { UserDrawer } from "./user-drawer";
+import { UserDrawer, type AccountAccess } from "./user-drawer";
 
 type UserFilter = "dang" | "ngung" | "tat_ca";
 
-export function UserTable({ currentUserId }: { currentUserId: string }) {
+const PERMISSION_LABEL = new Map(BUSINESS_PERMISSIONS.map((p) => [p.key, p.label]));
+
+export function UserTable({ currentUserId, access }: { currentUserId: string; access: AccountAccess }) {
   const { message, modal } = App.useApp();
   const queryClient = useQueryClient();
   const [, batDau] = useTransition();
@@ -79,26 +81,33 @@ export function UserTable({ currentUserId }: { currentUserId: string }) {
       render: (v: string | null) => <span className="font-mono">{v ?? "—"}</span>,
     },
     {
-      title: "Chức vụ",
-      key: "chuc_vu",
-      width: 140,
-      render: (_, d) => d.chuc_vu?.ten ?? ROLE_LABELS[d.vai_tro],
+      title: "Loại",
+      key: "loai",
+      width: 130,
+      render: (_, d) => (d.vai_tro === "quan_ly" ? "Quản lý/Admin" : "Nhân viên"),
     },
     {
-      title: "Quyền riêng",
-      key: "quyen_rieng",
-      width: 160,
+      title: "Quyền",
+      key: "quyen",
+      width: 280,
       render: (_, d) => {
-        const laQuanLy = d.vai_tro === "quan_ly";
-        const duyetKiemKe = laQuanLy || d.duyet_kiem_ke;
-        if (!duyetKiemKe) return <span className="text-gray-400">—</span>;
-        return <Tag className="m-0">Duyệt KK</Tag>;
+        if (d.vai_tro === "quan_ly") return <Tag color="blue" className="m-0">Đủ mọi quyền</Tag>;
+        if (d.permissions.length === 0) return <span className="text-gray-400">Chưa có quyền</span>;
+        return (
+          <span className="flex flex-wrap gap-1">
+            {d.permissions.map((k) => (
+              <Tag key={k} className="m-0">
+                {PERMISSION_LABEL.get(k) ?? k}
+              </Tag>
+            ))}
+          </span>
+        );
       },
     },
     {
       title: "Kho",
       key: "kho",
-      width: 200,
+      width: 160,
       render: (_, d) =>
         d.vai_tro === "thu_kho" ? (
           <span className="flex flex-wrap gap-1">
@@ -113,42 +122,49 @@ export function UserTable({ currentUserId }: { currentUserId: string }) {
         ),
     },
     {
-      title: "Trạng thái",
+      title: "Hoạt động",
       key: "status",
-      width: 220,
-      render: (_, d) => (
-        <Space size={6}>
-          <Badge
-            status={d.dang_hoat_dong ? "success" : "default"}
-            text={d.dang_hoat_dong ? "Đang hoạt động" : "Đã vô hiệu hóa"}
-          />
-          {d.phai_doi_mat_khau ? <Tag color="orange">Chờ đổi mật khẩu</Tag> : null}
-        </Space>
-      ),
+      width: 230,
+      render: (_, d) => {
+        // Cùng điều kiện với menu thao tác: cần quyền Tạo tài khoản; tài khoản Admin chỉ Admin bật/tắt.
+        const locked = !access.canProfile || (d.vai_tro === "quan_ly" && !access.isAdmin);
+        return (
+          <Space size={8} wrap>
+            <Tooltip title={locked ? "Cần quyền Tạo tài khoản để bật/tắt" : undefined}>
+              <Switch
+                checked={d.dang_hoat_dong}
+                disabled={locked}
+                aria-label={d.dang_hoat_dong ? `Vô hiệu hóa ${d.ho_ten}` : `Mở lại ${d.ho_ten}`}
+                // Không đổi ngay: hỏi xác nhận trước, bảng tự cập nhật sau khi lưu xong.
+                onClick={() => toggleActive(d)}
+              />
+            </Tooltip>
+            {d.phai_doi_mat_khau ? <Tag color="orange" className="m-0">Chờ đổi mật khẩu</Tag> : null}
+          </Space>
+        );
+      },
     },
     {
       title: "",
       key: "thao_tac",
       width: 60,
       align: "right",
-      render: (_, d) => (
+      render: (_, d) => {
+        // Tài khoản Admin chỉ Admin đụng được (0117) — người khác không thấy nút.
+        if (d.vai_tro === "quan_ly" && !access.isAdmin) return null;
+        return (
         <Dropdown
           trigger={["click"]}
           menu={{
-            items: [
-              { key: "sua", label: "Sửa" },
-              { key: "mat_khau", label: "Đặt lại mật khẩu" },
-              { type: "divider" as const },
-              {
-                key: "status",
-                label: d.dang_hoat_dong ? "Vô hiệu hóa" : "Mở lại",
-                danger: d.dang_hoat_dong,
-              },
-            ],
+            items: access.canProfile
+              ? [
+                  { key: "sua", label: "Sửa" },
+                  { key: "mat_khau", label: "Đặt lại mật khẩu" },
+                ]
+              : [{ key: "sua", label: "Phân quyền" }],
             onClick: ({ key }) => {
               if (key === "sua") setDrawer({ mo: true, nd: d });
               if (key === "mat_khau") setResetTarget(d);
-              if (key === "status") toggleActive(d);
             },
           }}
         >
@@ -156,7 +172,8 @@ export function UserTable({ currentUserId }: { currentUserId: string }) {
             ⋯
           </Button>
         </Dropdown>
-      ),
+        );
+      },
     },
   ];
 
@@ -172,13 +189,15 @@ export function UserTable({ currentUserId }: { currentUserId: string }) {
             { value: "tat_ca", label: "Tất cả" },
           ]}
         />
-        <Button
-          type="primary"
-          className="ms-auto"
-          onClick={() => setDrawer({ mo: true, nd: null })}
-        >
-          Thêm tài khoản
-        </Button>
+        {access.canProfile ? (
+          <Button
+            type="primary"
+            className="ms-auto"
+            onClick={() => setDrawer({ mo: true, nd: null })}
+          >
+            Thêm tài khoản
+          </Button>
+        ) : null}
       </div>
 
       <QueryState
@@ -194,14 +213,14 @@ export function UserTable({ currentUserId }: { currentUserId: string }) {
           );
 
           return (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-the border border-vien bg-white">
               <Table<UserRow>
                 rowKey="id"
                 size="small"
                 columns={columns}
                 dataSource={dong}
                 loading={users.isFetching}
-                scroll={{ x: 900 }}
+                scroll={{ x: 1150 }}
                 pagination={false}
                 locale={{ emptyText: "Không có tài khoản nào ở trạng thái này." }}
               />
@@ -214,6 +233,7 @@ export function UserTable({ currentUserId }: { currentUserId: string }) {
         open={drawer.mo}
         user={drawer.nd}
         onClose={() => setDrawer((s) => ({ ...s, mo: false }))}
+        access={access}
       />
 
       <ResetPasswordDialog user={resetTarget} onClose={() => setResetTarget(null)} />

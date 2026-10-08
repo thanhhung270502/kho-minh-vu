@@ -32,26 +32,32 @@ export type TemplateColumn = {
   exportOnly?: boolean;
 };
 
+/**
+ * Theo file "danh-muc-20261008-1637" (08/10/2026): 9 cột. Vị trí = kho mặc định (như cột
+ * "Vị trí" của KiotViet). Quy đổi, Tồn tối thiểu/tối đa, Barcode không còn trong mẫu —
+ * file cũ có các cột đó vẫn đọc được (parseTemplateRow), ô vắng = giữ nguyên.
+ */
 export const TEMPLATE_COLUMNS: readonly TemplateColumn[] = [
   { key: "ma_hang", title: "Mã hàng", width: 22 },
   { key: "ten_hang", title: "Tên hàng", width: 48 },
-  { key: "nhom_hang", title: "Nhóm hàng", width: 28 },
-  { key: "dvt", title: "Đơn vị tính", width: 14 },
-  { key: "cong_doan", title: "Xử lý", width: 14 },
-  { key: "quy_doi", title: "Quy đổi", width: 10 },
-  { key: "kho_mac_dinh", title: "Kho mặc định", width: 14 },
-  { key: "ton_toi_thieu", title: "Tồn tối thiểu", width: 14 },
-  { key: "ton_toi_da", title: "Tồn tối đa", width: 12 },
+  { key: "nhom_hang", title: "Nhóm hàng", width: 22 },
+  { key: "tong_ton", title: "Tồn kho", width: 10, exportOnly: true },
+  { key: "dvt", title: "Đơn vị tính", width: 13 },
+  { key: "cong_doan", title: "Xử lý", width: 12 },
   { key: "dang_kinh_doanh", title: "Đang kinh doanh", width: 16 },
-  { key: "barcode", title: "Barcode", width: 16 },
   // 0086: Ghi chú là cột tự sinh — file chỉ còn Mô tả (file cũ cột "Ghi chú" vẫn đọc vào Mô tả).
   { key: "mo_ta", title: "Mô tả", width: 30 },
-  { key: "tong_ton", title: "Tồn hiện tại", width: 13, exportOnly: true },
+  { key: "kho_mac_dinh", title: "Vị trí", width: 12 },
 ];
 
-export const COLUMN_LABELS: Record<string, string> = Object.fromEntries(
-  TEMPLATE_COLUMNS.map((column) => [column.key, column.title]),
-);
+export const COLUMN_LABELS: Record<string, string> = {
+  // Cột của mẫu cũ — file cũ vẫn nhập được, bảng lỗi cần đúng tên cột.
+  quy_doi: "Quy đổi",
+  ton_toi_thieu: "Tồn tối thiểu",
+  ton_toi_da: "Tồn tối đa",
+  barcode: "Barcode",
+  ...Object.fromEntries(TEMPLATE_COLUMNS.map((column) => [column.key, column.title])),
+};
 
 /** Tên cột tiếng Việt cho những khóa không nằm trong mẫu (RPC trả về). */
 export function columnLabel(key: string): string {

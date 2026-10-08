@@ -626,8 +626,10 @@ export type Database = {
           id: string
           ngay_dh: string
           ngay_giao_du_kien: string | null
+          ngay_xac_nhan: string | null
           nguoi_nhan_id: string | null
           nguoi_tao_id: string | null
+          nguoi_xac_nhan_id: string | null
           so_dh: string
           trang_thai: Database["public"]["Enums"]["trang_thai_ddh"]
           updated_at: string
@@ -639,8 +641,10 @@ export type Database = {
           id?: string
           ngay_dh?: string
           ngay_giao_du_kien?: string | null
+          ngay_xac_nhan?: string | null
           nguoi_nhan_id?: string | null
           nguoi_tao_id?: string | null
+          nguoi_xac_nhan_id?: string | null
           so_dh: string
           trang_thai?: Database["public"]["Enums"]["trang_thai_ddh"]
           updated_at?: string
@@ -652,8 +656,10 @@ export type Database = {
           id?: string
           ngay_dh?: string
           ngay_giao_du_kien?: string | null
+          ngay_xac_nhan?: string | null
           nguoi_nhan_id?: string | null
           nguoi_tao_id?: string | null
+          nguoi_xac_nhan_id?: string | null
           so_dh?: string
           trang_thai?: Database["public"]["Enums"]["trang_thai_ddh"]
           updated_at?: string
@@ -687,6 +693,7 @@ export type Database = {
           created_at: string
           don_dat_hang_id: string
           don_gia: number
+          ghi_chu: string | null
           id: string
           nguoi_nhan_id: string | null
           san_pham_id: string
@@ -697,6 +704,7 @@ export type Database = {
           created_at?: string
           don_dat_hang_id: string
           don_gia?: number
+          ghi_chu?: string | null
           id?: string
           nguoi_nhan_id?: string | null
           san_pham_id: string
@@ -707,6 +715,7 @@ export type Database = {
           created_at?: string
           don_dat_hang_id?: string
           don_gia?: number
+          ghi_chu?: string | null
           id?: string
           nguoi_nhan_id?: string | null
           san_pham_id?: string
@@ -1211,6 +1220,24 @@ export type Database = {
           },
         ]
       }
+      nguoi_dung_quyen: {
+        Row: {
+          created_at: string
+          nguoi_dung_id: string
+          quyen: string
+        }
+        Insert: {
+          created_at?: string
+          nguoi_dung_id: string
+          quyen: string
+        }
+        Update: {
+          created_at?: string
+          nguoi_dung_id?: string
+          quyen?: string
+        }
+        Relationships: []
+      }
       nhan_vien_phu_trach: {
         Row: {
           created_at: string
@@ -1687,6 +1714,8 @@ export type Database = {
           ton_sau: number
         }[]
       }
+      bo_nguoi_ban: { Args: { p_ghi_chu: string }; Returns: string }
+      bo_nguoi_nhap: { Args: { p_ghi_chu: string }; Returns: string }
       bo_quyet_ghi_chu: { Args: { p_gia_tri: string }; Returns: undefined }
       chi_tiet_chung_tu: {
         Args: { p_id: string }
@@ -1697,7 +1726,9 @@ export type Database = {
           don_dat_hang_id: string
           ghi_chu: string
           ghi_chu_ly_do: string
+          ho_ten_nguoi_duyet: string
           ho_ten_nguoi_tao: string
+          ho_ten_nguoi_xac_nhan_don: string
           id: string
           kho_id: string
           loai_ct: Database["public"]["Enums"]["loai_ct"]
@@ -1726,11 +1757,13 @@ export type Database = {
           doi_tac_id: string
           ghi_chu: string
           ho_ten_nguoi_tao: string
+          ho_ten_nguoi_xac_nhan: string
           hoa_don_id: string
           id: string
           ma_doi_tac: string
           ngay_dh: string
           ngay_giao_du_kien: string
+          ngay_xac_nhan: string
           nguoi_nhan_ids: string[]
           so_dh: string
           so_hoa_don: string
@@ -1869,7 +1902,7 @@ export type Database = {
           p_loai_nhan?: string
           p_nguoi_nhan_id?: string
           p_trang?: number
-          p_trang_thai?: Database["public"]["Enums"]["trang_thai_ddh"]
+          p_trang_thai?: Database["public"]["Enums"]["trang_thai_ddh"][]
           p_tu_khoa?: string
           p_tu_ngay?: string
         }
@@ -1879,6 +1912,7 @@ export type Database = {
           ghi_chu: string
           ho_ten_nguoi_tao: string
           id: string
+          ma_doi_tac: string
           ngay_dh: string
           ngay_giao_du_kien: string
           nguoi_nhan_ids: string[]
@@ -2045,6 +2079,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      dat_quyen_nguoi_dung: {
+        Args: { p_id: string; p_quyen: string[] }
+        Returns: string[]
+      }
       de_xuat_dinh_muc: {
         Args: {
           p_chi_khac_hien_tai?: boolean
@@ -2117,6 +2155,7 @@ export type Database = {
         Args: { p_id: string }
         Returns: {
           created_at: string
+          ghi_chu: string
           id: string
           kho_mac_dinh_id: string
           ma_hang: string
@@ -2128,6 +2167,7 @@ export type Database = {
           ten_hang: string
           ten_kho_mac_dinh: string
           ten_nguoi_nhan: string
+          ten_nhom_hang: string
         }[]
       }
       dong_don_som: {
@@ -2139,8 +2179,10 @@ export type Database = {
           id: string
           ngay_dh: string
           ngay_giao_du_kien: string | null
+          ngay_xac_nhan: string | null
           nguoi_nhan_id: string | null
           nguoi_tao_id: string | null
+          nguoi_xac_nhan_id: string | null
           so_dh: string
           trang_thai: Database["public"]["Enums"]["trang_thai_ddh"]
           updated_at: string
@@ -2332,6 +2374,20 @@ export type Database = {
         }
       }
       hoan_thanh_duoc_don: { Args: never; Returns: boolean }
+      hoat_dong_gan_day: {
+        Args: { p_gioi_han?: number; p_nhom?: string; p_truoc?: string }
+        Returns: {
+          chi_tiet: string
+          doi_tuong_id: string
+          hanh_dong: string
+          loai: string
+          ma: string
+          nguoi: string
+          nguon: string
+          so_luong: number
+          thoi_gian: string
+        }[]
+      }
       huy_chung_tu: {
         Args: { p_chung_tu_id: string; p_ly_do: string }
         Returns: {
@@ -2376,8 +2432,10 @@ export type Database = {
           id: string
           ngay_dh: string
           ngay_giao_du_kien: string | null
+          ngay_xac_nhan: string | null
           nguoi_nhan_id: string | null
           nguoi_tao_id: string | null
+          nguoi_xac_nhan_id: string | null
           so_dh: string
           trang_thai: Database["public"]["Enums"]["trang_thai_ddh"]
           updated_at: string
@@ -2507,8 +2565,10 @@ export type Database = {
           id: string
           ngay_dh: string
           ngay_giao_du_kien: string | null
+          ngay_xac_nhan: string | null
           nguoi_nhan_id: string | null
           nguoi_tao_id: string | null
+          nguoi_xac_nhan_id: string | null
           so_dh: string
           trang_thai: Database["public"]["Enums"]["trang_thai_ddh"]
           updated_at: string
@@ -2587,8 +2647,21 @@ export type Database = {
           ten_nguoi_nhan: string
         }[]
       }
+      nhap_chung_tu_excel: {
+        Args: {
+          p_chi_kiem_tra?: boolean
+          p_kieu: string
+          p_loai: string
+          p_phieu: Json
+        }
+        Returns: Json
+      }
       nhap_danh_muc: {
         Args: { p_chi_kiem_tra?: boolean; p_dong: Json }
+        Returns: Json
+      }
+      nhap_doi_tac_excel: {
+        Args: { p_chi_kiem_tra?: boolean; p_dong: Json; p_kieu: string }
         Returns: Json
       }
       nhap_ma_hang_moi: {
@@ -2716,6 +2789,8 @@ export type Database = {
         Returns: string
       }
       sinh_so_dh: { Args: { p_nam?: number }; Returns: string }
+      tach_nguoi_ban: { Args: { p_ghi_chu: string }; Returns: string }
+      tach_nguoi_nhap: { Args: { p_ghi_chu: string }; Returns: string }
       tao_don: {
         Args: { p_doi_tac_id?: string; p_nguoi_nhan_ids?: string[] }
         Returns: string
@@ -2830,6 +2905,7 @@ export type Database = {
       them_dong_don: {
         Args: {
           p_don_id: string
+          p_ghi_chu?: string
           p_nguoi_nhan_id?: string
           p_san_pham_id: string
           p_so_luong: number
@@ -2948,8 +3024,10 @@ export type Database = {
           id: string
           ngay_dh: string
           ngay_giao_du_kien: string | null
+          ngay_xac_nhan: string | null
           nguoi_nhan_id: string | null
           nguoi_tao_id: string | null
+          nguoi_xac_nhan_id: string | null
           so_dh: string
           trang_thai: Database["public"]["Enums"]["trang_thai_ddh"]
           updated_at: string
@@ -2972,6 +3050,33 @@ export type Database = {
         }[]
       }
       xoa_dong_kiem_ke: { Args: { p_dong_id: string }; Returns: undefined }
+      xuat_excel_chung_tu: {
+        Args: {
+          p_den_ngay?: string
+          p_doi_tac_id?: string
+          p_kho_id?: string
+          p_loai_ct: Database["public"]["Enums"]["loai_ct"]
+          p_nguon_nhap?: Database["public"]["Enums"]["nguon_nhap"]
+          p_toi_da?: number
+          p_trang_thai?: Database["public"]["Enums"]["trang_thai_ct"]
+          p_tu_khoa?: string
+          p_tu_ngay?: string
+        }
+        Returns: Json
+      }
+      xuat_excel_don_dat: {
+        Args: {
+          p_den_ngay?: string
+          p_doi_tac_id?: string
+          p_loai_nhan?: string
+          p_nguoi_nhan_id?: string
+          p_toi_da?: number
+          p_trang_thai?: Database["public"]["Enums"]["trang_thai_ddh"][]
+          p_tu_khoa?: string
+          p_tu_ngay?: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       loai_ct:

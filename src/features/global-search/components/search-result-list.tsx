@@ -29,7 +29,7 @@ export function SearchResultList({ groups, activeKey, onPick, onHover }: SearchR
     <ul role="listbox" className="m-0 list-none p-0 pb-2">
       {groups.map((group) => (
         <li key={group.kind} role="presentation">
-          <div className="px-3 pt-3 pb-1 text-[11.5px] font-semibold text-trung-tinh-350">
+          <div className="px-3 pt-3 pb-1 text-[13.5px] font-semibold text-trung-tinh-350">
             {group.title}
           </div>
           <ul role="presentation" className="m-0 list-none p-0">
@@ -55,7 +55,7 @@ export function SearchResultList({ groups, activeKey, onPick, onHover }: SearchR
                       {item.label}
                     </span>
                     {secondary ? (
-                      <span className="truncate text-[12.5px] text-trung-tinh-350">{secondary}</span>
+                      <span className="truncate text-[14.5px] text-trung-tinh-350">{secondary}</span>
                     ) : null}
                   </li>
                 );

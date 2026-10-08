@@ -1,6 +1,6 @@
 "use client";
 
-import { DownloadOutlined } from "@ant-design/icons";
+import { FileExcelOutlined } from "@ant-design/icons";
 import { App, Button } from "antd";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -31,12 +31,13 @@ export function OrderExcelButton() {
 
   return (
     <Button
-      icon={<DownloadOutlined />}
+      icon={<FileExcelOutlined />}
+      title="Xuất Excel các đơn đang lọc"
       loading={downloading}
       disabled={downloading}
       onClick={() => void run()}
     >
-      Xuất Excel
+      Excel
     </Button>
   );
 }

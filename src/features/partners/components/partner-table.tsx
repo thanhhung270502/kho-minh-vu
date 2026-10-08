@@ -3,19 +3,19 @@
 import { Button, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 
 import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
 import { SummaryRow } from "@/shared/components/summary-row";
 import { isInteractiveTarget, readSelectedId, withSelectedId } from "@/shared/lib/selected-id";
 
-import { readPartnerFilterFromUrl, writePartnerFilterToUrl } from "../api/partner.api";
+import { readPartnerFilterFromUrl, writePartnerFilterToUrl } from "../lib/partner-filter-url";
 import { usePartners } from "../hooks/usePartners";
 import {
   DEFAULT_PARTNER_FILTER,
   countActivePartnerFilters,
-  PARTNER_KIND_LABELS,
+  partnerKindLabel,
   type PartnerFilter,
   type PartnerRow,
 } from "../types";
@@ -30,7 +30,7 @@ function hasActiveFilter(filter: PartnerFilter): boolean {
   return filter.q !== "" || filter.activeStatus !== DEFAULT_PARTNER_FILTER.activeStatus;
 }
 
-export function PartnerTable({ canEdit }: { canEdit: boolean }) {
+export function PartnerTable({ canEdit, excelActions }: { canEdit: boolean; excelActions?: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -38,9 +38,9 @@ export function PartnerTable({ canEdit }: { canEdit: boolean }) {
   // Bỏ `?loai=` của link cũ — trang này không còn lọc theo loại.
   const filter: PartnerFilter = { ...readPartnerFilterFromUrl(searchParams), kind: null };
   const selectedId = readSelectedId(searchParams);
-  // Trang Đối tác chỉ còn nhà cung cấp — RPC lọc "NCC" trả cả đối tác "Cả hai".
-  // Khách hàng vẫn chọn được khi tạo đơn đặt, chỉ không liệt kê ở đây.
-  const partners = usePartners({ ...filter, kind: "NCC" });
+  // Liệt kê mọi loại: nhà cung cấp, đối tác, nội bộ (mã NB…), cả hai — thêm được ở đây
+  // thì phải thấy được ở đây (xuất Excel cũng không lọc loại).
+  const partners = usePartners(filter);
   // Sửa đối tác nằm trong panel chi tiết — ngăn kéo ở đây chỉ còn để thêm mới.
   const [addOpen, setAddOpen] = useState(false);
 
@@ -95,7 +95,7 @@ export function PartnerTable({ canEdit }: { canEdit: boolean }) {
       width: 130,
       render: (kind: PartnerRow["kind"], row) => (
         <>
-          <Tag>{PARTNER_KIND_LABELS[kind]}</Tag>
+          <Tag>{partnerKindLabel(row.code)}</Tag>
           {row.isActive ? null : <Tag>Ngừng</Tag>}
         </>
       ),
@@ -123,6 +123,7 @@ export function PartnerTable({ canEdit }: { canEdit: boolean }) {
             canEdit={canEdit}
             onChange={changeFilter}
             onAdd={() => setAddOpen(true)}
+            excelActions={excelActions}
           />
         }
         activeFilterCount={countActivePartnerFilters(filter)}
@@ -148,7 +149,7 @@ export function PartnerTable({ canEdit }: { canEdit: boolean }) {
                 </Button>
               </div>
             ) : (
-              "Chưa có nhà cung cấp nào. Bấm “Thêm nhà cung cấp” để tạo nhà cung cấp đầu tiên."
+              "Chưa có đối tác nào. Bấm “Thêm đối tác” để tạo đối tác đầu tiên."
             )
           }
         >

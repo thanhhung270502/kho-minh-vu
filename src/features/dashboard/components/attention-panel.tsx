@@ -47,15 +47,15 @@ function AttentionRow({ item }: { item: Item }) {
         {countLabel(item.count)}
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <div className="flex items-center gap-1.5 text-[13.5px] font-bold">
+        <div className="flex items-center gap-1.5 text-[15.5px] font-bold">
           <span className={`size-1.5 shrink-0 rounded-full ${item.dot}`} />
           {item.title}
         </div>
-        <div className="text-[12.5px] text-chu-phu">{empty ? "Không có" : item.description}</div>
+        <div className="text-[14.5px] text-chu-phu">{empty ? "Không có" : item.description}</div>
         {empty ? null : (
           <Link
             href={item.href}
-            className="mt-1 self-start rounded-full bg-nen-the px-2.5 py-[5px] text-[12.5px] font-bold text-chu-chinh shadow-[0_0_0_1px_#E5E5E5]"
+            className="mt-1 self-start rounded-full bg-nen-the px-2.5 py-[5px] text-[14.5px] font-bold text-chu-chinh shadow-[0_0_0_1px_#E5E5E5]"
           >
             {item.cta} →
           </Link>
@@ -112,7 +112,7 @@ function buildItems(kpis: OverviewKpis, counts: Counts): Item[] {
       cta: "Ghi sổ",
       href:
         kpis.pendingReceipts > 0
-          ? "/nhap-kho?trang_thai=NHAP_LIEU"
+          ? "/nhap-hang?trang_thai=NHAP_LIEU"
           : "/duyet-don?trang_thai=NHAP_LIEU",
     },
   );
@@ -160,7 +160,7 @@ export function AttentionPanel({ canViewAnalysis }: { canViewAnalysis: boolean }
   }, [canViewAnalysis, analysisRows.isPending, analysisRows.data, settings.isPending, settings.data]);
 
   return (
-    <section className="flex flex-col gap-1 rounded-[18px] bg-nen-phu p-5">
+    <section className="flex flex-col gap-1 rounded-[18px] border border-vien bg-nen-the p-5">
       <QueryState query={overview} skeleton={<Skeleton active paragraph={{ rows: 6 }} />}>
         {(kpis) => {
           const items = buildItems(kpis, {
@@ -172,8 +172,8 @@ export function AttentionPanel({ canViewAnalysis }: { canViewAnalysis: boolean }
           return (
             <>
               <div className="flex items-baseline justify-between pb-2">
-                <span className="text-[15px] font-extrabold">Cần xử lý</span>
-                <span className="text-[12.5px] text-trung-tinh-350">{open} việc</span>
+                <span className="text-[16px] font-extrabold">Cần xử lý</span>
+                <span className="text-[14.5px] text-trung-tinh-350">{open} việc</span>
               </div>
               {items.map((item) => (
                 <AttentionRow key={item.key} item={item} />

@@ -1,3 +1,4 @@
+import { isInternalPartnerCode } from "@/shared/lib/recipient";
 import type { Database } from "@/types/database.types";
 
 type Fn = Database["public"]["Functions"];
@@ -56,15 +57,47 @@ export type TransactionRow = {
   totalRows: number;
 };
 
-export const PARTNER_KIND_LABELS: Record<PartnerKind, string> = {
-  NCC: "Nhà cung cấp",
-  KHACH: "Khách hàng",
-  CA_HAI: "Cả hai",
+/**
+ * Loại người dùng thấy: chỉ "Đối tác" và "Nội bộ". Database vẫn giữ loai_doi_tac
+ * (NCC / KHACH / CA_HAI) cho các ô chọn nhà cung cấp / người nhận; "Nội bộ" nhận ra
+ * bằng mã NB… như mọi màn đơn hàng (isInternalPartnerCode).
+ */
+export type PartnerFormKind = "DOI_TAC" | "NOI_BO";
+
+export const PARTNER_FORM_KINDS: PartnerFormKind[] = ["DOI_TAC", "NOI_BO"];
+
+export const PARTNER_FORM_KIND_LABELS: Record<PartnerFormKind, string> = {
+  DOI_TAC: "Đối tác",
+  NOI_BO: "Nội bộ",
 };
+
+/**
+ * Đối tác / nội bộ tạo mới lưu là CA_HAI: vừa chọn được làm nhà cung cấp ở phiếu nhập,
+ * vừa làm người nhận ở đơn đặt (NB001 là người nhận, cũng là nơi trả hàng về kho).
+ * Sửa thì giữ nguyên loại đang có.
+ */
+export const NEW_PARTNER_KIND: PartnerKind = "CA_HAI";
+
+export function toPartnerFormKind(code: string): PartnerFormKind {
+  return isInternalPartnerCode(code) ? "NOI_BO" : "DOI_TAC";
+}
+
+export function partnerKindLabel(code: string): string {
+  return PARTNER_FORM_KIND_LABELS[toPartnerFormKind(code)];
+}
+
+/** Loại và mã phải khớp: Nội bộ ⇔ mã NB…. Trả câu báo lỗi, null = hợp lệ; mã trống không kiểm. */
+export function kindCodeMismatch(kind: PartnerFormKind, code: string | null): string | null {
+  if (!code) return null;
+  const internalCode = isInternalPartnerCode(code);
+  if (kind === "NOI_BO" && !internalCode) return "Mã nội bộ bắt đầu bằng NB và một chữ số (vd. NB003)";
+  if (kind === "DOI_TAC" && internalCode) return "Mã NB… dành cho nội bộ — chọn loại Nội bộ hoặc đổi mã khác";
+  return null;
+}
 
 /** Khóa là giá trị enum `loai_ct` trong database. */
 const DOC_TYPE_LABELS: Record<string, string> = {
-  NHAP: "Nhập kho",
+  NHAP: "Nhập hàng",
   XUAT: "Hóa đơn",
   TRA_NCC: "Trả NCC",
   TRA_KHACH: "Khách trả",

@@ -33,11 +33,11 @@ export function GlobalSearch() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="hidden h-[38px] w-[440px] max-w-full cursor-pointer items-center gap-2.5 rounded-[10px] border-0 bg-nen-phu px-3 text-left text-[13.5px] text-trung-tinh-350 lg:flex"
+        className="hidden h-[38px] w-[440px] max-w-full cursor-pointer items-center gap-2.5 rounded-[10px] border-0 bg-nen-phu px-3 text-left text-[15.5px] text-trung-tinh-350 lg:flex"
       >
         <SearchOutlined style={{ fontSize: 15 }} />
         <span className="flex-1">Tìm mã hàng, số phiếu, đối tác…</span>
-        <kbd className="rounded-[5px] border border-[#E5E5E5] bg-white px-1.5 font-mono text-[11px]">
+        <kbd className="rounded-[5px] border border-[#E5E5E5] bg-white px-1.5 font-mono text-[13px]">
           {shortcut}
         </kbd>
       </button>

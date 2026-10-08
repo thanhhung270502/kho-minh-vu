@@ -6,13 +6,16 @@ import dayjs from "dayjs";
 import Link from "next/link";
 
 import { StatusDot } from "@/shared/components/status-dot";
-import { partnerLabel } from "@/shared/lib/recipient";
+import { partnerLabel, showsStaffOnly } from "@/shared/lib/recipient";
 
 import { ORDER_STATUS_TONES, ORDER_STATUS_LABELS } from "../lib/order-status";
-import { OrderProgressBar } from "./order-progress-bar";
+import { OrderProgress } from "./order-progress";
 import { ORDER_PAGE_SIZE, type OrderFilter } from "../schemas/order.schema";
-import type { OrderRow } from "../types";
+import type { OrderPermissions, OrderRow } from "../types";
+import { useExpandableRows } from "@/shared/hooks/use-expandable-rows";
 import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
+
+import { OrderExpanded } from "./order-expanded";
 
 const COLUMNS: TableColumnsType<OrderRow> = [
   {
@@ -21,7 +24,7 @@ const COLUMNS: TableColumnsType<OrderRow> = [
     width: 128,
     fixed: "left",
     render: (orderNo: string, row) => (
-      <Link href={`/don-dat/${row.id}`} className="font-mono text-[12.5px] font-medium">
+      <Link href={`/don-dat/${row.id}`} className="font-mono text-[14.5px] font-medium">
         {orderNo}
       </Link>
     ),
@@ -46,7 +49,12 @@ const COLUMNS: TableColumnsType<OrderRow> = [
       }
       return (
         <span className="flex flex-wrap items-center gap-1.5">
-          {recipients.partner ? (
+          {showsStaffOnly(recipients) ? (
+            <>
+              <span className="font-bold">{first?.name}</span>
+              {rest.length > 0 ? <span className="text-chu-phu">+{rest.length}</span> : null}
+            </>
+          ) : recipients.partner ? (
             <>
               <span className="font-bold">{partnerLabel(recipients.partner)}</span>
               {recipients.staff.map((person) => (
@@ -59,9 +67,6 @@ const COLUMNS: TableColumnsType<OrderRow> = [
             <>
               {first ? <span className="font-bold">{first.name}</span> : null}
               {rest.length > 0 ? <span className="text-chu-phu">+{rest.length}</span> : null}
-              <span className="shrink-0 rounded-md border border-vien px-[7px] text-[11px] font-bold">
-                Nội bộ
-              </span>
             </>
           )}
         </span>
@@ -71,10 +76,10 @@ const COLUMNS: TableColumnsType<OrderRow> = [
   {
     title: "Tiến độ",
     key: "progress",
-    width: 150,
+    width: 100,
     // D-04: trục giao tính khi đọc, không phải enum.
     render: (_, row) => (
-      <OrderProgressBar shipped={row.shippedQuantity} ordered={row.orderedQuantity} />
+      <OrderProgress shipped={row.shippedQuantity} ordered={row.orderedQuantity} />
     ),
   },
   {
@@ -116,10 +121,12 @@ type Props = {
   filter: OrderFilter;
   loading: boolean;
   onFilterChange: (filter: OrderFilter) => void;
+  permissions: OrderPermissions;
 };
 
-export function OrderTableBody({ rows, total, filter, loading, onFilterChange }: Props) {
+export function OrderTableBody({ rows, total, filter, loading, onFilterChange, permissions }: Props) {
   const offsetHeader = useStickyTableOffset();
+  const expandable = useExpandableRows<OrderRow>((row) => <OrderExpanded id={row.id} permissions={permissions} />);
   return (
     <Table<OrderRow>
       rowKey="id"
@@ -128,7 +135,8 @@ export function OrderTableBody({ rows, total, filter, loading, onFilterChange }:
       columns={COLUMNS}
       dataSource={rows}
       loading={loading}
-      scroll={{ x: 980 }}
+      {...expandable}
+      scroll={{ x: 930 }}
       pagination={{
         current: filter.page,
         pageSize: ORDER_PAGE_SIZE,

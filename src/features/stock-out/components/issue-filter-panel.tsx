@@ -1,9 +1,9 @@
 "use client";
 
-import { Button, DatePicker, Select } from "antd";
-import dayjs from "dayjs";
+import { Button, Select } from "antd";
 import type { ReactNode } from "react";
 
+import { DateRangeFilter } from "@/shared/components/date-range-filter";
 import { PartnerSearchInput } from "@/shared/components/partner-search-input";
 
 import {
@@ -22,7 +22,7 @@ const STATUSES: DocStatus[] = ["NHAP_LIEU", "HOAN_THANH", "DA_HUY"];
 function FilterGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <label className="mb-1 block text-[13px] text-chu-phu">{label}</label>
+      <label className="mb-1 block text-[15px] text-chu-phu">{label}</label>
       {children}
     </div>
   );
@@ -70,20 +70,10 @@ export function IssueFilterPanel({
       </FilterGroup>
 
       <FilterGroup label="Khoảng ngày">
-        <DatePicker.RangePicker
-          className="w-full"
-          format="DD/MM/YYYY"
-          value={
-            filter.fromDate && filter.toDate
-              ? [dayjs(filter.fromDate), dayjs(filter.toDate)]
-              : null
-          }
-          onChange={(range) =>
-            change({
-              fromDate: range?.[0] ? range[0].format("YYYY-MM-DD") : null,
-              toDate: range?.[1] ? range[1].format("YYYY-MM-DD") : null,
-            })
-          }
+        <DateRangeFilter
+          fromDate={filter.fromDate}
+          toDate={filter.toDate}
+          onChange={(range) => change(range)}
         />
       </FilterGroup>
 

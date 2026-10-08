@@ -2,7 +2,7 @@
 
 import { Button } from "antd";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, type ReactNode } from "react";
 
 import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
@@ -15,12 +15,20 @@ import {
   writeIssueFilterToUrl,
   type IssueFilter,
 } from "../schemas/issue.schema";
+import type { IssuePermissions } from "../types";
 import { CreateIssueButton } from "./create-issue-button";
 import { IssueFilterPanel } from "./issue-filter-panel";
 import { IssueTableBody } from "./issue-table-body";
 import { IssueToolbar } from "./issue-toolbar";
 
-export function IssueTable({ canCreate }: { canCreate: boolean }) {
+export function IssueTable({
+  permissions,
+  excelActions,
+}: {
+  permissions: IssuePermissions;
+  excelActions?: ReactNode;
+}) {
+  const canCreate = permissions.canEdit;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -57,6 +65,7 @@ export function IssueTable({ canCreate }: { canCreate: boolean }) {
           filter={filter}
           onChange={changeFilter}
           addButton={canCreate ? <CreateIssueButton /> : null}
+          excelActions={excelActions}
         />
       }
     >
@@ -88,6 +97,7 @@ export function IssueTable({ canCreate }: { canCreate: boolean }) {
             filter={filter}
             loading={issues.isFetching && !issues.isPending}
             onFilterChange={changeFilter}
+            permissions={permissions}
           />
         )}
       </QueryState>

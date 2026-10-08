@@ -2,7 +2,7 @@
 
 import { Button } from "antd";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, type ReactNode } from "react";
 
 import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
@@ -17,10 +17,18 @@ import {
 } from "../schemas/order.schema";
 import { CreateOrderButton } from "./create-order-button";
 import { OrderFilterPanel } from "./order-filter-panel";
+import type { OrderPermissions } from "../types";
 import { OrderTableBody } from "./order-table-body";
 import { OrderToolbar } from "./order-toolbar";
 
-export function OrderTable({ canCreate }: { canCreate: boolean }) {
+export function OrderTable({
+  permissions,
+  excelActions,
+}: {
+  permissions: OrderPermissions;
+  excelActions?: ReactNode;
+}) {
+  const canCreate = permissions.canEdit;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -58,6 +66,7 @@ export function OrderTable({ canCreate }: { canCreate: boolean }) {
           onChange={changeFilter}
           total={orders.data ? total : null}
           addButton={canCreate ? <CreateOrderButton /> : null}
+          excelActions={excelActions}
         />
       }
     >
@@ -88,6 +97,7 @@ export function OrderTable({ canCreate }: { canCreate: boolean }) {
             total={total}
             filter={filter}
             loading={orders.isFetching && !orders.isPending}
+            permissions={permissions}
             onFilterChange={changeFilter}
           />
         )}

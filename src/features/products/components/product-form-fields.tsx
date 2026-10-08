@@ -9,7 +9,7 @@ import {
   type UseFormSetValue,
 } from "react-hook-form";
 
-import { useAutoFillName } from "../hooks/useAutoFillName";
+import { useAutoFillName, type NameSheetStatus } from "../hooks/useAutoFillName";
 import type { ProductFormValues } from "../schemas/product.schema";
 import { PRODUCT_KIND_LABELS, type Lookups, type ProductKind } from "../types";
 import { LookupSelect } from "./lookup-select";
@@ -24,6 +24,13 @@ type Props = {
   isNew: boolean;
   /** Ghi chú quy chuẩn tự sinh của mã đang sửa — chỉ đọc. */
   note: string | null;
+};
+
+const NAME_SHEET_HINT: Record<NameSheetStatus, string | undefined> = {
+  idle: undefined,
+  loading: "Đang tải sheet tên hàng chuẩn để tự điền tên…",
+  filled: "Tự điền từ sheet tên hàng chuẩn — sửa được.",
+  "not-found": "Mã này chưa có trong sheet tên hàng chuẩn — gõ tên hàng.",
 };
 
 const KIND_OPTIONS = (Object.keys(PRODUCT_KIND_LABELS) as ProductKind[]).map((kind) => ({
@@ -53,7 +60,7 @@ export function ProductFormFields({ control, errors, setValue, getValues, lookup
       <Form.Item
         label="Tên hàng"
         validateStatus={errors.name ? "error" : undefined}
-        help={errors.name?.message ?? (nameSheet.fromSheet ? "Tự điền từ sheet tên hàng chuẩn — sửa được." : undefined)}
+        help={errors.name?.message ?? NAME_SHEET_HINT[nameSheet.status]}
       >
         <Controller name="name" control={control} render={({ field }) => <Input {...field} />} />
       </Form.Item>

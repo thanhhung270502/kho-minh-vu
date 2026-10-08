@@ -17,7 +17,15 @@ import {
 } from "../src/features/analytics/lib/period-analysis";
 import { toAddOrderLineResult, toOrderStatusCounts } from "../src/features/sales-order/types";
 import { statusCountKeyOf, toAddOrderLineRpcArgs, toOrderStatusCountRpcArgs } from "../src/features/sales-order/schemas/order.schema";
-import { DATE_PRESET_LABELS, activeDatePreset, datePresetRange, todayInVietnam } from "../src/features/sales-order/lib/date-presets";
+import {
+  DATE_PRESET_LABELS,
+  activeDatePreset,
+  datePresetRange,
+  isDefaultDateRange,
+  readDateRangeOrThisMonth,
+  todayInVietnam,
+} from "../src/shared/lib/date-presets";
+import { readDate } from "../src/features/documents/lib/url-filter";
 import { orderProgress } from "../src/features/sales-order/lib/order-progress";
 import {
   toFlowDay,
@@ -45,9 +53,9 @@ import { buildCsv } from "../src/shared/lib/csv";
 import { fetchAllPages } from "../src/shared/lib/fetch-all-pages";
 import { isInteractiveTarget, readSelectedId, withSelectedId } from "../src/shared/lib/selected-id";
 import { docTypeLabel, toPartnerRow } from "../src/features/partners/types";
-import { BUSINESS_PERMISSIONS, SCOPE_LABELS, allows, type BusinessPermission, type PermissionSubject, type Role } from "../src/shared/lib/permissions";
-import { jobTitleSchema, titleCodeFromName } from "../src/features/settings/schemas/job-title.schema";
+import { BUSINESS_PERMISSIONS, SCOPE_LABELS, allows, isAdmin, type BusinessPermission, type PermissionSubject, type Role } from "../src/shared/lib/permissions";
 import { editUserFormSchema } from "../src/features/settings/schemas/user.schema";
+import { activityHref, activityPhrase, activityTime } from "../src/features/dashboard/lib/activity-format";
 import { duplicateProblemsInFile } from "../src/features/products/lib/new-product-file";
 import { fillNamesFromSheet, readProductNameSheet } from "../src/features/products/lib/product-name-sheet";
 import { fromSharedVehiclesDb, toSharedVehiclesDb, usageLine, vehicleColumns, vehicleLabels, withUsageLine } from "../src/features/products/lib/shared-vehicles";
@@ -72,6 +80,17 @@ import {
   toDraftRows,
   toImportPayload,
 } from "../src/features/products/lib/new-product-import";
+import {
+  groupDocuments,
+  mapHeaders,
+  parseDateCell,
+  parseNegativeReason,
+  parseQuantityCell,
+  parseRecipientKind,
+  splitStaffNames,
+  type DocumentFileRow,
+} from "../src/features/document-excel/lib/document-excel";
+import { mapPartnerHeaders, parseActiveFlag, parsePartnerKind } from "../src/features/partners/lib/partner-excel";
 import { toAnalysisRow, type AnalysisRow, type AnalysisSettings } from "../src/features/analytics/types";
 import {
   buildReorderCsv,
@@ -103,11 +122,7 @@ import {
   toListRpcArgs,
   type ProductFilter,
 } from "../src/features/products/schemas/filter.schema";
-import {
-  groupLinesByWarehouse,
-  UNASSIGNED_WAREHOUSE_LABEL,
-} from "../src/features/sales-order/lib/group-lines-by-warehouse";
-import { toOrderDetail, toOrderLine, toOrderRow, type OrderLine } from "../src/features/sales-order/types";
+import { toOrderDetail, toOrderLine, toOrderRow } from "../src/features/sales-order/types";
 import { orderActionsFor } from "../src/features/sales-order/lib/order-actions";
 import { needsNegativeReason } from "../src/features/sales-order/lib/complete-order";
 import {
@@ -126,6 +141,7 @@ import {
 import {
   COMMON_GOODS_LABEL,
   formatOrderRecipients,
+  isInternalPartnerCode,
   isMultiRecipientOrder,
   lineRecipientLabel,
   partnerLabel,
@@ -194,11 +210,11 @@ for (const xau of [
 }
 
 
-/** Người dùng giữ chức vụ MẶC ĐỊNH của vai trò — đúng dữ liệu 0082. */
+/** Bộ quyền mẫu (0117): Admin luôn đủ 9 quyền (quyen_cua_toi), nhân viên theo người tích. */
 const DEFAULT_TITLE: Record<Role, BusinessPermission[]> = {
-  quan_ly: ["xem_dashboard", "nhap_kho", "tao_don", "xac_nhan_don", "hoan_thanh_don", "sua_hoa_don", "tao_ma_hang", "tao_nhan_vien", "kiem_kho"],
-  van_phong: ["nhap_kho", "tao_don", "hoan_thanh_don", "tao_ma_hang", "tao_nhan_vien", "kiem_kho"],
-  thu_kho: ["nhap_kho", "kiem_kho"],
+  quan_ly: BUSINESS_PERMISSIONS.map((p) => p.key),
+  van_phong: ["nhap_kho", "tao_don", "xac_nhan_don", "tao_ma_hang"],
+  thu_kho: ["nhap_kho"],
   chi_xem: [],
 };
 const as = (role: Role, extra: BusinessPermission[] = []): PermissionSubject => ({
@@ -225,8 +241,8 @@ assert.equal(allows(as("quan_ly"), "xem_dashboard"), true);
 assert.equal(allows(as("van_phong"), "xem_dashboard"), false);
 assert.equal(allows(as("thu_kho", ["xem_dashboard"]), "xem_dashboard"), true, "bật cho Thủ kho thì thủ kho xem được");
 assert.equal(allows(as("chi_xem"), "view-catalog"), true, "quyền theo phạm vi vẫn đọc vai trò");
-assert.equal(allows(as("van_phong"), ["manage-users", "tao_nhan_vien"]), true, "mảng = có một trong các quyền");
-assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
+assert.equal(allows(as("van_phong", ["phan_quyen"]), ["manage-users", "phan_quyen"]), true, "mảng = có một trong các quyền");
+assert.equal(allows(as("thu_kho"), ["manage-users", "phan_quyen"]), false);
 
 // Phase 10 (GON-02): màn Lịch sử KiotViet đã gỡ khỏi giao diện — không còn
 // mục menu nào trỏ tới, và filterNavItems không còn nhận công tắc theo người.
@@ -274,12 +290,13 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
 {
 
   const nvpt = "/cai-dat/nhan-vien-phu-trach";
-  assert.ok(tabsFor(as("van_phong")).some((t) => t.duongDan === nvpt), "văn phòng có tab Nhân viên phụ trách");
-  assert.ok(tabsFor(as("quan_ly")).some((t) => t.duongDan === nvpt), "quản lý có tab Nhân viên phụ trách");
+  assert.ok(!tabsFor(as("van_phong")).some((t) => t.duongDan === nvpt), "0117: nhân viên không có tab Nhân viên phụ trách");
+  assert.ok(!tabsFor(as("quan_ly")).some((t) => t.duongDan === nvpt), "08/10/2026: tab Nhân viên phụ trách ẩn với mọi người");
   assert.ok(!tabsFor(as("thu_kho")).some((t) => t.duongDan === nvpt), "thủ kho không có tab này");
-  // Phase 16: tab theo quyền Tạo nhân viên — bật cho Thủ kho thì thủ kho có tab, và có menu Cài đặt.
-  assert.ok(tabsFor(as("thu_kho", ["tao_nhan_vien"])).some((t) => t.duongDan === nvpt));
-  assert.ok(filterNavItems(as("thu_kho", ["tao_nhan_vien"]), NAV_ITEMS).some((i) => i.href === "/cai-dat"));
+  // 0117: tab Nhân viên phụ trách chỉ Admin; quyền Phân quyền mở menu Cài đặt (tab Người dùng).
+  assert.ok(!tabsFor(as("thu_kho", ["phan_quyen"])).some((t) => t.duongDan === nvpt));
+  assert.ok(tabsFor(as("thu_kho", ["phan_quyen"])).some((t) => t.duongDan === "/cai-dat/nguoi-dung"));
+  assert.ok(filterNavItems(as("thu_kho", ["phan_quyen"]), NAV_ITEMS).some((i) => i.href === "/cai-dat"));
   assert.ok(filterNavItems(as("thu_kho", ["xem_dashboard"]), NAV_ITEMS).some((i) => i.href === "/"));
 
   const ok = staffSchema.safeParse({ shortName: "  An ", fullName: " Nguyễn Văn An ", isActive: true });
@@ -299,7 +316,7 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
   for (const old of ["/cai-dat/nhom-hang", "/cai-dat/don-vi-tinh", "/cai-dat/cong-doan"]) {
     assert.ok(!SETTINGS_TABS.some((t) => t.duongDan === old), `Cài đặt không còn ${old}`);
   }
-  assert.equal(firstTabFor(as("van_phong")), "/cai-dat/nhan-vien-phu-trach");
+  assert.equal(firstTabFor(as("van_phong")), "/cai-dat/nguoi-dung", "không có tab nào thì về Người dùng");
   assert.equal(firstTabFor(as("quan_ly")), "/cai-dat/nguoi-dung");
 }
 
@@ -375,7 +392,7 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
   );
   assert.deepEqual(
     primary.map((i) => i.href),
-    ["/duyet-don", "/nhap-kho", "/danh-muc", "/don-dat"],
+    ["/duyet-don", "/nhap-hang", "/danh-muc", "/don-dat"],
     "mất ô Tổng quan thì mục ưu tiên 5 (Đơn đặt) đôn lên lấp đủ 4 ô; Danh sách hàng hóa thay ô Tồn kho",
   );
 }
@@ -390,7 +407,7 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
   const entries = buildNavEntries(filterNavItems(as("quan_ly"), NAV_ITEMS));
   assert.deepEqual(
     entries.map((e) => e.label),
-    ["Tổng quan", "Đơn hàng", "Nhập kho", "Hàng hóa", "Đối tác", "Phân tích", "Cài đặt"],
+    ["Tổng quan", "Hàng hóa", "Đơn hàng", "Nhập hàng", "Đối tác", "Phân tích", "Cài đặt"],
     "thứ tự menu cấp 1 của quản lý (Phase 13 thêm Phân tích)",
   );
   const groupHrefs = (label: string) => {
@@ -414,16 +431,16 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "tao_nhan_vien"]), false);
   const chiXem = buildNavEntries(filterNavItems(as("chi_xem"), NAV_ITEMS));
   assert.deepEqual(
     chiXem.map((e) => e.label),
-    ["Đơn hàng", "Nhập kho", "Hàng hóa", "Đối tác"],
+    ["Hàng hóa", "Đơn hàng", "Nhập hàng", "Đối tác"],
     "chỉ xem không có Tổng quan, Cài đặt",
   );
   assert.ok(
-    buildNavEntries(filterNavItems(as("van_phong"), NAV_ITEMS)).some((e) => e.label === "Phân tích"),
-    "văn phòng thấy Phân tích (đi đặt hàng NCC)",
+    buildNavEntries(filterNavItems(as("thu_kho", ["xem_phan_tich"]), NAV_ITEMS)).some((e) => e.label === "Phân tích"),
+    "0117: tích Xem trang Phân tích thì thấy menu",
   );
   assert.ok(
-    !buildNavEntries(filterNavItems(as("thu_kho"), NAV_ITEMS)).some((e) => e.label === "Phân tích"),
-    "thủ kho không thấy Phân tích (tồn mọi kho)",
+    !buildNavEntries(filterNavItems(as("van_phong"), NAV_ITEMS)).some((e) => e.label === "Phân tích"),
+    "0117: chưa tích Xem trang Phân tích thì không thấy",
   );
 }
 
@@ -599,7 +616,21 @@ assert.deepEqual(
   "bộ lọc phiếu nhập quay vòng qua URL không mất giá trị",
 );
 assert.equal(writeReceiptFilterToUrl(DEFAULT_RECEIPT_FILTER).toString(), "", "bộ lọc mặc định không ghi gì vào URL");
-assert.deepEqual(readReceiptFilterFromUrl(new URLSearchParams("")), DEFAULT_RECEIPT_FILTER);
+assert.deepEqual(
+  readReceiptFilterFromUrl(new URLSearchParams("")),
+  { ...DEFAULT_RECEIPT_FILTER, ...datePresetRange("month", todayInVietnam()) },
+  "URL chưa chọn ngày → mặc định tháng này",
+);
+assert.equal(
+  writeReceiptFilterToUrl({ ...DEFAULT_RECEIPT_FILTER, ...datePresetRange("month", todayInVietnam()) }).toString(),
+  "",
+  "tháng này là mặc định — không ghi lên URL",
+);
+assert.equal(
+  countActiveReceiptFilters({ ...DEFAULT_RECEIPT_FILTER, ...datePresetRange("month", todayInVietnam()) }),
+  0,
+  "tháng này không tính là đang lọc",
+);
 assert.equal(readReceiptFilterFromUrl(new URLSearchParams("trang=-2")).page, 1, "page âm về 1");
 assert.equal(readReceiptFilterFromUrl(new URLSearchParams("ncc=khong-phai-uuid")).partnerId, null);
 assert.equal(readReceiptFilterFromUrl(new URLSearchParams("tu_ngay=01/09/2026")).fromDate, null, "ngày sai định dạng bị bỏ");
@@ -611,46 +642,6 @@ assert.equal(
   "ô tìm KHÔNG tính vào số điều kiện của panel lọc",
 );
 assert.equal(toReceiptListRpcArgs(DEFAULT_RECEIPT_FILTER).p_loai_ct, "NHAP", "màn phiếu nhập luôn khóa loại NHAP");
-
-// --- Nhóm dòng theo kho cho phiếu đi lấy hàng (04-12, D-09) -----------------
-function sampleOrderLine(overrides: Partial<OrderLine>): OrderLine {
-  return {
-    id: overrides.id ?? "line-1",
-    productId: "product-1",
-    productCode: "MA-001",
-    productName: "Sản phẩm mẫu",
-    unitName: "Cái",
-    orderedQuantity: 1,
-    shippedQuantity: 0,
-    remainingQuantity: 1,
-    recipientId: null,
-    recipientName: null,
-    defaultWarehouseId: "kho-1",
-    defaultWarehouseName: "Kho 1",
-    createdAt: "2026-09-20T00:00:00Z",
-    ...overrides,
-  };
-}
-
-const groupedRows = groupLinesByWarehouse([
-  sampleOrderLine({ id: "b-kho2", productCode: "B002", defaultWarehouseId: "k2", defaultWarehouseName: "Kho 2" }),
-  sampleOrderLine({ id: "a-kho1", productCode: "A002", defaultWarehouseId: "k1", defaultWarehouseName: "Kho 1" }),
-  sampleOrderLine({ id: "c-khong-kho", productCode: "C003", defaultWarehouseId: null, defaultWarehouseName: null }),
-  sampleOrderLine({ id: "d-kho1", productCode: "A001", defaultWarehouseId: "k1", defaultWarehouseName: "Kho 1" }),
-]);
-
-// Thứ tự mong đợi: nhóm "Kho 1" (mã A001 rồi A002), nhóm "Kho 2" (B002), nhóm
-// "Chưa gán kho" (C003) ở cuối cùng — dù thứ tự đầu vào ngược lại hoàn toàn.
-assert.deepEqual(
-  groupedRows.map((row) => (row.kind === "group" ? `nhom:${row.warehouseName}` : row.line.id)),
-  ["nhom:Kho 1", "d-kho1", "a-kho1", "nhom:Kho 2", "b-kho2", `nhom:${UNASSIGNED_WAREHOUSE_LABEL}`, "c-khong-kho"],
-  "gom nhóm theo kho rồi theo mã hàng, mã thiếu kho mặc định gom nhóm cuối",
-);
-assert.deepEqual(
-  groupedRows.filter((row) => row.kind === "line").map((row) => row.index),
-  [1, 2, 3, 4],
-  "STT liên tục trong cả tờ, không đánh lại từ 1 ở mỗi kho",
-);
 
 // --- Người nhận: một đối tác tùy chọn + nhiều nhân viên (0090) ---------------
 // Phase 18 (NNHAN, D2/D4): hàm thuần ở shared/lib/recipient.ts.
@@ -665,10 +656,16 @@ assert.equal(staffNames([]), "—");
 assert.equal(partnerLabel(partnerLienHoa), "KH01 Liên Hoa");
 assert.equal(partnerLabel({ ...partnerLienHoa, code: null }), "Liên Hoa");
 assert.equal(partnerLabel({ id: "d", code: null, name: null }), "—");
-assert.equal(formatOrderRecipients({ partner: null, staff: [staffAn, staffBinh] }), "Nội bộ — An, Bình");
+assert.equal(formatOrderRecipients({ partner: null, staff: [staffAn, staffBinh] }), "An, Bình", "không gắn nhãn Nội bộ");
 assert.equal(formatOrderRecipients({ partner: null, staff: [] }), "Chưa chọn người nhận");
 assert.equal(formatOrderRecipients({ partner: partnerLienHoa, staff: [] }), "KH01 Liên Hoa");
 assert.equal(formatOrderRecipients({ partner: partnerLienHoa, staff: [staffAn] }), "KH01 Liên Hoa · An");
+// NB001 (Bộ phận điều phối đơn) là đối tác nội bộ: có nhân viên thì chỉ hiện nhân viên.
+const partnerNb001 = { id: "nb1", code: "NB001", name: "BỘ PHẬN ĐIỀU PHỐI ĐƠN" };
+assert.equal(formatOrderRecipients({ partner: partnerNb001, staff: [staffAn] }), "An");
+assert.equal(formatOrderRecipients({ partner: partnerNb001, staff: [] }), "NB001 BỘ PHẬN ĐIỀU PHỐI ĐƠN");
+assert.equal(isInternalPartnerCode("nb002"), true);
+assert.equal(isInternalPartnerCode("NBA01"), false, "phải là NB + số");
 assert.equal(recipientKindOf({ partner: null, staff: [staffAn] }), "internal");
 assert.equal(recipientKindOf({ partner: partnerLienHoa, staff: [] }), "partner");
 // Phase 17 (DDAT-02, A3): phiếu đi lấy hàng chỉ in TÊN người nhận — không "Nội bộ —", không mã đối tác.
@@ -692,6 +689,7 @@ const internalOrderDetail = toOrderDetail({
   ghi_chu: null as unknown as string, tong_so_luong_dat: 0, tong_so_luong_da_xuat: 0,
   ho_ten_nguoi_tao: "Văn phòng", created_at: "2026-10-01T00:00:00Z",
   hoa_don_id: null as unknown as string, so_hoa_don: null as unknown as string,
+  ho_ten_nguoi_xac_nhan: null as unknown as string, ngay_xac_nhan: null as unknown as string,
 });
 // Phase 12 (DON-06): chi_tiet_don mang hóa đơn của đơn; chưa có thì null.
 assert.equal(internalOrderDetail.invoice, null, "đơn chưa hoàn thành: không có hóa đơn");
@@ -703,6 +701,7 @@ assert.deepEqual(
     ghi_chu: null as unknown as string, tong_so_luong_dat: 3, tong_so_luong_da_xuat: 3,
     ho_ten_nguoi_tao: "Văn phòng", created_at: "2026-10-01T00:00:00Z",
     hoa_don_id: "ct-9", so_hoa_don: "PX26-000009",
+    ho_ten_nguoi_xac_nhan: "Quản lý", ngay_xac_nhan: "2026-10-03T08:00:00Z",
   }).invoice,
   { id: "ct-9", number: "PX26-000009" },
   "đơn hoàn thành: link sang hóa đơn",
@@ -741,15 +740,15 @@ assert.deepEqual(
 );
 const partnerOrderRow = toOrderRow({
   id: "dh-2", so_dh: "DH26-000002", ngay_dh: "2026-10-01", trang_thai: "TAM",
-  ngay_giao_du_kien: null as unknown as string, doi_tac_id: "dt-1", ten_doi_tac: "Liên Hoa",
+  ngay_giao_du_kien: null as unknown as string, doi_tac_id: "dt-1", ma_doi_tac: "KH01", ten_doi_tac: "Liên Hoa",
   nguoi_nhan_ids: [], ten_nguoi_nhan: [], so_dong: 0,
   tong_so_luong_dat: 0, tong_so_luong_da_xuat: 0, ho_ten_nguoi_tao: "Văn phòng",
   ghi_chu: null as unknown as string, created_at: "2026-10-01T00:00:00Z", tong_so_dong: 1,
 });
 assert.deepEqual(
   partnerOrderRow.recipients,
-  { partner: { id: "dt-1", code: null, name: "Liên Hoa" }, staff: [] },
-  "danh_sach_don không trả mã đối tác → code null",
+  { partner: { id: "dt-1", code: "KH01", name: "Liên Hoa" }, staff: [] },
+  "danh_sach_don trả mã đối tác (0103) — cần để nhận ra đối tác nội bộ NB…",
 );
 
 assert.equal(
@@ -760,6 +759,7 @@ assert.equal(
     ghi_chu: null as unknown as string, tong_so_luong_dat: 0, tong_so_luong_da_xuat: 0,
     ho_ten_nguoi_tao: "Văn phòng", created_at: "2026-10-01T00:00:00Z",
     hoa_don_id: null as unknown as string, so_hoa_don: null as unknown as string,
+    ho_ten_nguoi_xac_nhan: null as unknown as string, ngay_xac_nhan: null as unknown as string,
   }).recipients.partner?.code,
   "KH01",
 );
@@ -767,6 +767,7 @@ const orderLineRow = {
   id: "l1", san_pham_id: "p1", ma_hang: "A1", ten_hang: "Hàng", ten_dvt: null as unknown as string,
   so_luong_dat: 2, so_luong_da_xuat: 0, kho_mac_dinh_id: null as unknown as string,
   ten_kho_mac_dinh: null as unknown as string, created_at: "2026-10-01T00:00:00Z",
+  ghi_chu: null as unknown as string, ten_nhom_hang: null as unknown as string,
 };
 {
   const assigned = toOrderLine({ ...orderLineRow, nguoi_nhan_id: "nv-1", ten_nguoi_nhan: "An" });
@@ -832,7 +833,7 @@ const internalIssue = toDocumentDetail({
   don_dat_hang_id: "dh-1", so_dh: "DH26-000002", chung_tu_goc_id: null as unknown as string,
   so_ct_goc: null as unknown as string, ly_do_xuat_am: null as unknown as string,
   ghi_chu_ly_do: null as unknown as string, nguoi_duyet_id: null as unknown as string,
-  nguoi_nhan_ids: ["nd-1"], ten_nguoi_nhan: ["Thủ kho K1"],
+  nguoi_nhan_ids: ["nd-1"], ten_nguoi_nhan: ["Thủ kho K1"], ho_ten_nguoi_duyet: "Quản lý", ho_ten_nguoi_xac_nhan_don: "Quản lý",
 });
 assert.deepEqual(internalIssue.staffRecipients, [{ id: "nd-1", name: "Thủ kho K1" }]);
 assert.deepEqual(toDocumentUpdate({ note: "x" }), { ghi_chu: "x" });
@@ -1081,34 +1082,35 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   // Ví dụ kiểm chứng trong spec Notion: tồn 1, bán 59 trong 27 ngày -> ⌈2,19 × 30 − 1⌉ = 65.
   assert.equal(suggestedOrder(arow({ available: 1, avgDailySales: 59 / 27 }), 30), 65, "đề nghị nhập ví dụ RWT = 65");
   assert.equal(suggestedOrder(arow({ available: 500, avgDailySales: 1 }), 30), 0, "đủ hàng: đề nghị 0, không âm");
-  assert.equal(suggestedOrder(arow({ available: 0, avgDailySales: null }), 30), 0, "không bán: không đề nghị nhập");
+  assert.equal(suggestedOrder(arow({ available: 0, avgDailySales: null }), 30), 0, "không xuất, không định mức: không đề nghị");
+  assert.equal(suggestedOrder(arow({ available: 2, avgDailySales: null, minStock: 10 }), 30), 8, "không xuất: bù đủ định mức");
+  assert.equal(suggestedOrder(arow({ available: 5, avgDailySales: 0.1, minStock: 20 }), 30), 15, "định mức lớn hơn nhu cầu 30 ngày");
 
+  // Trạng thái theo định mức (stock 10, minStock 0 mặc định).
   const st = (o: Partial<AnalysisRow>) => stockStatus(arow(o), ANALYSIS_SETTINGS);
-  assert.equal(st({ stock: 0, avgDailySales: 2, daysOfCover: 0 }), "out", "tồn <= 0 luôn Hết hàng");
-  assert.equal(st({ stock: 5, avgDailySales: 1, daysOfCover: 7 }), "urgent", "<= ngưỡng đỏ");
-  assert.equal(st({ stock: 5, avgDailySales: 1, daysOfCover: 14 }), "soon", "<= ngưỡng vàng");
-  assert.equal(st({ stock: 5, avgDailySales: 1, daysOfCover: 15 }), "ok", "trên ngưỡng vàng");
-  assert.equal(st({ stock: 5, avgDailySales: null }), "no-sales", "còn tồn, không bán: Không bán");
-  assert.equal(st({ stock: 0, avgDailySales: null }), "stopped", "hết tồn, không bán: Ngừng bán?");
+  assert.equal(st({ stock: 5, available: 5, minStock: 8, avgDailySales: null }), "urgent", "tồn < định mức: Dưới định mức");
+  assert.equal(st({ stock: 0, available: 0, avgDailySales: 2 }), "soon", "hết hàng, chưa đặt định mức: Sắp thiếu hàng");
+  assert.equal(st({ stock: 10, available: 10, minStock: 5, avgDailySales: 1 }), "soon", "trên định mức, thiếu cho 30 ngày: Sắp thiếu hàng");
+  assert.equal(st({ stock: 100, available: 100, minStock: 5, avgDailySales: 1 }), "ok", "trên định mức, đủ 30 ngày: Trên định mức");
+  assert.equal(st({ stock: 5, avgDailySales: null }), "no-sales", "không xuất, không dưới định mức");
+  assert.equal(st({ stock: 0, avgDailySales: null, customerOrdered: 3, available: -3 }), "soon", "hết hàng có đơn đặt: Sắp thiếu hàng");
 
   assert.equal(finishOf("XI_MA"), "XI_MA");
   assert.equal(finishOf(null), "KHAC");
 
   const rows = [
-    arow({ code: "S1", stock: 5, avgDailySales: 1, daysOfCover: 5, soldInPeriod: 30, categoryId: "g1" }),
-    arow({ code: "S2", stock: 10, avgDailySales: 1, daysOfCover: 10, soldInPeriod: 30, categoryId: "g1" }),
-    arow({ code: "L1", stock: 20, avgDailySales: 1, daysOfCover: 20, soldInPeriod: 30, categoryId: "g2", categoryName: "Nhóm 2" }),
-    arow({ code: "O1", stock: 0, avgDailySales: 2, daysOfCover: 0, soldInPeriod: 60, categoryId: "g2", categoryName: "Nhóm 2" }),
-    arow({ code: "O2", stock: -3, avgDailySales: null, soldInPeriod: 0 }),
+    arow({ code: "M1", stock: 3, available: 3, minStock: 10, avgDailySales: 1, daysOfCover: 3, soldInPeriod: 30 }),
+    arow({ code: "S1", stock: 5, available: 5, avgDailySales: 1, daysOfCover: 5, soldInPeriod: 30 }),
+    arow({ code: "S2", stock: 10, available: 10, avgDailySales: 1, daysOfCover: 10, soldInPeriod: 30 }),
+    arow({ code: "O1", stock: 0, available: 0, avgDailySales: 2, daysOfCover: 0, soldInPeriod: 60 }),
     arow({ code: "N1", stock: 40, avgDailySales: null, soldInPeriod: 0 }),
-    arow({ code: "N2", stock: 70, avgDailySales: null, soldInPeriod: 0 }),
-    arow({ code: "B1", stock: 400, avgDailySales: 1, daysOfCover: 400, soldInPeriod: 30, categoryId: "g3", categoryName: "Nhóm 3" }),
+    arow({ code: "B1", stock: 400, available: 400, avgDailySales: 1, daysOfCover: 400, soldInPeriod: 30 }),
   ];
 
   const tabs = reorderTabs(rows, ANALYSIS_SETTINGS);
-  assert.deepEqual(tabs.soon.map((r) => r.code), ["S1", "S2"], "sắp hết, ít ngày nhất lên đầu");
+  assert.deepEqual(tabs.urgent.map((r) => r.code), ["M1"], "Dưới định mức");
+  assert.deepEqual(tabs.soon.map((r) => r.code), ["O1", "S1", "S2"], "Sắp thiếu hàng, ít ngày nhất lên đầu");
   assert.deepEqual(tabs.outWithDemand.map((r) => r.code), ["O1"]);
-  assert.deepEqual(tabs.later.map((r) => r.code), ["L1"], "còn X+1..30 ngày");
 
 
 }
@@ -1375,22 +1377,22 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.equal(slow.noSalesQty, 90, "tổng tồn của mã không bán");
 }
 
-// --- Phase 16: chức vụ & quyền (QUYEN-01/02) ------------------------------
+// --- 0117: quyền tích theo người (QUYEN-01/02) ------------------------------
 {
-  // Khóa = giá trị CHECK của chuc_vu_quyen.quyen (0082) — đúng 9, đúng thứ tự yêu cầu.
+  // Khóa = giá trị CHECK của nguoi_dung_quyen.quyen (0117) — đúng 9, đúng thứ tự yêu cầu.
   assert.deepEqual(
     BUSINESS_PERMISSIONS.map((p) => p.key),
-    ["xem_dashboard", "nhap_kho", "tao_don", "xac_nhan_don", "hoan_thanh_don",
-     "sua_hoa_don", "tao_ma_hang", "tao_nhan_vien", "kiem_kho"],
+    ["tao_tai_khoan", "phan_quyen", "tao_don", "xac_nhan_don", "nhap_kho",
+     "tao_doi_tac", "tao_ma_hang", "xem_dashboard", "xem_phan_tich"],
   );
-  assert.equal(BUSINESS_PERMISSIONS[1].label, "Nhập đơn hàng");
   assert.equal(Object.keys(SCOPE_LABELS).length, 4, "4 phạm vi = 4 vai trò cũ");
+  assert.equal(isAdmin(as("quan_ly")), true);
+  assert.equal(isAdmin(as("van_phong", BUSINESS_PERMISSIONS.map((p) => p.key))), false, "đủ 9 quyền vẫn không phải Admin");
 
-  assert.equal(titleCodeFromName("  Kế toán kho "), "KE_TOAN_KHO");
-  assert.equal(titleCodeFromName("Đội giao-hàng 2"), "DOI_GIAO_HANG_2");
-  const ok = jobTitleSchema.safeParse({ name: "  Kế toán ", scope: "van_phong" });
-  assert.ok(ok.success && ok.data.name === "Kế toán");
-  assert.ok(!jobTitleSchema.safeParse({ name: " ", scope: "van_phong" }).success, "tên bắt buộc");
+  const base = { fullName: "An", jobTitleId: "11111111-1111-4111-8111-111111111111", role: "van_phong", warehouseIds: [] };
+  const noPerms = editUserFormSchema.safeParse(base);
+  assert.ok(noPerms.success && noPerms.data.permissions.length === 0, "mặc định không có quyền nào");
+  assert.ok(!editUserFormSchema.safeParse({ ...base, permissions: ["kiem_kho"] }).success, "khóa cũ bị từ chối");
 
   // Form người dùng chọn CHỨC VỤ; phạm vi thủ kho vẫn bắt buộc có kho.
   const title = "11111111-1111-4111-8111-111111111111";
@@ -1646,7 +1648,7 @@ async function kiemCsvPhanTich() {
   assert.equal(searchResultHref(r("product", "p1")), "/danh-muc/p1");
   assert.equal(searchResultHref(r("order", "o1")), "/don-dat/o1");
   assert.equal(searchResultHref(r("partner", "x", "Liên Hoa")), "/doi-tac?q=Li%C3%AAn%20Hoa");
-  assert.equal(searchResultHref(r("document", "d1", "L", "NHAP")), "/nhap-kho/d1");
+  assert.equal(searchResultHref(r("document", "d1", "L", "NHAP")), "/nhap-hang/d1");
   assert.equal(searchResultHref(r("document", "d1", "L", "XUAT")), "/duyet-don/d1");
   assert.equal(searchResultHref(r("document", "d1", "L", "TRA_NCC")), "/tra-hang/d1");
   assert.equal(searchResultHref(r("document", "d1", "L", "TRA_KHACH")), "/tra-hang/d1");
@@ -1721,17 +1723,29 @@ async function kiemCsvPhanTich() {
   );
 
   const staff = "11111111-1111-4111-8111-111111111111";
-  const countArgs = toOrderStatusCountRpcArgs({ ...DEFAULT_ORDER_FILTER, status: "TAM", page: 3, recipientKind: "internal", staffId: staff });
+  const countArgs = toOrderStatusCountRpcArgs({ ...DEFAULT_ORDER_FILTER, statuses: ["TAM"], page: 3, recipientKind: "internal", staffId: staff });
   assert.deepEqual(countArgs, {
     p_doi_tac_id: undefined, p_tu_ngay: undefined, p_den_ngay: undefined, p_tu_khoa: undefined,
     p_loai_nhan: "NOI_BO", p_nguoi_nhan_id: staff,
   });
   assert.ok(!("p_trang_thai" in countArgs) && !("p_trang" in countArgs) && !("p_kich_thuoc" in countArgs));
   assert.deepEqual(
-    statusCountKeyOf({ ...DEFAULT_ORDER_FILTER, status: "TAM", page: 3 }),
-    statusCountKeyOf({ ...DEFAULT_ORDER_FILTER, status: null, page: 1 }),
+    statusCountKeyOf({ ...DEFAULT_ORDER_FILTER, statuses: ["TAM"], page: 3 }),
+    statusCountKeyOf({ ...DEFAULT_ORDER_FILTER, statuses: ["TAM", "HOAN_THANH"], page: 1 }),
     "đổi trạng thái/trang không đổi khóa đếm",
   );
+
+  // Trạng thái nhiều lựa chọn: mặc định ẩn Đã hủy, không ghi lên URL; tích đủ = không lọc.
+  {
+    const def = readOrderFilterFromUrl(new URLSearchParams(""));
+    assert.deepEqual(def.statuses, ["TAM", "DA_XAC_NHAN", "HOAN_THANH"]);
+    assert.equal(writeOrderFilterToUrl(def).get("trang_thai"), null);
+    assert.deepEqual(toOrderListRpcArgs(def).p_trang_thai, ["TAM", "DA_XAC_NHAN", "HOAN_THANH"]);
+    const all = readOrderFilterFromUrl(new URLSearchParams("trang_thai=DA_HUY,TAM,HOAN_THANH,DA_XAC_NHAN"));
+    assert.deepEqual(all.statuses, ["TAM", "DA_XAC_NHAN", "HOAN_THANH", "DA_HUY"], "giữ thứ tự chuẩn");
+    assert.equal(toOrderListRpcArgs(all).p_trang_thai, undefined);
+    assert.deepEqual(readOrderFilterFromUrl(new URLSearchParams("trang_thai=xyz")).statuses, def.statuses);
+  }
   assert.deepEqual(toAddOrderLineRpcArgs("o1", { productId: "p1", quantity: 2, recipientId: null }), {
     p_don_id: "o1", p_san_pham_id: "p1", p_so_luong: 2, p_nguoi_nhan_id: undefined,
   });
@@ -1741,6 +1755,11 @@ async function kiemCsvPhanTich() {
   assert.deepEqual(datePresetRange("7d", "2026-10-04"), { fromDate: "2026-09-28", toDate: "2026-10-04" });
   assert.deepEqual(datePresetRange("30d", "2026-10-04"), { fromDate: "2026-09-05", toDate: "2026-10-04" });
   assert.deepEqual(datePresetRange("month", "2026-10-04"), { fromDate: "2026-10-01", toDate: "2026-10-04" });
+  // Bộ lọc danh sách: URL chưa chọn ngày → tháng này; tháng này không tính là đang lọc.
+  assert.deepEqual(readDateRangeOrThisMonth(new URLSearchParams(""), readDate, "2026-10-05"), { fromDate: "2026-10-01", toDate: "2026-10-05" });
+  assert.deepEqual(readDateRangeOrThisMonth(new URLSearchParams("tu_ngay=01/09/2026"), readDate, "2026-10-05"), { fromDate: null, toDate: null }, "có tham số sai thì không tự thay");
+  assert.equal(isDefaultDateRange("2026-10-01", "2026-10-05", "2026-10-05"), true);
+  assert.equal(isDefaultDateRange("2026-09-01", "2026-09-30", "2026-10-05"), false);
   assert.deepEqual(datePresetRange("7d", "2026-03-03"), { fromDate: "2026-02-25", toDate: "2026-03-03" });
   assert.equal(activeDatePreset(null, null, "2026-10-04"), null);
   assert.equal(activeDatePreset("2026-09-28", "2026-10-04", "2026-10-04"), "7d");
@@ -1758,3 +1777,102 @@ async function kiemCsvPhanTich() {
 void Promise.all([kiemCsvLoi(), kiemCsvPhanTich(), kiemTaiTheoTrang()]).then(() => {
   console.log("✓ hàm thuần: tất cả assert đạt");
 });
+
+// --- Nhập chứng từ từ Excel (0104) ------------------------------------------
+{
+assert.equal(parseDateCell("03/10/2026"), "2026-10-03");
+assert.equal(parseDateCell("2026-10-03"), "2026-10-03");
+assert.equal(parseDateCell(new Date(Date.UTC(2026, 9, 3))), "2026-10-03");
+assert.equal(parseDateCell(46298), "2026-10-03", "số serial Excel");
+assert.equal(parseDateCell("31/02/2026"), null, "ngày không có thật");
+assert.equal(parseQuantityCell("1.200"), 1200, "dấu chấm phân nghìn");
+assert.equal(parseQuantityCell("1,5"), 1.5);
+assert.equal(parseQuantityCell("abc"), null);
+assert.equal(parseRecipientKind("Nội bộ"), "NOI_BO");
+assert.equal(parseRecipientKind("Đối tác"), "DOI_TAC");
+assert.deepEqual(splitStaffNames("NGỌC - QUỲNH"), ["NGỌC", "QUỲNH"]);
+assert.deepEqual(parseNegativeReason("Lệch tồn, chờ kiểm kê", { LECH_TON_CHO_KIEM_KE: "Lệch tồn, chờ kiểm kê" }), { code: "LECH_TON_CHO_KIEM_KE", note: null });
+assert.deepEqual(parseNegativeReason("hàng gửi trước", {}), { code: "KHAC", note: "hàng gửi trước" });
+
+const h = mapHeaders("hoa-don", ["ma_dat_hang", "ma_hoa_don", "ngay", "kho_khong_can_de_kho_nao", "ma_hang", "tong_so_luong", "so_luong"]);
+assert.equal(h.warehouse, "kho_khong_can_de_kho_nao", "tiền tố");
+assert.equal(h.quantity, "so_luong", "không ăn nhầm tong_so_luong");
+assert.equal(h.orderNo, "ma_dat_hang");
+const p = mapHeaders("phieu-nhap", ["ma_nhap_hang", "ngay_nhap", "ma_ncc", "ghi_chu_phieu", "ma_hang", "so_luong", "ghi_chu_dong"]);
+assert.equal(p.note, "ghi_chu_phieu");
+assert.equal(p.lineNote, "ghi_chu_dong");
+assert.equal(mapHeaders("phieu-nhap", ["nguoi_nhap", "nguoi_tao"]).receiver, "nguoi_nhap");
+// Mẫu Nhập kho 08/10/2026: "Tổng số lượng" không ăn nhầm cột Số lượng; Ghi chú = ghi chú phiếu.
+{
+  const pn = mapHeaders("phieu-nhap", ["ma_nhap_hang", "ngay_nhap", "ma_nha_cung_cap", "nguoi_nhap", "nguoi_tao", "ghi_chu", "tong_so_luong", "tong_so_mat_hang", "trang_thai", "ma_hang", "so_luong"]);
+  assert.equal(pn.quantity, "so_luong");
+  assert.equal(pn.totalQuantity, "tong_so_luong");
+  assert.equal(pn.note, "ghi_chu");
+  assert.equal(pn.partnerCode, "ma_nha_cung_cap");
+  assert.equal(pn.lineNote, undefined);
+}
+// 0122: mẫu Duyệt đơn — "Người duyệt đơn" là trường riêng, "Ghi chú dòng" không bị cột Ghi chú ăn mất.
+{
+  const hd = mapHeaders("hoa-don", ["ma_dat_hang", "ma_hoa_don", "ngay", "ma_khach_hang", "nguoi_duyet_don", "nguoi_tao", "ghi_chu", "trang_thai", "ma_hang", "ghi_chu_dong", "so_luong"]);
+  assert.equal(hd.approver, "nguoi_duyet_don");
+  assert.equal(hd.note, "ghi_chu");
+  assert.equal(hd.lineNote, "ghi_chu_dong");
+  assert.equal(hd.createdBy, "nguoi_tao");
+}
+
+const row = (o: Partial<DocumentFileRow>): DocumentFileRow => ({
+  row: 2, docNo: "HD1", orderNo: "", date: "2026-10-03", dateRaw: "03/10/2026", dueDate: null, recipientKind: "",
+  partnerCode: "NB001", staff: "", source: "", warehouse: "", note: "", productCode: "A", quantity: 1, quantityRaw: "1",
+  lineNote: "", negativeReason: "", receiver: "", approver: "", ...o,
+});
+const g = groupDocuments([
+  row({ row: 2, staff: "NGỌC" }),
+  row({ row: 3, productCode: "B", quantity: 2, quantityRaw: "2", staff: "QUỲNH - NGỌC" }),
+  row({ row: 4, docNo: "HD2", quantity: null, quantityRaw: "x" }),
+  row({ row: 5, docNo: "" }),
+], {});
+assert.equal(g.documents.length, 2);
+assert.deepEqual(g.documents[0]?.nhan_vien, ["NGỌC", "QUỲNH"], "gộp nhân viên, không trùng");
+assert.equal(g.documents[0]?.dong.length, 2);
+assert.equal(g.documents[0]?.dong_dau, 2);
+assert.deepEqual(g.issues.map((i) => i.row), [4, 5]);
+const headerOnly = groupDocuments([row({ productCode: "", quantity: null, quantityRaw: "" })], {});
+assert.equal(headerOnly.documents[0]?.dong.length, 0, "dòng trống mã + số lượng = chỉ sửa đầu phiếu");
+}
+
+// --- Nhập đối tác từ Excel (0109) -------------------------------------------
+{
+  assert.deepEqual(parsePartnerKind("Đối tác"), { kind: "DOI_TAC", dbKind: null });
+  assert.deepEqual(parsePartnerKind("noi bo"), { kind: "NOI_BO", dbKind: null });
+  // Chữ cũ của KiotViet: giữ loại database, loại hiển thị suy theo mã.
+  assert.deepEqual(parsePartnerKind("Nhà cung cấp"), { kind: null, dbKind: "NCC" });
+  assert.deepEqual(parsePartnerKind("khách hàng"), { kind: null, dbKind: "KHACH" });
+  assert.deepEqual(parsePartnerKind("Cả hai"), { kind: null, dbKind: "CA_HAI" });
+  assert.equal(parsePartnerKind(""), null);
+  assert.equal(parsePartnerKind("đại lý"), "INVALID");
+  assert.equal(parseActiveFlag(1), true, "file KiotViet ghi 1 / 0");
+  assert.equal(parseActiveFlag(0), false);
+  assert.equal(parseActiveFlag("Không"), false);
+  assert.equal(parseActiveFlag(null), null);
+  assert.equal(parseActiveFlag("có lẽ"), "INVALID");
+  const h = mapPartnerHeaders(["ma_nha_cung_cap", "ten_nha_cung_cap", "loai", "dang_hoat_dong", "nguoi_tao"]);
+  assert.equal(h.code, "ma_nha_cung_cap");
+  assert.equal(h.name, "ten_nha_cung_cap");
+  assert.equal(h.isActive, "dang_hoat_dong");
+}
+
+// --- Hoạt động gần đây (0116) -----------------------------------------------
+{
+  const base = { key: "k", at: "2026-10-07T07:00:00Z", targetId: "id-1", code: "DH1", detail: null, count: 1, viaImport: false, actor: "An" } as const;
+  assert.deepEqual(activityPhrase({ ...base, kind: "DON_DAT", action: "xac_nhan" }), { verb: "xác nhận", object: "đơn" });
+  assert.deepEqual(activityPhrase({ ...base, kind: "NHAP", action: "ghi_so", count: 86, targetId: null, code: null }), { verb: "ghi sổ", object: "86 phiếu nhập" });
+  assert.deepEqual(activityPhrase({ ...base, kind: "SAN_PHAM", action: "tao", count: 24, viaImport: true }), { verb: "nhập Excel", object: "24 mã hàng" });
+  assert.equal(activityHref({ ...base, kind: "NHAP", action: "tao" }), "/nhap-hang/id-1");
+  assert.equal(activityHref({ ...base, kind: "DOI_TAC", action: "sua" }), "/doi-tac?chon=id-1");
+  assert.equal(activityHref({ ...base, kind: "NHAP", action: "ghi_so", count: 5, targetId: null }), "/nhap-hang", "gộp nhiều phiếu → danh sách");
+  assert.equal(activityHref({ ...base, kind: "CHUYEN_KHO", action: "tao" }), null, "chưa có màn chuyển kho");
+  const now = new Date(2026, 9, 7, 15, 0);
+  assert.equal(activityTime(new Date(2026, 9, 7, 14, 55).toISOString(), now), "5 phút trước");
+  assert.equal(activityTime(new Date(2026, 9, 6, 9, 5).toISOString(), now), "Hôm qua 09:05");
+  assert.equal(activityTime(new Date(2026, 9, 3, 8, 0).toISOString(), now), "03/10 08:00");
+}

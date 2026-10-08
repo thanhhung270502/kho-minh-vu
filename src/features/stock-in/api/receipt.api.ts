@@ -23,7 +23,8 @@ export async function fetchReceipts(
 }
 
 export type NewReceiptHeader = {
-  partnerId: string;
+  /** null: bấm "Tạo phiếu nhập" là tạo ngay, chọn nhà cung cấp trong trang phiếu. */
+  partnerId: string | null;
   warehouseId: string;
   source: ReceiptSource;
   docDate?: string;
@@ -59,4 +60,19 @@ export async function createReceipt(header: NewReceiptHeader): Promise<string> {
   if (error) throw error;
 
   return data.id;
+}
+
+/** Nhà cung cấp mặc định của phiếu nhập mới: nhà máy Vũ Trụ L.An — đổi được trong trang phiếu. */
+export const DEFAULT_SUPPLIER_CODE = "NCC000001";
+
+/** id đối tác theo mã; không có / ngừng hoạt động thì null (phiếu tạo chưa có NCC). */
+export async function findActivePartnerId(code: string): Promise<string | null> {
+  const { data, error } = await getSupabaseBrowserClient()
+    .from("doi_tac")
+    .select("id")
+    .eq("ma", code)
+    .eq("dang_hoat_dong", true)
+    .maybeSingle();
+  if (error) throw error;
+  return data?.id ?? null;
 }

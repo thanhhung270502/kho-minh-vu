@@ -36,7 +36,7 @@ export function ProductImageAside({
   return (
     <section className="rounded-the border border-vien bg-nen-the p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
-        <span className="text-[15px] font-extrabold">
+        <span className="text-[16px] font-extrabold">
           Hình ảnh <span className="font-semibold text-trung-tinh-300">· {list.length}</span>
         </span>
         {canEdit ? (
@@ -84,7 +84,7 @@ export function ProductImageAside({
                 />
               </div>
               {current.isPrimary ? (
-                <span className="text-[12.5px] font-bold">★ Ảnh chính</span>
+                <span className="text-[14.5px] font-bold">★ Ảnh chính</span>
               ) : canEdit ? (
                 <Button
                   size="small"
@@ -107,7 +107,7 @@ export function ProductImageAside({
       </QueryState>
 
       {queue.items.length > 0 ? (
-        <p className="mt-2 text-[12.5px] text-chu-phu">Đang tải {queue.items.length} ảnh…</p>
+        <p className="mt-2 text-[14.5px] text-chu-phu">Đang tải {queue.items.length} ảnh…</p>
       ) : null}
 
       <Modal

@@ -8,7 +8,7 @@ import { Controller, useForm, useWatch, type Resolver } from "react-hook-form";
 
 import { FormDrawer } from "@/shared/components/form-drawer";
 import { normalizeUsername } from "@/shared/lib/text";
-import type { Role } from "@/shared/lib/permissions";
+import type { BusinessPermission, Role } from "@/shared/lib/permissions";
 
 import { updateUser, createUser } from "../actions/user.actions";
 import {
@@ -20,23 +20,27 @@ import {
 } from "../api/user.api";
 import { editUserFormSchema, createUserFormSchema } from "../schemas/user.schema";
 import { TempPasswordField, generateTempPassword } from "./temp-password-field";
-import { UserJobTitleField } from "./user-job-title-field";
-import { UserSpecialPermissions } from "./user-special-permissions";
+import { UserAccountTypeField } from "./user-account-type-field";
+import { UserPermissionsField } from "./user-permissions-field";
 
 type UserFormValues = {
   fullName: string;
   username: string;
   jobTitleId: string;
-  /** Phạm vi của chức vụ đang chọn — UserJobTitleField tự điền. */
+  /** Phạm vi của loại tài khoản đang chọn — UserAccountTypeField tự điền. */
   role: Role;
   warehouseIds: string[];
   tempPassword: string;
   approveStocktake: boolean;
+  permissions: BusinessPermission[];
 };
 
-type Props = { open: boolean; user: UserRow | null; onClose: () => void };
+/** Quyền của NGƯỜI ĐANG ĐĂNG NHẬP với màn tài khoản (0117). */
+export type AccountAccess = { isAdmin: boolean; canProfile: boolean; canAssign: boolean };
 
-export function UserDrawer({ open, user, onClose }: Props) {
+type Props = { open: boolean; user: UserRow | null; onClose: () => void; access: AccountAccess };
+
+export function UserDrawer({ open, user, onClose, access }: Props) {
   const { message, notification } = App.useApp();
   const queryClient = useQueryClient();
   const [dangChay, batDau] = useTransition();
@@ -65,6 +69,7 @@ export function UserDrawer({ open, user, onClose }: Props) {
       warehouseIds: [],
       tempPassword: "",
       approveStocktake: false,
+      permissions: [],
     },
   });
 
@@ -81,6 +86,7 @@ export function UserDrawer({ open, user, onClose }: Props) {
             warehouseIds: userWarehouses(user).map((k) => k.id),
             tempPassword: "",
             approveStocktake: user.duyet_kiem_ke,
+            permissions: user.permissions,
           }
         : {
             fullName: "",
@@ -90,6 +96,7 @@ export function UserDrawer({ open, user, onClose }: Props) {
             warehouseIds: [],
             tempPassword: generateTempPassword(),
             approveStocktake: false,
+            permissions: [],
           },
     );
   }, [open, user, reset]);
@@ -107,6 +114,7 @@ export function UserDrawer({ open, user, onClose }: Props) {
             role: v.role,
             warehouseIds: v.role === "thu_kho" ? v.warehouseIds : [],
             approveStocktake: v.approveStocktake,
+            permissions: v.permissions,
           })
         : await createUser({
             fullName: v.fullName,
@@ -116,6 +124,7 @@ export function UserDrawer({ open, user, onClose }: Props) {
             warehouseIds: v.role === "thu_kho" ? v.warehouseIds : [],
             tempPassword: v.tempPassword,
             approveStocktake: v.approveStocktake,
+            permissions: v.permissions,
           });
 
       if (!kq.ok) {
@@ -132,7 +141,7 @@ export function UserDrawer({ open, user, onClose }: Props) {
       if (isNew) {
         message.success(`Đã tạo tài khoản ${normalizeUsername(v.username)}`);
       } else {
-        // Đổi chức vụ cùng phạm vi chỉ đổi 9 quyền — có hiệu lực ngay (co_quyen đọc DB).
+        // Chỉ đổi quyền thì có hiệu lực ngay (co_quyen đọc bảng); đổi loại / kho thì cần token mới.
         const roleChanged = user.vai_tro !== v.role;
         const previousWarehouses = userWarehouses(user).map((k) => k.id);
         const warehousesChanged =
@@ -174,7 +183,7 @@ export function UserDrawer({ open, user, onClose }: Props) {
           <Controller
             name="fullName"
             control={control}
-            render={({ field }) => <Input {...field} autoFocus />}
+            render={({ field }) => <Input {...field} autoFocus disabled={!access.canProfile} />}
           />
         </Form.Item>
 
@@ -215,19 +224,27 @@ export function UserDrawer({ open, user, onClose }: Props) {
           </Form.Item>
         )}
 
-        <UserJobTitleField control={control} errors={errors} setValue={setValue} />
+        <UserAccountTypeField
+          control={control}
+          errors={errors}
+          setValue={setValue}
+          // Chỉ Admin cấp được loại Admin; tài khoản đang là Admin thì chỉ Admin mở được form này.
+          allowAdmin={access.isAdmin}
+          disabled={!access.canProfile}
+        />
 
         {role === "thu_kho" ? (
           <Form.Item
             label="Kho được vào"
             validateStatus={errors.warehouseIds ? "error" : undefined}
-            help={errors.warehouseIds?.message ?? "Thủ kho chỉ thấy tồn và phiếu của kho được gán."}
+            help={errors.warehouseIds?.message ?? "Chỉ thấy tồn và phiếu của kho được gán."}
           >
             <Controller
               name="warehouseIds"
               control={control}
               render={({ field }) => (
                 <Checkbox.Group
+                  disabled={!access.canProfile}
                   value={field.value}
                   onChange={field.onChange}
                   options={(warehouses.data ?? []).map((w) => ({ value: w.id, label: w.ten }))}
@@ -237,7 +254,7 @@ export function UserDrawer({ open, user, onClose }: Props) {
           </Form.Item>
         ) : null}
 
-        <UserSpecialPermissions control={control} role={role} />
+        <UserPermissionsField control={control} role={role} canAssign={access.canAssign} />
 
         {isNew ? (
           <Form.Item

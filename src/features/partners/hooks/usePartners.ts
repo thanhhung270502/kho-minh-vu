@@ -14,7 +14,7 @@ import {
 } from "../api/partner.api";
 import { partnerKeys } from "../api/partner.keys";
 import type { PartnerInput } from "../schemas/partner.schema";
-import type { PartnerFilter, PartnerKind } from "../types";
+import type { PartnerFilter, PartnerFormKind } from "../types";
 
 export function usePartners(filter: PartnerFilter) {
   return useQuery({
@@ -32,7 +32,7 @@ export function usePartnerDetail(id: string | null) {
   });
 }
 
-export function useSuggestedPartnerCode(kind: PartnerKind, enabled: boolean) {
+export function useSuggestedPartnerCode(kind: PartnerFormKind, enabled: boolean) {
   return useQuery({
     queryKey: partnerKeys.suggestedCode(kind),
     queryFn: () => suggestPartnerCode(kind),

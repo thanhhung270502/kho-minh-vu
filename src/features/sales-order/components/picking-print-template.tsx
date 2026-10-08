@@ -1,27 +1,19 @@
 "use client";
 
-import { Button } from "antd";
-import dayjs from "dayjs";
-import { useEffect, useState } from "react";
+import { PrintField, PrintSheet, printCell } from "@/shared/components/print-sheet";
+import {
+  COMPANY_ADDRESS,
+  COMPANY_NAME,
+  INTERNAL_ONLY_NOTICE,
+  exportKindOf,
+} from "@/shared/lib/print-info";
 
-import { lineRecipientLabel, recipientDisplayName } from "@/shared/lib/recipient";
-
-import { groupLinesByWarehouse } from "../lib/group-lines-by-warehouse";
 import type { OrderDetail, OrderLine } from "../types";
 
-function formatNumber(value: number): string {
-  return value.toLocaleString("vi-VN");
-}
-
 /**
- * D-08/D-09: giấy đi lấy hàng cho kho, in TỪ ĐƠN đã xác nhận — không phải
- * chứng từ kế toán. Không giá, không tồn hiện tại (số cũ ngay khi in xong),
- * không cột công đoạn, không ô ký nhận. Cột cuối để trống, kho ghi tay số
- * thực lấy. Xếp theo kho rồi theo mã hàng, mỗi kho một dòng tiêu đề nhóm
- * (Claude's Discretion, 04-CONTEXT.md) — xem `group-lines-by-warehouse.ts`.
- * Phase 17: in tên người nhận (không mã), người đặt và giờ in; bỏ ngày giao dự kiến.
- * Phase 18 (D4): một tờ chung — đầu phiếu liệt kê mọi nhân viên nhận, cột Người nhận
- * theo dòng; dòng chung ghi "Chung" khi đơn ≥ 2 nhân viên.
+ * Phiếu xuất kho in từ đơn đặt, theo "Phiếu Mẫu - Đơn đặt" (08/10/2026): dưới mã
+ * hàng ghi nhóm hàng, Khu vực = kho mặc định của mã, Ghi chú = ghi chú dòng,
+ * Thông tin phiếu = ghi chú đơn (tên người nhận gõ tay). Không giá. Dòng giữ thứ tự nhập.
  */
 export function PickingPrintTemplate({
   order,
@@ -30,130 +22,61 @@ export function PickingPrintTemplate({
   order: OrderDetail;
   lines: OrderLine[];
 }) {
-  const rows = groupLinesByWarehouse(lines);
-  const { partner, staff } = order.recipients;
-  const totalQuantity = lines.reduce((sum, line) => sum + line.orderedQuantity, 0);
-
-  // Giờ in là sự kiện phía trình duyệt: tab mở từ trước vẫn in đúng phút bấm in.
-  const [printedAt, setPrintedAt] = useState(() => new Date());
-  useEffect(() => {
-    const refresh = () => setPrintedAt(new Date());
-    window.addEventListener("beforeprint", refresh);
-    return () => window.removeEventListener("beforeprint", refresh);
-  }, []);
+  const kind = exportKindOf(order.recipients.partner?.code);
 
   return (
-    <div className="mx-auto max-w-[210mm] bg-white p-6 text-black">
-      <style>{`
-        @page { size: A4; margin: 12mm; }
-        @media print {
-          body { background: #fff; }
-          /* Đầu bảng lặp lại ở page sau — đơn nhiều dòng tràn sang page hai. */
-          thead { display: table-header-group; }
-          tr { break-inside: avoid; }
-        }
-      `}</style>
+    <PrintSheet>
+      {(printedAt) => (
+        <>
+          <header className="mb-6 text-center">
+            <div className="text-lg font-bold">{COMPANY_NAME}</div>
+            <div className="text-sm">Địa chỉ: {COMPANY_ADDRESS}</div>
+            <div className="mt-6 text-sm font-bold">Phiếu Xuất Kho</div>
+            <div className="text-sm">Mã đơn hàng: {order.orderNo}</div>
+            <div className="text-sm">{printedAt}</div>
+          </header>
 
-      <div data-no-print className="mb-4 flex justify-end">
-        <Button type="primary" onClick={() => {
-            setPrintedAt(new Date());
-            window.print();
-          }}>
-          In phiếu
-        </Button>
-      </div>
+          <section className="mb-4 flex flex-col gap-4 text-[15px]">
+            <PrintField label="Nhân Viên Đặt" value={order.createdByName} />
+            <PrintField label="Loại Xuất" value={kind.label} />
+            <PrintField label="NV Nhận - Kiểm Hàng" />
+            <PrintField label="Thông Tin Phiếu" value={order.note} />
+            <PrintField label="SL Kiện / Kg" />
+          </section>
 
-      <header className="mb-4 text-center">
-        <div className="text-sm uppercase">CTY TNHH SX-TM P.Tùng Xe Máy Minh Vũ</div>
-        <h1 className="my-2 text-xl font-bold uppercase">Phiếu đi lấy hàng</h1>
-        <div className="text-sm">
-          Đơn số: <strong className="font-mono">{order.orderNo}</strong> · Ngày{" "}
-          {dayjs(order.orderDate).format("DD/MM/YYYY")}
-        </div>
-      </header>
-
-      <section className="mb-4 grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
-        <div className={staff.length >= 2 ? "col-span-2" : undefined}>
-          <span className="text-gray-600">Người nhận: </span>
-          <strong>
-            {staff.length > 0
-              ? staff.map((person) => recipientDisplayName(person.name)).join(", ")
-              : recipientDisplayName(partner?.name)}
-          </strong>
-        </div>
-        {staff.length > 0 && partner ? (
-          <div className="col-span-2">
-            <span className="text-gray-600">Đối tác: </span>
-            {recipientDisplayName(partner.name)}
-          </div>
-        ) : null}
-        <div>
-          <span className="text-gray-600">Người đặt: </span>
-          {order.createdByName ?? "—"}
-        </div>
-        <div className="col-span-2">
-          <span className="text-gray-600">In lúc: </span>
-          {dayjs(printedAt).format("HH:mm DD/MM/YYYY")}
-        </div>
-        {order.note ? (
-          <div className="col-span-2">
-            <span className="text-gray-600">Ghi chú: </span>
-            {order.note}
-          </div>
-        ) : null}
-      </section>
-
-      <table className="w-full border-collapse text-sm">
-        <thead>
-          <tr className="border-y border-black">
-            <th className="border border-gray-400 p-1 text-left">STT</th>
-            <th className="border border-gray-400 p-1 text-left">Mã hàng</th>
-            <th className="border border-gray-400 p-1 text-left">Tên hàng</th>
-            <th className="border border-gray-400 p-1 text-left">ĐVT</th>
-            <th className="border border-gray-400 p-1 text-left">Người nhận</th>
-            <th className="border border-gray-400 p-1 text-right">SL đặt</th>
-            <th className="border border-gray-400 p-1 text-left">SL thực lấy</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) =>
-            row.kind === "group" ? (
-              <tr key={`kho-${row.warehouseName}`} className="bg-gray-100 font-semibold">
-                <td className="border border-gray-400 p-1" colSpan={7}>
-                  Kho: {row.warehouseName}
-                </td>
+          <table className="w-full border-collapse text-sm">
+            <thead>
+              <tr className="italic">
+                <th className={`${printCell} w-10`}>STT</th>
+                <th className={`${printCell} w-44`}>Mã Hàng</th>
+                <th className={printCell}>Tên Hàng</th>
+                <th className={`${printCell} w-16`}>SL Xuất</th>
+                <th className={`${printCell} w-20`}>Khu Vực</th>
+                <th className={`${printCell} w-28`}>Ghi Chú</th>
               </tr>
-            ) : (
-              <tr key={row.line.id}>
-                <td className="border border-gray-400 p-1">{row.index}</td>
-                <td className="border border-gray-400 p-1 font-mono">
-                  {row.line.productCode}
-                </td>
-                <td className="border border-gray-400 p-1">{row.line.productName}</td>
-                <td className="border border-gray-400 p-1">{row.line.unitName}</td>
-                <td className="border border-gray-400 p-1">
-                  {lineRecipientLabel(row.line.recipientName, staff.length)}
-                </td>
-                <td className="border border-gray-400 p-1 text-right">
-                  {formatNumber(row.line.orderedQuantity)}
-                </td>
-                <td className="border border-gray-400 p-1" />
-              </tr>
-            ),
-          )}
-        </tbody>
-        <tfoot>
-          <tr className="font-semibold">
-            <td className="border border-gray-400 p-1" colSpan={5}>
-              Tổng cộng — {lines.length} dòng
-            </td>
-            <td className="border border-gray-400 p-1 text-right">
-              {formatNumber(totalQuantity)}
-            </td>
-            <td className="border border-gray-400 p-1" />
-          </tr>
-        </tfoot>
-      </table>
-    </div>
+            </thead>
+            <tbody>
+              {lines.map((line, index) => (
+                <tr key={line.id}>
+                  <td className={`${printCell} text-center`}>{index + 1}</td>
+                  <td className={`${printCell} text-center`}>
+                    <div className="font-bold">{line.productCode}</div>
+                    {line.groupName ? <div className="mt-2 text-xs">{line.groupName}</div> : null}
+                  </td>
+                  <td className={`${printCell} text-center text-base font-bold`}>{line.productName}</td>
+                  <td className={`${printCell} text-center`}>
+                    {line.orderedQuantity.toLocaleString("vi-VN")}
+                  </td>
+                  <td className={`${printCell} text-center text-base`}>{line.defaultWarehouseName ?? ""}</td>
+                  <td className={`${printCell} text-center`}>{line.note ?? ""}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <p className="mt-4 text-center text-sm font-bold italic">{INTERNAL_ONLY_NOTICE}</p>
+        </>
+      )}
+    </PrintSheet>
   );
 }

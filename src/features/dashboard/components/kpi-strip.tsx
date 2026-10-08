@@ -19,12 +19,12 @@ type KpiCellProps = {
 
 function KpiCell({ label, value, delta, trend, hint }: KpiCellProps) {
   const deltaLine = (
-    <div className="text-[12px] font-semibold text-trung-tinh-500">{delta}</div>
+    <div className="text-[14px] font-semibold text-trung-tinh-500">{delta}</div>
   );
 
   return (
     <div className="flex flex-col gap-2.5 border-vien px-5 py-[18px] max-lg:nth-[n+3]:border-t max-lg:even:border-l lg:not-first:border-l">
-      <div className="text-[12.5px] font-medium text-chu-phu">{label}</div>
+      <div className="text-[14.5px] font-medium text-chu-phu">{label}</div>
       <div className="flex items-end justify-between gap-2">
         <div className="text-[28px] leading-none font-extrabold tracking-[-0.04em] tabular-nums">
           {value}

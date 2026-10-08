@@ -22,7 +22,7 @@ function NegativeStockContent({ rows }: { rows: NegativeStockLine[] }) {
 
   return (
     <>
-      <Typography.Text type="secondary" className="mb-3 block text-[13px]">
+      <Typography.Text type="secondary" className="mb-3 block text-[15px]">
         {rows.length.toLocaleString("vi-VN")} dòng phiếu làm tồn xuống dưới 0 — gồm hóa đơn và
         phiếu trả NCC đã ghi sổ.
       </Typography.Text>

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/features/auth/api/current-user.server";
 import { DashboardView } from "@/features/dashboard/components/dashboard-view";
 import { homePathFor } from "@/features/dashboard/lib/home-path";
-import { allows, can } from "@/shared/lib/permissions";
+import { can } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Tổng quan" };
 
@@ -21,5 +21,5 @@ export default async function DashboardPage() {
   // Phase 16: theo quyền "Xem dashboard" của chức vụ (chặn thật ở co_quyen, 0083).
   if (!can(user, "xem_dashboard")) redirect(homePathFor(user));
 
-  return <DashboardView canViewAnalysis={allows(user, "view-analysis")} />;
+  return <DashboardView canViewAnalysis={can(user, "xem_phan_tich")} />;
 }

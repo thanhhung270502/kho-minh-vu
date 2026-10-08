@@ -1,6 +1,7 @@
 import type { QueryData } from "@supabase/supabase-js";
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { BUSINESS_PERMISSIONS, type BusinessPermission } from "@/shared/lib/permissions";
 
 /** Một truy vấn, một kiểu: shape suy từ chính câu select, không viết tay. */
 function userQuery() {
@@ -12,16 +13,33 @@ function userQuery() {
     .order("ho_ten");
 }
 
-export type UserRow = QueryData<ReturnType<typeof userQuery>>[number];
+type UserRowDb = QueryData<ReturnType<typeof userQuery>>[number];
+/** Quyền tích theo người (0117) — Admin luôn đủ nên danh sách rỗng là bình thường. */
+export type UserRow = UserRowDb & { permissions: BusinessPermission[] };
+
+const KNOWN = new Set<string>(BUSINESS_PERMISSIONS.map((p) => p.key));
 
 export const userListKey = ["nguoi-dung"] as const;
 export const activeWarehouseKey = ["nguoi-dung", "kho-hoat-dong"] as const;
 
-/** RLS: chỉ quản lý thấy mọi dòng, vai trò khác chỉ thấy chính mình. */
+/**
+ * RLS: Admin và người có quyền Tạo tài khoản / Phân quyền thấy mọi dòng (0117).
+ * Bảng quyền không có khóa ngoại nên không nhúng được trong một select — đọc riêng rồi ghép.
+ */
 export async function fetchUsers(): Promise<UserRow[]> {
-  const { data, error } = await userQuery();
-  if (error) throw error;
-  return data ?? [];
+  const supabase = getSupabaseBrowserClient();
+  const [users, grants] = await Promise.all([
+    userQuery(),
+    supabase.from("nguoi_dung_quyen").select("nguoi_dung_id, quyen"),
+  ]);
+  if (users.error) throw users.error;
+  if (grants.error) throw grants.error;
+  const byUser = new Map<string, BusinessPermission[]>();
+  for (const g of grants.data ?? []) {
+    if (!KNOWN.has(g.quyen)) continue;
+    byUser.set(g.nguoi_dung_id, [...(byUser.get(g.nguoi_dung_id) ?? []), g.quyen as BusinessPermission]);
+  }
+  return (users.data ?? []).map((u) => ({ ...u, permissions: byUser.get(u.id) ?? [] }));
 }
 
 export async function fetchActiveWarehouses(): Promise<Array<{ id: string; ma: string; ten: string }>> {

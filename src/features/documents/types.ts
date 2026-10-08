@@ -67,6 +67,10 @@ export type DocumentDetail = {
   negativeReason: string | null;
   negativeReasonNote: string | null;
   approvedById: string | null;
+  /** Người ghi sổ — lấy qua RPC vì RLS không cho đọc tên người khác. */
+  approvedByName: string | null;
+  /** Người xác nhận đơn gốc của hóa đơn (0115) — "Người duyệt đơn" ở màn Duyệt đơn. */
+  orderApprovedByName: string | null;
 };
 
 export type DocumentLine = {
@@ -144,6 +148,8 @@ export function toDocumentDetail(row: DocumentDetailDb): DocumentDetail {
     negativeReason: row.ly_do_xuat_am,
     negativeReasonNote: row.ghi_chu_ly_do,
     approvedById: row.nguoi_duyet_id,
+    approvedByName: row.ho_ten_nguoi_duyet,
+    orderApprovedByName: row.ho_ten_nguoi_xac_nhan_don,
   };
 }
 

@@ -6,8 +6,8 @@ import { StaffTable } from "@/features/settings/components/staff-table";
 export const metadata: Metadata = { title: "Nhân viên phụ trách" };
 
 export default async function Page() {
-  // Khớp RLS 0083: quyền chức vụ "Tạo nhân viên" ghi được nhan_vien_phu_trach.
-  await requirePermission("tao_nhan_vien");
+  // 0117: chỉ Quản lý/Admin quản lý nhân viên phụ trách.
+  await requirePermission("manage-users");
 
   return <StaffTable />;
 }

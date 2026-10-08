@@ -68,7 +68,7 @@ export function ProductDetailView({
                 <ProductInfoCard product={product} />
                 {product.kind === "COMBO" ? (
                   <section className="rounded-the border border-vien px-5 py-4">
-                    <h2 className="m-0 mb-3 text-[15px] font-extrabold">Thành phần combo</h2>
+                    <h2 className="m-0 mb-3 text-[16px] font-extrabold">Thành phần combo</h2>
                     <ComboComponents comboId={id} canEdit={permissions.canEdit} />
                   </section>
                 ) : null}

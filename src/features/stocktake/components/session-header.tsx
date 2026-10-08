@@ -19,7 +19,7 @@ type Props = { session: StocktakeSession; canVoid: boolean };
 
 /**
  * Đầu phiên kiểm kê: số phiên, kho, phạm vi, tiến độ đếm, trạng thái, nút hủy
- * phiên. Khuôn `receipt-header.tsx` (Descriptions) + `void-receipt-dialog.tsx`
+ * phiên. Khuôn `receipt-header.tsx` cũ (Descriptions, nay là receipt-aside.tsx) + `void-receipt-dialog.tsx`
  * (hộp xác nhận hủy), nhưng dùng RHF cho ô lý do (khác `void-receipt-dialog.tsx`
  * dùng state thường — theo đúng yêu cầu plan).
  */

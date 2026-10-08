@@ -90,6 +90,7 @@ export async function addDocumentLine(
       don_gia: line.unitPrice,
       thanh_tien: Math.round(line.quantity * line.unitPrice),
       kho_id: line.warehouseId,
+      ghi_chu: line.note?.trim() || null,
     })
     .select("id")
     .single();

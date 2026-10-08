@@ -2,7 +2,7 @@
 
 import { Button } from "antd";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, type ReactNode } from "react";
 
 import { ListLayout } from "@/shared/components/list-layout";
 import { QueryState } from "@/shared/components/query-state";
@@ -15,12 +15,20 @@ import {
   writeReceiptFilterToUrl,
   type ReceiptFilter,
 } from "../schemas/receipt.schema";
+import type { ReceiptPermissions } from "../types";
 import { CreateReceiptButton } from "./create-receipt-button";
 import { ReceiptFilterPanel } from "./receipt-filter-panel";
 import { ReceiptTableBody } from "./receipt-table-body";
 import { ReceiptToolbar } from "./receipt-toolbar";
 
-export function ReceiptTable({ canCreate }: { canCreate: boolean }) {
+export function ReceiptTable({
+  permissions,
+  excelActions,
+}: {
+  permissions: ReceiptPermissions;
+  excelActions?: ReactNode;
+}) {
+  const canCreate = permissions.canEdit;
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -30,7 +38,6 @@ export function ReceiptTable({ canCreate }: { canCreate: boolean }) {
     [searchParams],
   );
   const receipts = useReceipts(filter);
-  const [createOpen, setCreateOpen] = useState(false);
 
   const changeFilter = useCallback(
     (next: ReceiptFilter) => {
@@ -61,13 +68,8 @@ export function ReceiptTable({ canCreate }: { canCreate: boolean }) {
           <ReceiptToolbar
             filter={filter}
             onChange={changeFilter}
-            addButton={
-              canCreate ? (
-                <Button type="primary" onClick={() => setCreateOpen(true)}>
-                  Tạo phiếu nhập
-                </Button>
-              ) : null
-            }
+            addButton={canCreate ? <CreateReceiptButton /> : null}
+            excelActions={excelActions}
           />
         }
       >
@@ -99,12 +101,11 @@ export function ReceiptTable({ canCreate }: { canCreate: boolean }) {
               filter={filter}
               loading={receipts.isFetching && !receipts.isPending}
               onFilterChange={changeFilter}
+              permissions={permissions}
             />
           )}
         </QueryState>
       </ListLayout>
-
-      <CreateReceiptButton open={createOpen} onClose={() => setCreateOpen(false)} />
     </>
   );
 }

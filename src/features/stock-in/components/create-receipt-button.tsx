@@ -1,147 +1,65 @@
 "use client";
 
-import { Alert, App, Form, Modal, Radio, Select } from "antd";
+import { App, Button } from "antd";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
-import { usePartners } from "@/features/partners/hooks/usePartners";
-import { DEFAULT_PARTNER_FILTER } from "@/features/partners/types";
 import { useLookups } from "@/features/products/hooks/useProducts";
 import { errorCode, explainError } from "@/shared/lib/errors";
-import { filterByLabel } from "@/shared/lib/text";
 
+import { DEFAULT_SUPPLIER_CODE, findActivePartnerId } from "../api/receipt.api";
 import { useCreateReceipt } from "../hooks/useReceipts";
-import { RECEIPT_SOURCE_LABELS, type ReceiptSource } from "../types";
 
-/** Mã NCC của nhà máy Vũ Trụ L.An — chọn nó thì gợi ý nguồn "Nhà máy". */
-const FACTORY_PARTNER_CODE = "NCC000001";
+type Props = {
+  /** Nhãn nút — trạng thái rỗng dùng câu khác toolbar để rõ đây là bước tiếp theo. */
+  label?: string;
+};
 
-export function CreateReceiptButton({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
-  const { message } = App.useApp();
+/**
+ * Bấm là tạo ngay một phiếu nhập nháp rồi sang trang phiếu, giống "Tạo đơn". Mặc
+ * định Kho 1 và nhà cung cấp NCC000001 (nhà máy Vũ Trụ — phần lớn hàng về từ đây);
+ * cả hai đổi được trong khung Thông tin phiếu.
+ */
+export function CreateReceiptButton({ label = "Tạo phiếu nhập" }: Props) {
   const router = useRouter();
+  const { message } = App.useApp();
   const createReceipt = useCreateReceipt();
   const lookups = useLookups();
-  const suppliers = usePartners({ ...DEFAULT_PARTNER_FILTER, kind: "NCC" });
-
-  const [partnerId, setPartnerId] = useState<string | undefined>();
-  const [warehouseId, setWarehouseId] = useState<string | undefined>();
-  const [source, setSource] = useState<ReceiptSource>("NCC");
-  const [error, setError] = useState<string | null>(null);
-
   const warehouses = lookups.data?.warehouses ?? [];
-  const selectedWarehouseId =
-    warehouseId ?? (warehouses.length === 1 ? warehouses[0]?.id : undefined);
-
-  function close() {
-    if (createReceipt.isPending) return;
-    setError(null);
-    onClose();
-  }
+  const defaultWarehouse = warehouses.find((w) => w.name.trim().toLowerCase() === "kho 1") ?? warehouses[0];
 
   async function create() {
-    if (!partnerId || !selectedWarehouseId) {
-      setError("Chọn nhà cung cấp và kho trước khi tạo phiếu.");
+    // Nút loading chặn bấm lặp: bấm 5 lần không được ra 5 phiếu.
+    if (createReceipt.isPending) return;
+    if (!defaultWarehouse) {
+      message.error("Chưa có kho nào — thêm kho trong Cài đặt trước khi tạo phiếu nhập.");
       return;
     }
-
     try {
+      // NCC mặc định ngừng hoạt động / chưa có thì tạo phiếu chưa có NCC — chọn trong trang.
+      const partnerId = await findActivePartnerId(DEFAULT_SUPPLIER_CODE);
       const id = await createReceipt.mutateAsync({
         partnerId,
-        warehouseId: selectedWarehouseId,
-        source,
+        warehouseId: defaultWarehouse.id,
+        source: "NCC",
       });
-      message.success("Đã tạo phiếu, số phiếu đã được cấp");
-      onClose();
-      router.push(`/nhap-kho/${id}`);
+      router.push(`/nhap-hang/${id}`);
     } catch (caught) {
       if (errorCode(caught) === "42501") {
-        setError("Tài khoản không có quyền tạo phiếu nhập.");
+        message.error("Tài khoản không có quyền tạo phiếu nhập. Nhờ quản lý cấp quyền Nhập kho.");
         return;
       }
       const explained = explainError(caught);
-      setError(`${explained.title}. ${explained.action}`);
+      message.error(`${explained.title}. ${explained.action}`);
     }
   }
 
   return (
-    <Modal
-      open={open}
-      title="Tạo phiếu nhập"
-      okText="Tạo phiếu"
-      cancelText="Hủy"
-      confirmLoading={createReceipt.isPending}
-      onOk={() => void create()}
-      onCancel={close}
+    <Button
+      type="primary"
+      loading={createReceipt.isPending || lookups.isPending}
+      onClick={() => void create()}
     >
-      {error ? <Alert className="mb-3" type="error" showIcon title={error} /> : null}
-
-      <Alert
-        className="mb-3"
-        type="info"
-        showIcon
-        title="Bấm Tạo là phiếu được cấp số ngay và lưu trên server — nhập dở vẫn còn khi mất điện hay đổi máy."
-      />
-
-      <Form layout="vertical">
-        <Form.Item label="Nhà cung cấp">
-          <Select
-            showSearch
-            autoFocus
-            filterOption={filterByLabel}
-            placeholder="Chọn nhà cung cấp"
-            loading={suppliers.isPending}
-            value={partnerId}
-            options={(suppliers.data?.rows ?? []).map((supplier) => ({
-              value: supplier.id,
-              label: `${supplier.code} — ${supplier.name}`,
-            }))}
-            onChange={(value) => {
-              setPartnerId(value);
-              // Gợi ý thôi, không ép: nhà máy cũng có thể gửi hàng mua ngoài.
-              const selected = (suppliers.data?.rows ?? []).find(
-                (supplier) => supplier.id === value,
-              );
-              if (selected?.code === FACTORY_PARTNER_CODE) setSource("NHA_MAY");
-            }}
-          />
-        </Form.Item>
-
-        <Form.Item label="Kho mặc định" help="Từng dòng vẫn chọn kho riêng được.">
-          <Select
-            placeholder="Chọn kho"
-            value={selectedWarehouseId}
-            options={warehouses.map((warehouse) => ({
-              value: warehouse.id,
-              label: warehouse.name,
-            }))}
-            onChange={setWarehouseId}
-          />
-        </Form.Item>
-
-        <Form.Item
-          label="Nguồn nhập"
-          help="Quyết định dãy số phiếu — chọn xong không đổi được vì số đã cấp theo nguồn."
-        >
-          <Radio.Group
-            value={source}
-            optionType="button"
-            buttonStyle="solid"
-            onChange={(event) => setSource(event.target.value as ReceiptSource)}
-          >
-            {(["NCC", "NHA_MAY"] as const).map((option) => (
-              <Radio.Button key={option} value={option}>
-                {RECEIPT_SOURCE_LABELS[option]}
-              </Radio.Button>
-            ))}
-          </Radio.Group>
-        </Form.Item>
-      </Form>
-    </Modal>
+      {label}
+    </Button>
   );
 }

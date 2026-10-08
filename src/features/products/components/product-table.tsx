@@ -9,6 +9,7 @@ import { QueryState } from "@/shared/components/query-state";
 
 import { useAnalysisRows, useAnalysisSettings } from "@/features/analytics/hooks/useAnalytics";
 
+import { useProductNameSheet } from "../hooks/useAutoFillName";
 import { useLookups, useProducts } from "../hooks/useProducts";
 import { useProductTableUrl } from "../hooks/useProductTableUrl";
 import { forecastById } from "../lib/product-expanded";
@@ -41,6 +42,8 @@ export function ProductTable({
   const { filter, selectedId, navigate, selectProduct, toggleProduct } = useProductTableUrl();
   const products = useProducts(filter);
   const lookups = useLookups();
+  // Tải sẵn sheet tên hàng chuẩn cho ô "Thêm mã hàng" (xem useProductNameSheet).
+  useProductNameSheet(permissions.canEdit);
   // RPC phân tích chặn thủ kho / chỉ xem (0079) — không gọi khi không có quyền.
   const analysis = useAnalysisRows(30, { enabled: showForecast });
   // Cần đặt dùng số ngày dự trữ trong cài đặt Phân tích — cùng số trang Phân tích.

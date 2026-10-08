@@ -13,6 +13,9 @@ const nextConfig: NextConfig = {
       { source: "/hoa-don", destination: "/duyet-don", permanent: false },
       { source: "/hoa-don/:path*", destination: "/duyet-don/:path*", permanent: false },
       // "Xuất kho" (Phase 10) → thẳng Duyệt đơn; KHÔNG trỏ qua /hoa-don (tránh chuỗi 2 bước).
+      // "Nhập kho" → "Nhập hàng": link / bookmark cũ giữ id và trang in.
+      { source: "/nhap-kho", destination: "/nhap-hang", permanent: false },
+      { source: "/nhap-kho/:path*", destination: "/nhap-hang/:path*", permanent: false },
       { source: "/xuat-kho", destination: "/duyet-don", permanent: false },
       { source: "/xuat-kho/:path*", destination: "/duyet-don/:path*", permanent: false },
       // Trang Tồn kho gỡ (Phase 10) — tra tồn ở Danh sách hàng hóa; duyệt định

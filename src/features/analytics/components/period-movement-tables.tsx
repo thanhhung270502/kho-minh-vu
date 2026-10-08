@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Segmented, Tag } from "antd";
+import { Card, Segmented } from "antd";
 import type { TableColumnsType } from "antd";
 import { useMemo, useState } from "react";
 
@@ -9,6 +9,12 @@ import type { PeriodRow } from "../types";
 import { BarValue, CompactTable, Highlights, ProductCode, fmt, rankColumn } from "./ranking-parts";
 
 type Direction = "up" | "down";
+
+/** Số ngày tồn còn đủ xuất: từ 1 năm trở lên ghi theo năm cho dễ đọc. */
+function coverLabel(days: number): string {
+  if (days >= 365) return `~${(days / 365).toLocaleString("vi-VN", { maximumFractionDigits: 1 })} năm`;
+  return `~${fmt(days)} ngày`;
+}
 
 /** Mã tăng / giảm mạnh nhất so với kỳ trước (theo chênh lệch số lượng). */
 export function MoversTable({ rows, limit }: { rows: PeriodRow[]; limit: number }) {
@@ -61,8 +67,8 @@ export function MoversTable({ rows, limit }: { rows: PeriodRow[]; limit: number 
     >
       <Highlights
         items={[
-          { label: "Mã bán tăng", value: fmt(movers.upCount), tone: "green" },
-          { label: "Mã bán giảm", value: fmt(movers.downCount), tone: "red" },
+          { label: "Mã xuất tăng", value: fmt(movers.upCount), tone: "green" },
+          { label: "Mã xuất giảm", value: fmt(movers.downCount), tone: "red" },
           { label: "Tổng xuất thay đổi", value: `${net >= 0 ? "+" : "−"}${fmt(Math.abs(net))}`, tone: net >= 0 ? "green" : "red" },
         ]}
       />
@@ -70,7 +76,7 @@ export function MoversTable({ rows, limit }: { rows: PeriodRow[]; limit: number 
         rowKey="productId"
         columns={columns}
         data={list}
-        empty={dir === "up" ? "Không mã nào bán nhiều hơn kỳ trước." : "Không mã nào bán ít hơn kỳ trước."}
+        empty={dir === "up" ? "Không mã nào xuất nhiều hơn kỳ trước." : "Không mã nào xuất ít hơn kỳ trước."}
       />
     </Card>
   );
@@ -106,14 +112,18 @@ export function SlowStockTable({ rows, days, limit }: { rows: PeriodRow[]; days:
         />
       ),
     },
-    {
-      title: "Đủ bán",
-      key: "cover",
-      width: 110,
-      align: "right",
-      render: (_: unknown, s) =>
-        s.coverDays === null ? <Tag className="m-0">Không bán</Tag> : `~${fmt(s.coverDays)} ngày`,
-    },
+    // Tab "Không xuất": mọi dòng đều không xuất — cột này chỉ lặp lại chữ đó, bỏ đi.
+    ...(kind === "overstock"
+      ? [
+          {
+            title: "Tồn đủ xuất trong",
+            key: "cover",
+            width: 130,
+            align: "right" as const,
+            render: (_: unknown, s: SlowRow) => (s.coverDays === null ? "—" : coverLabel(s.coverDays)),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -127,7 +137,7 @@ export function SlowStockTable({ rows, days, limit }: { rows: PeriodRow[]; days:
           value={kind}
           onChange={setKind}
           options={[
-            { value: "noSales", label: "Không bán" },
+            { value: "noSales", label: "Không xuất" },
             { value: "overstock", label: "Tồn > 1 năm" },
           ]}
         />
@@ -135,16 +145,16 @@ export function SlowStockTable({ rows, days, limit }: { rows: PeriodRow[]; days:
     >
       <Highlights
         items={[
-          { label: "Mã còn tồn, không bán", value: fmt(slow.noSalesCount), tone: "orange" },
+          { label: "Mã còn tồn, không xuất", value: fmt(slow.noSalesCount), tone: "orange" },
           { label: "Tồn của các mã đó", value: fmt(slow.noSalesQty) },
-          { label: "Mã tồn > 1 năm bán", value: fmt(slow.overstockCount), tone: "orange" },
+          { label: "Mã tồn > 1 năm xuất", value: fmt(slow.overstockCount), tone: "orange" },
         ]}
       />
       <CompactTable
         rowKey="key"
         columns={columns}
         data={list}
-        empty={kind === "noSales" ? "Mã nào còn tồn cũng có bán trong kỳ." : "Không mã nào tồn quá một năm bán."}
+        empty={kind === "noSales" ? "Mã nào còn tồn cũng có xuất trong kỳ." : "Không mã nào tồn quá một năm xuất."}
       />
     </Card>
   );
