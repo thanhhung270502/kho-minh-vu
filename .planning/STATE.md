@@ -920,10 +920,11 @@ None yet.
 | 260928-sn5 | Phiếu xuất: mở phiếu đang nhập liệu thì con trỏ nằm sẵn ở ô mã hàng (checklist 5.2) | 2026-09-28 | 319f736 | [260928-sn5-phieu-xuat-tu-focus-o-ma-hang](./quick/260928-sn5-phieu-xuat-tu-focus-o-ma-hang/) |
 | 260928-t0j | Seed tài khoản demo đúng quyền, tự focus ô mã ở phiếu nhập/đơn hàng, migration ten_danh_muc | 2026-09-28 | 0d93f8b | [260928-t0j-seed-quyen-focus-o-ma-ten-danh-muc](./quick/260928-t0j-seed-quyen-focus-o-ma-ten-danh-muc/) |
 | 261004-g6p | Tăng tốc chuyển trang: loading.tsx, cache getCurrentUser, đọc quyền song song | 2026-10-04 | 2bbd9e8 | [261004-g6p-speed-up-navigation](./quick/261004-g6p-speed-up-navigation/) |
+| 261008-w3x | Setup Vitest unit + integration test (Supabase local) và CI | 2026-10-08 | 8813618 | [261008-w3x-setup-vitest-unit-integration-test-va-ci](./quick/261008-w3x-setup-vitest-unit-integration-test-va-ci/) |
 
 ## Session Continuity
 
 Last session: 2026-10-03T15:11:55.680Z
 Stopped at: Completed 18-07-PLAN.md
-Last activity: 2026-10-04
+Last activity: 2026-10-08 - Completed quick task 261008-w3x: Setup Vitest unit + integration test và CI
 Resume file: None
