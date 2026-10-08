@@ -211,7 +211,7 @@ export function UserTable({ currentUserId, access }: { currentUserId: string; ac
           );
 
           return (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-the border border-vien bg-white">
               <Table<UserRow>
                 rowKey="id"
                 size="small"

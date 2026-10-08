@@ -202,14 +202,14 @@ export function ReceiptLineTable({ receipt, lines, canEdit }: Props) {
   // Cùng khuôn bảng "Hàng đặt" của đơn đặt: MỘT khối (tiêu đề → ô nhập → bảng) để
   // lưới hai cột của trang phiếu không tách ô nhập sang cột phải.
   return (
-    <section className="min-w-0 overflow-hidden rounded-the border border-vien">
+    <section className="min-w-0 overflow-hidden rounded-the border border-vien bg-white">
       <div className="px-5 py-4 text-[16px] font-extrabold">
         Hàng nhập{" "}
         <span className="font-semibold text-trung-tinh-300">· {lines.length} dòng</span>
       </div>
 
       {editable ? (
-        <div className="flex flex-wrap items-end gap-2 border-t border-vien bg-nen-tong p-4">
+        <div className="flex flex-wrap items-end gap-2 border-t border-vien bg-white p-4">
           <div className="min-w-56 flex-1">
             <label className="mb-1 block text-[15px] text-chu-phu">Mã hàng</label>
             <ProductSearchInput
