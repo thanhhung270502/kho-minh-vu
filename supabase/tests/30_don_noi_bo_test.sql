@@ -105,9 +105,11 @@ select ok(
               where n.id = t_nb.nguoi_nghi),
   'Nhân viên đã ngừng dùng không nằm trong danh sách'
 );
-select lives_ok(
+-- 0117: Tạo nhân viên chỉ còn Admin.
+select throws_ok(
   $$ insert into public.nhan_vien_phu_trach (ten_viet_tat, ten_day_du) values ('ZQX-VP', 'Văn phòng thêm') $$,
-  'Văn phòng thêm được nhân viên phụ trách'
+  '42501', null,
+  'Văn phòng không thêm được nhân viên phụ trách (0117: chỉ Admin)'
 );
 select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
@@ -178,14 +180,14 @@ select is(
 select is(
   (select ten_doi_tac from public.danh_sach_chung_tu(p_loai_ct => 'XUAT', p_tu_khoa => (select so_ct from public.chung_tu where id = (select id from t_px)))
     where id = (select id from t_px)),
-  'Nội bộ — ' || (select ten_nguoi_nhan from t_nb),
-  'danh_sach_chung_tu hiện "Nội bộ — <tên>"'
+  (select ten_nguoi_nhan from t_nb),
+  'danh_sach_chung_tu hiện tên nhân viên, không tiền tố (0108)'
 );
 select is(
   (select doi_tac from public.the_kho_san_pham((select id from public.san_pham where ma_hang = 'NB-ZQX-A'))
     where chung_tu_id = (select id from t_px) limit 1),
-  'Nội bộ — ' || (select ten_nguoi_nhan from t_nb),
-  'Thẻ kho hiện "Nội bộ — <tên>"'
+  (select ten_nguoi_nhan from t_nb),
+  'Thẻ kho hiện tên nhân viên, không tiền tố (0108)'
 );
 select pg_temp.dang_xuat();
 

@@ -6,6 +6,12 @@
 begin;
 select plan(25);
 
+-- 0117: hoàn thành đơn đi theo quyền Xác nhận/duyệt đơn — seed không cấp cho văn
+-- phòng, bật riêng trong transaction này để văn phòng làm được luồng hoàn thành.
+insert into public.nguoi_dung_quyen (nguoi_dung_id, quyen)
+select id, 'xac_nhan_don' from auth.users where email = 'vanphong@khominhvu.local'
+on conflict do nothing;
+
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
 declare v_id uuid; v_nd public.nguoi_dung; v_kho jsonb;

@@ -94,7 +94,7 @@ select public.ghi_so_chung_tu((select id from public.chung_tu where so_ct = 'XU-
 
 -- ─── 1: lọc theo trạng thái ─────────────────────────────────────────────────
 select is(
-  (select count(*) from public.danh_sach_don(p_trang_thai => 'TAM') d where d.so_dh like 'DH-RPC-%'),
+  (select count(*) from public.danh_sach_don(p_trang_thai => array['TAM']::public.trang_thai_ddh[]) d where d.so_dh like 'DH-RPC-%'),
   1::bigint,
   'loc theo trang thai TAM chi tra dung don A trong bo ba vua tao'
 );

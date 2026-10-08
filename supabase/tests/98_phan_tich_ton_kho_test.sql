@@ -10,11 +10,12 @@
 --   tồn: nạp 100; hóa đơn 05/01 (10) + 28/01 (5); hóa đơn NỘI BỘ 28/01 (7);
 --        hóa đơn 29/01 (9) rồi HỦY; khách trả 29/01 (2) cho hóa đơn 28/01.
 --        -> tồn = 100 - 10 - 5 - 7 + 2 = 80
---   bán trong kỳ (đối tác, trừ trả hàng) = 10 + 5 - 2 = 13
---   số ngày thật = 30/01 - 05/01 + 1 = 26 (< 30) -> bán TB = 13/26 = 0,5
+--   bán trong kỳ (0101: hóa đơn giao qua nhân viên nhận CŨNG là bán, trừ trả
+--   hàng) = 10 + 5 + 7 - 2 = 20
+--   số ngày thật = 30/01 - 05/01 + 1 = 26 (< 30) -> bán TB = 20/26 = 0,7692
 --   khách đặt = đơn tạm 4 + đơn đã xác nhận 3 (đơn nội bộ 6 không tính) = 7
---   khả dụng = 73 -> còn 146 ngày -> hết dự kiến 30/01/1990 + 146
--- Kỳ 7 ngày (24/01–30/01): bán = 5 - 2 = 3, chia 7.
+--   khả dụng = 73 -> còn 73 / 0,7692 = 94,90 ngày -> hết dự kiến 30/01/1990 + 94
+-- Kỳ 7 ngày (24/01–30/01): bán = 5 + 7 - 2 = 10, chia 7.
 -- =============================================================================
 begin;
 select plan(24);
@@ -142,19 +143,19 @@ select has_function('public', 'nhip_ban_theo_ngay', array['integer','date'], 'c�
 
 -- ─── 3–11: công thức kỳ 30 ngày ─────────────────────────────────────────────
 select is((select ton from t_kq), 80::numeric, 'Tồn = 100 - 10 - 5 - 7 + 2');
-select is((select ban_trong_ky from t_kq), 13::numeric, 'Bán trong kỳ: chỉ đối tác, bỏ hóa đơn hủy, trừ trả hàng');
+select is((select ban_trong_ky from t_kq), 20::numeric, 'Bán trong kỳ: gồm hóa đơn nội bộ (0101), bỏ hóa đơn hủy, trừ trả hàng');
 select is((select so_ngay_thuc from t_kq), 26, 'Dữ liệu ngắn hơn kỳ: chia theo số ngày thật (26)');
-select is((select ban_tb_ngay from t_kq), 0.5::numeric, 'Bán TB/ngày = 13 / 26');
+select is((select ban_tb_ngay from t_kq), 0.7692::numeric, 'Bán TB/ngày = 20 / 26');
 select is((select khach_dat from t_kq), 7::numeric, 'Khách đặt: đơn tạm + đã xác nhận, không tính nội bộ');
 select is((select ton_kha_dung from t_kq), 73::numeric, 'Khả dụng = tồn - khách đặt');
-select is((select so_ngay_con from t_kq), 146::numeric, 'Còn hàng 73 / 0,5 = 146 ngày');
-select is((select ngay_het_du_kien from t_kq), date '1990-01-30' + 146, 'Ngày hết dự kiến = ngày tính + 146');
+select is((select so_ngay_con from t_kq), 94.90::numeric, 'Còn hàng 73 / 0,7692 = 94,90 ngày');
+select is((select ngay_het_du_kien from t_kq), date '1990-01-30' + 94, 'Ngày hết dự kiến = ngày tính + 94');
 select is((select cong_doan_ma from t_kq), 'SON', 'Trả mã công đoạn (loại hoàn thiện)');
 
 -- ─── 12–14: kỳ 7 ngày ───────────────────────────────────────────────────────
-select is((select ban_trong_ky from t_kq7), 3::numeric, 'Kỳ 7 ngày: chỉ hóa đơn 28/01 trừ trả hàng');
+select is((select ban_trong_ky from t_kq7), 10::numeric, 'Kỳ 7 ngày: hai hóa đơn 28/01 (đối tác + nội bộ) trừ trả hàng');
 select is((select so_ngay_thuc from t_kq7), 7, 'Kỳ 7 ngày đủ dữ liệu: chia 7');
-select is((select ban_nua_dau + ban_nua_sau from t_kq7), 3::numeric, 'Nửa đầu + nửa sau = bán trong kỳ');
+select is((select ban_nua_dau + ban_nua_sau from t_kq7), 10::numeric, 'Nửa đầu + nửa sau = bán trong kỳ');
 
 -- ─── 15–16: mã không bán ────────────────────────────────────────────────────
 select is((select ban_trong_ky from t_kqb), 0::numeric, 'Mã không bán: bán = 0');
@@ -163,8 +164,8 @@ select ok((select so_ngay_con is null and ngay_het_du_kien is null from t_kqb), 
 -- ─── 17–18: nhịp bán theo ngày ──────────────────────────────────────────────
 select is((select count(*) from t_nb), 30::bigint, 'Nhịp bán: đủ 30 ngày, ngày trống vẫn có dòng');
 select ok(
-  exists (select 1 from t_nb where ngay = date '1990-01-28' and so_hoa_don = 1 and so_luong = 5),
-  'Nhịp bán 28/01: 1 hóa đơn đối tác, 5 cái (bỏ hóa đơn nội bộ)'
+  exists (select 1 from t_nb where ngay = date '1990-01-28' and so_hoa_don = 2 and so_luong = 12),
+  'Nhịp bán 28/01: 2 hóa đơn (đối tác 5 + nội bộ 7, 0101) = 12 cái'
 );
 
 -- ─── 19–20: quyền xem ───────────────────────────────────────────────────────
