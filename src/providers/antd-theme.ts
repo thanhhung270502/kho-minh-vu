@@ -152,6 +152,11 @@ export const antdTheme: ThemeConfig = {
       optionActiveBg: "#E2E2E2",
       colorBgContainerDisabled: "#F3F3F3",
     },
+    // Công tắc bật = đang hoạt động / đang dùng: xanh lá, không dùng màu đen chủ đạo.
+    Switch: {
+      colorPrimary: SUCCESS,
+      colorPrimaryHover: "#268A4E",
+    },
     DatePicker: {
       borderRadius: 10,
       hoverBorderColor: "#A3A3A3",
