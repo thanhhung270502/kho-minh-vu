@@ -1,5 +1,5 @@
 // File thuần (bẫy 9): lọc, KPI, cơ cấu bán, CSV của phân tích theo kỳ.
-// Component và scripts/test-pure-functions.ts cùng import.
+// Component và file *.test.ts cùng import.
 import { buildCsv } from "@/shared/lib/csv";
 
 import type { PeriodFilter } from "./period";

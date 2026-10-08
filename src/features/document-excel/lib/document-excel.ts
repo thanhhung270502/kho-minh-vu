@@ -1,5 +1,5 @@
 // File thuần (bẫy 9): cột của 3 mẫu Excel chứng từ, đọc ô ngày/số, gom dòng thành
-// phiếu. Route handler, bộ dựng file mẫu và scripts/test-pure-functions.ts cùng import.
+// phiếu. Route handler, bộ dựng file mẫu và file *.test.ts cùng import.
 
 /** Loại chứng từ nhập từ Excel — đoạn URL `/api/chung-tu-excel/<loai>` (tiếng Việt). */
 export const DOCUMENT_KINDS = ["don-dat", "hoa-don", "phieu-nhap"] as const;

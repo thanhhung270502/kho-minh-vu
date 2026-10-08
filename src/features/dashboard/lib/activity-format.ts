@@ -1,4 +1,4 @@
-// File thuần (bẫy 9): component client và scripts/test-pure-functions.ts cùng import.
+// File thuần (bẫy 9): component client và file *.test.ts cùng import.
 // Dựng câu và đường dẫn cho một dòng "Hoạt động gần đây".
 import type { ActivityAction, ActivityEvent, ActivityGroup, ActivityKind } from "../types";
 

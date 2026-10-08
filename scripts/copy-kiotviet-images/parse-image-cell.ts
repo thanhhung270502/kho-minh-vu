@@ -1,7 +1,7 @@
 /**
  * Đọc ô "Hình ảnh (url1,url2...)" của file export KiotViet và quyết định ảnh
  * nào cần chép — thuần, không đụng filesystem hay mạng, để test được bằng
- * assert thường (scripts/test-pure-functions.ts).
+ * Vitest (parse-image-cell.test.ts).
  */
 
 export function parseImageCell(cell: string | null | undefined): string[] {

@@ -1,5 +1,5 @@
 // File thuần (bẫy 9): kỳ phân tích tuần / tháng / quý / năm + bộ lọc trên URL.
-// Component và scripts/test-pure-functions.ts cùng import. Ngày là chuỗi
+// Component và file *.test.ts cùng import. Ngày là chuỗi
 // YYYY-MM-DD theo giờ Việt Nam — khớp tham số date của RPC phan_tich_theo_ky.
 import dayjs, { type Dayjs } from "dayjs";
 

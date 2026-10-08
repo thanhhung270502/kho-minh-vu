@@ -48,7 +48,7 @@ hệ cũ — chặn cứng sẽ làm kho kẹt ngay ngày đầu).
 
 ```bash
 npm run dev          # chạy local, http://localhost:3000
-npm run check        # typecheck + lint + build — chạy trước khi commit
+npm run check        # typecheck + lint + test:unit + build — chạy trước khi commit
 npm run typecheck
 npm run lint
 npm run format
@@ -60,7 +60,12 @@ npm run db:test:linked   # chạy pgTAP trên cloud
 npm run seed:users       # tạo tài khoản Quản lý/Admin (quanly)
 npm run verify:hook      # xác nhận JWT có vai_tro/kho_id
 
-npx tsx scripts/test-pure-functions.ts      # hàm thuần: bộ lọc URL, tên khách, CSV lỗi
+npm test                 # unit (Vitest) — hàm thuần, file *.test.ts cạnh code
+npm run test:watch
+npm run test:coverage
+npm run test:integration # Vitest trên Supabase LOCAL (cần npm run db:start) — RLS, grant cột, RPC qua PostgREST
+# integration KHÔNG đọc .env.local (đang trỏ cloud): lấy cấu hình từ `supabase status`,
+# guard chặn mọi host khác 127.0.0.1/localhost trước khi tạo client.
 npx tsx scripts/test-excel-reader.ts        # đọc file KiotViet thật + quay vòng xuất/nhập
 npx tsx scripts/test-route-permissions.ts   # ma trận quyền route × 4 vai trò (cần npm run dev)
 npm run import:kiotviet -- --mau   # thử nạp dữ liệu trên file mẫu
@@ -255,7 +260,7 @@ Component vượt ~200 dòng thì tách, không xin phép. Tách theo trách nhi
 
 ## Bước 7 — Tự review trước khi báo xong
 
-Chạy `npm run check` (typecheck + lint + build). Sau đó đọc lại diff và đối chiếu:
+Chạy `npm run check` (typecheck + lint + test:unit + build). Sau đó đọc lại diff và đối chiếu:
 
 - [ ] Không `any` mới, không `@ts-ignore`, không `console.log` sót
 - [ ] Không component mới nào vượt ~200 dòng

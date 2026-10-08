@@ -1,5 +1,5 @@
 // File thuần (bẫy 9): logic màn xem trước "Nhập mã hàng mới" (IMP-02/03) —
-// component và scripts/test-pure-functions.ts cùng import.
+// component và file *.test.ts cùng import.
 import type { ProductKind } from "../types";
 import { duplicateProblemsInFile, type NewProductFileRow } from "./new-product-file";
 

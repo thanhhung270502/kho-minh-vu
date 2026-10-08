@@ -1,5 +1,5 @@
 // File thuần (bẫy 9): hàng dùng chung nhiều hãng / dòng xe (0096). Form, bảng,
-// chi tiết và scripts/test-pure-functions.ts cùng import.
+// chi tiết và file *.test.ts cùng import.
 import type { CodeDictionary } from "@/features/product-codes/lib/parse-product-code";
 
 import { standardNames } from "./standard-fields";
