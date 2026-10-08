@@ -36,6 +36,7 @@ const rowSchema = z.object({
   ghi_chu_dong: z.string().nullable(),
   nv_dong: z.string().nullable(),
   nguoi_nhap: z.string().nullable(),
+  nguoi_ban: z.string().nullable().optional(),
   nguoi_tao: z.string().nullable(),
   trang_thai: z.enum(["NHAP_LIEU", "HOAN_THANH", "DA_HUY"]),
 });
@@ -137,6 +138,7 @@ async function fetchDocumentRows(kind: "hoa-don" | "phieu-nhap", params: URLSear
       quantity: r.so_luong,
       lineNote: r.ghi_chu_dong,
       receiver: r.nguoi_nhap,
+      approver: r.nguoi_ban ?? null,
       createdBy: r.nguoi_tao,
       status: DOC_STATUS_LABELS[r.trang_thai],
     })),

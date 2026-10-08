@@ -1802,11 +1802,19 @@ const p = mapHeaders("phieu-nhap", ["ma_nhap_hang", "ngay_nhap", "ma_ncc", "ghi_
 assert.equal(p.note, "ghi_chu_phieu");
 assert.equal(p.lineNote, "ghi_chu_dong");
 assert.equal(mapHeaders("phieu-nhap", ["nguoi_nhap", "nguoi_tao"]).receiver, "nguoi_nhap");
+// 0122: mẫu Duyệt đơn — "Người duyệt đơn" là trường riêng, "Ghi chú dòng" không bị cột Ghi chú ăn mất.
+{
+  const hd = mapHeaders("hoa-don", ["ma_dat_hang", "ma_hoa_don", "ngay", "ma_khach_hang", "nguoi_duyet_don", "nguoi_tao", "ghi_chu", "trang_thai", "ma_hang", "ghi_chu_dong", "so_luong"]);
+  assert.equal(hd.approver, "nguoi_duyet_don");
+  assert.equal(hd.note, "ghi_chu");
+  assert.equal(hd.lineNote, "ghi_chu_dong");
+  assert.equal(hd.createdBy, "nguoi_tao");
+}
 
 const row = (o: Partial<DocumentFileRow>): DocumentFileRow => ({
   row: 2, docNo: "HD1", orderNo: "", date: "2026-10-03", dateRaw: "03/10/2026", dueDate: null, recipientKind: "",
   partnerCode: "NB001", staff: "", source: "", warehouse: "", note: "", productCode: "A", quantity: 1, quantityRaw: "1",
-  lineNote: "", negativeReason: "", receiver: "", ...o,
+  lineNote: "", negativeReason: "", receiver: "", approver: "", ...o,
 });
 const g = groupDocuments([
   row({ row: 2, staff: "NGỌC" }),

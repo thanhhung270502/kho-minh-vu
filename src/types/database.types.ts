@@ -1714,6 +1714,7 @@ export type Database = {
           ton_sau: number
         }[]
       }
+      bo_nguoi_ban: { Args: { p_ghi_chu: string }; Returns: string }
       bo_nguoi_nhap: { Args: { p_ghi_chu: string }; Returns: string }
       bo_quyet_ghi_chu: { Args: { p_gia_tri: string }; Returns: undefined }
       chi_tiet_chung_tu: {
@@ -2788,6 +2789,7 @@ export type Database = {
         Returns: string
       }
       sinh_so_dh: { Args: { p_nam?: number }; Returns: string }
+      tach_nguoi_ban: { Args: { p_ghi_chu: string }; Returns: string }
       tach_nguoi_nhap: { Args: { p_ghi_chu: string }; Returns: string }
       tao_don: {
         Args: { p_doi_tac_id?: string; p_nguoi_nhan_ids?: string[] }

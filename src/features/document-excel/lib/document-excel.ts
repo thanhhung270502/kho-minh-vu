@@ -36,6 +36,7 @@ export type FieldKey =
   | "lineNote"
   | "negativeReason"
   | "receiver"
+  | "approver"
   | "createdBy"
   | "status";
 
@@ -78,20 +79,24 @@ export const KIND_COLUMNS: Record<DocumentKind, ColumnSpec[]> = {
     { key: "quantity", title: "Số lượng", width: 10, required: true, match: ["so_luong"], hint: "Lớn hơn 0." },
     LINE_NOTE,
   ],
+  // Theo mẫu "DanhSachChiTietHoaDon Đã process" (08/10/2026). Kho, Tên khách hàng, Lý do
+  // xuất âm, Nhân viên nhận không còn trong mẫu nhưng file cũ có cột đó vẫn đọc được.
   "hoa-don": [
     { key: "orderNo", title: "Mã đặt hàng", width: 14, match: ["ma_dat_hang"], hint: "Có đơn đặt trên hệ thống thì hóa đơn gắn vào đơn đó." },
     { key: "docNo", title: "Mã hóa đơn", width: 14, required: true, match: ["ma_hoa_don", "so_hoa_don"], hint: NO_HINT },
     { key: "date", title: "Ngày", width: 12, required: true, match: ["ngay"], hint: "dd/mm/yyyy." },
-    { key: "recipientKind", title: "Loại người nhận", width: 14, readOnly: true, match: ["loai_nguoi_nhan"], hint: "Không cần — có Mã khách hàng là đơn cho đối tác, không có là đơn cho nhân viên." },
     { key: "partnerCode", title: "Mã khách hàng", width: 14, match: ["ma_khach_hang", "ma_doi_tac"], hint: `${NB_HINT} Có Mã đặt hàng thì lấy theo đơn đặt.` },
-    { key: "partnerName", title: "Tên khách hàng", width: 28, match: ["ten_khach_hang"], hint: "Chỉ để đọc — hệ thống tra theo Mã khách hàng." },
-    STAFF_LEGACY,
-    { key: "warehouse", title: "Kho", width: 10, match: ["kho"], hint: "Để trống: mỗi mã lấy kho mặc định của mã đó." },
+    { key: "approver", title: "Người duyệt đơn", width: 20, match: ["nguoi_duyet_don", "nguoi_ban"], hint: "Họ tên người duyệt đơn. Trống: nhập mới không ghi, cập nhật giữ nguyên." },
+    { key: "createdBy", title: "Người tạo", width: 18, infoOnly: true, match: ["nguoi_tao"], hint: "Chỉ để xem — nhập lại không đổi." },
     { key: "note", title: "Ghi chú", width: 24, match: ["ghi_chu_don", "ghi_chu_hoa_don", "ghi_chu"], hint: NOTE_HINT },
+    { key: "status", title: "Trạng thái", width: 14, infoOnly: true, match: ["trang_thai"], hint: "Chỉ để xem — ghi sổ / hủy phiếu làm trên web." },
     { key: "productCode", title: "Mã hàng", width: 18, required: true, match: ["ma_hang"], hint: "Mã hàng trên hệ thống." },
-    { key: "quantity", title: "Số lượng", width: 10, required: true, match: ["so_luong"], hint: "Lớn hơn 0." },
     LINE_NOTE,
-    { key: "negativeReason", title: "Lý do xuất âm", width: 22, match: ["ly_do_xuat_am"], hint: "Không bắt buộc — chọn lại được lúc ghi sổ." },
+    { key: "quantity", title: "Số lượng", width: 10, required: true, match: ["so_luong"], hint: "Lớn hơn 0." },
+    { key: "partnerName", title: "Tên khách hàng", width: 28, readOnly: true, match: ["ten_khach_hang"], hint: "" },
+    STAFF_LEGACY,
+    { key: "warehouse", title: "Kho", width: 10, readOnly: true, match: ["kho"], hint: "Trống: mỗi mã lấy kho mặc định của mã đó." },
+    { key: "negativeReason", title: "Lý do xuất âm", width: 22, readOnly: true, match: ["ly_do_xuat_am"], hint: "" },
   ],
   "phieu-nhap": [
     { key: "docNo", title: "Mã nhập hàng", width: 14, required: true, match: ["ma_nhap_hang", "ma_phieu_nhap", "so_phieu"], hint: NO_HINT },
@@ -234,6 +239,8 @@ export type DocumentFileRow = {
   lineNote: string;
   negativeReason: string;
   receiver: string;
+  /** Người duyệt đơn của hóa đơn — RPC ghép thành đoạn "Người bán: X" của ghi chú (0122). */
+  approver: string;
 };
 
 export type RowIssue = { row: number; docNo: string; message: string };
@@ -263,6 +270,8 @@ export type RpcDocument = {
   ghi_chu_ly_do: string | null;
   /** Người nhập của phiếu nhập — RPC ghép thành đoạn "Người nhập: X" của ghi chú. */
   nguoi_nhap: string | null;
+  /** Người duyệt đơn của hóa đơn — đoạn "Người bán: X" của ghi chú (0122). */
+  nguoi_ban: string | null;
   nhan_vien: string[];
   dong: RpcLine[];
 };
@@ -311,6 +320,7 @@ export function groupDocuments(
         ly_do_xuat_am: reason.code,
         ghi_chu_ly_do: reason.note,
         nguoi_nhap: orNull(r.receiver),
+        nguoi_ban: orNull(r.approver),
         nhan_vien: staff,
         dong: [],
       };

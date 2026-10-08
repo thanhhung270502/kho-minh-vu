@@ -71,6 +71,7 @@ export async function readDocumentFile(buf: Buffer, kind: DocumentKind): Promise
       lineNote: str(c, "lineNote"),
       negativeReason: str(c, "negativeReason"),
       receiver: str(c, "receiver"),
+      approver: str(c, "approver"),
     };
   });
 }
@@ -133,7 +134,7 @@ export async function buildDocumentWorkbook(
           "Số phiếu đã có trên hệ thống sẽ bị báo lỗi — muốn sửa thì dùng file mẫu cập nhật.",
         ]
       : [
-          "Cập nhật chỉ sửa thông tin KHÔNG ảnh hưởng tồn: đối tác, nhân viên nhận, mã đặt hàng, người nhập, ghi chú phiếu, ghi chú dòng, lý do xuất âm (đơn đặt thêm ngày đặt, ngày giao dự kiến). Sửa được cả phiếu đã ghi sổ.",
+          "Cập nhật chỉ sửa thông tin KHÔNG ảnh hưởng tồn: đối tác, nhân viên nhận, mã đặt hàng, người nhập, người duyệt đơn, ghi chú phiếu, ghi chú dòng, lý do xuất âm (đơn đặt thêm ngày đặt, ngày giao dự kiến). Sửa được cả phiếu đã ghi sổ.",
           "Người tạo và Trạng thái chỉ để xem — sửa trong file không có tác dụng.",
           "Mã hàng, số lượng, số dòng, kho và ngày phiếu phải GIỮ NGUYÊN — khác là báo lỗi. Muốn đổi những thứ này thì hủy phiếu rồi lập phiếu mới.",
           "Ô để trống = giữ nguyên giá trị đang có.",
