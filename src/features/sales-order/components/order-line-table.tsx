@@ -114,14 +114,14 @@ export function OrderLineTable({ orderId, lines, editable, staff }: Props) {
   );
 
   return (
-    <section className="min-w-0 overflow-hidden rounded-the border border-vien">
+    <section className="min-w-0 overflow-hidden rounded-the border border-vien bg-white">
       <div className="px-5 py-4 text-[16px] font-extrabold">
         Hàng đặt{" "}
         <span className="font-semibold text-trung-tinh-300">· {lines.length} dòng</span>
       </div>
 
       {editable ? (
-        <div className="border-t border-vien bg-nen-tong p-4 [&>div]:mt-0 [&>div]:rounded-none [&>div]:border-0 [&>div]:bg-transparent [&>div]:p-0">
+        <div className="border-t border-vien bg-white p-4 [&>div]:mt-0 [&>div]:rounded-none [&>div]:border-0 [&>div]:bg-transparent [&>div]:p-0">
         <OrderLineEntryRow
           codeInputRef={codeInput}
           quantityInputRef={quantityInput}
