@@ -11,31 +11,11 @@
 -- thì đó là sự cố, không phải tiện lợi.
 -- =============================================================================
 
--- Chức vụ "Quản lý kho" khớp scripts/seed-users.ts: phạm vi văn phòng, mọi
--- quyền trừ Tạo nhân viên.
-insert into public.chuc_vu (ma, ten, pham_vi)
-values ('QUAN_LY_KHO', 'Quản lý kho', 'van_phong')
-on conflict (ma) do update set ten = excluded.ten, pham_vi = excluded.pham_vi;
-
-delete from public.chuc_vu_quyen
-where chuc_vu_id = (select id from public.chuc_vu where ma = 'QUAN_LY_KHO');
-insert into public.chuc_vu_quyen (chuc_vu_id, quyen)
-select cv.id, q.quyen
-from public.chuc_vu cv
-cross join unnest(array[
-  'xem_dashboard', 'nhap_kho', 'tao_don', 'xac_nhan_don', 'hoan_thanh_don',
-  'sua_hoa_don', 'tao_ma_hang', 'kiem_kho'
-]) as q(quyen)
-where cv.ma = 'QUAN_LY_KHO';
-
-
--- Local chỉ có 3 tài khoản demo (quản lý, văn phòng, chỉ xem). Nhân viên thật và
--- thủ kho demo chỉ tạo trên cloud bằng `npm run seed:users`.
+-- quanly@khominhvu.local khớp scripts/seed-users.ts (tài khoản DUY NHẤT trên cloud).
+-- Local giữ thêm vanphong + chixem vì pgTAP (supabase/tests) đăng nhập bằng chúng —
+-- bỏ đi là `db reset` xong hàng chục test đỏ.
 --   · ten_dang_nhap = phần trước @ — không để NULL, nếu không màn Người dùng hiện
 --     "—" và luu_ho_so_nguoi_dung từng chết vì chuỗi rỗng (checklist 9.6)
---   · văn phòng demo bật xem_lich_su_kiotviet: migration 0063 backfill công tắc
---     này bằng UPDATE, nhưng khi `db reset` migration chạy TRƯỚC seed nên lúc đó
---     chưa có ai để cập nhật
 do $$
 declare
   v_id uuid;
@@ -91,10 +71,6 @@ begin
     select v_id, k.id from public.kho k where k.ma = any(r.ma_kho);
   end loop;
 end $$;
-
--- Local không dùng chức vụ Thủ kho (không còn tài khoản thủ kho). Migration 0082
--- tạo nó cùng ba chức vụ mặc định nên phải xóa ở đây sau mỗi `db reset`.
-delete from public.chuc_vu where ma = 'THU_KHO';
 
 insert into public.doi_tac (ma, ten, loai, ghi_chu) values
   ('NCC000001', 'Nhà máy Vũ Trụ L.An', 'CA_HAI',

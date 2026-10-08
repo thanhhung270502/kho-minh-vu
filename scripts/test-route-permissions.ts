@@ -1,6 +1,11 @@
 /**
- * Ma trận quyền route × 4 vai trò (= 4 chức vụ mặc định), kiểm bằng HTTP thật
- * trên phiên thật; cuối file bật/tắt quyền chức vụ và kiểm lại (Phase 16).
+ * Ma trận quyền route × 4 vai trò, kiểm bằng HTTP thật trên phiên thật; cuối file
+ * bật/tắt quyền theo người và kiểm lại (0117).
+ *
+ * Database chỉ seed MỘT tài khoản (quanly — `npm run seed:users`). Ba vai trò còn lại
+ * do script TỰ TẠO tài khoản tạm (`test.<vai>@khominhvu.local`, mật khẩu ngẫu nhiên)
+ * rồi XÓA ở cuối, kể cả khi lỗi giữa chừng. Lần chạy trước chết ngang để sót thì lần
+ * sau xóa trước khi tạo lại.
  *
  * Vì sao cần: `src/shared/lib/permissions.ts` chỉ ẩn/hiện nút. Thứ chặn thật 100% nằm ở
  * `requirePermission()` gọi trong từng Server Component `page.tsx` — middleware phiên
@@ -14,7 +19,12 @@ import { createServerClient } from "@supabase/ssr";
 import { config } from "dotenv";
 
 import type { BusinessPermission } from "../src/shared/lib/permissions";
-import { samplePassword, taoAdminClient } from "./_supabase-admin";
+import { randomBytes } from "node:crypto";
+
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+import type { Database } from "../src/types/database.types";
+import { SEED_ADMIN, samplePassword, taoAdminClient, taoAnonClient } from "./_supabase-admin";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -114,12 +124,132 @@ const MA_TRAN: Dong[] = [
   { route: "/lich-su-kiotviet", ky_vong: ALL("→/danh-muc") },
 ];
 
-const TAI_KHOAN: Record<Exclude<VaiTroTest, "khach">, string> = {
-  quanly: "quanly@khominhvu.local",
-  vanphong: "vanphong@khominhvu.local",
-  thukho1: "thukho1@khominhvu.local",
-  chixem: "chixem@khominhvu.local",
+type VaiTroTam = Exclude<VaiTroTest, "khach" | "quanly">;
+
+/**
+ * Tài khoản tạm mô phỏng ba vai trò cũ. Quyền của "vanphong" là bộ mà ma trận trên
+ * giả định cho nhân viên văn phòng: mọi việc trừ Tổng quan và quản trị tài khoản.
+ */
+const TAI_KHOAN_TAM: Record<VaiTroTam, { maChucVu: string; maKho: string[]; quyen: BusinessPermission[] }> = {
+  vanphong: {
+    maChucVu: "NHAN_VIEN",
+    maKho: [],
+    quyen: ["tao_don", "xac_nhan_don", "nhap_kho", "tao_doi_tac", "tao_ma_hang", "xem_phan_tich"],
+  },
+  thukho1: { maChucVu: "THU_KHO", maKho: ["K1"], quyen: [] },
+  chixem: { maChucVu: "CHI_XEM", maKho: [], quyen: [] },
 };
+
+const emailTam = (vt: VaiTroTam) => `test.${vt}@khominhvu.local`;
+
+const TAI_KHOAN: Record<Exclude<VaiTroTest, "khach">, string> = {
+  quanly: SEED_ADMIN.email,
+  vanphong: emailTam("vanphong"),
+  thukho1: emailTam("thukho1"),
+  chixem: emailTam("chixem"),
+};
+
+/** Mật khẩu từng tài khoản: quanly dùng SEED_USER_PASSWORD, tài khoản tạm dùng chuỗi ngẫu nhiên. */
+const MAT_KHAU = new Map<string, string>([[SEED_ADMIN.email, samplePassword()]]);
+
+type Admin = SupabaseClient<Database>;
+
+async function timIdTheoEmail(admin: Admin, email: string): Promise<string | undefined> {
+  for (let page = 1; ; page++) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+    if (error) throw error;
+    const found = data.users.find((u) => u.email === email);
+    if (found) return found.id;
+    if (data.users.length < 200) return undefined;
+  }
+}
+
+/** nguoi_dung / nguoi_dung_kho xóa theo cascade từ auth.users (0003, 0026); nguoi_dung_quyen không có khóa ngoại. */
+async function xoaTaiKhoanTam(admin: Admin, id: string): Promise<void> {
+  const { error: loiQuyen } = await admin.from("nguoi_dung_quyen").delete().eq("nguoi_dung_id", id);
+  if (loiQuyen) throw loiQuyen;
+  const { error } = await admin.auth.admin.deleteUser(id);
+  if (error) throw error;
+}
+
+async function taoTaiKhoanTam(admin: Admin): Promise<Record<VaiTroTam, string>> {
+  const [{ data: chucVu, error: loiChucVu }, { data: kho, error: loiKho }] = await Promise.all([
+    admin.from("chuc_vu").select("id, ma"),
+    admin.from("kho").select("id, ma"),
+  ]);
+  if (loiChucVu) throw loiChucVu;
+  if (loiKho) throw loiKho;
+
+  const ids = {} as Record<VaiTroTam, string>;
+  for (const vt of Object.keys(TAI_KHOAN_TAM) as VaiTroTam[]) {
+    const cauHinh = TAI_KHOAN_TAM[vt];
+    const email = emailTam(vt);
+    const chucVuId = chucVu?.find((c) => c.ma === cauHinh.maChucVu)?.id;
+    if (!chucVuId) throw new Error(`Không có chức vụ ${cauHinh.maChucVu} — chạy npm run db:push trước.`);
+
+    const sot = await timIdTheoEmail(admin, email);
+    if (sot) await xoaTaiKhoanTam(admin, sot);
+
+    const password = randomBytes(18).toString("base64url");
+    const { data, error } = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+    if (error) throw new Error(`Không tạo được tài khoản tạm ${email}: ${error.message}`);
+    const id = data.user.id;
+    ids[vt] = id;
+    MAT_KHAU.set(email, password);
+
+    // Ghi chức vụ, trigger dong_bo_vai_tro_chuc_vu (0082) tự đặt vai_tro.
+    const { error: loiHoSo } = await admin.from("nguoi_dung").insert({
+      id,
+      ho_ten: `Tài khoản test ${vt}`,
+      chuc_vu_id: chucVuId,
+      ten_dang_nhap: email.split("@")[0],
+    });
+    if (loiHoSo) throw loiHoSo;
+
+    if (cauHinh.maKho.length > 0) {
+      const khoIds = cauHinh.maKho.map((ma) => {
+        const khoId = kho?.find((k) => k.ma === ma)?.id;
+        if (!khoId) throw new Error(`Không có kho ${ma} — chạy npm run db:push trước.`);
+        return khoId;
+      });
+      const { error: loiGanKho } = await admin
+        .from("nguoi_dung_kho")
+        .insert(khoIds.map((khoId) => ({ nguoi_dung_id: id, kho_id: khoId })));
+      if (loiGanKho) throw loiGanKho;
+    }
+
+    if (cauHinh.quyen.length > 0) {
+      const { error: loiQuyen } = await admin
+        .from("nguoi_dung_quyen")
+        .insert(cauHinh.quyen.map((quyen) => ({ nguoi_dung_id: id, quyen })));
+      if (loiQuyen) throw loiQuyen;
+    }
+  }
+  return ids;
+}
+
+/**
+ * verify:hook chỉ còn tài khoản Admin (kho_id rỗng) — claim kho_id của nhân viên
+ * giới hạn kho kiểm ở đây, trên tài khoản tạm thukho1 (K1).
+ */
+async function kiemClaimKho(admin: Admin): Promise<{ tong: number; lech: string[] }> {
+  const anon = taoAnonClient();
+  const email = TAI_KHOAN.thukho1;
+  const { data, error } = await anon.auth.signInWithPassword({ email, password: MAT_KHAU.get(email) ?? "" });
+  if (error || !data.session) return { tong: 1, lech: [`JWT thukho1: đăng nhập lỗi ${error?.message}`] };
+  const payload = data.session.access_token.split(".")[1] ?? "";
+  const claims = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as { vai_tro?: string; kho_id?: unknown };
+  await anon.auth.signOut();
+
+  const { data: kho, error: loiKho } = await admin.from("kho").select("id, ma");
+  if (loiKho) throw loiKho;
+  const maTuClaim = Array.isArray(claims.kho_id)
+    ? (claims.kho_id as string[]).map((id) => kho?.find((k) => k.id === id)?.ma ?? id).sort().join(",")
+    : `không phải mảng (${typeof claims.kho_id})`;
+  const thuc = `${claims.vai_tro ?? "—"} / ${maTuClaim}`;
+  const mong = "thu_kho / K1";
+  return { tong: 1, lech: thuc === mong ? [] : [`${"JWT thukho1 (vai_tro / kho_id)".padEnd(44)} mong ${mong}, thực ${thuc}`] };
+}
 
 /**
  * Lấy cookie phiên đúng định dạng mà app đọc: dùng chính `createServerClient`
@@ -142,7 +272,7 @@ async function layCookie(email: string): Promise<string> {
 
   const { error } = await sb.auth.signInWithPassword({
     email,
-    password: samplePassword(),
+    password: MAT_KHAU.get(email) ?? "",
   });
   if (error) throw new Error(`Không đăng nhập được ${email}: ${error.message}`);
 
@@ -350,13 +480,13 @@ async function kiemKiemKeExcel(
   }
 
   // POST /api/kiem-ke/nhap-excel với FormData rỗng → khách 401 (chưa đăng
-  // nhập), chi_xem 403 (vai trò không nhập số đếm được — chặn TRƯỚC khi đọc
-  // form), ba vai trò còn lại qua được cửa quyền rồi dừng ở 400 (thiếu
-  // `phien`/file hợp lệ) — không bao giờ chạm RPC, không ghi gì.
+  // nhập); từ 0117 kiểm kho chỉ Admin nên mọi tài khoản khác 403 (chặn TRƯỚC khi
+  // đọc form); quản lý qua được cửa quyền rồi dừng ở 400 (thiếu `phien`/file hợp
+  // lệ) — không bao giờ chạm RPC, không ghi gì.
   const mongPost: Record<VaiTroTest, string> = {
     quanly: "400",
-    vanphong: "400",
-    thukho1: "400",
+    vanphong: "403",
+    thukho1: "403",
     chixem: "403",
     khach: "401",
   };
@@ -576,16 +706,12 @@ async function kiemChuyenHuongDayDu(
  * role rồi gọi lại bằng ĐÚNG cookie đã đăng nhập từ trước — đổi quyền không cần token
  * mới. Luôn trả bộ quyền cũ của từng người, kể cả khi lỗi giữa chừng.
  */
-async function kiemTheoNguoi(cookie: Record<VaiTroTest, string>): Promise<{ tong: number; lech: string[] }> {
-  const admin = taoAdminClient();
-  const { data: nguoiDung, error } = await admin.from("nguoi_dung").select("id, ten_dang_nhap");
-  if (error) throw error;
-  const idCua = (vt: Exclude<VaiTroTest, "khach">) => {
-    const ten = TAI_KHOAN[vt].split("@")[0];
-    const id = nguoiDung?.find((n) => n.ten_dang_nhap === ten)?.id;
-    if (!id) throw new Error(`Không có tài khoản ${ten} — chạy npm run seed:users.`);
-    return id;
-  };
+async function kiemTheoNguoi(
+  admin: Admin,
+  cookie: Record<VaiTroTest, string>,
+  idTam: Record<VaiTroTam, string>,
+): Promise<{ tong: number; lech: string[] }> {
+  const idCua = (vt: VaiTroTam) => idTam[vt];
 
   const thu: Array<{ vt: "vanphong" | "thukho1"; quyen: BusinessPermission[] }> = [
     { vt: "vanphong", quyen: ["xem_dashboard"] },
@@ -653,6 +779,16 @@ async function main() {
     process.exit(1);
   }
 
+  const admin = taoAdminClient();
+  const idTam = await taoTaiKhoanTam(admin);
+  try {
+    await chayKiem(admin, idTam);
+  } finally {
+    for (const id of Object.values(idTam)) await xoaTaiKhoanTam(admin, id);
+  }
+}
+
+async function chayKiem(admin: Admin, idTam: Record<VaiTroTam, string>) {
   const cookie: Record<VaiTroTest, string> = {
     quanly: await layCookie(TAI_KHOAN.quanly),
     vanphong: await layCookie(TAI_KHOAN.vanphong),
@@ -742,9 +878,13 @@ async function main() {
   tong += anh.tong;
   lech.push(...anh.lech);
 
-  const theoChucVu = await kiemTheoNguoi(cookie);
-  tong += theoChucVu.tong;
-  lech.push(...theoChucVu.lech);
+  const theoNguoi = await kiemTheoNguoi(admin, cookie, idTam);
+  tong += theoNguoi.tong;
+  lech.push(...theoNguoi.lech);
+
+  const claimKho = await kiemClaimKho(admin);
+  tong += claimKho.tong;
+  lech.push(...claimKho.lech);
 
   const chuyenHuong = await kiemChuyenHuongDayDu(cookie, idDon);
   tong += chuyenHuong.tong;
@@ -753,7 +893,9 @@ async function main() {
   if (lech.length > 0) {
     console.error(`✗ quyền route: ${lech.length}/${tong} ô LỆCH\n`);
     for (const l of lech) console.error("  " + l);
-    process.exit(1);
+    // Không process.exit ở đây — để finally của main kịp xóa tài khoản tạm.
+    process.exitCode = 1;
+    return;
   }
 
   console.log(`✓ quyền route: ${tong}/${tong} ô đúng`);

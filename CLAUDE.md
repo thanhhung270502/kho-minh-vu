@@ -57,7 +57,7 @@ npm run db:types     # sinh lại src/types/database.types.ts sau mỗi migratio
 # Database — xem supabase/README.md để biết chi tiết
 npm run db:push          # áp migration lên cloud
 npm run db:test:linked   # chạy pgTAP trên cloud
-npm run seed:users       # tạo 4 tài khoản mẫu
+npm run seed:users       # tạo tài khoản Quản lý/Admin (quanly)
 npm run verify:hook      # xác nhận JWT có vai_tro/kho_id
 
 npx tsx scripts/test-pure-functions.ts      # hàm thuần: bộ lọc URL, tên khách, CSV lỗi

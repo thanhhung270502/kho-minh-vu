@@ -72,7 +72,7 @@ Không có bước này thì JWT thiếu `vai_tro` và `kho_id`, RLS sẽ từ c
 ### Bước 5 — Tạo tài khoản mẫu và kiểm chứng
 
 ```bash
-npm run seed:users      # tạo 4 tài khoản, mỗi vai trò một cái
+npm run seed:users      # tạo tài khoản Quản lý/Admin (quanly)
 npm run verify:hook     # xác nhận hook thật sự bơm claim vào JWT
 ```
 
@@ -95,7 +95,7 @@ npm run check           # typecheck + lint + build
 | Xem khác biệt schema | `npm run db:diff` |
 | Sinh lại kiểu TypeScript | `npm run db:types` |
 | Chạy pgTAP trên cloud | `npm run db:test:linked` |
-| Tạo lại 4 tài khoản mẫu | `npm run seed:users` |
+| Tạo lại tài khoản quanly | `npm run seed:users` |
 | Kiểm hook chạy thật | `npm run verify:hook` |
 | Thử nạp dữ liệu KiotViet | `npm run import:kiotviet -- --mau` |
 | *(nếu chuyển về local)* dựng lại DB + seed | `npm run db:reset` |
