@@ -139,7 +139,7 @@ export function CreateIssueButton({ label = "Tạo hóa đơn" }: Props) {
 
         <Typography.Text type="secondary" className="block">
           Đây là đường tạo phiếu không qua đơn — dùng cho xuất kho lẻ, xuất nội bộ.
-          Xuất theo đơn đã xác nhận thì bấm “Hoàn thành” ngay trên trang chi tiết đơn — hóa đơn tự sinh và ghi sổ.
+          Xuất theo đơn đã duyệt thì bấm “Hoàn thành” ngay trên trang chi tiết đơn — hóa đơn tự sinh và ghi sổ.
         </Typography.Text>
       </Modal>
     </>

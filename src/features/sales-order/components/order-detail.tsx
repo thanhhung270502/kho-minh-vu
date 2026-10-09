@@ -79,7 +79,7 @@ export function OrderDetailView({
                 className="mb-4"
                 type="info"
                 showIcon
-                title="Đơn đã xác nhận nên khóa sửa"
+                title="Đơn đã duyệt nên khóa sửa"
                 description="Muốn sửa đầu đơn hoặc dòng đơn, nhờ quản lý mở lại đơn về phiếu tạm trước."
               />
             ) : null}
@@ -96,7 +96,7 @@ export function OrderDetailView({
                       <Link href={`/duyet-don/${order.invoice.id}`} className="font-mono">
                         {order.invoice.number}
                       </Link>{" "}
-                      đã ghi sổ. Giao sai thì quản lý hủy hóa đơn đó — đơn quay về Đã xác nhận.
+                      đã ghi sổ. Giao sai thì quản lý hủy hóa đơn đó — đơn quay về Đã duyệt.
                     </>
                   ) : (
                     "Đơn đóng sớm, không có hóa đơn. Khách lấy thêm thì lập đơn mới."

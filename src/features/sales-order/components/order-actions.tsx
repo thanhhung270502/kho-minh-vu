@@ -45,7 +45,7 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
       onOk: async () => {
         try {
           await approve.mutateAsync();
-          message.success("Đã xác nhận. In phiếu, giao xong bấm Hoàn thành.");
+          message.success("Đã duyệt. In phiếu, giao xong bấm Hoàn thành.");
         } catch (error) {
           if (isPostgrestError(error) && error.code === "23514") {
             message.error(error.message);

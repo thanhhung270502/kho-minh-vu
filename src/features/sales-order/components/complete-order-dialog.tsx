@@ -106,7 +106,7 @@ export function CompleteOrderDialog({ open, onClose, orderId, orderNo, lineCount
 
       <p className="mb-3">
         Ghi sổ hóa đơn {lineCount} dòng, tổng {orderedQuantity.toLocaleString("vi-VN")} — trừ tồn
-        ngay theo kho mặc định của từng mã. Sai thì quản lý hủy hóa đơn, đơn quay về Đã xác nhận.
+        ngay theo kho mặc định của từng mã. Sai thì quản lý hủy hóa đơn, đơn quay về Đã duyệt.
       </p>
 
       {negative ? (
