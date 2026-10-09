@@ -95,6 +95,10 @@ export const DOC_STATUS_LABELS: Record<DocStatus, string> = {
   DA_HUY: "Đã hủy",
 };
 
+/** Người dùng gọi hóa đơn đã ghi sổ là "Đã duyệt", phiếu nhập là "Đã nhập" (09/10/2026). */
+export const ISSUE_STATUS_LABELS: Record<DocStatus, string> = { ...DOC_STATUS_LABELS, HOAN_THANH: "Đã duyệt" };
+export const RECEIPT_STATUS_LABELS: Record<DocStatus, string> = { ...DOC_STATUS_LABELS, HOAN_THANH: "Đã nhập" };
+
 export const DOC_STATUS_TONES: Record<DocStatus, StatusTone> = {
   NHAP_LIEU: "pending",
   HOAN_THANH: "done",

@@ -8,7 +8,7 @@
 import { z } from "zod";
 
 import { NEGATIVE_REASON_LABELS } from "@/features/documents/lib/negative-reasons";
-import { DOC_STATUS_LABELS } from "@/features/documents/types";
+import { ISSUE_STATUS_LABELS, RECEIPT_STATUS_LABELS } from "@/features/documents/types";
 import { readOrderFilterFromUrl, toOrderListRpcArgs } from "@/features/sales-order/schemas/order.schema";
 import { readReceiptFilterFromUrl, toReceiptListRpcArgs } from "@/features/stock-in/schemas/receipt.schema";
 import { readIssueFilterFromUrl, toIssueListRpcArgs } from "@/features/stock-out/schemas/issue.schema";
@@ -153,7 +153,7 @@ async function fetchDocumentRows(kind: "hoa-don" | "phieu-nhap", params: URLSear
       createdBy: r.nguoi_tao,
       totalQuantity: totals.get(r.so)?.quantity ?? 0,
       itemCount: totals.get(r.so)?.items ?? 0,
-      status: DOC_STATUS_LABELS[r.trang_thai],
+      status: (kind === "hoa-don" ? ISSUE_STATUS_LABELS : RECEIPT_STATUS_LABELS)[r.trang_thai],
     })),
   };
 }

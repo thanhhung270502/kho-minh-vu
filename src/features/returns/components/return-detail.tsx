@@ -52,7 +52,7 @@ export function ReturnDetailView({
 
         const returnLines = lines.data ?? [];
         const isTraNcc = doc.docType === "TRA_NCC";
-        const typeLabel = isTraNcc ? "Trả hàng NCC" : "Khách trả hàng";
+        const typeLabel = isTraNcc ? "Trả hàng NCC" : "Trả hàng";
         // TRA_KHACH sinh từ phiếu XUAT; TRA_NCC sinh từ phiếu NHAP (0057).
         const sourceHref = isTraNcc
           ? `/nhap-hang/${doc.sourceDocId}`

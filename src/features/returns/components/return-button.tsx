@@ -26,7 +26,7 @@ export function ReturnButton({ document, canEdit }: Props) {
 
   const label =
     document.docType === "XUAT"
-      ? "Khách trả hàng"
+      ? "Trả hàng"
       : document.docType === "NHAP"
         ? "Trả hàng NCC"
         : null;
