@@ -898,6 +898,8 @@ Recent decisions affecting current work:
 
 - Phase 9 added (2026-09-26): Quản lý hình ảnh — ảnh mã hàng lưu Google Drive qua Apps Script, lớp lưu trữ trừu tượng (`noi_luu`/`khoa_luu`, hiển thị qua `/anh/<id>` có cache) để sau chuyển cloud không đổi giao diện
 - Phase 20 added (2026-10-04): Giao diện 3b và tính năng còn thiếu — design system "hướng 3b" + tính năng thiếu ở Tổng quan, Đơn đặt, Chi tiết hàng hóa, tìm kiếm ⌘K
+- Phase 21 added (2026-10-08): Đồng bộ KiotViet hằng ngày — script mới `scripts/kiotviet-sync/` nạp 9 file Excel export tay, idempotent, ghi sổ atomic qua RPC; 1 kho, không giá, khách thật, tài khoản sync riêng
+- Phase 22 added (2026-10-09): Tối ưu truy vấn khi dữ liệu phình — Wave 0 (sinh dữ liệu 5 năm + benchmark RPC) và Wave 1 (index + điều kiện ngày dùng được index); Wave 2–4 trong `22-AUDIT.md` để phase sau
 
 ### Pending Todos
 
