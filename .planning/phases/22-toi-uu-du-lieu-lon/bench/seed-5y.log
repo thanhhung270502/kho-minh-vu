@@ -1,0 +1,96 @@
+
+> kiotviet@0.1.0 bench:seed
+> tsx scripts/bench/seed.ts --years 5
+
+Sinh dữ liệu BENCH trên 127.0.0.1:54322 — 1.826 ngày (2021-10-10 → 2026-10-09)
+ set_config 
+------------
+ form
+(1 row)
+
+ set_config 
+------------
+ 2021-10-09
+(1 row)
+
+ set_config 
+------------
+ 
+(1 row)
+
+  ma  | doi_tac | dong_so_cai_dau_ky 
+------+---------+--------------------
+ 3310 |      56 |               4400
+(1 row)
+
+[2021-10] 22 ngày (0 bỏ qua) · 2.046 HĐ · 172 PN · 20 hủy · 12.172 dòng sổ cái · 8s · tổng 12.172 · còn ~11 phút
+[2021-11] 30 ngày (0 bỏ qua) · 2.760 HĐ · 239 PN · 34 hủy · 16.706 dòng sổ cái · 11s · tổng 28.878 · còn ~10 phút
+[2021-12] 31 ngày (0 bỏ qua) · 2.806 HĐ · 240 PN · 27 hủy · 16.692 dòng sổ cái · 11s · tổng 45.570 · còn ~10 phút
+[2022-01] 31 ngày (0 bỏ qua) · 2.931 HĐ · 246 PN · 29 hủy · 17.419 dòng sổ cái · 12s · tổng 62.989 · còn ~10 phút
+[2022-02] 28 ngày (0 bỏ qua) · 2.557 HĐ · 231 PN · 30 hủy · 15.187 dòng sổ cái · 11s · tổng 78.176 · còn ~10 phút
+[2022-03] 31 ngày (0 bỏ qua) · 2.853 HĐ · 237 PN · 31 hủy · 17.062 dòng sổ cái · 12s · tổng 95.238 · còn ~10 phút
+[2022-04] 30 ngày (0 bỏ qua) · 2.789 HĐ · 241 PN · 35 hủy · 16.611 dòng sổ cái · 12s · tổng 111.849 · còn ~10 phút
+[2022-05] 31 ngày (0 bỏ qua) · 2.829 HĐ · 243 PN · 30 hủy · 16.865 dòng sổ cái · 12s · tổng 128.714 · còn ~10 phút
+[2022-06] 30 ngày (0 bỏ qua) · 2.754 HĐ · 236 PN · 24 hủy · 16.340 dòng sổ cái · 12s · tổng 145.054 · còn ~10 phút
+[2022-07] 31 ngày (0 bỏ qua) · 2.844 HĐ · 248 PN · 21 hủy · 17.102 dòng sổ cái · 13s · tổng 162.156 · còn ~10 phút
+[2022-08] 31 ngày (0 bỏ qua) · 2.838 HĐ · 242 PN · 25 hủy · 17.059 dòng sổ cái · 13s · tổng 179.215 · còn ~10 phút
+[2022-09] 30 ngày (0 bỏ qua) · 2.767 HĐ · 252 PN · 29 hủy · 16.659 dòng sổ cái · 14s · tổng 195.874 · còn ~10 phút
+[2022-10] 31 ngày (0 bỏ qua) · 2.877 HĐ · 240 PN · 37 hủy · 17.202 dòng sổ cái · 13s · tổng 213.076 · còn ~9 phút
+[2022-11] 30 ngày (0 bỏ qua) · 2.796 HĐ · 244 PN · 28 hủy · 16.760 dòng sổ cái · 12s · tổng 229.836 · còn ~9 phút
+[2022-12] 31 ngày (0 bỏ qua) · 2.844 HĐ · 242 PN · 35 hủy · 17.008 dòng sổ cái · 13s · tổng 246.844 · còn ~9 phút
+[2023-01] 31 ngày (0 bỏ qua) · 2.832 HĐ · 239 PN · 30 hủy · 16.880 dòng sổ cái · 13s · tổng 263.724 · còn ~9 phút
+[2023-02] 28 ngày (0 bỏ qua) · 2.562 HĐ · 234 PN · 24 hủy · 15.441 dòng sổ cái · 12s · tổng 279.165 · còn ~9 phút
+[2023-03] 31 ngày (0 bỏ qua) · 2.837 HĐ · 246 PN · 35 hủy · 16.991 dòng sổ cái · 13s · tổng 296.156 · còn ~9 phút
+[2023-04] 30 ngày (0 bỏ qua) · 2.737 HĐ · 229 PN · 32 hủy · 16.393 dòng sổ cái · 12s · tổng 312.549 · còn ~8 phút
+[2023-05] 31 ngày (0 bỏ qua) · 2.876 HĐ · 238 PN · 35 hủy · 16.966 dòng sổ cái · 14s · tổng 329.515 · còn ~8 phút
+[2023-06] 30 ngày (0 bỏ qua) · 2.753 HĐ · 248 PN · 20 hủy · 16.501 dòng sổ cái · 13s · tổng 346.016 · còn ~8 phút
+[2023-07] 31 ngày (0 bỏ qua) · 2.864 HĐ · 246 PN · 17 hủy · 17.147 dòng sổ cái · 13s · tổng 363.163 · còn ~8 phút
+[2023-08] 31 ngày (0 bỏ qua) · 2.831 HĐ · 242 PN · 29 hủy · 16.815 dòng sổ cái · 14s · tổng 379.978 · còn ~8 phút
+[2023-09] 30 ngày (0 bỏ qua) · 2.784 HĐ · 242 PN · 38 hủy · 16.728 dòng sổ cái · 13s · tổng 396.706 · còn ~8 phút
+[2023-10] 31 ngày (0 bỏ qua) · 2.802 HĐ · 247 PN · 31 hủy · 16.716 dòng sổ cái · 14s · tổng 413.422 · còn ~7 phút
+[2023-11] 30 ngày (0 bỏ qua) · 2.716 HĐ · 239 PN · 25 hủy · 16.173 dòng sổ cái · 14s · tổng 429.595 · còn ~7 phút
+[2023-12] 31 ngày (0 bỏ qua) · 2.846 HĐ · 246 PN · 27 hủy · 17.020 dòng sổ cái · 14s · tổng 446.615 · còn ~7 phút
+[2024-01] 31 ngày (0 bỏ qua) · 2.839 HĐ · 259 PN · 30 hủy · 17.118 dòng sổ cái · 14s · tổng 463.733 · còn ~7 phút
+[2024-02] 29 ngày (0 bỏ qua) · 2.724 HĐ · 221 PN · 35 hủy · 16.109 dòng sổ cái · 14s · tổng 479.842 · còn ~7 phút
+[2024-03] 31 ngày (0 bỏ qua) · 2.863 HĐ · 251 PN · 32 hủy · 17.130 dòng sổ cái · 14s · tổng 496.972 · còn ~6 phút
+[2024-04] 30 ngày (0 bỏ qua) · 2.739 HĐ · 238 PN · 30 hủy · 16.416 dòng sổ cái · 14s · tổng 513.388 · còn ~6 phút
+[2024-05] 31 ngày (0 bỏ qua) · 2.790 HĐ · 249 PN · 26 hủy · 16.699 dòng sổ cái · 14s · tổng 530.087 · còn ~6 phút
+[2024-06] 30 ngày (0 bỏ qua) · 2.742 HĐ · 248 PN · 27 hủy · 16.433 dòng sổ cái · 15s · tổng 546.520 · còn ~6 phút
+[2024-07] 31 ngày (0 bỏ qua) · 2.845 HĐ · 248 PN · 33 hủy · 17.133 dòng sổ cái · 15s · tổng 563.653 · còn ~6 phút
+[2024-08] 31 ngày (0 bỏ qua) · 2.869 HĐ · 246 PN · 32 hủy · 17.292 dòng sổ cái · 15s · tổng 580.945 · còn ~5 phút
+[2024-09] 30 ngày (0 bỏ qua) · 2.748 HĐ · 246 PN · 25 hủy · 16.423 dòng sổ cái · 14s · tổng 597.368 · còn ~5 phút
+[2024-10] 31 ngày (0 bỏ qua) · 2.876 HĐ · 246 PN · 26 hủy · 16.940 dòng sổ cái · 16s · tổng 614.308 · còn ~5 phút
+[2024-11] 30 ngày (0 bỏ qua) · 2.759 HĐ · 239 PN · 31 hủy · 16.445 dòng sổ cái · 14s · tổng 630.753 · còn ~5 phút
+[2024-12] 31 ngày (0 bỏ qua) · 2.832 HĐ · 245 PN · 29 hủy · 16.913 dòng sổ cái · 15s · tổng 647.666 · còn ~5 phút
+[2025-01] 31 ngày (0 bỏ qua) · 2.853 HĐ · 247 PN · 38 hủy · 17.105 dòng sổ cái · 15s · tổng 664.771 · còn ~4 phút
+[2025-02] 28 ngày (0 bỏ qua) · 2.573 HĐ · 229 PN · 29 hủy · 15.549 dòng sổ cái · 13s · tổng 680.320 · còn ~4 phút
+[2025-03] 31 ngày (0 bỏ qua) · 2.850 HĐ · 233 PN · 30 hủy · 16.797 dòng sổ cái · 15s · tổng 697.117 · còn ~4 phút
+[2025-04] 30 ngày (0 bỏ qua) · 2.762 HĐ · 236 PN · 30 hủy · 16.564 dòng sổ cái · 17s · tổng 713.681 · còn ~4 phút
+[2025-05] 31 ngày (0 bỏ qua) · 2.848 HĐ · 246 PN · 27 hủy · 17.076 dòng sổ cái · 17s · tổng 730.757 · còn ~4 phút
+[2025-06] 30 ngày (0 bỏ qua) · 2.749 HĐ · 245 PN · 30 hủy · 16.533 dòng sổ cái · 16s · tổng 747.290 · còn ~3 phút
+[2025-07] 31 ngày (0 bỏ qua) · 2.830 HĐ · 248 PN · 32 hủy · 16.814 dòng sổ cái · 16s · tổng 764.104 · còn ~3 phút
+[2025-08] 31 ngày (0 bỏ qua) · 2.835 HĐ · 259 PN · 31 hủy · 17.087 dòng sổ cái · 15s · tổng 781.191 · còn ~3 phút
+[2025-09] 30 ngày (0 bỏ qua) · 2.792 HĐ · 246 PN · 32 hủy · 16.730 dòng sổ cái · 15s · tổng 797.921 · còn ~3 phút
+[2025-10] 31 ngày (0 bỏ qua) · 2.889 HĐ · 248 PN · 25 hủy · 17.175 dòng sổ cái · 17s · tổng 815.096 · còn ~3 phút
+[2025-11] 30 ngày (0 bỏ qua) · 2.746 HĐ · 246 PN · 34 hủy · 16.483 dòng sổ cái · 17s · tổng 831.579 · còn ~2 phút
+[2025-12] 31 ngày (0 bỏ qua) · 2.843 HĐ · 257 PN · 36 hủy · 17.207 dòng sổ cái · 18s · tổng 848.786 · còn ~2 phút
+[2026-01] 31 ngày (0 bỏ qua) · 2.894 HĐ · 243 PN · 35 hủy · 17.129 dòng sổ cái · 19s · tổng 865.915 · còn ~2 phút
+[2026-02] 28 ngày (0 bỏ qua) · 2.642 HĐ · 215 PN · 29 hủy · 15.723 dòng sổ cái · 15s · tổng 881.638 · còn ~2 phút
+[2026-03] 31 ngày (0 bỏ qua) · 2.830 HĐ · 259 PN · 30 hủy · 17.049 dòng sổ cái · 19s · tổng 898.687 · còn ~88s
+[2026-04] 30 ngày (0 bỏ qua) · 2.793 HĐ · 247 PN · 25 hủy · 16.813 dòng sổ cái · 17s · tổng 915.500 · còn ~75s
+[2026-05] 31 ngày (0 bỏ qua) · 2.851 HĐ · 245 PN · 25 hủy · 16.975 dòng sổ cái · 19s · tổng 932.475 · còn ~61s
+[2026-06] 30 ngày (0 bỏ qua) · 2.759 HĐ · 237 PN · 35 hủy · 16.444 dòng sổ cái · 16s · tổng 948.919 · còn ~47s
+[2026-07] 2 ngày (29 bỏ qua) · 184 HĐ · 15 PN · 4 hủy · 1.155 dòng sổ cái · 2s · tổng 950.074 · còn ~33s
+[2026-08] 0 ngày (31 bỏ qua) · 0 HĐ · 0 PN · 0 hủy · 0 dòng sổ cái · 1s · tổng 950.074 · còn ~18s
+[2026-09] 0 ngày (30 bỏ qua) · 0 HĐ · 0 PN · 0 hủy · 0 dòng sổ cái · 1s · tổng 950.074 · còn ~4s
+[2026-10] 0 ngày (9 bỏ qua) · 0 HĐ · 0 PN · 0 hủy · 0 dòng sổ cái · 1s · tổng 950.074
+
+Số dòng hiện có:
+  don_dat_hang       168.018
+  chung_tu           183.153
+  don_dat_hang_dong  858.833
+  chung_tu_dong      974.079
+  kho_movement       1.008.828
+  nhat_ky_sua        678.944
+
+Xong: 1.727 ngày mới, 99 ngày bỏ qua, 14 phút.

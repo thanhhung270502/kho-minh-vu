@@ -1,0 +1,1302 @@
+LOAD
+SET
+SET
+SET
+SET
+SET
+SET
+SET
+NOTICE:  duration: 0.048 ms  plan:
+Query Text: select coalesce(
+  (select id from auth.users where email = 'bench.quanly@khominhvu.local'),
+  (select id from auth.users where email = 'quanly@khominhvu.local')
+) as uid 
+Result  (cost=2.20..2.21 rows=1 width=16) (actual time=0.038..0.038 rows=1 loops=1)
+  Buffers: shared read=1
+  InitPlan 1
+    ->  Seq Scan on users  (cost=0.00..1.10 rows=1 width=16) (actual time=0.036..0.036 rows=1 loops=1)
+          Filter: ((email)::text = 'bench.quanly@khominhvu.local'::text)
+          Rows Removed by Filter: 7
+          Buffers: shared read=1
+  InitPlan 2
+    ->  Seq Scan on users users_1  (cost=0.00..1.10 rows=1 width=16) (never executed)
+          Filter: ((email)::text = 'quanly@khominhvu.local'::text)
+NOTICE:  duration: 0.012 ms  plan:
+Query Text: select set_config('request.jwt.claims', jsonb_build_object(
+  'sub', '66820561-a02a-4681-9303-f40b86ea9a36', 'role', 'authenticated', 'vai_tro', 'quan_ly', 'kho_id', '[]'::jsonb)::text, false);
+Result  (cost=0.00..0.02 rows=1 width=32) (actual time=0.011..0.011 rows=1 loops=1)
+                                                  set_config                                                  
+--------------------------------------------------------------------------------------------------------------
+ {"sub": "66820561-a02a-4681-9303-f40b86ea9a36", "role": "authenticated", "kho_id": [], "vai_tro": "quan_ly"}
+(1 row)
+
+NOTICE:  duration: 0.123 ms  plan:
+Query Text: select (now() at time zone 'Asia/Ho_Chi_Minh')::date as hom_nay 
+Result  (cost=0.00..0.02 rows=1 width=4) (actual time=0.119..0.119 rows=1 loops=1)
+Timing is on.
+=== CASE: xoa_dong_phieu_nhap ===
+NOTICE:  duration: 0.261 ms  plan:
+Query Text: select id as kho1 from public.kho where ma = 'K1' 
+Index Scan using kho_ma_key on kho  (cost=0.15..8.17 rows=1 width=16) (actual time=0.259..0.260 rows=1 loops=1)
+  Index Cond: (ma = 'K1'::text)
+  Buffers: shared hit=1 read=1
+BEGIN
+Time: 0.081 ms
+NOTICE:  duration: 0.028 ms  plan:
+Query Text: SELECT 1 FROM ONLY "public"."kho" x WHERE "id" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x
+Query Parameters: $1 = '3a72c7cf-b778-49d0-9637-c884042cd7f8'
+LockRows  (cost=0.15..8.18 rows=1 width=10) (actual time=0.025..0.026 rows=1 loops=1)
+  Buffers: shared hit=3
+  ->  Index Scan using kho_pkey on kho x  (cost=0.15..8.17 rows=1 width=10) (actual time=0.005..0.005 rows=1 loops=1)
+        Index Cond: (id = '3a72c7cf-b778-49d0-9637-c884042cd7f8'::uuid)
+        Buffers: shared hit=2
+NOTICE:  duration: 0.013 ms  plan:
+Query Text: SELECT 1 FROM ONLY "public"."nguoi_dung" x WHERE "id" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x
+Query Parameters: $1 = '66820561-a02a-4681-9303-f40b86ea9a36'
+LockRows  (cost=0.15..8.18 rows=1 width=10) (actual time=0.012..0.012 rows=1 loops=1)
+  Buffers: shared hit=3
+  ->  Index Scan using nguoi_dung_pkey on nguoi_dung x  (cost=0.15..8.17 rows=1 width=10) (actual time=0.010..0.010 rows=1 loops=1)
+        Index Cond: (id = '66820561-a02a-4681-9303-f40b86ea9a36'::uuid)
+        Buffers: shared hit=2
+NOTICE:  duration: 1.640 ms  plan:
+Query Text: insert into public.chung_tu (so_ct, loai_ct, kho_id, ngay_ct)
+values ('BENCH-EXPLAIN-DRAFT', 'NHAP', '3a72c7cf-b778-49d0-9637-c884042cd7f8', '2026-10-09'::date);
+Insert on chung_tu  (cost=0.00..0.04 rows=0 width=0) (actual time=0.614..0.614 rows=0 loops=1)
+  Buffers: shared hit=172 read=14 dirtied=3
+  ->  Result  (cost=0.00..0.04 rows=1 width=404) (actual time=0.070..0.070 rows=1 loops=1)
+INSERT 0 1
+Time: 2.911 ms
+NOTICE:  duration: 0.007 ms  plan:
+Query Text: SELECT 1 FROM ONLY "public"."chung_tu" x WHERE "id" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x
+Query Parameters: $1 = '1d9d98cf-e82e-4ae6-8dc8-b353469bd904'
+LockRows  (cost=0.42..8.45 rows=1 width=10) (actual time=0.006..0.006 rows=1 loops=1)
+  Buffers: shared hit=5
+  ->  Index Scan using chung_tu_pkey on chung_tu x  (cost=0.42..8.44 rows=1 width=10) (actual time=0.005..0.005 rows=1 loops=1)
+        Index Cond: (id = '1d9d98cf-e82e-4ae6-8dc8-b353469bd904'::uuid)
+        Buffers: shared hit=4
+NOTICE:  duration: 0.018 ms  plan:
+Query Text: SELECT 1 FROM ONLY "public"."san_pham" x WHERE "id" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x
+Query Parameters: $1 = '7f35feaf-fa0b-4918-be3c-bed20479ff8b'
+LockRows  (cost=0.28..8.31 rows=1 width=10) (actual time=0.017..0.018 rows=1 loops=1)
+  Buffers: shared hit=5
+  ->  Index Scan using san_pham_pkey on san_pham x  (cost=0.28..8.30 rows=1 width=10) (actual time=0.011..0.011 rows=1 loops=1)
+        Index Cond: (id = '7f35feaf-fa0b-4918-be3c-bed20479ff8b'::uuid)
+        Buffers: shared hit=3
+NOTICE:  duration: 0.003 ms  plan:
+Query Text: SELECT 1 FROM ONLY "public"."kho" x WHERE "id" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x
+Query Parameters: $1 = '3a72c7cf-b778-49d0-9637-c884042cd7f8'
+LockRows  (cost=0.15..8.18 rows=1 width=10) (actual time=0.003..0.003 rows=1 loops=1)
+  Buffers: shared hit=3
+  ->  Index Scan using kho_pkey on kho x  (cost=0.15..8.17 rows=1 width=10) (actual time=0.002..0.002 rows=1 loops=1)
+        Index Cond: (id = '3a72c7cf-b778-49d0-9637-c884042cd7f8'::uuid)
+        Buffers: shared hit=2
+INSERT 0 1
+Time: 2.099 ms
+NOTICE:  duration: 0.677 ms  plan:
+Query Text: insert into public.chung_tu_dong (chung_tu_id, san_pham_id, so_luong, kho_id)
+select (select id from public.chung_tu where so_ct = 'BENCH-EXPLAIN-DRAFT'),
+       coalesce((select id from public.san_pham where ma_hang = 'BENCH-0001'),
+                (select id from public.san_pham limit 1)),
+       1, '3a72c7cf-b778-49d0-9637-c884042cd7f8';
+Insert on chung_tu_dong  (cost=17.13..17.14 rows=0 width=0) (actual time=0.313..0.314 rows=0 loops=1)
+  Buffers: shared hit=100 read=8 dirtied=2
+  InitPlan 1
+    ->  Index Scan using chung_tu_so_ct_key on chung_tu  (cost=0.42..8.44 rows=1 width=16) (actual time=0.006..0.006 rows=1 loops=1)
+          Index Cond: (so_ct = 'BENCH-EXPLAIN-DRAFT'::text)
+          Buffers: shared hit=4
+  InitPlan 2
+    ->  Index Scan using idx_san_pham_ma_hang_unique on san_pham  (cost=0.28..8.30 rows=1 width=16) (actual time=0.053..0.053 rows=1 loops=1)
+          Index Cond: (ma_hang = 'BENCH-0001'::text)
+          Buffers: shared hit=1 read=2
+  InitPlan 3
+    ->  Limit  (cost=0.28..0.39 rows=1 width=16) (never executed)
+          ->  Index Only Scan using san_pham_pkey on san_pham san_pham_1  (cost=0.28..373.94 rows=3311 width=16) (never executed)
+                Heap Fetches: 0
+  ->  Result  (cost=0.00..0.01 rows=1 width=225) (actual time=0.064..0.065 rows=1 loops=1)
+        Buffers: shared hit=5 read=2
+Time: 0.359 ms
+NOTICE:  duration: 0.020 ms  plan:
+Query Text: select id as line_id from public.chung_tu_dong
+ where chung_tu_id = (select id from public.chung_tu where so_ct = 'BENCH-EXPLAIN-DRAFT') limit 1 
+Limit  (cost=8.86..13.55 rows=1 width=16) (actual time=0.019..0.019 rows=1 loops=1)
+  Buffers: shared hit=8
+  InitPlan 1
+    ->  Index Scan using chung_tu_so_ct_key on chung_tu  (cost=0.42..8.44 rows=1 width=16) (actual time=0.006..0.006 rows=1 loops=1)
+          Index Cond: (so_ct = 'BENCH-EXPLAIN-DRAFT'::text)
+          Buffers: shared hit=4
+  ->  Index Scan using idx_ct_dong_chung_tu on chung_tu_dong  (cost=0.42..28.53 rows=6 width=16) (actual time=0.018..0.018 rows=1 loops=1)
+        Index Cond: (chung_tu_id = (InitPlan 1).col1)
+        Buffers: shared hit=8
+NOTICE:  duration: 0.003 ms  plan:
+Query Text: SELECT 1 FROM ONLY "public"."chung_tu_dong" x WHERE "id" OPERATOR(pg_catalog.=) $1 FOR KEY SHARE OF x
+Query Parameters: $1 = '17fd42e4-07b0-4451-a139-56ea816c449b'
+LockRows  (cost=0.42..8.45 rows=1 width=10) (actual time=0.003..0.003 rows=0 loops=1)
+  Buffers: shared hit=4
+  ->  Index Scan using chung_tu_dong_pkey on chung_tu_dong x  (cost=0.42..8.44 rows=1 width=10) (actual time=0.003..0.003 rows=0 loops=1)
+        Index Cond: (id = '17fd42e4-07b0-4451-a139-56ea816c449b'::uuid)
+        Buffers: shared hit=4
+NOTICE:  duration: 79.456 ms  plan:
+Query Text: SELECT 1 FROM ONLY "public"."kho_movement" x WHERE $1 OPERATOR(pg_catalog.=) "chung_tu_dong_id" FOR KEY SHARE OF x
+Query Parameters: $1 = '17fd42e4-07b0-4451-a139-56ea816c449b'
+LockRows  (cost=0.00..30004.36 rows=1 width=10) (actual time=79.454..79.454 rows=0 loops=1)
+  Buffers: shared hit=9233 read=8161
+  ->  Seq Scan on kho_movement x  (cost=0.00..30004.35 rows=1 width=10) (actual time=79.453..79.453 rows=0 loops=1)
+        Filter: ('17fd42e4-07b0-4451-a139-56ea816c449b'::uuid = chung_tu_dong_id)
+        Rows Removed by Filter: 1008828
+        Buffers: shared hit=9233 read=8161
+NOTICE:  duration: 79.883 ms  plan:
+Query Text: explain (analyze, buffers) delete from public.chung_tu_dong where id = '17fd42e4-07b0-4451-a139-56ea816c449b';
+Delete on chung_tu_dong  (cost=0.42..8.44 rows=0 width=0) (actual time=0.030..0.030 rows=0 loops=1)
+  Buffers: shared hit=9
+  ->  Index Scan using chung_tu_dong_pkey on chung_tu_dong  (cost=0.42..8.44 rows=1 width=6) (actual time=0.004..0.004 rows=1 loops=1)
+        Index Cond: (id = '17fd42e4-07b0-4451-a139-56ea816c449b'::uuid)
+        Buffers: shared hit=4
+                                                               QUERY PLAN                                                               
+----------------------------------------------------------------------------------------------------------------------------------------
+ Delete on chung_tu_dong  (cost=0.42..8.44 rows=0 width=0) (actual time=0.030..0.030 rows=0 loops=1)
+   Buffers: shared hit=9
+   ->  Index Scan using chung_tu_dong_pkey on chung_tu_dong  (cost=0.42..8.44 rows=1 width=6) (actual time=0.004..0.004 rows=1 loops=1)
+         Index Cond: (id = '17fd42e4-07b0-4451-a139-56ea816c449b'::uuid)
+         Buffers: shared hit=4
+ Planning Time: 0.015 ms
+ Trigger for constraint kho_movement_chung_tu_dong_id_fkey: time=79.851 calls=1
+ Execution Time: 79.930 ms
+(8 rows)
+
+Time: 80.029 ms
+NOTICE:  duration: 54.421 ms  plan:
+Query Text: explain (analyze, buffers) select 1 from only public.kho_movement x where x.chung_tu_dong_id = '17fd42e4-07b0-4451-a139-56ea816c449b' for key share of x;
+LockRows  (cost=0.00..30004.36 rows=1 width=10) (actual time=54.419..54.419 rows=0 loops=1)
+  Buffers: shared hit=9265 read=8129
+  ->  Seq Scan on kho_movement x  (cost=0.00..30004.35 rows=1 width=10) (actual time=54.418..54.418 rows=0 loops=1)
+        Filter: (chung_tu_dong_id = '17fd42e4-07b0-4451-a139-56ea816c449b'::uuid)
+        Rows Removed by Filter: 1008828
+        Buffers: shared hit=9265 read=8129
+                                                     QUERY PLAN                                                      
+---------------------------------------------------------------------------------------------------------------------
+ LockRows  (cost=0.00..30004.36 rows=1 width=10) (actual time=54.419..54.419 rows=0 loops=1)
+   Buffers: shared hit=9265 read=8129
+   ->  Seq Scan on kho_movement x  (cost=0.00..30004.35 rows=1 width=10) (actual time=54.418..54.418 rows=0 loops=1)
+         Filter: (chung_tu_dong_id = '17fd42e4-07b0-4451-a139-56ea816c449b'::uuid)
+         Rows Removed by Filter: 1008828
+         Buffers: shared hit=9265 read=8129
+ Planning Time: 0.059 ms
+ Execution Time: 54.459 ms
+(8 rows)
+
+Time: 54.711 ms
+ROLLBACK
+Time: 0.088 ms
+=== CASE: danh_sach_don_mac_dinh ===
+SET
+Time: 0.104 ms
+NOTICE:  duration: 0.071 ms  plan:
+Query Text: 
+  select nd.vai_tro
+  from public.nguoi_dung nd
+  where nd.id = auth.uid()
+    and nd.dang_hoat_dong
+    and nd.vai_tro::text = (auth.jwt() ->> 'vai_tro');
+
+Index Scan using nguoi_dung_pkey on nguoi_dung nd  (cost=0.17..8.21 rows=1 width=4) (actual time=0.069..0.069 rows=1 loops=1)
+  Index Cond: (id = (COALESCE(NULLIF(current_setting('request.jwt.claim.sub'::text, true), ''::text), ((NULLIF(current_setting('request.jwt.claims'::text, true), ''::text))::jsonb ->> 'sub'::text)))::uuid)
+  Filter: (dang_hoat_dong AND ((vai_tro)::text = ((COALESCE(NULLIF(current_setting('request.jwt.claim'::text, true), ''::text), NULLIF(current_setting('request.jwt.claims'::text, true), ''::text)))::jsonb ->> 'vai_tro'::text)))
+  Buffers: shared hit=3 read=2 written=2
+NOTICE:  duration: 0.334 ms  plan:
+Query Text: (select public.vai_tro_hien_tai())
+Result  (cost=0.26..0.27 rows=1 width=4) (actual time=0.332..0.332 rows=1 loops=1)
+  Buffers: shared hit=21 read=4 written=2
+  InitPlan 1
+    ->  Result  (cost=0.00..0.26 rows=1 width=4) (actual time=0.330..0.330 rows=1 loops=1)
+          Buffers: shared hit=21 read=4 written=2
+NOTICE:  duration: 16.308 ms  plan:
+Query Text: with loc as (
+    select dh.*
+    from public.don_dat_hang dh
+    where (p_trang_thai is null or dh.trang_thai = any(p_trang_thai))
+      and (p_doi_tac_id is null or dh.doi_tac_id = p_doi_tac_id)
+      and (p_loai_nhan  is null
+           -- 0103: đơn của đối tác nội bộ (mã NB…) có nhân viên nhận tính là "Nội bộ".
+           or (p_loai_nhan = 'NOI_BO'
+               and (dh.doi_tac_id is null
+                    or exists (select 1 from public.doi_tac nb where nb.id = dh.doi_tac_id and nb.ma ilike 'NB%'))
+               -- 0098: đơn tạm chưa chọn người nhận không phải "Nội bộ".
+               and exists (select 1 from public.don_dat_hang_nguoi_nhan x where x.don_dat_hang_id = dh.id))
+           or (p_loai_nhan = 'DOI_TAC' and dh.doi_tac_id is not null
+               and not (exists (select 1 from public.doi_tac nb where nb.id = dh.doi_tac_id and nb.ma ilike 'NB%')
+                        and exists (select 1 from public.don_dat_hang_nguoi_nhan x where x.don_dat_hang_id = dh.id))))
+      -- Cấp đơn đã bao cấp dòng (bất biến D1: người ở dòng luôn có ở đơn).
+      and (p_nguoi_nhan_id is null or exists (
+            select 1 from public.don_dat_hang_nguoi_nhan ddn
+            where ddn.don_dat_hang_id = dh.id and ddn.nguoi_nhan_id = p_nguoi_nhan_id))
+      and (p_tu_ngay    is null or dh.ngay_dh >= p_tu_ngay)
+      and (p_den_ngay   is null or dh.ngay_dh <= p_den_ngay)
+      and (
+        v_tu_khoa is null
+        or dh.so_dh ilike '%' || v_tu_khoa || '%'
+        or exists (
+          select 1 from public.doi_tac dt
+          where dt.id = dh.doi_tac_id
+            and public.f_unaccent(dt.ten) ilike '%' || public.f_unaccent(v_tu_khoa) || '%'
+        )
+        or exists (
+          select 1
+          from public.don_dat_hang_nguoi_nhan ddn
+          join public.nhan_vien_phu_trach nvp on nvp.id = ddn.nguoi_nhan_id
+          where ddn.don_dat_hang_id = dh.id
+            and public.f_unaccent(nvp.ten_day_du) ilike '%' || public.f_unaccent(v_tu_khoa) || '%'
+        )
+      )
+  ), dem as (select count(*) as tong from loc)
+  select
+    l.id, l.so_dh, l.ngay_dh, l.trang_thai, l.ngay_giao_du_kien, l.doi_tac_id,
+    dt.ma, dt.ten,
+    nn.nguoi_nhan_ids, nn.ten_nguoi_nhan,
+    (select count(*) from public.don_dat_hang_dong d where d.don_dat_hang_id = l.id),
+    (select coalesce(sum(d.so_luong_dat), 0) from public.don_dat_hang_dong d where d.don_dat_hang_id = l.id),
+    (select coalesce(sum(d.so_luong_da_xuat), 0) from public.don_dat_hang_dong d where d.don_dat_hang_id = l.id),
+    nd.ho_ten,
+    l.ghi_chu, l.created_at,
+    (select tong from dem)
+  from loc l
+  left join public.doi_tac dt    on dt.id = l.doi_tac_id
+  left join lateral (
+    select coalesce(array_agg(ddn.nguoi_nhan_id order by ddn.thu_tu, ddn.nguoi_nhan_id), '{}') as nguoi_nhan_ids,
+           coalesce(array_agg(nvp.ten_day_du     order by ddn.thu_tu, ddn.nguoi_nhan_id), '{}') as ten_nguoi_nhan
+    from public.don_dat_hang_nguoi_nhan ddn
+    join public.nhan_vien_phu_trach nvp on nvp.id = ddn.nguoi_nhan_id
+    where ddn.don_dat_hang_id = l.id
+  ) nn on true
+  left join public.nguoi_dung nd on nd.id = l.nguoi_tao_id
+  order by l.ngay_dh desc, l.so_dh desc
+  limit v_kich_thuoc
+  offset (v_trang - 1) * v_kich_thuoc
+Limit  (cost=14657.83..17312.70 rows=50 width=318) (actual time=15.272..16.289 rows=50 loops=1)
+  Buffers: shared hit=2297 read=5074 written=23
+  CTE loc
+    ->  Gather  (cost=1000.00..7118.54 rows=709 width=143) (actual time=3.346..9.045 rows=822 loops=1)
+          Workers Planned: 2
+          Workers Launched: 2
+          Buffers: shared read=4735 written=11
+          ->  Parallel Seq Scan on don_dat_hang dh  (cost=0.00..6047.64 rows=295 width=143) (actual time=1.047..6.589 rows=274 loops=3)
+                Filter: ((ngay_dh >= '2026-10-01'::date) AND (ngay_dh <= '2026-10-09'::date) AND (trang_thai = ANY ('{TAM,DA_XAC_NHAN,HOAN_THANH}'::public.trang_thai_ddh[])))
+                Rows Removed by Filter: 55732
+                Buffers: shared read=4735 written=11
+  InitPlan 5
+    ->  Aggregate  (cost=15.95..15.96 rows=1 width=8) (actual time=5.856..5.856 rows=1 loops=1)
+          Buffers: shared read=4192
+          ->  CTE Scan on loc  (cost=0.00..14.18 rows=709 width=0) (actual time=0.001..5.822 rows=822 loops=1)
+                Buffers: shared read=4192
+  ->  Result  (cost=7523.33..45169.39 rows=709 width=318) (actual time=15.270..16.244 rows=50 loops=1)
+        Buffers: shared hit=2297 read=5074 written=23
+        ->  Sort  (cost=7523.33..7525.10 rows=709 width=246) (actual time=15.175..15.182 rows=50 loops=1)
+              Sort Key: l.ngay_dh DESC, l.so_dh DESC
+              Sort Method: top-N heapsort  Memory: 51kB
+              Buffers: shared hit=1811 read=5003 written=23
+              ->  Nested Loop Left Join  (cost=10.79..7499.78 rows=709 width=246) (actual time=9.328..14.666 rows=822 loops=1)
+                    Buffers: shared hit=1805 read=5003 written=23
+                    ->  Nested Loop Left Join  (cost=10.63..7481.61 rows=709 width=222) (actual time=3.458..8.554 rows=822 loops=1)
+                          Buffers: shared hit=1803 read=811 written=23
+                          ->  Nested Loop Left Join  (cost=0.15..37.28 rows=709 width=158) (actual time=3.367..3.730 rows=822 loops=1)
+                                Buffers: shared hit=62 read=543 written=11
+                                ->  CTE Scan on loc l  (cost=0.00..14.18 rows=709 width=132) (actual time=3.350..3.436 rows=822 loops=1)
+                                      Buffers: shared read=543 written=11
+                                ->  Memoize  (cost=0.15..0.18 rows=1 width=42) (actual time=0.000..0.000 rows=1 loops=822)
+                                      Cache Key: l.doi_tac_id
+                                      Cache Mode: logical
+                                      Hits: 791  Misses: 31  Evictions: 0  Overflows: 0  Memory Usage: 5kB
+                                      Buffers: shared hit=62
+                                      ->  Index Scan using doi_tac_pkey on doi_tac dt  (cost=0.14..0.17 rows=1 width=42) (actual time=0.001..0.001 rows=1 loops=31)
+                                            Index Cond: (id = l.doi_tac_id)
+                                            Buffers: shared hit=62
+                          ->  Aggregate  (cost=10.48..10.49 rows=1 width=64) (actual time=0.006..0.006 rows=1 loops=822)
+                                Buffers: shared hit=1741 read=268 written=12
+                                ->  Sort  (cost=10.46..10.47 rows=1 width=40) (actual time=0.005..0.005 rows=0 loops=822)
+                                      Sort Key: ddn.thu_tu, ddn.nguoi_nhan_id
+                                      Sort Method: quicksort  Memory: 25kB
+                                      Buffers: shared hit=1741 read=268 written=12
+                                      ->  Hash Join  (cost=8.32..10.45 rows=1 width=40) (actual time=0.005..0.005 rows=0 loops=822)
+                                            Hash Cond: (nvp.id = ddn.nguoi_nhan_id)
+                                            Buffers: shared hit=1735 read=268 written=12
+                                            ->  Seq Scan on nhan_vien_phu_trach nvp  (cost=0.00..1.89 rows=89 width=36) (actual time=0.000..0.001 rows=8 loops=180)
+                                                  Buffers: shared hit=180
+                                            ->  Hash  (cost=8.31..8.31 rows=1 width=20) (actual time=0.004..0.004 rows=0 loops=822)
+                                                  Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                                  Buffers: shared hit=1555 read=268 written=12
+                                                  ->  Index Scan using don_dat_hang_nguoi_nhan_pkey on don_dat_hang_nguoi_nhan ddn  (cost=0.29..8.31 rows=1 width=20) (actual time=0.004..0.004 rows=0 loops=822)
+                                                        Index Cond: (don_dat_hang_id = l.id)
+                                                        Buffers: shared hit=1555 read=268 written=12
+                    ->  Memoize  (cost=0.16..0.24 rows=1 width=48) (actual time=0.000..0.000 rows=1 loops=822)
+                          Cache Key: l.nguoi_tao_id
+                          Cache Mode: logical
+                          Hits: 821  Misses: 1  Evictions: 0  Overflows: 0  Memory Usage: 1kB
+                          Buffers: shared hit=2
+                          ->  Index Scan using nguoi_dung_pkey on nguoi_dung nd  (cost=0.15..0.23 rows=1 width=48) (actual time=0.005..0.005 rows=1 loops=1)
+                                Index Cond: (id = l.nguoi_tao_id)
+                                Buffers: shared hit=2
+        SubPlan 2
+          ->  Aggregate  (cost=4.52..4.53 rows=1 width=8) (actual time=0.014..0.014 rows=1 loops=50)
+                Buffers: shared hit=88 read=63
+                ->  Index Only Scan using idx_ddh_dong_don on don_dat_hang_dong d  (cost=0.42..4.51 rows=5 width=0) (actual time=0.013..0.013 rows=5 loops=50)
+                      Index Cond: (don_dat_hang_id = l.id)
+                      Heap Fetches: 0
+                      Buffers: shared hit=88 read=63
+        SubPlan 3
+          ->  Aggregate  (cost=24.26..24.27 rows=1 width=32) (actual time=0.004..0.004 rows=1 loops=50)
+                Buffers: shared hit=195 read=8
+                ->  Bitmap Heap Scan on don_dat_hang_dong d_1  (cost=4.46..24.25 rows=5 width=5) (actual time=0.003..0.003 rows=5 loops=50)
+                      Recheck Cond: (don_dat_hang_id = l.id)
+                      Heap Blocks: exact=53
+                      Buffers: shared hit=195 read=8
+                      ->  Bitmap Index Scan on idx_ddh_dong_don  (cost=0.00..4.46 rows=5 width=0) (actual time=0.001..0.001 rows=5 loops=50)
+                            Index Cond: (don_dat_hang_id = l.id)
+                            Buffers: shared hit=150
+        SubPlan 4
+          ->  Aggregate  (cost=24.26..24.27 rows=1 width=32) (actual time=0.002..0.002 rows=1 loops=50)
+                Buffers: shared hit=203
+                ->  Bitmap Heap Scan on don_dat_hang_dong d_2  (cost=4.46..24.25 rows=5 width=4) (actual time=0.001..0.001 rows=5 loops=50)
+                      Recheck Cond: (don_dat_hang_id = l.id)
+                      Heap Blocks: exact=53
+                      Buffers: shared hit=203
+                      ->  Bitmap Index Scan on idx_ddh_dong_don  (cost=0.00..4.46 rows=5 width=0) (actual time=0.001..0.001 rows=5 loops=50)
+                            Index Cond: (don_dat_hang_id = l.id)
+                            Buffers: shared hit=150
+NOTICE:  duration: 20.622 ms  plan:
+Query Text: select count(*) from public.danh_sach_don(
+  p_trang_thai => '{TAM,DA_XAC_NHAN,HOAN_THANH}'::public.trang_thai_ddh[],
+  p_tu_ngay => date_trunc('month', '2026-10-09'::date)::date,
+  p_den_ngay => '2026-10-09'::date, p_trang => 1, p_kich_thuoc => 50);
+Aggregate  (cost=12.76..12.77 rows=1 width=8) (actual time=20.620..20.620 rows=1 loops=1)
+  Buffers: shared hit=3325 read=5137 written=35
+  ->  Function Scan on danh_sach_don  (cost=0.26..10.26 rows=1000 width=0) (actual time=20.615..20.617 rows=50 loops=1)
+        Buffers: shared hit=3325 read=5137 written=35
+ count 
+-------
+    50
+(1 row)
+
+Time: 21.212 ms
+RESET
+Time: 0.093 ms
+=== CASE: tim_kiem_so_ct ===
+SET
+Time: 0.048 ms
+NOTICE:  duration: 1.399 ms  plan:
+Query Text: 
+  select extensions.unaccent('extensions.unaccent'::regdictionary, $1);
+
+Query Parameters: $1 = 'HD261006-04'
+Result  (cost=0.00..0.01 rows=1 width=32) (actual time=1.396..1.397 rows=1 loops=1)
+  Buffers: shared hit=7 read=5
+NOTICE:  duration: 0.016 ms  plan:
+Query Text: 
+  select nd.vai_tro
+  from public.nguoi_dung nd
+  where nd.id = auth.uid()
+    and nd.dang_hoat_dong
+    and nd.vai_tro::text = (auth.jwt() ->> 'vai_tro');
+
+Index Scan using nguoi_dung_pkey on nguoi_dung nd  (cost=0.17..8.21 rows=1 width=4) (actual time=0.015..0.016 rows=1 loops=1)
+  Index Cond: (id = (COALESCE(NULLIF(current_setting('request.jwt.claim.sub'::text, true), ''::text), ((NULLIF(current_setting('request.jwt.claims'::text, true), ''::text))::jsonb ->> 'sub'::text)))::uuid)
+  Filter: (dang_hoat_dong AND ((vai_tro)::text = ((COALESCE(NULLIF(current_setting('request.jwt.claim'::text, true), ''::text), NULLIF(current_setting('request.jwt.claims'::text, true), ''::text)))::jsonb ->> 'vai_tro'::text)))
+  Buffers: shared hit=2
+NOTICE:  duration: 0.003 ms  plan:
+Query Text: 
+  select extensions.unaccent('extensions.unaccent'::regdictionary, $1);
+
+Query Parameters: $1 = 'HD261006-04'
+Result  (cost=0.00..0.01 rows=1 width=32) (actual time=0.002..0.002 rows=1 loops=1)
+NOTICE:  duration: 212.655 ms  plan:
+Query Text: 
+  with tham_so as (
+    select nullif(trim(coalesce(p_tu_khoa, '')), '') as kw,
+           least(greatest(coalesce(p_gioi_han, 5), 1), 10) as gh
+  ),
+  sp as (
+    select 'san_pham'::text as loai, s.id as id, s.ma_hang as nhan,
+           (s.ten_hang || case when s.dang_kinh_doanh then '' else ' (ngừng KD)' end) as phu,
+           null::text as loai_ct, null::text as trang_thai,
+           (case when lower(s.ma_hang) = lower(t.kw) then 0
+                 when lower(s.ma_hang) like lower(t.kw) || '%' then 1
+                 else 2 end) as xep_hang
+    from public.san_pham s, tham_so t
+    where length(t.kw) >= 2
+      and public.f_unaccent(coalesce(s.ma_hang, '') || ' ' || coalesce(s.ten_hang, ''))
+          ilike '%' || public.f_unaccent(t.kw) || '%'
+    order by 7, s.ma_hang
+    limit (select gh from tham_so)
+  ),
+  ct as (
+    select 'chung_tu'::text as loai, c.id as id, c.so_ct as nhan,
+           to_char(c.ngay_ct, 'DD/MM/YYYY') as phu,
+           c.loai_ct::text as loai_ct, c.trang_thai::text as trang_thai,
+           (case when lower(c.so_ct) = lower(t.kw) then 0 else 1 end) as xep_hang
+    from public.chung_tu c, tham_so t
+    where length(t.kw) >= 2
+      and c.loai_ct in ('NHAP', 'XUAT', 'TRA_NCC', 'TRA_KHACH', 'KIEM_KE')
+      and c.so_ct ilike '%' || t.kw || '%'
+    order by 7, c.ngay_ct desc, c.so_ct desc
+    limit (select gh from tham_so)
+  ),
+  dh as (
+    select 'don_dat'::text as loai, d.id as id, d.so_dh as nhan,
+           to_char(d.ngay_dh, 'DD/MM/YYYY') as phu,
+           null::text as loai_ct, d.trang_thai::text as trang_thai,
+           (case when lower(d.so_dh) = lower(t.kw) then 0 else 1 end) as xep_hang
+    from public.don_dat_hang d, tham_so t
+    where length(t.kw) >= 2
+      and d.so_dh ilike '%' || t.kw || '%'
+    order by 7, d.ngay_dh desc, d.so_dh desc
+    limit (select gh from tham_so)
+  ),
+  dt as (
+    select 'doi_tac'::text as loai, p.id as id, p.ten as nhan,
+           concat_ws(' · ', p.ma, p.dien_thoai) as phu,
+           null::text as loai_ct, null::text as trang_thai,
+           (case when lower(p.ma) = lower(t.kw) then 0 else 1 end) as xep_hang
+    from public.doi_tac p, tham_so t
+    where length(t.kw) >= 2
+      and public.f_unaccent(coalesce(p.ma, '') || ' ' || coalesce(p.ten, '') || ' ' || coalesce(p.dien_thoai, ''))
+          ilike '%' || public.f_unaccent(t.kw) || '%'
+    order by 7, p.ten
+    limit (select gh from tham_so)
+  )
+  select * from sp
+  union all select * from ct
+  union all select * from dh
+  union all select * from dt
+
+Query Parameters: $1 = 'HD261006-04', $2 = '5'
+Append  (cost=86.37..70248.08 rows=89 width=167) (actual time=117.593..212.651 rows=5 loops=1)
+  Buffers: shared hit=4741 read=6252
+  CTE tham_so
+    ->  Result  (cost=0.00..0.02 rows=1 width=36) (actual time=0.002..0.002 rows=1 loops=1)
+  ->  Limit  (cost=86.35..86.35 rows=2 width=159) (actual time=1.694..1.697 rows=0 loops=1)
+        Buffers: shared hit=42 read=8
+        InitPlan 2
+          ->  CTE Scan on tham_so  (cost=0.00..0.02 rows=1 width=4) (actual time=0.003..0.003 rows=1 loops=1)
+        ->  Sort  (cost=86.33..86.37 rows=17 width=159) (actual time=1.689..1.691 rows=0 loops=1)
+              Sort Key: (CASE WHEN (lower(s.ma_hang) = lower(t.kw)) THEN 0 WHEN (lower(s.ma_hang) ~~ (lower(t.kw) || '%'::text)) THEN 1 ELSE 2 END), s.ma_hang
+              Sort Method: quicksort  Memory: 25kB
+              Buffers: shared hit=42 read=8
+              ->  Nested Loop  (cost=13.15..85.98 rows=17 width=159) (actual time=1.687..1.688 rows=0 loops=1)
+                    Buffers: shared hit=42 read=8
+                    ->  CTE Scan on tham_so t  (cost=0.00..0.03 rows=1 width=32) (actual time=0.001..0.002 rows=1 loops=1)
+                          Filter: (length(kw) >= 2)
+                    ->  Bitmap Heap Scan on san_pham s  (cost=13.15..85.44 rows=17 width=56) (actual time=1.684..1.685 rows=0 loops=1)
+                          Recheck Cond: (public.f_unaccent(((COALESCE(ma_hang, ''::text) || ' '::text) || COALESCE(ten_hang, ''::text))) ~~* (('%'::text || public.f_unaccent(t.kw)) || '%'::text))
+                          Buffers: shared hit=42 read=8
+                          ->  Bitmap Index Scan on idx_san_pham_tim_kiem  (cost=0.00..13.15 rows=17 width=0) (actual time=0.104..0.105 rows=0 loops=1)
+                                Index Cond: (public.f_unaccent(((COALESCE(ma_hang, ''::text) || ' '::text) || COALESCE(ten_hang, ''::text))) ~~* (('%'::text || public.f_unaccent(t.kw)) || '%'::text))
+                                Buffers: shared hit=23
+  ->  Subquery Scan on ct  (cost=60735.74..60735.77 rows=2 width=167) (actual time=115.898..115.903 rows=5 loops=1)
+        Buffers: shared hit=4587 read=1602
+        ->  Limit  (cost=60735.74..60735.75 rows=2 width=171) (actual time=115.897..115.900 rows=5 loops=1)
+              Buffers: shared hit=4587 read=1602
+              InitPlan 3
+                ->  CTE Scan on tham_so tham_so_1  (cost=0.00..0.02 rows=1 width=4) (actual time=0.001..0.001 rows=1 loops=1)
+              InitPlan 4
+                ->  Result  (cost=0.00..0.26 rows=1 width=4) (actual time=0.366..0.367 rows=1 loops=1)
+                      Buffers: shared hit=3
+              InitPlan 5
+                ->  Result  (cost=0.00..0.26 rows=1 width=4) (never executed)
+              InitPlan 6
+                ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+              InitPlan 7
+                ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+              ->  Sort  (cost=60734.68..60734.73 rows=18 width=171) (actual time=115.893..115.894 rows=5 loops=1)
+                    Sort Key: (CASE WHEN (lower(c.so_ct) = lower(t_1.kw)) THEN 0 ELSE 1 END), c.ngay_ct DESC, c.so_ct DESC
+                    Sort Method: quicksort  Memory: 26kB
+                    Buffers: shared hit=4587 read=1602
+                    ->  Nested Loop  (cost=0.00..60734.30 rows=18 width=171) (actual time=19.634..115.875 rows=10 loops=1)
+                          Join Filter: (c.so_ct ~~* (('%'::text || t_1.kw) || '%'::text))
+                          Rows Removed by Join Filter: 183084
+                          Buffers: shared hit=4587 read=1602
+                          ->  CTE Scan on tham_so t_1  (cost=0.00..0.03 rows=1 width=32) (actual time=0.001..0.002 rows=1 loops=1)
+                                Filter: (length(kw) >= 2)
+                          ->  Seq Scan on chung_tu c  (cost=0.00..60670.02 rows=3649 width=47) (actual time=0.394..30.050 rows=183094 loops=1)
+                                Filter: ((((InitPlan 4).col1 = ANY ('{quan_ly,van_phong,chi_xem}'::public.vai_tro[])) OR (((InitPlan 5).col1 = 'thu_kho'::public.vai_tro) AND ((kho_id = ANY ((InitPlan 6).col1)) OR (kho_den_id = ANY ((InitPlan 7).col1)) OR public.phieu_co_dong_thuoc_kho_hien_tai(id)))) AND (loai_ct = ANY ('{NHAP,XUAT,TRA_NCC,TRA_KHACH,KIEM_KE}'::public.loai_ct[])))
+                                Rows Removed by Filter: 60
+                                Buffers: shared hit=4583 read=1602
+  ->  Subquery Scan on dh  (cost=9411.04..9412.09 rows=84 width=167) (actual time=94.868..94.869 rows=0 loops=1)
+        Buffers: shared hit=96 read=4639
+        ->  Limit  (cost=9411.04..9411.25 rows=84 width=171) (actual time=94.867..94.868 rows=0 loops=1)
+              Buffers: shared hit=96 read=4639
+              InitPlan 8
+                ->  CTE Scan on tham_so tham_so_2  (cost=0.00..0.02 rows=1 width=4) (actual time=0.001..0.001 rows=1 loops=1)
+              ->  Sort  (cost=9411.02..9413.12 rows=840 width=171) (actual time=94.864..94.865 rows=0 loops=1)
+                    Sort Key: (CASE WHEN (lower(d.so_dh) = lower(t_2.kw)) THEN 0 ELSE 1 END), d.ngay_dh DESC, d.so_dh DESC
+                    Sort Method: quicksort  Memory: 25kB
+                    Buffers: shared hit=96 read=4639
+                    ->  Nested Loop  (cost=0.00..9370.22 rows=840 width=171) (actual time=94.853..94.854 rows=0 loops=1)
+                          Join Filter: (d.so_dh ~~* (('%'::text || t_2.kw) || '%'::text))
+                          Rows Removed by Join Filter: 168018
+                          Buffers: shared hit=96 read=4639
+                          ->  CTE Scan on tham_so t_2  (cost=0.00..0.03 rows=1 width=32) (actual time=0.001..0.003 rows=1 loops=1)
+                                Filter: (length(kw) >= 2)
+                          ->  Seq Scan on don_dat_hang d  (cost=0.00..6415.18 rows=168018 width=43) (actual time=0.014..15.375 rows=168018 loops=1)
+                                Buffers: shared hit=96 read=4639
+  ->  Limit  (cost=13.40..13.41 rows=1 width=162) (actual time=0.177..0.178 rows=0 loops=1)
+        Buffers: shared hit=16 read=3
+        InitPlan 9
+          ->  CTE Scan on tham_so tham_so_3  (cost=0.00..0.02 rows=1 width=4) (actual time=0.001..0.001 rows=1 loops=1)
+        ->  Sort  (cost=13.38..13.39 rows=1 width=162) (actual time=0.173..0.174 rows=0 loops=1)
+              Sort Key: (CASE WHEN (lower(p.ma) = lower(t_3.kw)) THEN 0 ELSE 1 END), p.ten
+              Sort Method: quicksort  Memory: 25kB
+              Buffers: shared hit=16 read=3
+              ->  Nested Loop  (cost=8.80..13.37 rows=1 width=162) (actual time=0.166..0.166 rows=0 loops=1)
+                    Buffers: shared hit=16 read=3
+                    ->  CTE Scan on tham_so t_3  (cost=0.00..0.03 rows=1 width=32) (actual time=0.001..0.001 rows=1 loops=1)
+                          Filter: (length(kw) >= 2)
+                    ->  Bitmap Heap Scan on doi_tac p  (cost=8.80..13.33 rows=1 width=74) (actual time=0.162..0.163 rows=0 loops=1)
+                          Recheck Cond: (public.f_unaccent(((((COALESCE(ma, ''::text) || ' '::text) || COALESCE(ten, ''::text)) || ' '::text) || COALESCE(dien_thoai, ''::text))) ~~* (('%'::text || public.f_unaccent(t_3.kw)) || '%'::text))
+                          Buffers: shared hit=16 read=3
+                          ->  Bitmap Index Scan on idx_doi_tac_tim_kiem  (cost=0.00..8.80 rows=1 width=0) (actual time=0.045..0.045 rows=0 loops=1)
+                                Index Cond: (public.f_unaccent(((((COALESCE(ma, ''::text) || ' '::text) || COALESCE(ten, ''::text)) || ' '::text) || COALESCE(dien_thoai, ''::text))) ~~* (('%'::text || public.f_unaccent(t_3.kw)) || '%'::text))
+                                Buffers: shared hit=16 read=3
+NOTICE:  duration: 214.323 ms  plan:
+Query Text: select count(*) from public.tim_kiem_toan_cuc('HD' || to_char('2026-10-09'::date - 3, 'YYMMDD') || '-04', 5);
+Aggregate  (cost=12.76..12.77 rows=1 width=8) (actual time=214.320..214.320 rows=1 loops=1)
+  Buffers: shared hit=5029 read=6277
+  ->  Function Scan on tim_kiem_toan_cuc  (cost=0.26..10.26 rows=1000 width=0) (actual time=214.315..214.316 rows=5 loops=1)
+        Buffers: shared hit=5029 read=6277
+ count 
+-------
+     5
+(1 row)
+
+Time: 214.666 ms
+RESET
+Time: 0.081 ms
+=== CASE: tim_kiem_so_dh ===
+SET
+Time: 0.101 ms
+NOTICE:  duration: 0.001 ms  plan:
+Query Text: 
+  select extensions.unaccent('extensions.unaccent'::regdictionary, $1);
+
+Query Parameters: $1 = 'DH261006-04'
+Result  (cost=0.00..0.01 rows=1 width=32) (actual time=0.001..0.001 rows=1 loops=1)
+NOTICE:  duration: 0.011 ms  plan:
+Query Text: 
+  select nd.vai_tro
+  from public.nguoi_dung nd
+  where nd.id = auth.uid()
+    and nd.dang_hoat_dong
+    and nd.vai_tro::text = (auth.jwt() ->> 'vai_tro');
+
+Index Scan using nguoi_dung_pkey on nguoi_dung nd  (cost=0.17..8.21 rows=1 width=4) (actual time=0.011..0.011 rows=1 loops=1)
+  Index Cond: (id = (COALESCE(NULLIF(current_setting('request.jwt.claim.sub'::text, true), ''::text), ((NULLIF(current_setting('request.jwt.claims'::text, true), ''::text))::jsonb ->> 'sub'::text)))::uuid)
+  Filter: (dang_hoat_dong AND ((vai_tro)::text = ((COALESCE(NULLIF(current_setting('request.jwt.claim'::text, true), ''::text), NULLIF(current_setting('request.jwt.claims'::text, true), ''::text)))::jsonb ->> 'vai_tro'::text)))
+  Buffers: shared hit=2
+NOTICE:  duration: 0.003 ms  plan:
+Query Text: 
+  select extensions.unaccent('extensions.unaccent'::regdictionary, $1);
+
+Query Parameters: $1 = 'DH261006-04'
+Result  (cost=0.00..0.01 rows=1 width=32) (actual time=0.002..0.002 rows=1 loops=1)
+NOTICE:  duration: 193.434 ms  plan:
+Query Text: 
+  with tham_so as (
+    select nullif(trim(coalesce(p_tu_khoa, '')), '') as kw,
+           least(greatest(coalesce(p_gioi_han, 5), 1), 10) as gh
+  ),
+  sp as (
+    select 'san_pham'::text as loai, s.id as id, s.ma_hang as nhan,
+           (s.ten_hang || case when s.dang_kinh_doanh then '' else ' (ngừng KD)' end) as phu,
+           null::text as loai_ct, null::text as trang_thai,
+           (case when lower(s.ma_hang) = lower(t.kw) then 0
+                 when lower(s.ma_hang) like lower(t.kw) || '%' then 1
+                 else 2 end) as xep_hang
+    from public.san_pham s, tham_so t
+    where length(t.kw) >= 2
+      and public.f_unaccent(coalesce(s.ma_hang, '') || ' ' || coalesce(s.ten_hang, ''))
+          ilike '%' || public.f_unaccent(t.kw) || '%'
+    order by 7, s.ma_hang
+    limit (select gh from tham_so)
+  ),
+  ct as (
+    select 'chung_tu'::text as loai, c.id as id, c.so_ct as nhan,
+           to_char(c.ngay_ct, 'DD/MM/YYYY') as phu,
+           c.loai_ct::text as loai_ct, c.trang_thai::text as trang_thai,
+           (case when lower(c.so_ct) = lower(t.kw) then 0 else 1 end) as xep_hang
+    from public.chung_tu c, tham_so t
+    where length(t.kw) >= 2
+      and c.loai_ct in ('NHAP', 'XUAT', 'TRA_NCC', 'TRA_KHACH', 'KIEM_KE')
+      and c.so_ct ilike '%' || t.kw || '%'
+    order by 7, c.ngay_ct desc, c.so_ct desc
+    limit (select gh from tham_so)
+  ),
+  dh as (
+    select 'don_dat'::text as loai, d.id as id, d.so_dh as nhan,
+           to_char(d.ngay_dh, 'DD/MM/YYYY') as phu,
+           null::text as loai_ct, d.trang_thai::text as trang_thai,
+           (case when lower(d.so_dh) = lower(t.kw) then 0 else 1 end) as xep_hang
+    from public.don_dat_hang d, tham_so t
+    where length(t.kw) >= 2
+      and d.so_dh ilike '%' || t.kw || '%'
+    order by 7, d.ngay_dh desc, d.so_dh desc
+    limit (select gh from tham_so)
+  ),
+  dt as (
+    select 'doi_tac'::text as loai, p.id as id, p.ten as nhan,
+           concat_ws(' · ', p.ma, p.dien_thoai) as phu,
+           null::text as loai_ct, null::text as trang_thai,
+           (case when lower(p.ma) = lower(t.kw) then 0 else 1 end) as xep_hang
+    from public.doi_tac p, tham_so t
+    where length(t.kw) >= 2
+      and public.f_unaccent(coalesce(p.ma, '') || ' ' || coalesce(p.ten, '') || ' ' || coalesce(p.dien_thoai, ''))
+          ilike '%' || public.f_unaccent(t.kw) || '%'
+    order by 7, p.ten
+    limit (select gh from tham_so)
+  )
+  select * from sp
+  union all select * from ct
+  union all select * from dh
+  union all select * from dt
+
+Query Parameters: $1 = 'DH261006-04', $2 = '5'
+Append  (cost=86.37..70248.08 rows=89 width=167) (actual time=193.272..193.427 rows=5 loops=1)
+  Buffers: shared hit=4785 read=6177
+  CTE tham_so
+    ->  Result  (cost=0.00..0.02 rows=1 width=36) (actual time=0.002..0.002 rows=1 loops=1)
+  ->  Limit  (cost=86.35..86.35 rows=2 width=159) (actual time=0.060..0.062 rows=0 loops=1)
+        Buffers: shared hit=23
+        InitPlan 2
+          ->  CTE Scan on tham_so  (cost=0.00..0.02 rows=1 width=4) (actual time=0.003..0.003 rows=1 loops=1)
+        ->  Sort  (cost=86.33..86.37 rows=17 width=159) (actual time=0.057..0.058 rows=0 loops=1)
+              Sort Key: (CASE WHEN (lower(s.ma_hang) = lower(t.kw)) THEN 0 WHEN (lower(s.ma_hang) ~~ (lower(t.kw) || '%'::text)) THEN 1 ELSE 2 END), s.ma_hang
+              Sort Method: quicksort  Memory: 25kB
+              Buffers: shared hit=23
+              ->  Nested Loop  (cost=13.15..85.98 rows=17 width=159) (actual time=0.056..0.056 rows=0 loops=1)
+                    Buffers: shared hit=23
+                    ->  CTE Scan on tham_so t  (cost=0.00..0.03 rows=1 width=32) (actual time=0.001..0.001 rows=1 loops=1)
+                          Filter: (length(kw) >= 2)
+                    ->  Bitmap Heap Scan on san_pham s  (cost=13.15..85.44 rows=17 width=56) (actual time=0.054..0.055 rows=0 loops=1)
+                          Recheck Cond: (public.f_unaccent(((COALESCE(ma_hang, ''::text) || ' '::text) || COALESCE(ten_hang, ''::text))) ~~* (('%'::text || public.f_unaccent(t.kw)) || '%'::text))
+                          Buffers: shared hit=23
+                          ->  Bitmap Index Scan on idx_san_pham_tim_kiem  (cost=0.00..13.15 rows=17 width=0) (actual time=0.026..0.026 rows=0 loops=1)
+                                Index Cond: (public.f_unaccent(((COALESCE(ma_hang, ''::text) || ' '::text) || COALESCE(ten_hang, ''::text))) ~~* (('%'::text || public.f_unaccent(t.kw)) || '%'::text))
+                                Buffers: shared hit=23
+  ->  Subquery Scan on ct  (cost=60735.74..60735.77 rows=2 width=167) (actual time=105.022..105.025 rows=0 loops=1)
+        Buffers: shared hit=4615 read=1570
+        ->  Limit  (cost=60735.74..60735.75 rows=2 width=171) (actual time=105.021..105.024 rows=0 loops=1)
+              Buffers: shared hit=4615 read=1570
+              InitPlan 3
+                ->  CTE Scan on tham_so tham_so_1  (cost=0.00..0.02 rows=1 width=4) (actual time=0.000..0.001 rows=1 loops=1)
+              InitPlan 4
+                ->  Result  (cost=0.00..0.26 rows=1 width=4) (actual time=0.158..0.158 rows=1 loops=1)
+                      Buffers: shared hit=3
+              InitPlan 5
+                ->  Result  (cost=0.00..0.26 rows=1 width=4) (never executed)
+              InitPlan 6
+                ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+              InitPlan 7
+                ->  Result  (cost=0.00..0.26 rows=1 width=32) (never executed)
+              ->  Sort  (cost=60734.68..60734.73 rows=18 width=171) (actual time=105.020..105.021 rows=0 loops=1)
+                    Sort Key: (CASE WHEN (lower(c.so_ct) = lower(t_1.kw)) THEN 0 ELSE 1 END), c.ngay_ct DESC, c.so_ct DESC
+                    Sort Method: quicksort  Memory: 25kB
+                    Buffers: shared hit=4615 read=1570
+                    ->  Nested Loop  (cost=0.00..60734.30 rows=18 width=171) (actual time=105.016..105.017 rows=0 loops=1)
+                          Join Filter: (c.so_ct ~~* (('%'::text || t_1.kw) || '%'::text))
+                          Rows Removed by Join Filter: 183094
+                          Buffers: shared hit=4615 read=1570
+                          ->  CTE Scan on tham_so t_1  (cost=0.00..0.03 rows=1 width=32) (actual time=0.000..0.001 rows=1 loops=1)
+                                Filter: (length(kw) >= 2)
+                          ->  Seq Scan on chung_tu c  (cost=0.00..60670.02 rows=3649 width=47) (actual time=0.170..22.830 rows=183094 loops=1)
+                                Filter: ((((InitPlan 4).col1 = ANY ('{quan_ly,van_phong,chi_xem}'::public.vai_tro[])) OR (((InitPlan 5).col1 = 'thu_kho'::public.vai_tro) AND ((kho_id = ANY ((InitPlan 6).col1)) OR (kho_den_id = ANY ((InitPlan 7).col1)) OR public.phieu_co_dong_thuoc_kho_hien_tai(id)))) AND (loai_ct = ANY ('{NHAP,XUAT,TRA_NCC,TRA_KHACH,KIEM_KE}'::public.loai_ct[])))
+                                Rows Removed by Filter: 60
+                                Buffers: shared hit=4615 read=1570
+  ->  Subquery Scan on dh  (cost=9411.04..9412.09 rows=84 width=167) (actual time=88.188..88.191 rows=5 loops=1)
+        Buffers: shared hit=128 read=4607
+        ->  Limit  (cost=9411.04..9411.25 rows=84 width=171) (actual time=88.186..88.187 rows=5 loops=1)
+              Buffers: shared hit=128 read=4607
+              InitPlan 8
+                ->  CTE Scan on tham_so tham_so_2  (cost=0.00..0.02 rows=1 width=4) (actual time=0.001..0.001 rows=1 loops=1)
+              ->  Sort  (cost=9411.02..9413.12 rows=840 width=171) (actual time=88.182..88.182 rows=5 loops=1)
+                    Sort Key: (CASE WHEN (lower(d.so_dh) = lower(t_2.kw)) THEN 0 ELSE 1 END), d.ngay_dh DESC, d.so_dh DESC
+                    Sort Method: quicksort  Memory: 26kB
+                    Buffers: shared hit=128 read=4607
+                    ->  Nested Loop  (cost=0.00..9370.22 rows=840 width=171) (actual time=15.738..88.157 rows=10 loops=1)
+                          Join Filter: (d.so_dh ~~* (('%'::text || t_2.kw) || '%'::text))
+                          Rows Removed by Join Filter: 168008
+                          Buffers: shared hit=128 read=4607
+                          ->  CTE Scan on tham_so t_2  (cost=0.00..0.03 rows=1 width=32) (actual time=0.001..0.003 rows=1 loops=1)
+                                Filter: (length(kw) >= 2)
+                          ->  Seq Scan on don_dat_hang d  (cost=0.00..6415.18 rows=168018 width=43) (actual time=0.014..13.224 rows=168018 loops=1)
+                                Buffers: shared hit=128 read=4607
+  ->  Limit  (cost=13.40..13.41 rows=1 width=162) (actual time=0.146..0.146 rows=0 loops=1)
+        Buffers: shared hit=19
+        InitPlan 9
+          ->  CTE Scan on tham_so tham_so_3  (cost=0.00..0.02 rows=1 width=4) (actual time=0.000..0.001 rows=1 loops=1)
+        ->  Sort  (cost=13.38..13.39 rows=1 width=162) (actual time=0.143..0.144 rows=0 loops=1)
+              Sort Key: (CASE WHEN (lower(p.ma) = lower(t_3.kw)) THEN 0 ELSE 1 END), p.ten
+              Sort Method: quicksort  Memory: 25kB
+              Buffers: shared hit=19
+              ->  Nested Loop  (cost=8.80..13.37 rows=1 width=162) (actual time=0.136..0.137 rows=0 loops=1)
+                    Buffers: shared hit=19
+                    ->  CTE Scan on tham_so t_3  (cost=0.00..0.03 rows=1 width=32) (actual time=0.001..0.002 rows=1 loops=1)
+                          Filter: (length(kw) >= 2)
+                    ->  Bitmap Heap Scan on doi_tac p  (cost=8.80..13.33 rows=1 width=74) (actual time=0.133..0.133 rows=0 loops=1)
+                          Recheck Cond: (public.f_unaccent(((((COALESCE(ma, ''::text) || ' '::text) || COALESCE(ten, ''::text)) || ' '::text) || COALESCE(dien_thoai, ''::text))) ~~* (('%'::text || public.f_unaccent(t_3.kw)) || '%'::text))
+                          Buffers: shared hit=19
+                          ->  Bitmap Index Scan on idx_doi_tac_tim_kiem  (cost=0.00..8.80 rows=1 width=0) (actual time=0.018..0.018 rows=0 loops=1)
+                                Index Cond: (public.f_unaccent(((((COALESCE(ma, ''::text) || ' '::text) || COALESCE(ten, ''::text)) || ' '::text) || COALESCE(dien_thoai, ''::text))) ~~* (('%'::text || public.f_unaccent(t_3.kw)) || '%'::text))
+                                Buffers: shared hit=19
+NOTICE:  duration: 194.176 ms  plan:
+Query Text: select count(*) from public.tim_kiem_toan_cuc('DH' || to_char('2026-10-09'::date - 3, 'YYMMDD') || '-04', 5);
+Aggregate  (cost=12.76..12.77 rows=1 width=8) (actual time=194.161..194.161 rows=1 loops=1)
+  Buffers: shared hit=4789 read=6177
+  ->  Function Scan on tim_kiem_toan_cuc  (cost=0.26..10.26 rows=1000 width=0) (actual time=194.157..194.157 rows=5 loops=1)
+        Buffers: shared hit=4789 read=6177
+ count 
+-------
+     5
+(1 row)
+
+Time: 194.440 ms
+RESET
+Time: 0.128 ms
+=== CASE: nhap_xuat_theo_ky_thang ===
+SET
+Time: 0.097 ms
+NOTICE:  duration: 0.007 ms  plan:
+Query Text: (select auth.uid())
+Result  (cost=0.03..0.04 rows=1 width=16) (actual time=0.006..0.006 rows=1 loops=1)
+  InitPlan 1
+    ->  Result  (cost=0.00..0.03 rows=1 width=16) (actual time=0.006..0.006 rows=1 loops=1)
+NOTICE:  duration: 0.005 ms  plan:
+Query Text: select nd.vai_tro            from public.nguoi_dung nd where nd.id = v_uid and nd.dang_hoat_dong
+Index Scan using nguoi_dung_pkey on nguoi_dung nd  (cost=0.15..8.17 rows=1 width=4) (actual time=0.004..0.004 rows=1 loops=1)
+  Index Cond: (id = '66820561-a02a-4681-9303-f40b86ea9a36'::uuid)
+  Filter: dang_hoat_dong
+  Buffers: shared hit=2
+NOTICE:  duration: 0.273 ms  plan:
+Query Text: 
+  select public.co_quyen('xem_phan_tich');
+
+Result  (cost=0.00..0.26 rows=1 width=1) (actual time=0.272..0.272 rows=1 loops=1)
+  Buffers: shared hit=7 read=1
+ count 
+-------
+     9
+(1 row)
+
+Time: 91.569 ms
+NOTICE:  duration: 90.171 ms  plan:
+Query Text: with mv as (
+    select (case p_buoc
+              when 'ngay' then (m.ngay at time zone 'Asia/Ho_Chi_Minh')::date
+              when 'tuan' then date_trunc('week', (m.ngay at time zone 'Asia/Ho_Chi_Minh'))::date
+              else date_trunc('month', (m.ngay at time zone 'Asia/Ho_Chi_Minh'))::date
+            end) as ky,
+           m.so_luong as sl,
+           ct.id as ct_id,
+           ct.loai_ct,
+           false as noi_bo
+    from public.kho_movement m
+    join public.chung_tu ct on ct.id = m.chung_tu_id
+    where ct.trang_thai <> 'DA_HUY'
+      and m.la_but_toan_dao = false
+      and ct.loai_ct in ('NHAP', 'XUAT')
+      and (p_kho_id is null or m.kho_id = p_kho_id)
+      and (p_san_pham_ids is null or m.san_pham_id = any(p_san_pham_ids))
+      and (m.ngay at time zone 'Asia/Ho_Chi_Minh')::date between p_tu and p_den
+  )
+  select mv.ky,
+         coalesce(sum(mv.sl) filter (where mv.loai_ct = 'NHAP'), 0),
+         coalesce(-sum(mv.sl) filter (where mv.loai_ct = 'XUAT' and not mv.noi_bo), 0),
+         coalesce(-sum(mv.sl) filter (where mv.loai_ct = 'XUAT' and mv.noi_bo), 0),
+         count(distinct mv.ct_id) filter (where mv.loai_ct = 'NHAP'),
+         count(distinct mv.ct_id) filter (where mv.loai_ct = 'XUAT' and not mv.noi_bo)
+  from mv
+  group by mv.ky
+  order by mv.ky
+GroupAggregate  (cost=37299.42..38044.77 rows=1753 width=116) (actual time=87.876..90.166 rows=9 loops=1)
+  Group Key: (((m.ngay AT TIME ZONE 'Asia/Ho_Chi_Minh'::text))::date)
+  Buffers: shared hit=13464 read=10264
+  ->  Gather Merge  (cost=37299.42..37873.37 rows=4928 width=29) (actual time=87.763..89.717 rows=4704 loops=1)
+        Workers Planned: 2
+        Workers Launched: 2
+        Buffers: shared hit=13464 read=10264
+        ->  Sort  (cost=36299.40..36304.53 rows=2053 width=29) (actual time=85.523..85.566 rows=1568 loops=3)
+              Sort Key: (((m.ngay AT TIME ZONE 'Asia/Ho_Chi_Minh'::text))::date), ct.id
+              Sort Method: quicksort  Memory: 104kB
+              Buffers: shared hit=13464 read=10264
+              Worker 0:  Sort Method: quicksort  Memory: 133kB
+              Worker 1:  Sort Method: quicksort  Memory: 129kB
+              ->  Parallel Hash Join  (cost=8268.09..36186.45 rows=2053 width=29) (actual time=20.372..85.024 rows=1568 loops=3)
+                    Hash Cond: (m.chung_tu_id = ct.id)
+                    Buffers: shared hit=13376 read=10262
+                    ->  Parallel Seq Scan on kho_movement m  (cost=0.00..27902.62 rows=2081 width=29) (actual time=3.858..67.931 rows=1595 loops=3)
+                          Filter: ((NOT la_but_toan_dao) AND (((ngay AT TIME ZONE 'Asia/Ho_Chi_Minh'::text))::date >= '2026-10-01'::date) AND (((ngay AT TIME ZONE 'Asia/Ho_Chi_Minh'::text))::date <= '2026-10-09'::date))
+                          Rows Removed by Filter: 334681
+                          Buffers: shared hit=8671 read=8723
+                    ->  Parallel Hash  (cost=7326.71..7326.71 rows=75311 width=20) (actual time=16.131..16.132 rows=60257 loops=3)
+                          Buckets: 262144  Batches: 1  Memory Usage: 11968kB
+                          Buffers: shared hit=4644 read=1538
+                          ->  Parallel Seq Scan on chung_tu ct  (cost=0.00..7326.71 rows=75311 width=20) (actual time=0.007..8.129 rows=60257 loops=3)
+                                Filter: ((trang_thai <> 'DA_HUY'::public.trang_thai_ct) AND (loai_ct = ANY ('{NHAP,XUAT}'::public.loai_ct[])))
+                                Rows Removed by Filter: 794
+                                Buffers: shared hit=4644 read=1538
+NOTICE:  duration: 91.387 ms  plan:
+Query Text: select count(*) from public.nhap_xuat_theo_ky(date_trunc('month', '2026-10-09'::date)::date, '2026-10-09'::date, 'ngay');
+Aggregate  (cost=12.76..12.77 rows=1 width=8) (actual time=91.385..91.385 rows=1 loops=1)
+  Buffers: shared hit=13678 read=10284
+  ->  Function Scan on nhap_xuat_theo_ky  (cost=0.26..10.26 rows=1000 width=0) (actual time=91.382..91.382 rows=9 loops=1)
+        Buffers: shared hit=13678 read=10284
+RESET
+Time: 0.082 ms
+=== CASE: phan_tich_theo_ky_thang ===
+SET
+Time: 0.047 ms
+NOTICE:  duration: 0.007 ms  plan:
+Query Text: (select auth.uid())
+Result  (cost=0.03..0.04 rows=1 width=16) (actual time=0.007..0.007 rows=1 loops=1)
+  InitPlan 1
+    ->  Result  (cost=0.00..0.03 rows=1 width=16) (actual time=0.006..0.006 rows=1 loops=1)
+NOTICE:  duration: 0.004 ms  plan:
+Query Text: select nd.vai_tro            from public.nguoi_dung nd where nd.id = v_uid and nd.dang_hoat_dong
+Index Scan using nguoi_dung_pkey on nguoi_dung nd  (cost=0.15..8.17 rows=1 width=4) (actual time=0.004..0.004 rows=1 loops=1)
+  Index Cond: (id = '66820561-a02a-4681-9303-f40b86ea9a36'::uuid)
+  Filter: dang_hoat_dong
+  Buffers: shared hit=2
+NOTICE:  duration: 0.110 ms  plan:
+Query Text: 
+  select public.co_quyen('xem_phan_tich');
+
+Result  (cost=0.00..0.26 rows=1 width=1) (actual time=0.109..0.109 rows=1 loops=1)
+  Buffers: shared hit=3
+NOTICE:  duration: 622.951 ms  plan:
+Query Text: (
+  with mv as (
+    select m.san_pham_id as sp_id,
+           (m.ngay at time zone 'Asia/Ho_Chi_Minh')::date as ngay,
+           m.so_luong as sl,
+           ct.loai_ct,
+           -- 0101: hóa đơn giao qua nhân viên cũng là bán — không còn xuất nội bộ.
+           false as noi_bo
+    from public.kho_movement m
+    join public.chung_tu ct on ct.id = m.chung_tu_id
+    where ct.trang_thai <> 'DA_HUY'
+      and m.la_but_toan_dao = false
+      and (p_kho_id is null or m.kho_id = p_kho_id)
+      and (m.ngay at time zone 'Asia/Ho_Chi_Minh')::date <= p_den
+  ),
+  gop as (
+    select mv.sp_id,
+           coalesce(sum(mv.sl) filter (where mv.ngay < p_tu), 0) as ton_dau,
+           coalesce(sum(mv.sl) filter (where mv.ngay >= p_tu and mv.loai_ct = 'NHAP'), 0) as nhap,
+           coalesce(-sum(mv.sl) filter (where mv.ngay >= p_tu and mv.loai_ct = 'XUAT' and not mv.noi_bo), 0) as xuat_ban,
+           coalesce(-sum(mv.sl) filter (where mv.ngay >= p_tu and mv.loai_ct = 'XUAT' and mv.noi_bo), 0) as xuat_noi_bo,
+           coalesce(sum(mv.sl) filter (where mv.ngay >= p_tu and mv.loai_ct in ('TRA_KHACH', 'TRA_NCC')), 0) as tra,
+           coalesce(sum(mv.sl) filter (where mv.ngay >= p_tu
+                    and mv.loai_ct in ('DIEU_CHINH', 'KIEM_KE', 'CHUYEN_KHO')), 0) as dieu_chinh,
+           coalesce(sum(mv.sl), 0) as ton_cuoi,
+           coalesce(sum(mv.sl) filter (where mv.ngay between v_tu_truoc and p_tu - 1 and mv.loai_ct = 'NHAP'), 0) as nhap_truoc,
+           coalesce(-sum(mv.sl) filter (where mv.ngay between v_tu_truoc and p_tu - 1
+                    and mv.loai_ct = 'XUAT' and not mv.noi_bo), 0) as xuat_ban_truoc
+    from mv
+    group by mv.sp_id
+  )
+  select coalesce(jsonb_agg(jsonb_build_object(
+           'san_pham_id', sp.id, 'ma_hang', sp.ma_hang, 'ten_hang', sp.ten_hang,
+           'nhom_hang_id', sp.nhom_hang_id, 'ten_nhom_hang', nh.ten, 'loai_hang', sp.loai_hang,
+           'dang_kinh_doanh', sp.dang_kinh_doanh, 'ten_dvt', dvt.ten,
+           'hang_xe', sp.hang_xe, 'dong_xe', sp.dong_xe, 'xe_dung_chung', sp.xe_dung_chung,
+           'linh_kien', sp.linh_kien, 'cong_doan_id', sp.cong_doan_id, 'ten_cong_doan', cd.ten,
+           'ton_dau', coalesce(g.ton_dau, 0), 'nhap', coalesce(g.nhap, 0),
+           'xuat_ban', coalesce(g.xuat_ban, 0), 'xuat_noi_bo', coalesce(g.xuat_noi_bo, 0),
+           'tra', coalesce(g.tra, 0), 'dieu_chinh', coalesce(g.dieu_chinh, 0),
+           'ton_cuoi', coalesce(g.ton_cuoi, 0),
+           'nhap_ky_truoc', coalesce(g.nhap_truoc, 0), 'xuat_ban_ky_truoc', coalesce(g.xuat_ban_truoc, 0)
+         ) order by sp.ma_hang), '[]'::jsonb)
+  from public.san_pham sp
+  left join gop g on g.sp_id = sp.id
+  left join public.nhom_hang nh on nh.id = sp.nhom_hang_id
+  left join public.don_vi_tinh dvt on dvt.id = sp.dvt_id
+  left join public.cong_doan cd on cd.id = sp.cong_doan_id
+  -- Mã đang kinh doanh, hoặc đã ngừng nhưng còn số trong khoảng thời gian.
+  where sp.dang_kinh_doanh or g.sp_id is not null
+  )
+Result  (cost=53023.65..53023.66 rows=1 width=32) (actual time=621.386..622.008 rows=1 loops=1)
+  Buffers: shared hit=14667 read=11027
+  InitPlan 1
+    ->  Aggregate  (cost=53023.64..53023.65 rows=1 width=32) (actual time=620.583..621.204 rows=1 loops=1)
+          Buffers: shared hit=14667 read=11027
+          ->  Sort  (cost=52998.82..53007.09 rows=3310 width=563) (actual time=584.009..584.856 rows=3311 loops=1)
+                Sort Key: sp.ma_hang
+                Sort Method: quicksort  Memory: 732kB
+                Buffers: shared hit=14667 read=11027
+                ->  Hash Left Join  (cost=50630.82..52805.30 rows=3310 width=563) (actual time=567.277..581.768 rows=3311 loops=1)
+                      Hash Cond: (sp.cong_doan_id = cd.id)
+                      Buffers: shared hit=14667 read=11027
+                      ->  Hash Left Join  (cost=50629.68..52789.34 rows=3310 width=531) (actual time=567.249..581.280 rows=3311 loops=1)
+                            Hash Cond: (sp.dvt_id = dvt.id)
+                            Buffers: shared hit=14667 read=11026
+                            ->  Hash Left Join  (cost=50605.06..52755.97 rows=3310 width=515) (actual time=567.189..580.851 rows=3311 loops=1)
+                                  Hash Cond: (sp.nhom_hang_id = nh.id)
+                                  Buffers: shared hit=14667 read=11025
+                                  ->  Hash Left Join  (cost=50601.03..52742.84 rows=3310 width=501) (actual time=567.104..580.316 rows=3311 loops=1)
+                                        Hash Cond: (sp.id = g.sp_id)
+                                        Filter: (sp.dang_kinh_doanh OR (g.sp_id IS NOT NULL))
+                                        Buffers: shared hit=14666 read=11024
+                                        ->  Seq Scan on san_pham sp  (cost=0.00..2133.11 rows=3311 width=213) (actual time=0.019..11.710 rows=3311 loops=1)
+                                              Buffers: shared hit=1223 read=877
+                                        ->  Hash  (cost=50562.84..50562.84 rows=3055 width=304) (actual time=567.070..567.684 rows=3301 loops=1)
+                                              Buckets: 4096  Batches: 1  Memory Usage: 296kB
+                                              Buffers: shared hit=13443 read=10147
+                                              ->  Subquery Scan on g  (cost=49406.99..50562.84 rows=3055 width=304) (actual time=560.012..567.041 rows=3301 loops=1)
+                                                    Buffers: shared hit=13443 read=10147
+                                                    ->  Finalize GroupAggregate  (cost=49406.99..50532.29 rows=3055 width=304) (actual time=560.011..566.844 rows=3301 loops=1)
+                                                          Group Key: m.san_pham_id
+                                                          Buffers: shared hit=13443 read=10147
+                                                          ->  Gather Merge  (cost=49406.99..50119.87 rows=6110 width=304) (actual time=559.990..561.846 rows=9682 loops=1)
+                                                                Workers Planned: 2
+                                                                Workers Launched: 2
+                                                                Buffers: shared hit=13443 read=10147
+                                                                ->  Sort  (cost=48406.96..48414.60 rows=3055 width=304) (actual time=558.019..558.247 rows=3227 loops=3)
+                                                                      Sort Key: m.san_pham_id
+                                                                      Sort Method: quicksort  Memory: 757kB
+                                                                      Buffers: shared hit=13443 read=10147
+                                                                      Worker 0:  Sort Method: quicksort  Memory: 773kB
+                                                                      Worker 1:  Sort Method: quicksort  Memory: 765kB
+                                                                      ->  Partial HashAggregate  (cost=48130.84..48230.12 rows=3055 width=304) (actual time=555.727..557.049 rows=3227 loops=3)
+                                                                            Group Key: m.san_pham_id
+                                                                            Batches: 1  Memory Usage: 3697kB
+                                                                            Buffers: shared hit=13429 read=10147
+                                                                            Worker 0:  Batches: 1  Memory Usage: 3697kB
+                                                                            Worker 1:  Batches: 1  Memory Usage: 3697kB
+                                                                            ->  Parallel Hash Join  (cost=8080.37..33194.57 rows=137345 width=33) (actual time=15.963..157.425 rows=330042 loops=3)
+                                                                                  Hash Cond: (m.chung_tu_id = ct.id)
+                                                                                  Buffers: shared hit=13429 read=10147
+                                                                                  ->  Parallel Seq Scan on kho_movement m  (cost=0.00..24750.04 rows=138723 width=45) (actual time=0.099..90.543 rows=333159 loops=3)
+                                                                                        Filter: ((NOT la_but_toan_dao) AND (((ngay AT TIME ZONE 'Asia/Ho_Chi_Minh'::text))::date <= '2026-10-09'::date))
+                                                                                        Rows Removed by Filter: 3117
+                                                                                        Buffers: shared hit=8689 read=8705
+                                                                                  ->  Parallel Hash  (cost=7135.92..7135.92 rows=75556 width=20) (actual time=15.651..15.651 rows=60458 loops=3)
+                                                                                        Buckets: 262144  Batches: 1  Memory Usage: 12032kB
+                                                                                        Buffers: shared hit=4740 read=1442
+                                                                                        ->  Parallel Seq Scan on chung_tu ct  (cost=0.00..7135.92 rows=75556 width=20) (actual time=0.006..8.344 rows=60458 loops=3)
+                                                                                              Filter: (trang_thai <> 'DA_HUY'::public.trang_thai_ct)
+                                                                                              Rows Removed by Filter: 593
+                                                                                              Buffers: shared hit=4740 read=1442
+                                  ->  Hash  (cost=2.90..2.90 rows=90 width=30) (actual time=0.075..0.075 rows=90 loops=1)
+                                        Buckets: 1024  Batches: 1  Memory Usage: 14kB
+                                        Buffers: shared hit=1 read=1
+                                        ->  Seq Scan on nhom_hang nh  (cost=0.00..2.90 rows=90 width=30) (actual time=0.042..0.061 rows=90 loops=1)
+                                              Buffers: shared hit=1 read=1
+                            ->  Hash  (cost=16.50..16.50 rows=650 width=48) (actual time=0.043..0.043 rows=7 loops=1)
+                                  Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                  Buffers: shared read=1
+                                  ->  Seq Scan on don_vi_tinh dvt  (cost=0.00..16.50 rows=650 width=48) (actual time=0.040..0.041 rows=7 loops=1)
+                                        Buffers: shared read=1
+                      ->  Hash  (cost=1.06..1.06 rows=6 width=48) (actual time=0.016..0.017 rows=23 loops=1)
+                            Buckets: 1024  Batches: 1  Memory Usage: 10kB
+                            Buffers: shared read=1
+                            ->  Seq Scan on cong_doan cd  (cost=0.00..1.06 rows=6 width=48) (actual time=0.012..0.013 rows=23 loops=1)
+                                  Buffers: shared read=1
+NOTICE:  duration: 625.747 ms  plan:
+Query Text: select jsonb_array_length(public.phan_tich_theo_ky(date_trunc('month', '2026-10-09'::date)::date, '2026-10-09'::date));
+Result  (cost=0.00..0.27 rows=1 width=4) (actual time=625.744..625.744 rows=1 loops=1)
+  Buffers: shared hit=15004 read=11049
+ jsonb_array_length 
+--------------------
+               3311
+(1 row)
+
+Time: 626.128 ms
+RESET
+Time: 0.119 ms
+=== CASE: tong_quan_chi_so ===
+SET
+Time: 0.056 ms
+NOTICE:  duration: 0.007 ms  plan:
+Query Text: (select auth.uid())
+Result  (cost=0.03..0.04 rows=1 width=16) (actual time=0.006..0.007 rows=1 loops=1)
+  InitPlan 1
+    ->  Result  (cost=0.00..0.03 rows=1 width=16) (actual time=0.006..0.006 rows=1 loops=1)
+NOTICE:  duration: 0.006 ms  plan:
+Query Text: select nd.vai_tro            from public.nguoi_dung nd where nd.id = v_uid and nd.dang_hoat_dong
+Index Scan using nguoi_dung_pkey on nguoi_dung nd  (cost=0.15..8.17 rows=1 width=4) (actual time=0.005..0.006 rows=1 loops=1)
+  Index Cond: (id = '66820561-a02a-4681-9303-f40b86ea9a36'::uuid)
+  Filter: dang_hoat_dong
+  Buffers: shared hit=2
+NOTICE:  duration: 0.011 ms  plan:
+Query Text: 
+  select nd.vai_tro
+  from public.nguoi_dung nd
+  where nd.id = auth.uid()
+    and nd.dang_hoat_dong
+    and nd.vai_tro::text = (auth.jwt() ->> 'vai_tro');
+
+Index Scan using nguoi_dung_pkey on nguoi_dung nd  (cost=0.17..8.21 rows=1 width=4) (actual time=0.010..0.010 rows=1 loops=1)
+  Index Cond: (id = (COALESCE(NULLIF(current_setting('request.jwt.claim.sub'::text, true), ''::text), ((NULLIF(current_setting('request.jwt.claims'::text, true), ''::text))::jsonb ->> 'sub'::text)))::uuid)
+  Filter: (dang_hoat_dong AND ((vai_tro)::text = ((COALESCE(NULLIF(current_setting('request.jwt.claim'::text, true), ''::text), NULLIF(current_setting('request.jwt.claims'::text, true), ''::text)))::jsonb ->> 'vai_tro'::text)))
+  Buffers: shared hit=2
+NOTICE:  duration: 0.117 ms  plan:
+Query Text: 
+  select coalesce((select public.vai_tro_hien_tai())::text in ('quan_ly','van_phong'), false);
+
+Result  (cost=0.26..0.28 rows=1 width=1) (actual time=0.116..0.116 rows=1 loops=1)
+  Buffers: shared hit=3
+  InitPlan 1
+    ->  Result  (cost=0.00..0.26 rows=1 width=4) (actual time=0.115..0.115 rows=1 loops=1)
+          Buffers: shared hit=3
+NOTICE:  duration: 10.713 ms  plan:
+Query Text: select coalesce(sum(greatest(d.tong, 0)), 0),
+         coalesce(sum(greatest(d.tong, 0) * sp.gia_von), 0)
+                      from (select tk.san_pham_id as d_sp, sum(tk.so_luong) as tong
+        from public.ton_kho tk group by tk.san_pham_id) d
+  join public.san_pham sp on sp.id = d.d_sp
+Aggregate  (cost=2933.63..2933.64 rows=1 width=64) (actual time=10.711..10.712 rows=1 loops=1)
+  Buffers: shared hit=2100 read=569
+  ->  Hash Join  (cost=750.55..2892.36 rows=3301 width=40) (actual time=7.894..10.175 rows=3301 loops=1)
+        Hash Cond: (sp.id = d.d_sp)
+        Buffers: shared hit=2100 read=569
+        ->  Seq Scan on san_pham sp  (cost=0.00..2133.11 rows=3311 width=24) (actual time=0.006..1.805 rows=3311 loops=1)
+              Buffers: shared hit=2100
+        ->  Hash  (cost=709.29..709.29 rows=3301 width=48) (actual time=7.885..7.886 rows=3301 loops=1)
+              Buckets: 4096  Batches: 1  Memory Usage: 203kB
+              Buffers: shared read=569
+              ->  Subquery Scan on d  (cost=635.02..709.29 rows=3301 width=48) (actual time=7.103..7.660 rows=3301 loops=1)
+                    Buffers: shared read=569
+                    ->  HashAggregate  (cost=635.02..676.28 rows=3301 width=48) (actual time=7.103..7.507 rows=3301 loops=1)
+                          Group Key: tk.san_pham_id
+                          Batches: 1  Memory Usage: 1393kB
+                          Buffers: shared read=569
+                          ->  Seq Scan on ton_kho tk  (cost=0.00..613.01 rows=4401 width=21) (actual time=0.019..6.289 rows=4401 loops=1)
+                                Buffers: shared read=569
+NOTICE:  duration: 172.516 ms  plan:
+Query Text: select coalesce(sum(m.so_luong), 0), coalesce(sum(m.so_luong * sp.gia_von), 0)
+                                  from public.kho_movement m
+  join public.san_pham sp on sp.id = m.san_pham_id
+  where (m.ngay at time zone 'Asia/Ho_Chi_Minh')::date > v_t_truoc
+Finalize Aggregate  (cost=29313.24..29313.25 rows=1 width=64) (actual time=172.513..172.514 rows=1 loops=1)
+  Buffers: shared hit=10814 read=8680
+  ->  Gather  (cost=29313.00..29313.21 rows=2 width=64) (actual time=172.509..172.511 rows=1 loops=1)
+        Workers Planned: 2
+        Workers Launched: 0
+        Buffers: shared hit=10814 read=8680
+        ->  Partial Aggregate  (cost=28313.00..28313.01 rows=1 width=64) (actual time=172.509..172.510 rows=1 loops=1)
+              Buffers: shared hit=10814 read=8680
+              ->  Parallel Hash Join  (cost=2143.83..27262.13 rows=140115 width=13) (actual time=1.604..170.938 rows=14137 loops=1)
+                    Hash Cond: (m.san_pham_id = sp.id)
+                    Buffers: shared hit=10814 read=8680
+                    ->  Parallel Seq Scan on kho_movement m  (cost=0.00..24750.04 rows=140115 width=21) (actual time=0.672..167.876 rows=14137 loops=1)
+                          Filter: (((ngay AT TIME ZONE 'Asia/Ho_Chi_Minh'::text))::date > '2026-09-30'::date)
+                          Rows Removed by Filter: 994691
+                          Buffers: shared hit=8714 read=8680
+                    ->  Parallel Hash  (cost=2119.48..2119.48 rows=1948 width=24) (actual time=0.929..0.930 rows=3311 loops=1)
+                          Buckets: 4096  Batches: 1  Memory Usage: 216kB
+                          Buffers: shared hit=2100
+                          ->  Parallel Seq Scan on san_pham sp  (cost=0.00..2119.48 rows=1948 width=24) (actual time=0.003..0.731 rows=3311 loops=1)
+                                Buffers: shared hit=2100
+NOTICE:  duration: 1390.202 ms  plan:
+Query Text: select array_agg(
+           case when v_xem then v_gt - coalesce(b.gt, 0) else v_sl - coalesce(b.sl, 0) end
+           order by s.t)
+                      from generate_series(p_ngay - 29, p_ngay, interval '1 day') as s(t)
+  left join lateral (
+    select sum(m.so_luong) as sl, sum(m.so_luong * sp.gia_von) as gt
+    from public.kho_movement m
+    join public.san_pham sp on sp.id = m.san_pham_id
+    where m.ngay >= ((p_ngay - 28)::timestamp at time zone 'Asia/Ho_Chi_Minh')
+      and (m.ngay at time zone 'Asia/Ho_Chi_Minh')::date > s.t::date
+  ) b on true
+Aggregate  (cost=42334985.96..42334985.97 rows=1 width=32) (actual time=1390.199..1390.200 rows=1 loops=1)
+  Buffers: shared hit=264483 read=259440
+  ->  Sort  (cost=42334978.46..42334980.96 rows=1000 width=40) (actual time=1390.189..1390.191 rows=30 loops=1)
+        Sort Key: s.t
+        Sort Method: quicksort  Memory: 26kB
+        Buffers: shared hit=264483 read=259440
+        ->  Nested Loop Left Join  (cost=42334.90..42334928.63 rows=1000 width=40) (actual time=48.862..1390.140 rows=30 loops=1)
+              Buffers: shared hit=264480 read=259440
+              ->  Function Scan on generate_series s  (cost=0.01..10.01 rows=1000 width=8) (actual time=0.006..0.023 rows=30 loops=1)
+              ->  Aggregate  (cost=42334.89..42334.90 rows=1 width=64) (actual time=46.335..46.335 rows=1 loops=30)
+                    Buffers: shared hit=264480 read=259440
+                    ->  Hash Join  (cost=2174.50..42290.48 rows=8882 width=13) (actual time=1.549..44.694 rows=16814 loops=30)
+                          Hash Cond: (m.san_pham_id = sp.id)
+                          Buffers: shared hit=264480 read=259440
+                          ->  Seq Scan on kho_movement m  (cost=0.00..40092.63 rows=8882 width=21) (actual time=1.502..42.474 rows=16814 loops=30)
+                                Filter: ((ngay >= '2026-09-10 17:00:00+00'::timestamp with time zone) AND (((ngay AT TIME ZONE 'Asia/Ho_Chi_Minh'::text))::date > (s.t)::date))
+                                Rows Removed by Filter: 992014
+                                Buffers: shared hit=262380 read=259440
+                          ->  Hash  (cost=2133.11..2133.11 rows=3311 width=24) (actual time=1.335..1.336 rows=3311 loops=1)
+                                Buckets: 4096  Batches: 1  Memory Usage: 216kB
+                                Buffers: shared hit=2100
+                                ->  Seq Scan on san_pham sp  (cost=0.00..2133.11 rows=3311 width=24) (actual time=0.002..1.118 rows=3311 loops=1)
+                                      Buffers: shared hit=2100
+NOTICE:  duration: 0.996 ms  plan:
+Query Text: select count(*)              from public.san_pham sp where sp.dang_kinh_doanh
+Aggregate  (cost=399.91..399.92 rows=1 width=8) (actual time=0.994..0.995 rows=1 loops=1)
+  Buffers: shared hit=1 read=62
+  ->  Index Only Scan using idx_san_pham_kinh_doanh on san_pham sp  (cost=0.28..391.96 rows=3179 width=0) (actual time=0.138..0.898 rows=3179 loops=1)
+        Heap Fetches: 0
+        Buffers: shared hit=1 read=62
+NOTICE:  duration: 2.525 ms  plan:
+Query Text: select count(*)                 from public.san_pham sp
+  where sp.dang_kinh_doanh
+    and (sp.created_at at time zone 'Asia/Ho_Chi_Minh')::date between date_trunc('month', p_ngay)::date and p_ngay
+Aggregate  (cost=2207.65..2207.66 rows=1 width=8) (actual time=2.524..2.524 rows=1 loops=1)
+  Buffers: shared hit=2100
+  ->  Seq Scan on san_pham sp  (cost=0.00..2207.61 rows=16 width=0) (actual time=0.008..2.423 rows=3179 loops=1)
+        Filter: (dang_kinh_doanh AND (((created_at AT TIME ZONE 'Asia/Ho_Chi_Minh'::text))::date <= '2026-10-09'::date) AND (((created_at AT TIME ZONE 'Asia/Ho_Chi_Minh'::text))::date >= (date_trunc('month'::text, ('2026-10-09'::date)::timestamp with time zone))::date))
+        Rows Removed by Filter: 132
+        Buffers: shared hit=2100
+NOTICE:  duration: 30.239 ms  plan:
+Query Text: select array_agg((select count(*) from public.san_pham sp
+                    where sp.dang_kinh_doanh
+                      and (sp.created_at at time zone 'Asia/Ho_Chi_Minh')::date <= s.t::date) order by s.t)
+                   from generate_series(p_ngay - 29, p_ngay, interval '1 day') as s(t)
+Aggregate  (cost=2168944.84..2168944.85 rows=1 width=32) (actual time=30.238..30.239 rows=1 loops=1)
+  Buffers: shared hit=63000
+  ->  Sort  (cost=59.84..62.34 rows=1000 width=8) (actual time=0.010..0.014 rows=30 loops=1)
+        Sort Key: s.t
+        Sort Method: quicksort  Memory: 25kB
+        ->  Function Scan on generate_series s  (cost=0.01..10.01 rows=1000 width=8) (actual time=0.005..0.006 rows=30 loops=1)
+  SubPlan 1
+    ->  Aggregate  (cost=2168.87..2168.88 rows=1 width=8) (actual time=1.007..1.007 rows=1 loops=30)
+          Buffers: shared hit=63000
+          ->  Seq Scan on san_pham sp  (cost=0.00..2166.22 rows=1060 width=0) (actual time=0.967..1.003 rows=106 loops=30)
+                Filter: (dang_kinh_doanh AND (((created_at AT TIME ZONE 'Asia/Ho_Chi_Minh'::text))::date <= (s.t)::date))
+                Rows Removed by Filter: 3205
+                Buffers: shared hit=63000
+NOTICE:  duration: 2.412 ms  plan:
+Query Text: select round(count(*)::numeric / 30, 1)             from public.chung_tu ct
+  where ct.loai_ct = 'XUAT' and ct.trang_thai = 'HOAN_THANH'
+    and ct.ngay_ct between p_ngay - 30 and p_ngay - 1
+Aggregate  (cost=5230.31..5230.33 rows=1 width=32) (actual time=2.411..2.411 rows=1 loops=1)
+  Buffers: shared hit=57 read=54
+  ->  Bitmap Heap Scan on chung_tu ct  (cost=105.50..5223.11 rows=2880 width=0) (actual time=1.759..2.327 rows=2694 loops=1)
+        Recheck Cond: ((loai_ct = 'XUAT'::public.loai_ct) AND (ngay_ct >= '2026-09-09'::date) AND (ngay_ct <= '2026-10-08'::date))
+        Filter: (trang_thai = 'HOAN_THANH'::public.trang_thai_ct)
+        Rows Removed by Filter: 29
+        Heap Blocks: exact=91
+        Buffers: shared hit=57 read=54
+        ->  Bitmap Index Scan on idx_chung_tu_loai_ngay  (cost=0.00..104.78 rows=2909 width=0) (actual time=1.749..1.749 rows=2723 loops=1)
+              Index Cond: ((loai_ct = 'XUAT'::public.loai_ct) AND (ngay_ct >= '2026-09-09'::date) AND (ngay_ct <= '2026-10-08'::date))
+              Buffers: shared read=20
+NOTICE:  duration: 0.025 ms  plan:
+Query Text: select count(*),
+         count(*) filter (where ct.loai_ct = 'NHAP'),
+         count(*) filter (where ct.loai_ct = 'XUAT'),
+         p_ngay - min((ct.created_at at time zone 'Asia/Ho_Chi_Minh')::date)
+                                                   from public.chung_tu ct
+  where ct.loai_ct in ('NHAP','XUAT','TRA_NCC','TRA_KHACH') and ct.trang_thai = 'NHAP_LIEU'
+Aggregate  (cost=8.29..8.30 rows=1 width=28) (actual time=0.025..0.025 rows=1 loops=1)
+  Buffers: shared hit=5 read=2
+  ->  Index Scan using idx_chung_tu_nhap_lieu on chung_tu ct  (cost=0.25..8.27 rows=1 width=12) (actual time=0.024..0.024 rows=0 loops=1)
+        Filter: (loai_ct = ANY ('{NHAP,XUAT,TRA_NCC,TRA_KHACH}'::public.loai_ct[]))
+        Rows Removed by Filter: 1
+        Buffers: shared hit=5 read=2
+NOTICE:  duration: 710.359 ms  plan:
+Query Text: select array_agg((select count(*) from public.chung_tu ct
+                    where ct.loai_ct in ('NHAP','XUAT','TRA_NCC','TRA_KHACH')
+                      and (ct.created_at at time zone 'Asia/Ho_Chi_Minh')::date = s.t::date) order by s.t)
+                    from generate_series(p_ngay - 13, p_ngay, interval '1 day') as s(t)
+Aggregate  (cost=10763187.34..10763187.35 rows=1 width=32) (actual time=710.356..710.357 rows=1 loops=1)
+  Buffers: shared hit=50834 read=35714
+  ->  Sort  (cost=59.84..62.34 rows=1000 width=8) (actual time=0.006..0.017 rows=14 loops=1)
+        Sort Key: s.t
+        Sort Method: quicksort  Memory: 25kB
+        ->  Function Scan on generate_series s  (cost=0.01..10.01 rows=1000 width=8) (actual time=0.003..0.004 rows=14 loops=1)
+  SubPlan 1
+    ->  Aggregate  (cost=10763.11..10763.12 rows=1 width=8) (actual time=50.733..50.734 rows=1 loops=14)
+          Buffers: shared hit=50834 read=35714
+          ->  Seq Scan on chung_tu ct  (cost=0.00..10760.83 rows=915 width=0) (actual time=7.826..50.726 rows=97 loops=14)
+                Filter: ((loai_ct = ANY ('{NHAP,XUAT,TRA_NCC,TRA_KHACH}'::public.loai_ct[])) AND (((created_at AT TIME ZONE 'Asia/Ho_Chi_Minh'::text))::date = (s.t)::date))
+                Rows Removed by Filter: 183057
+                Buffers: shared hit=50834 read=35714
+NOTICE:  duration: 0.021 ms  plan:
+Query Text: select coalesce(jsonb_agg(jsonb_build_object('ten_kho', x.ten, 'so_ma', x.n) order by x.ten), '[]'::jsonb)
+                from (
+    select k.ten, count(*) as n
+    from public.ton_kho tk
+    join public.kho k on k.id = tk.kho_id
+    join public.san_pham sp on sp.id = tk.san_pham_id
+    where sp.dang_kinh_doanh and tk.so_luong < 0
+    group by k.id, k.ten
+  ) x
+Aggregate  (cost=16.69..16.70 rows=1 width=32) (actual time=0.020..0.020 rows=1 loops=1)
+  Buffers: shared read=1
+  ->  Sort  (cost=16.67..16.68 rows=1 width=40) (actual time=0.019..0.019 rows=0 loops=1)
+        Sort Key: x.ten
+        Sort Method: quicksort  Memory: 25kB
+        Buffers: shared read=1
+        ->  Subquery Scan on x  (cost=0.56..16.66 rows=1 width=40) (actual time=0.014..0.015 rows=0 loops=1)
+              Buffers: shared read=1
+              ->  GroupAggregate  (cost=0.56..16.65 rows=1 width=56) (actual time=0.014..0.014 rows=0 loops=1)
+                    Group Key: k.id
+                    Buffers: shared read=1
+                    ->  Nested Loop  (cost=0.56..16.64 rows=1 width=48) (actual time=0.014..0.014 rows=0 loops=1)
+                          Buffers: shared read=1
+                          ->  Nested Loop  (cost=0.28..12.34 rows=1 width=64) (actual time=0.014..0.014 rows=0 loops=1)
+                                Buffers: shared read=1
+                                ->  Index Only Scan using idx_ton_kho_am on ton_kho tk  (cost=0.12..4.14 rows=1 width=32) (actual time=0.013..0.013 rows=0 loops=1)
+                                      Heap Fetches: 0
+                                      Buffers: shared read=1
+                                ->  Index Scan using kho_pkey on kho k  (cost=0.15..8.17 rows=1 width=48) (never executed)
+                                      Index Cond: (id = tk.kho_id)
+                          ->  Index Only Scan using idx_san_pham_kinh_doanh on san_pham sp  (cost=0.28..4.30 rows=1 width=16) (never executed)
+                                Index Cond: (id = tk.san_pham_id)
+                                Heap Fetches: 0
+NOTICE:  duration: 46.694 ms  plan:
+Query Text: select coalesce(array_agg(y.ma_hang order by y.ma_hang), '{}'::text[])
+                from (
+    select sp.ma_hang
+    from public.san_pham sp
+    left join (select tk.san_pham_id as d_sp, sum(tk.so_luong) as tong
+               from public.ton_kho tk group by tk.san_pham_id) d on d.d_sp = sp.id
+    where sp.dang_kinh_doanh
+      and sp.ton_toi_thieu > 0 and coalesce(d.tong, 0) < sp.ton_toi_thieu
+    order by sp.ma_hang
+    limit 2
+  ) y
+Aggregate  (cost=1084.39..1084.40 rows=1 width=32) (actual time=46.691..46.692 rows=1 loops=1)
+  Buffers: shared hit=3858 read=49
+  ->  Limit  (cost=635.30..1084.39 rows=2 width=11) (actual time=46.689..46.690 rows=0 loops=1)
+        Buffers: shared hit=3858 read=49
+        ->  Nested Loop Left Join  (cost=635.30..34541.59 rows=151 width=11) (actual time=46.688..46.689 rows=0 loops=1)
+              Join Filter: (d.d_sp = sp.id)
+              Rows Removed by Join Filter: 740216
+              Filter: (COALESCE(d.tong, '0'::numeric) < sp.ton_toi_thieu)
+              Rows Removed by Filter: 453
+              Buffers: shared hit=3858 read=49
+              ->  Index Scan using idx_san_pham_ma_hang_unique on san_pham sp  (cost=0.28..7713.14 rows=452 width=30) (actual time=0.029..2.370 rows=453 loops=1)
+                    Filter: (dang_kinh_doanh AND (ton_toi_thieu > '0'::numeric))
+                    Rows Removed by Filter: 2858
+                    Buffers: shared hit=3289 read=49
+              ->  Materialize  (cost=635.02..725.79 rows=3301 width=48) (actual time=0.003..0.043 rows=1635 loops=453)
+                    Buffers: shared hit=569
+                    ->  Subquery Scan on d  (cost=635.02..709.29 rows=3301 width=48) (actual time=1.279..1.775 rows=3293 loops=1)
+                          Buffers: shared hit=569
+                          ->  HashAggregate  (cost=635.02..676.28 rows=3301 width=48) (actual time=1.279..1.624 rows=3293 loops=1)
+                                Group Key: tk.san_pham_id
+                                Batches: 1  Memory Usage: 1393kB
+                                Buffers: shared hit=569
+                                ->  Seq Scan on ton_kho tk  (cost=0.00..613.01 rows=4401 width=21) (actual time=0.004..0.406 rows=4401 loops=1)
+                                      Buffers: shared hit=569
+NOTICE:  duration: 0.004 ms  plan:
+Query Text: select v_xem,
+         case when v_xem then v_gt end,
+         case when v_xem then v_gt_truoc end,
+         v_sl, v_sl_truoc, v_xu_huong,
+         v_ma_kd, v_ma_moi, v_xh_ma, v_tb,
+         v_cho, v_cho_nhap, v_cho_xuat, v_cho_cu, v_xh_cho,
+         v_am, v_vd
+Result  (cost=0.00..0.01 rows=1 width=365) (actual time=0.001..0.001 rows=1 loops=1)
+NOTICE:  duration: 2371.455 ms  plan:
+Query Text: select count(*) from public.tong_quan_chi_so();
+Aggregate  (cost=12.76..12.77 rows=1 width=8) (actual time=2371.453..2371.453 rows=1 loops=1)
+  Buffers: shared hit=397848 read=304618
+  ->  Function Scan on tong_quan_chi_so  (cost=0.26..10.26 rows=1000 width=0) (actual time=2371.450..2371.450 rows=1 loops=1)
+        Buffers: shared hit=397848 read=304618
+ count 
+-------
+     1
+(1 row)
+
+Time: 2371.722 ms (00:02.372)
+RESET
+Time: 0.066 ms
