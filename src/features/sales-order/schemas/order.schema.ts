@@ -45,6 +45,8 @@ export function toSetOrderRecipientsRpcArgs(
 
 export const orderHeaderSchema = z.object({
   orderDate: z.string().min(1, "Chọn ngày").optional(),
+  /** Ngày giao dự kiến — để trống được. */
+  deliveryDate: z.string().nullable().optional(),
   note: z
     .string()
     .trim()
@@ -74,6 +76,8 @@ type OrderLineUpdate = Partial<
 export function toOrderUpdate(input: Partial<OrderHeaderInput>): OrderUpdate {
   const update: OrderUpdate = {};
   if (input.note !== undefined) update.ghi_chu = input.note;
+  if (input.orderDate !== undefined) update.ngay_dh = input.orderDate;
+  if (input.deliveryDate !== undefined) update.ngay_giao_du_kien = input.deliveryDate;
   return update;
 }
 
