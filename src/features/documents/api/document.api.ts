@@ -143,6 +143,16 @@ export async function voidDocument(id: string, reason: string): Promise<void> {
   if (error) throw error;
 }
 
+/** Mở sửa phiếu đã ghi sổ (0124): đảo sổ phiếu cũ, trả id bản nháp mang lại số cũ. */
+export async function reopenPostedDocument(id: string, reason: string): Promise<string> {
+  const { data, error } = await getSupabaseBrowserClient().rpc("mo_sua_chung_tu", {
+    p_chung_tu_id: id,
+    p_ly_do: reason,
+  });
+  if (error) throw error;
+  return data;
+}
+
 /** Lưu lý do xuất âm (D-11) vào đầu phiếu. Ghi chú `null` khi không phải "Khác". */
 export async function saveNegativeReason(
   id: string,

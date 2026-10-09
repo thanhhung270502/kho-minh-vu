@@ -6,6 +6,8 @@ import Link from "next/link";
 import { StatusDot } from "@/shared/components/status-dot";
 import { NegativeStockPanel } from "@/features/documents/components/negative-stock-panel";
 import { PostDocumentButton } from "@/features/documents/components/post-document-button";
+import { ReopenPostedButton } from "@/features/documents/components/reopen-posted-button";
+import { RevisionNotice } from "@/features/documents/components/revision-notice";
 import { VoidDocumentDialog } from "@/features/documents/components/void-document-dialog";
 import { negativeReasonLabel } from "@/features/documents/lib/negative-reasons";
 import { ReturnButton } from "@/features/returns/components/return-button";
@@ -85,6 +87,13 @@ export function IssueDetailView({
                     <Button>In phiếu</Button>
                   </Link>
                   <ReturnButton document={issue} canEdit={permissions.canEdit} />
+                  <ReopenPostedButton
+                    document={issue}
+                    canReopen={permissions.canVoid}
+                    detailHref={(draftId) => `/duyet-don/${draftId}`}
+                    forbiddenMessage="Chức vụ của bạn chưa có quyền Sửa hóa đơn."
+                    extraInvalidateKeys={ORDER_KEYS}
+                  />
                   <VoidDocumentDialog document={issue} canVoid={permissions.canVoid} />
                   <PostDocumentButton
                     document={issue}
@@ -105,6 +114,8 @@ export function IssueDetailView({
                 description={issue.negativeReasonNote ?? undefined}
               />
             ) : null}
+
+            <RevisionNotice document={issue} />
 
             <IssueHeader issue={issue} canEdit={permissions.canEdit} />
 
