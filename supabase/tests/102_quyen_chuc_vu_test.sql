@@ -1,5 +1,5 @@
 -- =============================================================================
--- Phase 16 (QUYEN-03) — bật/tắt quyền của chức vụ có hiệu lực NGAY ở database,
+-- Phase 16 (QUYEN-03), 0117 — bật/tắt quyền của NGƯỜI có hiệu lực NGAY ở database,
 -- kể cả gọi thẳng RPC/REST, cùng một token (claim không đổi giữa các lần gọi).
 -- =============================================================================
 begin;
@@ -48,15 +48,15 @@ returns uuid language sql stable as $helper$
   select id from public.kho where ma = p_ma;
 $helper$;
 
-create or replace function pg_temp.dat_quyen(p_ma text, p_quyen text, p_bat boolean)
+create or replace function pg_temp.dat_quyen(p_email text, p_quyen text, p_bat boolean)
 returns void language plpgsql as $h$
 begin
   if p_bat then
-    insert into public.chuc_vu_quyen (chuc_vu_id, quyen)
-    select id, p_quyen from public.chuc_vu where ma = p_ma on conflict do nothing;
+    insert into public.nguoi_dung_quyen (nguoi_dung_id, quyen)
+    select id, p_quyen from auth.users where email = p_email on conflict do nothing;
   else
-    delete from public.chuc_vu_quyen
-    where quyen = p_quyen and chuc_vu_id = (select id from public.chuc_vu where ma = p_ma);
+    delete from public.nguoi_dung_quyen
+    where quyen = p_quyen and nguoi_dung_id = (select id from auth.users where email = p_email);
   end if;
 end $h$;
 
@@ -64,38 +64,37 @@ end $h$;
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 select lives_ok($$ select public.nhip_ban(current_date) $$, 'quản lý xem được tổng quan');
 select pg_temp.dang_xuat();
-select pg_temp.dat_quyen('QUAN_LY', 'xem_dashboard', false);
-select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
-select throws_ok($$ select public.nhip_ban(current_date) $$, '42501', null, 'tắt Xem dashboard: bị từ chối ngay, cùng token');
-select pg_temp.dang_xuat();
-select pg_temp.dat_quyen('NHAN_VIEN', 'xem_dashboard', true);
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
-select lives_ok($$ select public.nhip_ban(current_date) $$, 'bật Xem dashboard cho Nhân viên: văn phòng xem được ngay');
+select throws_ok($$ select public.nhip_ban(current_date) $$, '42501', null, 'văn phòng chưa có Xem dashboard: bị từ chối');
+select pg_temp.dang_xuat();
+select pg_temp.dat_quyen('vanphong@khominhvu.local', 'xem_dashboard', true);
+select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
+select lives_ok($$ select public.nhip_ban(current_date) $$, 'bật Xem dashboard cho văn phòng: xem được ngay, cùng token');
 select pg_temp.dang_xuat();
 
--- ─── Xác nhận đơn: bật cho Nhân viên → qua cửa quyền (dừng ở "không tìm thấy") ─
+-- ─── Xác nhận đơn: bật cho văn phòng → qua cửa quyền (dừng ở "không tìm thấy") ─
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select throws_ok($$ select public.xac_nhan_don(uuid_generate_v4()) $$, '42501', null, 'văn phòng chưa có quyền Xác nhận');
 select pg_temp.dang_xuat();
-select pg_temp.dat_quyen('NHAN_VIEN', 'xac_nhan_don', true);
+select pg_temp.dat_quyen('vanphong@khominhvu.local', 'xac_nhan_don', true);
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select throws_ok($$ select public.xac_nhan_don(uuid_generate_v4()) $$, '23514', null, 'bật Xác nhận: qua cửa quyền ngay');
 select pg_temp.dang_xuat();
 
 -- ─── Tạo đơn đặt hàng ──────────────────────────────────────────────────────
-select pg_temp.dat_quyen('NHAN_VIEN', 'tao_don', false);
+select pg_temp.dat_quyen('vanphong@khominhvu.local', 'tao_don', false);
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select throws_ok($$ select public.sinh_so_dh(2093::smallint) $$, '42501', null, 'tắt Tạo đơn: không cấp được số đơn');
 select pg_temp.dang_xuat();
 
--- ─── Hoàn thành ────────────────────────────────────────────────────────────
-select pg_temp.dat_quyen('NHAN_VIEN', 'hoan_thanh_don', false);
+-- ─── Hoàn thành đi theo Xác nhận/duyệt đơn (0117) ──────────────────────────
+select pg_temp.dat_quyen('vanphong@khominhvu.local', 'xac_nhan_don', false);
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
-select ok(not public.hoan_thanh_duoc_don(), 'tắt Hoàn thành: hoan_thanh_duoc_don() = false ngay');
+select ok(not public.hoan_thanh_duoc_don(), 'tắt Xác nhận: hoan_thanh_duoc_don() = false ngay');
 select pg_temp.dang_xuat();
 
 -- ─── Nhập đơn hàng (phiếu nhập) — phiếu xuất không bị ảnh hưởng ────────────
-select pg_temp.dat_quyen('THU_KHO', 'nhap_kho', false);
+select pg_temp.dat_quyen('thukho1@khominhvu.local', 'nhap_kho', false);
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 select throws_ok(
   $$ insert into public.chung_tu (so_ct, loai_ct, kho_id) values ('PN-Q102', 'NHAP', (select id from public.kho where ma = 'K1')) $$,
@@ -106,28 +105,26 @@ select lives_ok(
 select pg_temp.dang_xuat();
 
 -- ─── Tạo mã hàng (cả danh mục phụ) ─────────────────────────────────────────
-select pg_temp.dat_quyen('NHAN_VIEN', 'tao_ma_hang', false);
+select pg_temp.dat_quyen('vanphong@khominhvu.local', 'tao_ma_hang', false);
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select throws_ok($$ insert into public.nhom_hang (ma, ten) values ('Q102', 'Nhóm Q102') $$,
   '42501', null, 'tắt Tạo mã hàng: không thêm được danh mục phụ');
 select pg_temp.dang_xuat();
 
--- ─── Tạo nhân viên: bật cho Thủ kho ───────────────────────────────────────
+-- ─── Tạo nhân viên: chỉ Admin (0117) ──────────────────────────────────────
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 select throws_ok($$ insert into public.nhan_vien_phu_trach (ten_viet_tat, ten_day_du) values ('Q102', 'Nhân viên Q102') $$,
-  '42501', null, 'thủ kho chưa có quyền Tạo nhân viên');
+  '42501', null, 'thủ kho không có quyền Tạo nhân viên');
 select pg_temp.dang_xuat();
-select pg_temp.dat_quyen('THU_KHO', 'tao_nhan_vien', true);
-select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
+select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 select lives_ok($$ insert into public.nhan_vien_phu_trach (ten_viet_tat, ten_day_du) values ('Q102', 'Nhân viên Q102') $$,
-  'bật Tạo nhân viên: thủ kho thêm được ngay');
+  'Admin thêm được nhân viên phụ trách');
 select pg_temp.dang_xuat();
 
--- ─── Kiểm kho ──────────────────────────────────────────────────────────────
-select pg_temp.dat_quyen('THU_KHO', 'kiem_kho', false);
+-- ─── Kiểm kho: chỉ Admin (0117) ────────────────────────────────────────────
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 select throws_ok($$ select public.mo_phien_kiem_ke((select id from public.kho where ma = 'K1'), null, 'Q102') $$,
-  '42501', null, 'tắt Kiểm kho: thủ kho không mở được phiên');
+  '42501', null, 'thủ kho không mở được phiên kiểm kê');
 select pg_temp.dang_xuat();
 
 select * from finish();

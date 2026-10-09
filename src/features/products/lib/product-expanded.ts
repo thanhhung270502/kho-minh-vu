@@ -1,5 +1,5 @@
 // File thuần (bẫy 9): chi tiết mã hàng dạng dòng mở rộng ở /danh-muc — component
-// và scripts/test-pure-functions.ts cùng import.
+// và file *.test.ts cùng import.
 import type { ProductFormValues } from "../schemas/product.schema";
 
 /** "Sao chép": mọi trường giữ nguyên, mã để trống, barcode bỏ (thường riêng cho từng mã). */

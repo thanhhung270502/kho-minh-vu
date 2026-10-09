@@ -1,4 +1,4 @@
-// File thuần (bẫy 9): component và scripts/test-pure-functions.ts cùng import.
+// File thuần (bẫy 9): component và file *.test.ts cùng import.
 // RPC phan_tich_ton_kho trả số theo từng mã (pgTAP 98 kiểm); mọi phép gom,
 // xếp hạng, tô màu của trang Phân tích nằm ở đây.
 import { buildCsv } from "@/shared/lib/csv";

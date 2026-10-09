@@ -59,7 +59,8 @@ begin
   values (p_so, 'XUAT', (select id from public.kho where ma = 'K1'), p_dt, 'LECH_TON_CHO_KIEM_KE')
   returning id into v_id;
   insert into public.chung_tu_dong (chung_tu_id, san_pham_id, so_luong, don_gia, thanh_tien, kho_id)
-  values (v_id, (select id from public.san_pham order by ma_hang limit 1), 1, 0, 0, (select id from public.kho where ma = 'K1'));
+  -- Mã riêng của test: DB mới (CI) chưa có sản phẩm nào để "lấy đại một mã".
+  values (v_id, pg_temp.sp_test_kho('ZQX-GD-SP', pg_temp.kho_id('K1')), 1, 0, 0, (select id from public.kho where ma = 'K1'));
   return v_id;
 end $helper$;
 

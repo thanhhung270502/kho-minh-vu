@@ -1,5 +1,5 @@
 // File thuần (bẫy 9): cột file Excel đối tác, đọc ô loại / đang hoạt động. Route
-// handler, bộ dựng file và scripts/test-pure-functions.ts cùng import.
+// handler, bộ dựng file và file *.test.ts cùng import.
 import type { PartnerFormKind, PartnerKind } from "../types";
 
 export type PartnerField =

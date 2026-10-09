@@ -79,8 +79,8 @@ select
   (select id from public.nhom_hang where ma = 'ZQX-N2') as n2,
   -- Đọc id NGAY BÂY GIỜ dưới postgres — 'authenticated' KHÔNG có SELECT trên
   -- auth.users (Supabase khóa bảng này), nên không đọc lại trong lúc assertion
-  -- chạy dưới vai trò vanphong.
-  (select id from auth.users where email = 'vanphong@khominhvu.local') as u_vanphong;
+  -- chạy dưới vai trò quanly (0117: kiểm kho chỉ Admin).
+  (select id from auth.users where email = 'quanly@khominhvu.local') as u_vanphong;
 grant select on t_id to authenticated;
 
 update public.san_pham sp set nhom_hang_id = t_id.n1, kho_mac_dinh_id = t_id.k1 from t_id where sp.id = t_id.a;
@@ -99,9 +99,9 @@ select ct.id, t_id.b, 5, 1000 from public.chung_tu ct, t_id where ct.so_ct = 'PN
 select public.ghi_so_chung_tu((select id from public.chung_tu where so_ct = 'PN-ZQX-KK01'));
 
 -- =============================================================================
--- C1 — mo_phien_kiem_ke: phạm vi N1, dưới vanphong.
+-- C1 — mo_phien_kiem_ke: phạm vi N1, dưới quanly (0117: kiểm kho chỉ Admin).
 -- =============================================================================
-select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
+select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 
 create temp table t_p1 as
 select (public.mo_phien_kiem_ke(
@@ -155,7 +155,7 @@ select pg_temp.dang_xuat();
 -- C4 — D-03 cốt lõi: XUAT 3 A giữa lúc phiên mở, rồi lưu đếm -> chốt tồn sổ
 -- TẠI LÚC LƯU (7), không phải lúc mở phiên (10).
 -- =============================================================================
-select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
+select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 
 insert into public.chung_tu (so_ct, loai_ct, kho_id)
 select 'PX-ZQX-KK01', 'XUAT', t_id.k1 from t_id;
@@ -261,7 +261,7 @@ select is(
   0,
   'C8: update thẳng so_luong của dòng KIEM_KE bị RLS lọc, 0 dòng bị đổi'
 );
-select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
+select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 
 create temp table t_dem_truoc_xoa as
 select count(*)::int as n from public.chung_tu_dong where chung_tu_id = (select id from t_p1);
@@ -274,7 +274,7 @@ select is(
   (select n from t_dem_truoc_xoa),
   'C8: delete thẳng dòng KIEM_KE bị RLS lọc, 0 dòng bị xóa'
 );
-select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
+select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 
 update public.chung_tu set kho_id = (select k2 from t_id) where id = (select id from t_p1);
 select pg_temp.dang_xuat();
@@ -283,7 +283,7 @@ select is(
   (select k1 from t_id),
   'C8: update kho_id của header KIEM_KE bị RLS lọc, không đổi'
 );
-select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
+select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 
 select throws_ok(
   format(
@@ -300,7 +300,7 @@ select throws_ok(
 select pg_temp.dang_xuat();
 insert into public.chung_tu (so_ct, loai_ct, kho_id)
 select 'PN-ZQX-KK03', 'NHAP', t_id.k1 from t_id;
-select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
+select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 
 select lives_ok(
   format(
@@ -326,7 +326,7 @@ select is(
 
 select pg_temp.dang_xuat();
 update public.chung_tu set trang_thai = 'HOAN_THANH' where id = (select id from t_p1);
-select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
+select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 
 select throws_ok(
   format(
@@ -342,7 +342,7 @@ select pg_temp.dang_xuat();
 -- C11-C13 — nhap_so_dem_kiem_ke: xem trước, không nạp nửa vời, ghi thật.
 -- Phiên P2 mới, cùng phạm vi N1.
 -- =============================================================================
-select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
+select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 
 create temp table t_p2 as
 select (public.mo_phien_kiem_ke(

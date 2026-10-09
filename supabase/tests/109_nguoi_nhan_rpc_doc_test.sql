@@ -8,6 +8,12 @@
 begin;
 select plan(32);
 
+-- 0117: hoàn thành đơn đi theo quyền Xác nhận/duyệt đơn — bật cho văn phòng trong
+-- transaction này để văn phòng làm được luồng hoàn thành.
+insert into public.nguoi_dung_quyen (nguoi_dung_id, quyen)
+select id, 'xac_nhan_don' from auth.users where email = 'vanphong@khominhvu.local'
+on conflict do nothing;
+
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
 declare v_id uuid; v_nd public.nguoi_dung; v_kho jsonb;
@@ -222,12 +228,12 @@ select is(
 select is(
   (select ten_doi_tac from public.danh_sach_chung_tu(p_loai_ct => 'XUAT', p_tu_khoa => (select so_ct from public.chung_tu where id = (select n from t19_hd)))
    where id = (select n from t19_hd)),
-  'Nội bộ — ' || (select ten_a from t19) || ', ' || (select ten_b from t19),
-  'danh_sach_chung_tu hiện "Nội bộ — <tên A>, <tên B>"'
+  (select ten_a from t19) || ', ' || (select ten_b from t19),
+  'danh_sach_chung_tu hiện "<tên A>, <tên B>", không tiền tố (0108)'
 );
 select is(
   (select doi_tac from public.the_kho_san_pham((select sp_a from t19)) where chung_tu_id = (select n from t19_hd) limit 1),
-  'Nội bộ — ' || (select ten_a from t19) || ', ' || (select ten_b from t19),
+  (select ten_a from t19) || ', ' || (select ten_b from t19),
   'Thẻ kho hiện cùng chuỗi'
 );
 select pg_temp.dang_xuat();

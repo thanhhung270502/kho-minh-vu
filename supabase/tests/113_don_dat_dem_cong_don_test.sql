@@ -74,24 +74,24 @@ select is((select count(distinct trang_thai)::int from public.dem_don_theo_trang
 
 select is(
   (select array_agg(so_don order by trang_thai) from public.dem_don_theo_trang_thai()),
-  (select array_agg(coalesce((select tong_so_dong from public.danh_sach_don(p_trang_thai => s, p_kich_thuoc => 1) limit 1), 0) order by s)
+  (select array_agg(coalesce((select tong_so_dong from public.danh_sach_don(p_trang_thai => array[s], p_kich_thuoc => 1) limit 1), 0) order by s)
    from unnest(enum_range(null::public.trang_thai_ddh)) s),
   'khớp chéo danh_sach_don: không lọc');
 select is(
   (select array_agg(so_don order by trang_thai) from public.dem_don_theo_trang_thai(p_loai_nhan => 'NOI_BO')),
-  (select array_agg(coalesce((select tong_so_dong from public.danh_sach_don(p_trang_thai => s, p_loai_nhan => 'NOI_BO', p_kich_thuoc => 1) limit 1), 0) order by s)
+  (select array_agg(coalesce((select tong_so_dong from public.danh_sach_don(p_trang_thai => array[s], p_loai_nhan => 'NOI_BO', p_kich_thuoc => 1) limit 1), 0) order by s)
    from unnest(enum_range(null::public.trang_thai_ddh)) s),
   'khớp chéo danh_sach_don: NOI_BO');
 select is(
   (select array_agg(so_don order by trang_thai)
    from public.dem_don_theo_trang_thai(p_tu_ngay => '2093-01-01', p_den_ngay => '2093-12-31')),
-  (select array_agg(coalesce((select tong_so_dong from public.danh_sach_don(p_trang_thai => s, p_tu_ngay => '2093-01-01', p_den_ngay => '2093-12-31', p_kich_thuoc => 1) limit 1), 0) order by s)
+  (select array_agg(coalesce((select tong_so_dong from public.danh_sach_don(p_trang_thai => array[s], p_tu_ngay => '2093-01-01', p_den_ngay => '2093-12-31', p_kich_thuoc => 1) limit 1), 0) order by s)
    from unnest(enum_range(null::public.trang_thai_ddh)) s),
   'khớp chéo danh_sach_don: khoảng ngày 2093');
 select is(
   (select array_agg(so_don order by trang_thai)
    from public.dem_don_theo_trang_thai(p_nguoi_nhan_id => (select nv_a from t113))),
-  (select array_agg(coalesce((select tong_so_dong from public.danh_sach_don(p_trang_thai => s, p_nguoi_nhan_id => (select nv_a from t113), p_kich_thuoc => 1) limit 1), 0) order by s)
+  (select array_agg(coalesce((select tong_so_dong from public.danh_sach_don(p_trang_thai => array[s], p_nguoi_nhan_id => (select nv_a from t113), p_kich_thuoc => 1) limit 1), 0) order by s)
    from unnest(enum_range(null::public.trang_thai_ddh)) s),
   'khớp chéo danh_sach_don: người nhận');
 
@@ -164,7 +164,7 @@ select ok(not has_function_privilege('anon',
   'public.dem_don_theo_trang_thai(uuid,date,date,text,text,uuid)', 'execute'),
   'anon không gọi được dem_don_theo_trang_thai');
 select ok(not has_function_privilege('anon',
-  'public.them_dong_don(uuid,uuid,numeric,uuid)', 'execute'),
+  'public.them_dong_don(uuid,uuid,numeric,uuid,text)', 'execute'),
   'anon không gọi được them_dong_don');
 
 select * from finish();

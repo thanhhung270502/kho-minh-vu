@@ -79,7 +79,7 @@ select throws_ok(
   $$ select public.luu_nguoi_dung(
        (select nd from t_ns), 'Thủ kho K1 + K2', '', (select id from public.chuc_vu where ma = 'THU_KHO'), array[]::uuid[], false) $$,
   '23514',
-  'Thủ kho phải được gán ít nhất một kho',
+  'Nhân viên giới hạn kho phải được gán ít nhất một kho',
   'Ràng buộc nghiệp vụ của RPC giữ nguyên câu tiếng Việt'
 );
 

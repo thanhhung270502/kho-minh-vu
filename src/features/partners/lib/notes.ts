@@ -1,6 +1,6 @@
 /**
  * Hàm thuần cho màn Rà ghi chú — không import supabase, không import React, để
- * `scripts/test-pure-functions.ts` kiểm được bằng node:assert.
+ * `notes.test.ts` kiểm được bằng Vitest.
  */
 
 /**

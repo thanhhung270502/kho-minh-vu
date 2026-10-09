@@ -1,5 +1,5 @@
 // File thuần (bẫy 9): sheet tên hàng chuẩn — 2 cột (mã, tên), không dòng tiêu đề.
-// Route đọc file nhập mã mới và scripts/test-pure-functions.ts cùng import.
+// Route đọc file nhập mã mới và file *.test.ts cùng import.
 import { parseCsv } from "@/shared/lib/csv";
 
 import type { NewProductFileRow } from "./new-product-file";

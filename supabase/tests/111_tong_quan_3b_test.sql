@@ -51,15 +51,16 @@ returns uuid language sql stable as $helper$
   select id from public.kho where ma = p_ma;
 $helper$;
 
-create or replace function pg_temp.dat_quyen(p_ma text, p_quyen text, p_bat boolean)
+-- 0117: quyền theo người (nguoi_dung_quyen), không còn theo chức vụ.
+create or replace function pg_temp.dat_quyen(p_email text, p_quyen text, p_bat boolean)
 returns void language plpgsql as $h$
 begin
   if p_bat then
-    insert into public.chuc_vu_quyen (chuc_vu_id, quyen)
-    select id, p_quyen from public.chuc_vu where ma = p_ma on conflict do nothing;
+    insert into public.nguoi_dung_quyen (nguoi_dung_id, quyen)
+    select id, p_quyen from auth.users where email = p_email on conflict do nothing;
   else
-    delete from public.chuc_vu_quyen
-    where quyen = p_quyen and chuc_vu_id = (select id from public.chuc_vu where ma = p_ma);
+    delete from public.nguoi_dung_quyen
+    where quyen = p_quyen and nguoi_dung_id = (select id from auth.users where email = p_email);
   end if;
 end $h$;
 
@@ -161,7 +162,7 @@ select throws_ok($$select * from public.khong_luan_chuyen()$$, '42501', null, 'c
 -- Thủ kho được bật xem_dashboard nhưng KHÔNG có quyền giá vốn (D-04)
 -- ---------------------------------------------------------------------------
 select pg_temp.dang_xuat();
-select pg_temp.dat_quyen('THU_KHO', 'xem_dashboard', true);
+select pg_temp.dat_quyen('thukho1@khominhvu.local', 'xem_dashboard', true);
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 select is((select xem_gia_von from public.tong_quan_chi_so()), false, 'thủ kho: xem_gia_von = false');
 select is((select gia_tri_ton from public.tong_quan_chi_so()), null::numeric, 'thủ kho: gia_tri_ton is null');

@@ -91,8 +91,8 @@ select public.nap_ton_tam(
 );
 select pg_temp.dang_xuat();
 
--- Phiên P: kho K1, phạm vi nhóm N1, mở dưới vanphong.
-select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
+-- Phiên P: kho K1, phạm vi nhóm N1, mở dưới quanly (0117: kiểm kho chỉ Admin).
+select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 
 -- Dùng `select * from fn(...)` (KHÔNG `(fn(...)).*`) — hàm VOLATILE trả về
 -- composite qua `(fn()).*` bị Postgres gọi LẶP LẠI một lần cho MỖI cột (đã xác
@@ -253,11 +253,16 @@ select is(
   true, 'E5: dat_dem_lai đặt true thành công sau khi bật cột'
 );
 
+-- 0117: lưu số đếm là việc kiểm kho — chỉ Admin.
+select pg_temp.dang_xuat();
+select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 select public.luu_dong_kiem_ke((select id from t_p), (select a from t_id), 8);
 select is(
   (select dem_lai from public.chung_tu_dong where id = (select dong_id from t_dong_a)),
   false, 'E5: luu_dong_kiem_ke đặt lại dem_lai = false'
 );
+select pg_temp.dang_xuat();
+select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 
 -- =============================================================================
 -- E6 — còn B, C chưa đếm -> 23514; đặt dem_lai=true cho A rồi duyệt với đủ
@@ -392,9 +397,14 @@ select throws_ok(
   'E10: vanphong không hủy được phiên KIEM_KE đã ghi sổ'
 );
 
+-- 0117: mở phiên chỉ Admin; văn phòng vẫn tự hủy được phiên còn nháp.
+select pg_temp.dang_xuat();
+select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 create temp table t_p3 as
 select * from public.mo_phien_kiem_ke(p_kho_id := (select k1 from t_id));
 grant select on t_p3 to authenticated;
+select pg_temp.dang_xuat();
+select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 
 select lives_ok(
   format('select public.huy_chung_tu(%L::uuid, %L)', (select id from t_p3), 'test hủy phiên nháp'),
@@ -412,6 +422,8 @@ select is(
 -- =============================================================================
 -- E11 — chấp nhận 0 một san_pham_id KHÔNG thuộc danh sách chưa đếm -> 23514.
 -- =============================================================================
+select pg_temp.dang_xuat();
+select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 create temp table t_p4 as
 select * from public.mo_phien_kiem_ke(
   p_kho_id := (select k1 from t_id),

@@ -1,4 +1,4 @@
-// File thuần (bẫy 9): component client và scripts/test-pure-functions.ts cùng import.
+// File thuần (bẫy 9): component client và file *.test.ts cùng import.
 // Dòng đang mở panel chi tiết nằm trên URL `?chon=<uuid>` — gửi link, tải lại
 // trang, bấm Back đều giữ đúng mã đang xem. Tách khỏi bộ lọc của từng bảng:
 // đổi trang/bộ lọc không làm đóng panel.
