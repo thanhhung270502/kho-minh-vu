@@ -18,7 +18,7 @@ export default async function SalesOrderPage() {
     <>
       <PageHeader
         title="Đơn đặt"
-        description="Phiếu tạm cho tới khi quản lý xác nhận — xác nhận xong mới in phiếu."
+        description="Phiếu tạm cho tới khi quản lý duyệt — duyệt xong mới in phiếu."
       />
 
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}

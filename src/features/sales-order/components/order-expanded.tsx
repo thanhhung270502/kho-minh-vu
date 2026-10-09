@@ -57,7 +57,7 @@ export function OrderExpanded({ id, permissions }: Props) {
 
             <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
               <Field label="Người tạo">{order.createdByName ?? "—"}</Field>
-              <Field label="Người xác nhận">
+              <Field label="Người duyệt">
                 {order.approvedByName
                   ? `${order.approvedByName}${order.approvedAt ? ` · ${dayjs(order.approvedAt).format("HH:mm DD/MM")}` : ""}`
                   : "—"}

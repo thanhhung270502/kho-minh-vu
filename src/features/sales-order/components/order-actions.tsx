@@ -38,9 +38,9 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
 
   function confirmApprove() {
     modal.confirm({
-      title: `Xác nhận đơn ${order.orderNo}?`,
-      content: `Đơn có ${lines.length} dòng, tổng số lượng đặt ${order.orderedQuantity.toLocaleString("vi-VN")}. Sau khi xác nhận, chỉ quản lý mở khóa lại được để sửa tiếp.`,
-      okText: "Xác nhận đơn",
+      title: `Duyệt đơn ${order.orderNo}?`,
+      content: `Đơn có ${lines.length} dòng, tổng số lượng đặt ${order.orderedQuantity.toLocaleString("vi-VN")}. Sau khi duyệt, chỉ quản lý mở khóa lại được để sửa tiếp.`,
+      okText: "Duyệt đơn",
       cancelText: "Xem lại",
       onOk: async () => {
         try {
@@ -52,7 +52,7 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
             return;
           }
           if (errorCode(error) === "42501") {
-            message.error("Chỉ quản lý được xác nhận đơn.");
+            message.error("Chỉ quản lý được duyệt đơn.");
             return;
           }
           const explained = explainError(error);
@@ -69,7 +69,7 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
       <Space wrap>
         {actions.includes("approve") ? (
           <Button type="primary" loading={approve.isPending} onClick={confirmApprove}>
-            Xác nhận đơn
+            Duyệt đơn
           </Button>
         ) : null}
         {actions.includes("complete") ? (
