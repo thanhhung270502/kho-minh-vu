@@ -12,8 +12,10 @@ import type { DocumentDetail } from "../types";
 type ExtraKeys = ReadonlyArray<readonly unknown[]>;
 
 type Props = {
-  document: DocumentDetail;
+  /** Đơn đặt chỉ biết số và id hóa đơn — không cần cả DocumentDetail. */
+  document: Pick<DocumentDetail, "id" | "docNo" | "status" | "orderId">;
   canReopen: boolean;
+  label?: string;
   /** Đường dẫn màn chi tiết của bản sửa — mỗi màn (Duyệt đơn / Nhập hàng) một route. */
   detailHref: (id: string) => string;
   /** Câu báo khi thiếu quyền — hóa đơn và phiếu nhập khác luật (0124). */
@@ -28,6 +30,7 @@ type Props = {
 export function ReopenPostedButton({
   document,
   canReopen,
+  label = "Sửa phiếu",
   detailHref,
   forbiddenMessage,
   extraInvalidateKeys,
@@ -74,7 +77,7 @@ export function ReopenPostedButton({
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>Sửa phiếu</Button>
+      <Button onClick={() => setOpen(true)}>{label}</Button>
 
       <Modal
         open={open}

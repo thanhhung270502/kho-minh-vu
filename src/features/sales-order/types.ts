@@ -154,6 +154,8 @@ export type OrderPermissions = {
   canComplete: boolean;
   /** Hủy đơn — theo phạm vi quản trị (huy_don, 0078), không thuộc 9 quyền chức vụ. */
   canCancel: boolean;
+  /** Sửa đơn đã hoàn thành = mở sửa hóa đơn của nó (0124) — cùng quyền Hủy hóa đơn. */
+  canEditInvoice: boolean;
 };
 
 export type OrderStatusCounts = {
