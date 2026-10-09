@@ -40,7 +40,7 @@ on conflict (ma) do nothing;
 -- 3.300 mã hàng thường
 insert into public.san_pham (
   ma_hang, ten_hang, nhom_hang_id, dvt_id, cong_doan_id,
-  gia_ban, dang_kinh_doanh, ton_toi_thieu
+  gia_ban, dang_kinh_doanh, ton_toi_thieu, kho_mac_dinh_id
 )
 select
   'BENCH-' || lpad(n::text, 4, '0'),
@@ -52,13 +52,16 @@ select
   (select id from public.cong_doan where ma = 'MUA_NGOAI'),
   10000 + (n * 7919) % 490000,
   (n % 25 <> 0),
-  case when n % 7 = 0 then 5 else 0 end
+  case when n % 7 = 0 then 5 else 0 end,
+  -- tao_phieu_xuat_tu_don đòi mọi mã có kho mặc định. Đuôi ít bán (n > 2000, chia hết 3) về K2
+  -- để K2 có hàng chạy thật mà mã bán chạy vẫn nằm ở K1 cùng tồn đầu kỳ.
+  (select k.id from public.kho k where k.ma = case when n > 2000 and n % 3 = 0 then 'K2' else 'K1' end)
 from generate_series(1, 3300) n
 on conflict (ma_hang) do nothing;
 
 -- 10 combo (không có tồn riêng — ghi sổ tách ra mã thành phần)
 insert into public.san_pham (
-  ma_hang, ten_hang, nhom_hang_id, dvt_id, cong_doan_id, gia_ban, loai_hang
+  ma_hang, ten_hang, nhom_hang_id, dvt_id, cong_doan_id, gia_ban, loai_hang, kho_mac_dinh_id
 )
 select
   'BENCH-CB-' || lpad(k::text, 2, '0'),
@@ -67,7 +70,8 @@ select
   (select id from public.don_vi_tinh where ma = 'CAI'),
   (select id from public.cong_doan where ma = 'MUA_NGOAI'),
   200000 + k * 1000,
-  'COMBO'
+  'COMBO',
+  (select id from public.kho where ma = 'K1')
 from generate_series(1, 10) k
 on conflict (ma_hang) do nothing;
 
@@ -78,6 +82,18 @@ cross join lateral (values (k * 10 + 1, 1), (k * 10 + 2, 2)) as c(n, so_luong)
 join public.san_pham cb on cb.ma_hang = 'BENCH-CB-' || lpad(k::text, 2, '0')
 join public.san_pham tp on tp.ma_hang = 'BENCH-' || lpad(c.n::text, 4, '0')
 on conflict (combo_id, thanh_phan_id) do nothing;
+
+-- Danh mục nạp bằng bản catalog cũ chưa có kho mặc định: bù cho đủ điều kiện tạo phiếu xuất.
+update public.san_pham sp
+set kho_mac_dinh_id = (
+  select k.id from public.kho k
+  where k.ma = case
+    when sp.ma_hang ~ '^BENCH-[0-9]{4}$' and substr(sp.ma_hang, 7)::int > 2000
+         and substr(sp.ma_hang, 7)::int % 3 = 0 then 'K2'
+    else 'K1'
+  end
+)
+where sp.ma_hang like 'BENCH-%' and sp.kho_mac_dinh_id is null;
 
 select set_config('request.jwt.claims', '', true);
 
