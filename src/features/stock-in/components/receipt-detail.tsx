@@ -4,6 +4,8 @@ import { Button, Space } from "antd";
 import Link from "next/link";
 import { useState } from "react";
 
+import { ReopenPostedButton } from "@/features/documents/components/reopen-posted-button";
+import { RevisionNotice } from "@/features/documents/components/revision-notice";
 import { ReturnButton } from "@/features/returns/components/return-button";
 import { PageHeader } from "@/shared/components/page-header";
 import { StatusDot } from "@/shared/components/status-dot";
@@ -70,6 +72,13 @@ export function ReceiptDetailView({
                     <Button>In phiếu</Button>
                   </Link>
 
+                  <ReopenPostedButton
+                    document={receipt}
+                    canReopen={permissions.canVoid}
+                    detailHref={(draftId) => `/nhap-hang/${draftId}`}
+                    forbiddenMessage="Chỉ quản lý sửa được phiếu nhập đã ghi sổ."
+                  />
+
                   {/* Phiếu chưa ghi sổ: người nhập tự hủy được. Đã ghi sổ: chỉ quản lý (D-11). */}
                   {receipt.status !== "DA_HUY" &&
                   (stillEditable ? permissions.canEdit : permissions.canVoid) ? (
@@ -88,6 +97,8 @@ export function ReceiptDetailView({
                 </Space>
               }
             />
+
+            <RevisionNotice document={receipt} />
 
             {/* Cùng khuôn trang đơn đặt: dòng hàng bên trái, thông tin phiếu bên phải. */}
             <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
