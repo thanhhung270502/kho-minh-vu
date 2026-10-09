@@ -9,7 +9,7 @@ export function NewOrderCard() {
   return (
     <Card className="mb-3 max-w-xl">
       <p className="mb-3 text-sm text-gray-500">
-        Bấm Tạo đơn là có ngay đơn tạm. Người nhận, dòng hàng và ghi chú điền trong trang đơn.
+        Bấm Tạo đơn là có ngay phiếu tạm. Người nhận, dòng hàng và ghi chú điền trong trang đơn.
       </p>
       <CreateOrderButton />
     </Card>

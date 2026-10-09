@@ -15,7 +15,7 @@ export const ORDER_STATUSES: OrderStatus[] = [
 ];
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
-  TAM: "Đơn tạm",
+  TAM: "Phiếu tạm",
   DA_XAC_NHAN: "Đã xác nhận",
   HOAN_THANH: "Hoàn thành",
   DA_HUY: "Đã hủy",

@@ -24,7 +24,7 @@ const COPY: Record<
   unlock: {
     title: (orderNo) => `Mở khóa đơn ${orderNo}`,
     description:
-      "Đơn quay về trạng thái Đơn tạm, văn phòng sửa lại được. Lần mở khóa này được ghi vào nhật ký sửa.",
+      "Đơn quay về trạng thái Phiếu tạm, văn phòng sửa lại được. Lần mở khóa này được ghi vào nhật ký sửa.",
     okText: "Mở khóa",
   },
   "close-early": {
