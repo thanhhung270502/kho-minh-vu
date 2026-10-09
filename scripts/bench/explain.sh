@@ -9,7 +9,7 @@ API=$(printf '%s\n' "$STATUS" | sed -n 's/^API_URL="\(.*\)"$/\1/p')
 DB_URL=$(printf '%s\n' "$STATUS" | sed -n 's/^DB_URL="\(.*\)"$/\1/p')
 case "$API" in http://127.0.0.1:*|http://localhost:*) ;; *) echo "Chỉ chạy trên Supabase LOCAL, nhận API_URL='$API'" >&2; exit 1;; esac
 case "$DB_URL" in postgresql://*@127.0.0.1:*|postgresql://*@localhost:*) ;; *) echo "Chỉ chạy trên Supabase LOCAL, nhận DB_URL host khác 127.0.0.1/localhost" >&2; exit 1;; esac
-# Chọn container theo CỔNG đã publish của DB_URL (không suy tên từ config.toml — project_id ở đó khác ref của container).
+# Chọn container theo CỔNG đã publish của DB_URL (không suy tên từ project_id cấu hình, vì khác ref của container).
 PORT=$(printf '%s\n' "$DB_URL" | sed -E 's#^postgresql://[^@]*@[^:/]+:([0-9]+)/.*#\1#')
 [[ "$PORT" =~ ^[0-9]+$ ]] || { echo "Không đọc được cổng từ DB_URL" >&2; exit 1; }
 MATCHES=$(docker ps --filter "publish=$PORT" --filter name=supabase_db_ --format '{{.Names}}')
