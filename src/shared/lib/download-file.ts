@@ -4,8 +4,9 @@ export type DownloadResult = { ok: true } | { ok: false; message: string };
 export async function downloadFile(
   url: string,
   fallbackName = "tai-ve.xlsx",
+  init?: RequestInit,
 ): Promise<DownloadResult> {
-  const response = await fetch(url);
+  const response = await fetch(url, init);
 
   if (!response.ok) {
     try {

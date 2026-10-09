@@ -54,10 +54,12 @@ function AssignSelect({
 type Props = {
   ids: string[];
   lookups: Lookups | undefined;
+  /** Không có quyền sửa: chỉ hiện số đã chọn (để xuất Excel) và nút Bỏ chọn. */
+  canEdit: boolean;
   onDone: () => void;
 };
 
-export function BulkAssignBar({ ids, lookups, onDone }: Props) {
+export function BulkAssignBar({ ids, lookups, canEdit, onDone }: Props) {
   const { message, modal } = App.useApp();
   const assign = useBulkAssign();
   const [running, setRunning] = useState(false);
@@ -73,7 +75,9 @@ export function BulkAssignBar({ ids, lookups, onDone }: Props) {
     modal.confirm({
       title: `${description} cho ${ids.length} mã?`,
       content:
-        ids.length > 20 ? "Thao tác ghi vào nhật ký sửa của từng mã." : undefined,
+        ids.length > 20
+          ? "Thao tác ghi vào nhật ký sửa của từng mã."
+          : undefined,
       okText: "Làm",
       cancelText: "Thôi",
       onOk: async () => {
@@ -110,62 +114,75 @@ export function BulkAssignBar({ ids, lookups, onDone }: Props) {
   return (
     <div className="sticky top-0 z-10 mb-2 flex flex-wrap items-center gap-2 rounded-md bg-blue-50 px-3 py-2">
       <strong>Đã chọn {ids.length} mã</strong>
+      <span className="text-xs text-chu-phu">
+        — tìm mã khác vẫn giữ dấu tick; Xuất Excel chỉ xuất các mã này
+      </span>
 
-      <AssignSelect
-        className="w-44"
-        placeholder="Gán xử lý"
-        disabled={running}
-        options={(lookups?.stages ?? []).map((stage) => ({
-          value: stage.id,
-          label: stage.name,
-        }))}
-        onSelect={(id, name) => assignField("stageId", id, name, "xử lý")}
-      />
+      {canEdit ? (
+        <>
+          <AssignSelect
+            className="w-44"
+            placeholder="Gán xử lý"
+            disabled={running}
+            options={(lookups?.stages ?? []).map((stage) => ({
+              value: stage.id,
+              label: stage.name,
+            }))}
+            onSelect={(id, name) => assignField("stageId", id, name, "xử lý")}
+          />
 
-      <AssignSelect
-        className="w-44"
-        placeholder="Gán nhóm hàng"
-        disabled={running}
-        options={(lookups?.categories ?? []).map((category) => ({
-          value: category.id,
-          label: category.name,
-        }))}
-        onSelect={(id, name) => assignField("categoryId", id, name, "nhóm hàng")}
-      />
+          <AssignSelect
+            className="w-44"
+            placeholder="Gán nhóm hàng"
+            disabled={running}
+            options={(lookups?.categories ?? []).map((category) => ({
+              value: category.id,
+              label: category.name,
+            }))}
+            onSelect={(id, name) =>
+              assignField("categoryId", id, name, "nhóm hàng")
+            }
+          />
 
-      <AssignSelect
-        className="w-36"
-        placeholder="Gán ĐVT"
-        disabled={running}
-        options={(lookups?.units ?? []).map((unit) => ({
-          value: unit.id,
-          label: unit.name,
-        }))}
-        onSelect={(id, name) => assignField("unitId", id, name, "đơn vị tính")}
-      />
+          <AssignSelect
+            className="w-36"
+            placeholder="Gán ĐVT"
+            disabled={running}
+            options={(lookups?.units ?? []).map((unit) => ({
+              value: unit.id,
+              label: unit.name,
+            }))}
+            onSelect={(id, name) =>
+              assignField("unitId", id, name, "đơn vị tính")
+            }
+          />
 
-      <Dropdown
-        trigger={["click"]}
-        disabled={running}
-        menu={{
-          items: [
-            { key: "1", label: "Đang kinh doanh" },
-            { key: "0", label: "Ngừng kinh doanh" },
-          ],
-          onClick: ({ key }) =>
-            confirmThenRun(
-              key === "1" ? "Đặt lại Đang kinh doanh" : "Đặt Ngừng kinh doanh",
-              () =>
-                assign.mutateAsync({
-                  ids,
-                  change: { isActive: key === "1" },
-                  source: "hang_loat",
-                }),
-            ),
-        }}
-      >
-        <Button>Trạng thái</Button>
-      </Dropdown>
+          <Dropdown
+            trigger={["click"]}
+            disabled={running}
+            menu={{
+              items: [
+                { key: "1", label: "Đang kinh doanh" },
+                { key: "0", label: "Ngừng kinh doanh" },
+              ],
+              onClick: ({ key }) =>
+                confirmThenRun(
+                  key === "1"
+                    ? "Đặt lại Đang kinh doanh"
+                    : "Đặt Ngừng kinh doanh",
+                  () =>
+                    assign.mutateAsync({
+                      ids,
+                      change: { isActive: key === "1" },
+                      source: "hang_loat",
+                    }),
+                ),
+            }}
+          >
+            <Button>Trạng thái</Button>
+          </Dropdown>
+        </>
+      ) : null}
 
       <Space className="ms-auto">
         <Button type="text" onClick={onDone}>

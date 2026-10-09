@@ -9,6 +9,7 @@ import { StandardFillButton } from "./standard-fill-button";
 type Props = {
   filter: ProductFilter;
   total: number;
+  selectedIds: string[];
   canEdit: boolean;
   canFillStandard: boolean;
   onOpenImport?: (kind: ImportKind) => void;
@@ -20,6 +21,7 @@ type Props = {
 export function ToolbarActions({
   filter,
   total,
+  selectedIds,
   canEdit,
   canFillStandard,
   onOpenImport,
@@ -32,6 +34,7 @@ export function ToolbarActions({
       <ExcelButton
         filter={filter}
         productCount={total}
+        selectedIds={selectedIds}
         onOpenImport={canEdit ? onOpenImport : undefined}
       />
     </>

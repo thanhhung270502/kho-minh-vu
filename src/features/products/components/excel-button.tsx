@@ -10,6 +10,8 @@ import { writeFilterToUrl, type ProductFilter } from "../schemas/filter.schema";
 type Props = {
   filter: ProductFilter;
   productCount: number;
+  /** Mã đã tick (giữ qua nhiều lần tìm) — có thì chỉ xuất những mã này. */
+  selectedIds?: string[];
   /** Chỉ truyền khi người dùng có quyền sửa. */
   onOpenImport?: (kind: ImportKind) => void;
 };
@@ -20,14 +22,15 @@ export type ImportKind = "new" | "update";
 export function ExcelButton({
   filter,
   productCount,
+  selectedIds = [],
   onOpenImport,
 }: Props) {
   const { message } = App.useApp();
   const [downloading, setDownloading] = useState(false);
 
-  async function run(url: string) {
+  async function run(url: string, init?: RequestInit) {
     setDownloading(true);
-    const result = await downloadFile(url, "danh-muc.xlsx");
+    const result = await downloadFile(url, "danh-muc.xlsx", init);
     setDownloading(false);
     if (!result.ok) message.error(result.message);
   }
@@ -37,20 +40,36 @@ export function ExcelButton({
     <Space.Compact>
       <Button
         loading={downloading}
-        title={`Xuất ${productCount.toLocaleString("vi-VN")} mã đang lọc`}
+        title={
+          selectedIds.length > 0
+            ? `Xuất ${selectedIds.length.toLocaleString("vi-VN")} mã đã tick`
+            : `Xuất ${productCount.toLocaleString("vi-VN")} mã đang lọc`
+        }
         onClick={() =>
-          void run(`/api/danh-muc/xuat-excel?${writeFilterToUrl(filter)}`)
+          void (selectedIds.length > 0
+            ? run("/api/danh-muc/xuat-excel", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ids: selectedIds }),
+              })
+            : run(`/api/danh-muc/xuat-excel?${writeFilterToUrl(filter)}`))
         }
       >
-        Xuất Excel
+        {selectedIds.length > 0
+          ? `Xuất ${selectedIds.length} mã đã chọn`
+          : "Xuất Excel"}
       </Button>
       <Dropdown
         menu={{
           items: [
-            ...(onOpenImport ? [{ key: "import-new", label: "Nhập mã hàng mới…" }] : []),
+            ...(onOpenImport
+              ? [{ key: "import-new", label: "Nhập mã hàng mới…" }]
+              : []),
             { key: "template-new", label: "Tải file mẫu nhập mã mới" },
             { type: "divider" as const },
-            ...(onOpenImport ? [{ key: "import-update", label: "Cập nhật từ Excel…" }] : []),
+            ...(onOpenImport
+              ? [{ key: "import-update", label: "Cập nhật từ Excel…" }]
+              : []),
             { key: "template", label: "Tải file mẫu cập nhật" },
           ],
           onClick: ({ key }) => {

@@ -74,18 +74,11 @@ export function ProductTable({
   );
 
   /**
-   * Người dùng đổi bộ lọc thì tập đang chọn không còn nghĩa — bỏ chọn để không
-   * gán hàng loạt nhầm sang những mã họ không còn nhìn thấy. Tách khỏi
-   * `navigate` vì việc tự về trang 1 (trong effect bên dưới) không được phép
-   * setState.
+   * Đổi bộ lọc / tìm mã khác vẫn GIỮ các mã đã tick: người dùng tìm A tick, tìm B
+   * tick, rồi xuất Excel những mã đã chọn. Thanh "Đã chọn N mã" luôn hiện số đang
+   * giữ và nút Bỏ chọn, nên gán hàng loạt không lẫn mã khuất khỏi bảng.
    */
-  const changeFilter = useCallback(
-    (next: ProductFilter) => {
-      setSelected([]);
-      navigate(next);
-    },
-    [navigate],
-  );
+  const changeFilter = useCallback((next: ProductFilter) => navigate(next), [navigate]);
 
   const rows = products.data?.rows ?? [];
   // Mã đang chọn không nằm trên trang này (vừa ngừng kinh doanh nên bị lọc ẩn,
@@ -118,6 +111,7 @@ export function ProductTable({
               <ToolbarActions
                 filter={filter}
                 total={total}
+                selectedIds={selected}
                 canEdit={permissions.canEdit}
                 canFillStandard={permissions.canFillStandard}
                 extraActions={extraActions}
@@ -142,9 +136,12 @@ export function ProductTable({
           ) : null
         }
       >
-        {permissions.canEdit ? (
-          <BulkAssignBar ids={selected} lookups={lookups.data} onDone={() => setSelected([])} />
-        ) : null}
+        <BulkAssignBar
+          ids={selected}
+          lookups={lookups.data}
+          canEdit={permissions.canEdit}
+          onDone={() => setSelected([])}
+        />
 
         <QueryState
           query={products}
@@ -159,7 +156,7 @@ export function ProductTable({
               rows={page.rows}
               total={total}
               filter={filter}
-              hasSelection={permissions.canEdit}
+              hasSelection
               selected={selected}
               onSelectionChange={setSelected}
               loading={products.isFetching && !products.isPending}
