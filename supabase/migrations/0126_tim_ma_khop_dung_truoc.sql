@@ -1,9 +1,14 @@
--- 0123: tìm mã hàng — mã khớp đúng luôn đứng đầu (08/10/2026).
+-- 0126: tìm mã hàng — mã khớp đúng luôn đứng đầu (08/10/2026).
 --
 -- Gõ đủ "HVR18-12TT-PC" mà danh sách đưa HVR18-12TKN-PC (phát sinh gần đây hơn) lên trước:
 -- cả danh_sach_san_pham lẫn tim_san_pham xếp lan_phat_sinh_cuoi TRƯỚC độ giống. Thêm
 -- tiêu chí đứng đầu: khớp đúng mã → mã bắt đầu bằng từ khóa → mã chứa từ khóa → còn lại.
--- Thân hàm chép từ 0096 / 0029, chỉ vá chỗ ghi "0123". Chữ ký giữ nguyên.
+-- Thân hàm chép từ 0096 / 0029, chỉ vá chỗ ghi "0126". Chữ ký giữ nguyên.
+--
+-- Hạng 1/2 so bằng starts_with/strpos, không bằng ILIKE: từ khóa người gõ có thể chứa
+-- `_`/`%` — với ILIKE chúng thành ký tự đại diện và đẩy mã không liên quan lên hạng 1.
+--
+-- Số 0126 (không phải 0123): main đã có 0123_thu_quyen_them_dong_don_anon.
 
 CREATE OR REPLACE FUNCTION public.danh_sach_san_pham(p_tu_khoa text DEFAULT NULL::text, p_nhom_hang_id uuid DEFAULT NULL::uuid, p_cong_doan_id uuid DEFAULT NULL::uuid, p_dvt_id uuid DEFAULT NULL::uuid, p_trang_thai_ton text DEFAULT NULL::text, p_dang_kinh_doanh boolean DEFAULT true, p_can_ra boolean DEFAULT NULL::boolean, p_sap_xep text DEFAULT NULL::text, p_huong text DEFAULT 'asc'::text, p_trang integer DEFAULT 1, p_kich_thuoc integer DEFAULT 50, p_co_anh boolean DEFAULT NULL::boolean, p_quy_chuan text DEFAULT NULL::text)
  RETURNS TABLE(id uuid, ma_hang text, ten_hang text, nhom_hang_id uuid, ten_nhom_hang text, dvt_id uuid, ten_dvt text, cong_doan_id uuid, ma_cong_doan text, ten_cong_doan text, mau_cong_doan text, quy_doi numeric, gia_ban numeric, gia_von numeric, ton_toi_thieu numeric, ton_toi_da numeric, kho_mac_dinh_id uuid, dang_kinh_doanh boolean, tong_ton numeric, can_ra boolean, can_ra_dvt boolean, updated_at timestamp with time zone, tong_so_dong bigint, loai_hang text, hang_xe text, dong_xe text, linh_kien text, ghi_chu text, truong_chon_tay text[], xe_dung_chung jsonb)
@@ -77,11 +82,11 @@ begin
          or (p_trang_thai_ton = 'duoi_dinh_muc'
              and l.ton_toi_thieu > 0 and l.tong < l.ton_toi_thieu))
   order by
-    -- 0123: mã khớp đúng → bắt đầu bằng từ khóa → chứa từ khóa → còn lại (bẫy 15).
+    -- 0126: mã khớp đúng → bắt đầu bằng từ khóa → chứa từ khóa → còn lại (bẫy 15).
     case when p_sap_xep is null and v_tk is not null then
       case when upper(public.f_unaccent(l.ma_hang)) = upper(public.f_unaccent(v_tk)) then 0
-           when public.f_unaccent(l.ma_hang) ilike public.f_unaccent(v_tk) || '%' then 1
-           when public.f_unaccent(l.ma_hang) ilike '%' || public.f_unaccent(v_tk) || '%' then 2
+           when starts_with(upper(public.f_unaccent(l.ma_hang)), upper(public.f_unaccent(v_tk))) then 1
+           when strpos(upper(public.f_unaccent(l.ma_hang)), upper(public.f_unaccent(v_tk))) > 0 then 2
            else 3 end end asc,
     case when p_sap_xep is null and v_tk is not null then l.lan_phat_sinh_cuoi end desc nulls last,
     case when p_sap_xep is null and v_tk is not null then
@@ -129,10 +134,10 @@ as $$
          public.f_unaccent(coalesce(sp.ma_hang,'') || ' ' || coalesce(sp.ten_hang,''))
     )
   order by
-    -- 0123: mã khớp đúng → bắt đầu bằng từ khóa → chứa từ khóa → còn lại (bẫy 15).
+    -- 0126: mã khớp đúng → bắt đầu bằng từ khóa → chứa từ khóa → còn lại (bẫy 15).
     case when upper(public.f_unaccent(sp.ma_hang)) = upper(public.f_unaccent(trim(p_tu_khoa))) then 0
-         when public.f_unaccent(sp.ma_hang) ilike public.f_unaccent(trim(p_tu_khoa)) || '%' then 1
-         when public.f_unaccent(sp.ma_hang) ilike '%' || public.f_unaccent(trim(p_tu_khoa)) || '%' then 2
+         when starts_with(upper(public.f_unaccent(sp.ma_hang)), upper(public.f_unaccent(trim(p_tu_khoa)))) then 1
+         when strpos(upper(public.f_unaccent(sp.ma_hang)), upper(public.f_unaccent(trim(p_tu_khoa)))) > 0 then 2
          else 3 end,
     sp.lan_phat_sinh_cuoi desc nulls last,
     extensions.word_similarity(
