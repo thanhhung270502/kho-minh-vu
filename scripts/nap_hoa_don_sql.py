@@ -12,14 +12,18 @@ nên dữ liệu trung gian nằm ở schema `nap_tam` (không lộ qua API), m�
 (= một transaction). Bước B chạy lại an toàn: chỉ ghi sổ hóa đơn còn nháp, theo ngày.
 
 Tồn cuối KHÔNG đổi: bước A ghi phiếu Điều chỉnh ngày 14/06 cộng bù đúng lượng xuất của
-các hóa đơn sắp nạp (theo mã, kho mặc định) và chụp tồn trước; bước C so tồn sau với tồn
-trước từng (mã, kho) và báo lệch.
+các hóa đơn sắp nạp (theo mã, kho mặc định); bước C cộng sổ cái (kho_movement) của riêng
+phiếu điều chỉnh + các hóa đơn vừa nạp theo từng (mã, kho) — phải ra 0. Không so ảnh chụp
+ton_kho: app vẫn có người ghi sổ trong lúc nạp thì ảnh chụp lệch dù lần nạp đúng.
 
-Quy tắc (giống các lần nạp trước): hóa đơn đã có (theo số) bỏ qua; dòng mã "{DEL}" hoặc
-mã không có trong danh mục bỏ dòng; Mã khách hàng trống = NB001; Người duyệt đơn ghi
+Quy tắc (giống các lần nạp trước và scripts/import-lich-su-moi.ts): hóa đơn đã có (theo
+số) bỏ qua; dòng mã "{DEL}", mã không có trong danh mục hoặc số lượng không phải số dương
+bỏ dòng; Mã khách hàng trống = NB001; Người duyệt đơn ghi
 thành đoạn "Người bán: X" của ghi chú; hóa đơn "Đã hủy" ghi sổ rồi hủy (bút toán đảo);
-đơn đặt dựng từ Mã đặt hàng, Hoàn thành, nối hóa đơn.
+đơn đặt dựng từ Mã đặt hàng (gộp mọi hóa đơn; mọi hóa đơn hủy → Đã hủy, còn lại Hoàn
+thành; một dòng mỗi mã lấy từ hóa đơn chưa hủy), nối hóa đơn.
 """
+import math
 import os
 import sys
 from datetime import date, datetime
@@ -61,6 +65,19 @@ AS_MANAGER = f"""perform set_config('request.jwt.claims', json_build_object(
   'role', 'authenticated', 'vai_tro', 'quan_ly')::text, true);"""
 
 
+def qty(v):
+    """Số lượng nạp được: số thật, dương — như laSoLuongHopLe bên TS. Không được → None."""
+    if isinstance(v, bool) or v is None:
+        return None
+    try:
+        n = float(str(v).replace(",", ".")) if isinstance(v, str) else float(v)
+    except ValueError:
+        return None
+    if not math.isfinite(n) or n <= 0:
+        return None
+    return int(n) if n.is_integer() else n
+
+
 def read(src):
     ws = openpyxl.load_workbook(src, read_only=True, data_only=True).worksheets[0]
     rows = ws.iter_rows(values_only=True)
@@ -69,19 +86,23 @@ def read(src):
             "Ghi chú", "Trạng thái", "Mã hàng", "Ghi chú dòng", "Số lượng"]
     if any(h not in col for h in need):
         raise SystemExit(f"Thiếu cột: {[h for h in need if h not in col]}")
-    docs, lines = {}, []
+    docs, lines, skipped = {}, [], []
     for r in rows:
         so = r[col["Mã hóa đơn"]]
         if not so:
             continue
         so = str(so).strip()
+        n = qty(r[col["Số lượng"]])
+        if n is None:
+            skipped.append(f"{so} {r[col['Mã hàng']]} {r[col['Số lượng']]!r}")
+            continue
         docs.setdefault(so, (
             so, as_date(r[col["Ngày"]]), r[col["Mã đặt hàng"]], r[col["Mã khách hàng"]],
             r[col["Người duyệt đơn"]], r[col["Người tạo"]], r[col["Ghi chú"]],
             "hủy" in str(r[col["Trạng thái"]] or "").lower(),
         ))
-        lines.append((so, len(lines) + 1, r[col["Mã hàng"]], r[col["Số lượng"]], r[col["Ghi chú dòng"]]))
-    return list(docs.values()), lines
+        lines.append((so, len(lines) + 1, r[col["Mã hàng"]], n, r[col["Ghi chú dòng"]]))
+    return list(docs.values()), lines, skipped
 
 
 def values(rs):
@@ -101,13 +122,13 @@ create schema nap_tam;
 create table nap_tam.hd (so text primary key, ngay date, ma_dh text, ma_kh text, duyet text, tao text, ghi_chu text, huy boolean);
 create table nap_tam.dong (so text, thu_tu int, ma_hang text, so_luong numeric, ghi_chu text);
 create table nap_tam.ket_qua (buoc text, so_luong bigint);
+create table nap_tam.dieu_chinh (id uuid primary key);
 """]
     for i in range(0, len(docs), 2000):
         out.append(f"insert into nap_tam.hd values\n{values(docs[i:i + 2000])};\n")
     for i in range(0, len(lines), 5000):
         out.append(f"insert into nap_tam.dong values\n{values(lines[i:i + 5000])};\n")
     out.append(f"""
-create table nap_tam.ton_truoc as select san_pham_id, kho_id, so_luong from public.ton_kho;
 insert into nap_tam.ket_qua select 'hoa_don_trong_file', count(*) from nap_tam.hd;
 
 -- Hóa đơn đã có trên hệ thống: bỏ qua.
@@ -128,6 +149,15 @@ if v is not null then raise exception 'Chưa có tài khoản cho: % — tạo �
 select string_agg(distinct ma_kh, ', ') into v from nap_tam.hd
 where ma_kh is not null and not exists (select 1 from public.doi_tac dt where upper(dt.ma) = upper(nap_tam.hd.ma_kh));
 if v is not null then raise exception 'Chưa có đối tác: %', v; end if;
+-- uq_chung_tu_hoa_don_cua_don (0078): một đơn tối đa một hóa đơn chưa hủy — chặn ngay ở đây
+-- thay vì để bước C chết lúc nối hóa đơn.
+select string_agg(ma_dh || ' (' || n || ' hóa đơn)', ', ') into v from (
+  select ma_dh, count(*) n from nap_tam.hd where ma_dh is not null and not huy group by ma_dh having count(*) > 1
+  union all
+  select h.ma_dh, 1 from nap_tam.hd h join public.don_dat_hang dh on dh.so_dh = h.ma_dh
+  join public.chung_tu ct on ct.don_dat_hang_id = dh.id and ct.loai_ct = 'XUAT' and ct.trang_thai <> 'DA_HUY'
+  where not h.huy) s;
+if v is not null then raise exception 'Đơn đặt có nhiều hơn một hóa đơn chưa hủy: %', v; end if;
 
 -- Hóa đơn nháp + dòng: kho dòng = kho mặc định của mã.
 insert into public.chung_tu (so_ct, loai_ct, kho_id, ngay_ct, doi_tac_id, ghi_chu, nguoi_tao_id)
@@ -151,6 +181,7 @@ begin
   insert into public.chung_tu (so_ct, loai_ct, kho_id, ngay_ct, ghi_chu)
   values (public.sinh_so_ct('DIEU_CHINH'), 'DIEU_CHINH', (select id from public.kho where ma = 'K1'), date {q(OPENING_DATE)}, {q(OPENING_NOTE)})
   returning id into v_ct;
+  insert into nap_tam.dieu_chinh values (v_ct);
   insert into public.chung_tu_dong (chung_tu_id, san_pham_id, so_luong, don_gia, thanh_tien, kho_id)
   select v_ct, d.san_pham_id, sum(d.so_luong), 0, 0, d.kho_id
   from public.chung_tu_dong d
@@ -218,6 +249,8 @@ end loop;
 insert into nap_tam.ket_qua values ('hoa_don_da_huy', n);
 
 -- Đơn đặt: một đơn mỗi Mã đặt hàng (gộp mọi hóa đơn của nó), Hoàn thành / Đã hủy, nối hóa đơn.
+-- Dòng đơn: một dòng mỗi mã (so_luong_da_xuat của hệ tính theo mã — _cap_nhat_tien_do_ddh,
+-- 0050), lấy từ hóa đơn chưa hủy (đơn hủy hết: từ mọi hóa đơn, đã xuất = 0).
 create temp table _don on commit drop as
 select h.ma_dh, min(h.ngay) as ngay, bool_and(h.huy) as huy,
        (array_agg(h.ma_kh order by h.ngay, h.so))[1] as ma_kh,
@@ -239,32 +272,44 @@ from _don o;
 insert into nap_tam.ket_qua select 'don_dat_moi', count(*) from _don;
 
 insert into public.don_dat_hang_dong (don_dat_hang_id, san_pham_id, so_luong_dat, so_luong_da_xuat, don_gia, ghi_chu, created_at)
-select dh.id, d.san_pham_id, d.so_luong, d.so_luong, 0, d.ghi_chu, d.created_at
+select dh.id, d.san_pham_id, sum(d.so_luong), case when o.huy then 0 else sum(d.so_luong) end, 0,
+       (array_agg(d.ghi_chu order by d.created_at) filter (where d.ghi_chu is not null))[1], min(d.created_at)
 from _don o
 join public.don_dat_hang dh on dh.so_dh = o.ma_dh
-join nap_tam.hd h on h.ma_dh = o.ma_dh
+join nap_tam.hd h on h.ma_dh = o.ma_dh and (o.huy or not h.huy)
 join public.chung_tu ct on ct.so_ct = h.so and ct.loai_ct = 'XUAT'
-join public.chung_tu_dong d on d.chung_tu_id = ct.id;
+join public.chung_tu_dong d on d.chung_tu_id = ct.id
+group by dh.id, d.san_pham_id, o.huy;
 
 update public.chung_tu ct set don_dat_hang_id = dh.id
 from nap_tam.hd h join public.don_dat_hang dh on dh.so_dh = h.ma_dh
 where ct.so_ct = h.so and ct.loai_ct = 'XUAT' and ct.don_dat_hang_id is null;
 
--- Bộ đếm số: phiếu mới trên app đi tiếp sau số lớn nhất.
-update public.chuoi_so_ct c set so_hien_tai = greatest(c.so_hien_tai,
-  (select coalesce(max(substring(so_ct from '^HD(\\d+)$')::int), 0) from public.chung_tu where loai_ct = 'XUAT'))
-where c.loai_ct = 'XUAT' and c.nam = 0 and c.nguon = '';
-update public.chuoi_so_dh c set so_hien_tai = greatest(c.so_hien_tai,
-  (select coalesce(max(substring(so_dh from '^DH(\\d+)$')::int), 0) from public.don_dat_hang))
-where c.nam = 0;
+-- Bộ đếm số: phiếu mới trên app đi tiếp sau số lớn nhất. Upsert, không update: dòng đếm
+-- chỉ sinh ở lần cấp số đầu, project chưa từng tạo hóa đơn / đơn trên app thì chưa có.
+insert into public.chuoi_so_ct (loai_ct, nam, nguon, so_hien_tai)
+select 'XUAT', 0, '', coalesce(max(substring(so_ct from '^HD(\\d+)$')::int), 0)
+from public.chung_tu where loai_ct = 'XUAT'
+on conflict (loai_ct, nam, nguon) do update
+  set so_hien_tai = greatest(public.chuoi_so_ct.so_hien_tai, excluded.so_hien_tai);
+insert into public.chuoi_so_dh (nam, so_hien_tai)
+select 0, coalesce(max(substring(so_dh from '^DH(\\d+)$')::int), 0) from public.don_dat_hang
+on conflict (nam) do update
+  set so_hien_tai = greatest(public.chuoi_so_dh.so_hien_tai, excluded.so_hien_tai);
 
--- Tồn trước = tồn sau, từng (mã, kho).
+-- Lần nạp không đổi tồn: sổ cái của điều chỉnh bù + hóa đơn vừa nạp (gồm bút toán đảo
+-- của hóa đơn hủy — cùng chung_tu_id) cộng lại = 0 ở từng (mã, kho).
 select count(*), string_agg(x, '; ') into vi, vd from (
-  select sp.ma_hang || ' ' || coalesce(a.so_luong, 0) || '→' || coalesce(b.so_luong, 0) as x
-  from nap_tam.ton_truoc a
-  full join public.ton_kho b on b.san_pham_id = a.san_pham_id and b.kho_id = a.kho_id
-  join public.san_pham sp on sp.id = coalesce(a.san_pham_id, b.san_pham_id)
-  where coalesce(a.so_luong, 0) <> coalesce(b.so_luong, 0)
+  select sp.ma_hang || ' ' || k.ma || ' ' || sum(m.so_luong) as x
+  from public.kho_movement m
+  join public.san_pham sp on sp.id = m.san_pham_id
+  join public.kho k on k.id = m.kho_id
+  where m.chung_tu_id in (
+    select id from nap_tam.dieu_chinh
+    union all
+    select ct.id from public.chung_tu ct join nap_tam.hd h on h.so = ct.so_ct and ct.loai_ct = 'XUAT')
+  group by sp.ma_hang, k.ma
+  having sum(m.so_luong) <> 0
   limit 20) s;
 if vi > 0 then raise exception 'Tồn lệch (% dòng), vd: % — bước C cuộn lại; nap_tam giữ nguyên để đối chiếu', vi, vd; end if;
 insert into nap_tam.ket_qua values ('ton_lech', 0);
@@ -279,7 +324,7 @@ end $nap$;
 def main():
     src, out_dir = sys.argv[1], sys.argv[2]
     trial = "--thu" in sys.argv
-    docs, lines = read(src)
+    docs, lines, skipped = read(src)
     os.makedirs(out_dir, exist_ok=True)
     files = {
         "a-chuan-bi.sql": step_a(docs, lines, trial),
@@ -291,6 +336,8 @@ def main():
         with open(os.path.join(out_dir, name), "w", encoding="utf-8", newline="\n") as fh:
             fh.write(body)
     print(f"Đã ghi {out_dir}: {len(docs)} hóa đơn, {len(lines)} dòng{' (bước A chạy thử)' if trial else ''}")
+    if skipped:
+        print(f"Bỏ {len(skipped)} dòng số lượng không hợp lệ, vd: {'; '.join(skipped[:10])}")
 
 
 if __name__ == "__main__":
