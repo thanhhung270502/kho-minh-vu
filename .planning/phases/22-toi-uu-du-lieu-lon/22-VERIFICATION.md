@@ -97,3 +97,8 @@ Phase đạt gần trọn mục tiêu: thước đo 5 năm có và tái lập đ
 
 _Xác minh: 2026-10-09_
 _Người xác minh: Claude (gsd-verifier)_
+
+
+## Resolution (2026-10-10)
+
+Người dùng duyệt SC6 đạt một phần: nhánh `so_ct` của `tim_kiem_toan_cuc` chuyển sang Wave 2 (mục theo dõi ở `22-AUDIT.md` bảng Wave 2 và `STATE.md` Pending Todos). Phase 22 đóng với 6/7 SC đạt + 1 SC hoãn có duyệt. Đẩy 0124/0125 lên cloud vẫn chờ người dùng (`22-HUMAN-UAT.md` mục 2).

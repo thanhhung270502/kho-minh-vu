@@ -27,6 +27,13 @@ See: .planning/PROJECT.md (updated 2026-10-03)
 Phase: 20
 Plan: Not started
 
+### Phase 22 — đã xong (10/10/2026)
+
+- Wave 0 + Wave 1 của `22-AUDIT.md`: bộ `bench:*` (seed 5 năm ~15 phút, run, compare, explain, clean) chỉ chạy LOCAL; migration **0124** (11 index, bỏ 3) và **0125** (điều kiện ngày dùng index trong `tong_quan_chi_so`, `phan_tich_theo_ky`, `nhap_xuat_theo_ky`) **mới áp ở local**.
+- 5 năm: dashboard 2.699→170 ms, xóa dòng phiếu 56→2,8 ms, nhập–xuất theo kỳ 84→19 ms. pgTAP 1015/1015, integration 15/15.
+- SC6 đạt một phần, người dùng duyệt chuyển sang Wave 2: `tim_kiem_toan_cuc` nhánh `so_ct` vẫn Seq Scan `chung_tu` (126 ms quản lý / 308 ms thủ kho).
+- Test pgTAP 115 chứa bản sao hàm cũ (`*_cu`, `*_sai`) — Wave 2 viết lại các hàm này phải gỡ hoặc chụp lại.
+
 ### Phase 18 — đã xong (03/10/2026)
 
 Branch `feature/phase-18-nhieu-nguoi-nhan` tách từ `feature/phase-17-doi-ten` (chưa push, chưa merge). NNHAN-01..06 xong.
@@ -903,7 +910,8 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None yet.
+- [Phase 22 → Wave 2] `tim_kiem_toan_cuc` tìm theo số chứng từ (`so_ct`) vẫn quét cả `chung_tu` dù có `idx_chung_tu_so_ct_trgm` — nghi do điều kiện phân quyền/`loai_ct` (chưa kiểm chứng). Bằng chứng: `.planning/phases/22-toi-uu-du-lieu-lon/bench/explain-after-5y.txt`.
+- [Phase 22] Đẩy 0124 + 0125 lên cloud ngoài giờ văn phòng — chờ người dùng chọn thời điểm; tính cùng các migration chưa lên (`rnpq` mới tới 0084).
 
 ### Blockers/Concerns
 

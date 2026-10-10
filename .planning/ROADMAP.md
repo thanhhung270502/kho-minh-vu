@@ -786,16 +786,16 @@ Plans:
   3. Có baseline đo ở hai mức (dữ liệu hiện tại và 5 năm) TRƯỚC khi áp migration index
   4. Một migration thêm index cho: khóa ngoại thiếu index (`kho_movement.chung_tu_dong_id`, `chung_tu.chung_tu_goc_id`, `de_nghi_gop_ma.chung_tu_id`), lọc ngày (`kho_movement.ngay`, `chung_tu.created_at`/`ngay_ghi_so`, `don_dat_hang.ngay_dh`, `nhat_ky_sua(bang, sua_luc)`), thứ tự danh sách chứng từ, trigram cho `so_ct`/`so_dh`; bỏ index chết trên cột đã ngừng dùng
   5. Các RPC lọc sổ cái/chứng từ theo ngày viết lại điều kiện dùng được index (không bọc `at time zone`/cast quanh cột) — pgTAP chứng minh kết quả cũ và mới TRÙNG KHỚP trên cùng bộ dữ liệu, kể cả bút toán đảo và ranh giới nửa đêm giờ Việt Nam
-  6. `EXPLAIN` xác nhận xóa dòng phiếu, `danh_sach_don`, `tim_kiem_toan_cuc` (số phiếu/số đơn) dùng index; benchmark sau migration được ghi vào SUMMARY cạnh baseline
+  6. `EXPLAIN` xác nhận xóa dòng phiếu, `danh_sach_don`, `tim_kiem_toan_cuc` (số phiếu/số đơn) dùng index; benchmark sau migration được ghi vào SUMMARY cạnh baseline — *đạt một phần: nhánh tìm theo số chứng từ (`so_ct`) của `tim_kiem_toan_cuc` vẫn Seq Scan `chung_tu`; người dùng duyệt chuyển sang Wave 2 (10/10/2026)*
   7. `npm run check`, pgTAP local và `npm run test:integration` xanh
 
-**Plans**: 7 plans
+**Plans**: 7 plans · **Completed**: 2026-10-10 (6/7 SC đạt, SC6 một phần → Wave 2; 0124/0125 mới áp LOCAL)
 
 Plans:
 - [x] 22-01-PLAN.md — W1: Guard LOCAL dùng chung, 5 lệnh bench:*, danh mục BENCH + tồn đầu kỳ, bench:clean
-- [ ] 22-02-PLAN.md — W2: Bộ sinh chứng từ theo ngày qua đường ghi sổ thật (bench:seed, 99 ngày → 5 năm)
-- [ ] 22-03-PLAN.md — W3: Bộ đo RPC qua PostgREST bằng quản lý + thủ kho (bench:run, bench:compare)
-- [ ] 22-04-PLAN.md — W4: bench:explain + baseline 99 ngày và 5 năm TRƯỚC migration (cổng chặn D-12)
-- [ ] 22-05-PLAN.md — W5: Migration 0124 — index khóa ngoại, lọc ngày, danh sách chứng từ, trigram; bỏ index chết
-- [ ] 22-06-PLAN.md — W6: pgTAP 115 so khớp hàm cũ/mới + migration 0125 điều kiện ngày dùng được index
-- [ ] 22-07-PLAN.md — W7: Đo lại 5 năm + EXPLAIN sau, cổng check / db:test / test:integration
+- [x] 22-02-PLAN.md — W2: Bộ sinh chứng từ theo ngày qua đường ghi sổ thật (bench:seed, 99 ngày → 5 năm)
+- [x] 22-03-PLAN.md — W3: Bộ đo RPC qua PostgREST bằng quản lý + thủ kho (bench:run, bench:compare)
+- [x] 22-04-PLAN.md — W4: bench:explain + baseline 99 ngày và 5 năm TRƯỚC migration (cổng chặn D-12)
+- [x] 22-05-PLAN.md — W5: Migration 0124 — index khóa ngoại, lọc ngày, danh sách chứng từ, trigram; bỏ index chết
+- [x] 22-06-PLAN.md — W6: pgTAP 115 so khớp hàm cũ/mới + migration 0125 điều kiện ngày dùng được index
+- [x] 22-07-PLAN.md — W7: Đo lại 5 năm + EXPLAIN sau, cổng check / db:test / test:integration

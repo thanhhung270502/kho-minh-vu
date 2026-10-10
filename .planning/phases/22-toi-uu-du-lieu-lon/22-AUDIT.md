@@ -161,6 +161,7 @@ create index idx_ddh_so_dh_trgm      on public.don_dat_hang using gin (so_dh ext
 | `hoat_dong_gan_day` | Nhận mốc thời gian dưới (`p_tu`) từ client (hôm qua 00:00). Mỗi nhánh `where … >= p_tu order by … limit n` **trước khi** gom nhóm | O(2 ngày) |
 | `bang_dem_kiem_ke` | Subquery `[NAP_TON_TAM]` từng mã thay bằng một CTE gom **một lần** theo `san_pham_id` (lọc phiếu DIEU_CHINH trước, chỉ vài phiếu), rồi `left join` | O(mã trong phạm vi) |
 | `danh_sach_doi_tac` | Thêm tham số bỏ qua số giao dịch khi gọi từ ô chọn khách và từ xuất Excel. Màn danh sách đối tác vẫn đếm, nhưng chỉ trên trang đang xem | Ô chọn khách O(1) |
+| `tim_kiem_toan_cuc` (chuyển từ Phase 22 SC6) | Nhánh `so_ct` vẫn Seq Scan `chung_tu` dù đã có `idx_chung_tu_so_ct_trgm`. Thử: lọc `so_ct` trong CTE riêng TRƯỚC khi áp điều kiện quyền/`loai_ct`, hoặc index trigram partial theo `loai_ct`; xác nhận bằng `bench:explain` | ⌘K < 50 ms |
 | `danh_sach_don` / `dem_don_theo_trang_thai` | Sau khi có index Wave 1, đưa điều kiện ngày lên đầu. Ba `sum` / `count` tương quan trên `don_dat_hang_dong` gom thành một LATERAL | O(tháng) |
 
 Phía frontend:
