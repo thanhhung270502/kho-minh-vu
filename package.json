@@ -33,7 +33,12 @@
     "import:sample": "tsx scripts/import-kiotviet/make-sample-data.ts",
     "import:kiotviet-images": "tsx scripts/copy-kiotviet-images/index.ts",
     "test:concurrency": "bash scripts/test-concurrency.sh",
-    "test:load": "bash scripts/load-test/run.sh"
+    "test:load": "bash scripts/load-test/run.sh",
+    "bench:seed": "tsx scripts/bench/seed.ts",
+    "bench:clean": "tsx scripts/bench/clean.ts",
+    "bench:run": "tsx scripts/bench/run.ts",
+    "bench:compare": "tsx scripts/bench/compare.ts",
+    "bench:explain": "bash scripts/bench/explain.sh"
   },
   "dependencies": {
     "@ant-design/cssinjs": "^2.1.2",

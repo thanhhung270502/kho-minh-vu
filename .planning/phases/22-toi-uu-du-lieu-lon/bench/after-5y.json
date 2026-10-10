@@ -1,0 +1,865 @@
+{
+  "label": "after-5y",
+  "createdAt": "2026-10-09T10:41:34.562Z",
+  "gitSha": "5cbe982",
+  "latestMigration": "0125_dieu_kien_ngay_dung_index.sql",
+  "iterations": 5,
+  "scale": {
+    "kho_movement": 1008828,
+    "chung_tu": 183154,
+    "chung_tu_dong": 974079,
+    "don_dat_hang": 168018,
+    "don_dat_hang_dong": 858833,
+    "nhat_ky_sua": 678948
+  },
+  "cases": [
+    {
+      "id": "tong_quan_chi_so",
+      "rpc": "tong_quan_chi_so",
+      "role": "quan_ly",
+      "params": {},
+      "status": "ok",
+      "samplesMs": [
+        167.29733399999986,
+        171.0015840000001,
+        169.90870899999982,
+        161.6137090000002,
+        177.18212499999981
+      ],
+      "rows": 1,
+      "summary": {
+        "n": 5,
+        "p50": 169.9,
+        "p95": 177.2,
+        "max": 177.2,
+        "mean": 169.4
+      }
+    },
+    {
+      "id": "phan_tich_ton_kho.trang_1",
+      "rpc": "phan_tich_ton_kho",
+      "role": "quan_ly",
+      "params": {
+        "p_so_ngay": 30,
+        "range": [
+          0,
+          999
+        ]
+      },
+      "status": "ok",
+      "samplesMs": [
+        555.92875,
+        553.8505420000001,
+        530.4561249999997,
+        516.2612499999996,
+        522.1832920000006
+      ],
+      "rows": 1000,
+      "summary": {
+        "n": 5,
+        "p50": 530.5,
+        "p95": 555.9,
+        "max": 555.9,
+        "mean": 535.7
+      }
+    },
+    {
+      "id": "phan_tich_ton_kho.4_trang",
+      "rpc": "phan_tich_ton_kho",
+      "role": "quan_ly",
+      "params": {
+        "p_so_ngay": 30,
+        "via": "fetchAllPages"
+      },
+      "status": "ok",
+      "samplesMs": [
+        2209.7779169999994,
+        2031.1289580000011,
+        2279.319374999999,
+        2383.256292000002,
+        2363.517415999999
+      ],
+      "rows": 3311,
+      "summary": {
+        "n": 5,
+        "p50": 2279.3,
+        "p95": 2383.3,
+        "max": 2383.3,
+        "mean": 2253.4
+      }
+    },
+    {
+      "id": "hoat_dong_gan_day",
+      "rpc": "hoat_dong_gan_day",
+      "role": "quan_ly",
+      "params": {
+        "p_gioi_han": 20
+      },
+      "status": "ok",
+      "samplesMs": [
+        342.0093330000018,
+        354.7513749999998,
+        353.9572499999995,
+        355.7887919999994,
+        349.942665999999
+      ],
+      "rows": 20,
+      "summary": {
+        "n": 5,
+        "p50": 354,
+        "p95": 355.8,
+        "max": 355.8,
+        "mean": 351.3
+      }
+    },
+    {
+      "id": "bang_dem_kiem_ke",
+      "rpc": "bang_dem_kiem_ke",
+      "role": "quan_ly",
+      "params": {
+        "p_chung_tu_id": "b6df2929-8f7f-4be1-91aa-c8b25add7b3b"
+      },
+      "status": "ok",
+      "samplesMs": [
+        7.779999999998836,
+        6.59599999999773,
+        7.0303339999991294,
+        6.685667000001558,
+        8.697791999999026
+      ],
+      "rows": 36,
+      "summary": {
+        "n": 5,
+        "p50": 7,
+        "p95": 8.7,
+        "max": 8.7,
+        "mean": 7.4
+      }
+    },
+    {
+      "id": "bang_dem_kiem_ke",
+      "rpc": "bang_dem_kiem_ke",
+      "role": "thu_kho",
+      "params": {
+        "p_chung_tu_id": "b6df2929-8f7f-4be1-91aa-c8b25add7b3b"
+      },
+      "status": "ok",
+      "samplesMs": [
+        6.584040999998251,
+        7.701375000000553,
+        6.384625000002416,
+        7.025125000000116,
+        6.232208000001265
+      ],
+      "rows": 36,
+      "summary": {
+        "n": 5,
+        "p50": 6.6,
+        "p95": 7.7,
+        "max": 7.7,
+        "mean": 6.8
+      }
+    },
+    {
+      "id": "tim_kiem_toan_cuc.so_ct",
+      "rpc": "tim_kiem_toan_cuc",
+      "role": "quan_ly",
+      "params": {
+        "p_tu_khoa": "HD261006-04",
+        "p_gioi_han": 5
+      },
+      "status": "ok",
+      "samplesMs": [
+        126.43566700000156,
+        126.66208299999926,
+        125.92649999999776,
+        125.2998329999973,
+        123.52987500000017
+      ],
+      "rows": 5,
+      "summary": {
+        "n": 5,
+        "p50": 125.9,
+        "p95": 126.7,
+        "max": 126.7,
+        "mean": 125.6
+      }
+    },
+    {
+      "id": "tim_kiem_toan_cuc.so_ct",
+      "rpc": "tim_kiem_toan_cuc",
+      "role": "thu_kho",
+      "params": {
+        "p_tu_khoa": "HD261006-04",
+        "p_gioi_han": 5
+      },
+      "status": "ok",
+      "samplesMs": [
+        323.3580000000002,
+        326.4227499999979,
+        308.43966600000203,
+        300.9840000000004,
+        304.01966600000014
+      ],
+      "rows": 5,
+      "summary": {
+        "n": 5,
+        "p50": 308.4,
+        "p95": 326.4,
+        "max": 326.4,
+        "mean": 312.6
+      }
+    },
+    {
+      "id": "tim_kiem_toan_cuc.so_dh",
+      "rpc": "tim_kiem_toan_cuc",
+      "role": "quan_ly",
+      "params": {
+        "p_tu_khoa": "DH261006-04",
+        "p_gioi_han": 5
+      },
+      "status": "ok",
+      "samplesMs": [
+        125.8938330000019,
+        122.51866599999994,
+        121.27266700000109,
+        122.53437499999927,
+        122.39620899999863
+      ],
+      "rows": 5,
+      "summary": {
+        "n": 5,
+        "p50": 122.5,
+        "p95": 125.9,
+        "max": 125.9,
+        "mean": 122.9
+      }
+    },
+    {
+      "id": "tim_kiem_toan_cuc.so_dh",
+      "rpc": "tim_kiem_toan_cuc",
+      "role": "thu_kho",
+      "params": {
+        "p_tu_khoa": "DH261006-04",
+        "p_gioi_han": 5
+      },
+      "status": "ok",
+      "samplesMs": [
+        303.7389579999981,
+        302.2022500000021,
+        299.9289580000004,
+        315.5355410000011,
+        301.463291
+      ],
+      "rows": 5,
+      "summary": {
+        "n": 5,
+        "p50": 302.2,
+        "p95": 315.5,
+        "max": 315.5,
+        "mean": 304.6
+      }
+    },
+    {
+      "id": "phan_tich_theo_ky.mac_dinh",
+      "rpc": "phan_tich_theo_ky",
+      "role": "quan_ly",
+      "params": {
+        "p_tu": "2026-10-01",
+        "p_den": "2026-10-09"
+      },
+      "status": "ok",
+      "samplesMs": [
+        579.2537499999999,
+        549.9174999999996,
+        558.5237499999967,
+        532.7972090000003,
+        495.8577919999989
+      ],
+      "rows": 3311,
+      "summary": {
+        "n": 5,
+        "p50": 549.9,
+        "p95": 579.3,
+        "max": 579.3,
+        "mean": 543.3
+      }
+    },
+    {
+      "id": "phan_tich_theo_ky.90_ngay",
+      "rpc": "phan_tich_theo_ky",
+      "role": "quan_ly",
+      "params": {
+        "p_tu": "2026-07-12",
+        "p_den": "2026-10-09"
+      },
+      "status": "ok",
+      "samplesMs": [
+        500.6424590000024,
+        495.42266700000255,
+        504.11104200000045,
+        497.57116699999824,
+        507.1842499999984
+      ],
+      "rows": 3311,
+      "summary": {
+        "n": 5,
+        "p50": 500.6,
+        "p95": 507.2,
+        "max": 507.2,
+        "mean": 501
+      }
+    },
+    {
+      "id": "nhap_xuat_theo_ky.mac_dinh",
+      "rpc": "nhap_xuat_theo_ky",
+      "role": "quan_ly",
+      "params": {
+        "p_tu": "2026-10-01",
+        "p_den": "2026-10-09",
+        "p_buoc": "ngay"
+      },
+      "status": "ok",
+      "samplesMs": [
+        18.727708999998868,
+        19.217540999998164,
+        17.943166000004567,
+        18.181707999996434,
+        19.287374999999884
+      ],
+      "rows": 9,
+      "summary": {
+        "n": 5,
+        "p50": 18.7,
+        "p95": 19.3,
+        "max": 19.3,
+        "mean": 18.7
+      }
+    },
+    {
+      "id": "nhap_xuat_theo_ngay.30",
+      "rpc": "nhap_xuat_theo_ngay",
+      "role": "quan_ly",
+      "params": {
+        "p_so_ngay": 30
+      },
+      "status": "ok",
+      "samplesMs": [
+        35.132416000000376,
+        36.79804100000183,
+        33.118249999999534,
+        35.905250000003434,
+        37.63379200000054
+      ],
+      "rows": 30,
+      "summary": {
+        "n": 5,
+        "p50": 35.9,
+        "p95": 37.6,
+        "max": 37.6,
+        "mean": 35.7
+      }
+    },
+    {
+      "id": "nhap_xuat_theo_ngay.90",
+      "rpc": "nhap_xuat_theo_ngay",
+      "role": "quan_ly",
+      "params": {
+        "p_so_ngay": 90
+      },
+      "status": "ok",
+      "samplesMs": [
+        39.616792000000714,
+        39.40999999999622,
+        39.508208999999624,
+        39.95237500000076,
+        39.42095900000277
+      ],
+      "rows": 90,
+      "summary": {
+        "n": 5,
+        "p50": 39.5,
+        "p95": 40,
+        "max": 40,
+        "mean": 39.6
+      }
+    },
+    {
+      "id": "bao_cao_xuat_am",
+      "rpc": "bao_cao_xuat_am",
+      "role": "quan_ly",
+      "params": {},
+      "status": "ok",
+      "samplesMs": [
+        624.953125,
+        632.4238750000004,
+        642.7855830000044,
+        623.1216669999994,
+        629.8873340000064
+      ],
+      "rows": 0,
+      "summary": {
+        "n": 5,
+        "p50": 629.9,
+        "p95": 642.8,
+        "max": 642.8,
+        "mean": 630.6
+      }
+    },
+    {
+      "id": "danh_sach_doi_tac.o_chon_khach",
+      "rpc": "danh_sach_doi_tac",
+      "role": "quan_ly",
+      "params": {
+        "p_loai": "KHACH",
+        "p_dang_hoat_dong": true,
+        "p_trang": 1,
+        "p_kich_thuoc": 20
+      },
+      "status": "ok",
+      "samplesMs": [
+        37.27845800000068,
+        36.28362499999639,
+        36.394749999999476,
+        35.87604199999623,
+        34.90270800000144
+      ],
+      "rows": 20,
+      "summary": {
+        "n": 5,
+        "p50": 36.3,
+        "p95": 37.3,
+        "max": 37.3,
+        "mean": 36.1
+      }
+    },
+    {
+      "id": "danh_sach_doi_tac.o_chon_khach",
+      "rpc": "danh_sach_doi_tac",
+      "role": "thu_kho",
+      "params": {
+        "p_loai": "KHACH",
+        "p_dang_hoat_dong": true,
+        "p_trang": 1,
+        "p_kich_thuoc": 20
+      },
+      "status": "ok",
+      "samplesMs": [
+        41.162709000003815,
+        41.41008300000249,
+        43.075874999994994,
+        41.66329200000473,
+        44.31987500000105
+      ],
+      "rows": 20,
+      "summary": {
+        "n": 5,
+        "p50": 41.7,
+        "p95": 44.3,
+        "max": 44.3,
+        "mean": 42.3
+      }
+    },
+    {
+      "id": "danh_sach_doi_tac.trang_doi_tac",
+      "rpc": "danh_sach_doi_tac",
+      "role": "quan_ly",
+      "params": {
+        "p_dang_hoat_dong": true,
+        "p_trang": 1,
+        "p_kich_thuoc": 50
+      },
+      "status": "ok",
+      "samplesMs": [
+        57.96650000000227,
+        56.17941599999904,
+        55.598666999998386,
+        55.75854200000322,
+        57.81841699999495
+      ],
+      "rows": 50,
+      "summary": {
+        "n": 5,
+        "p50": 56.2,
+        "p95": 58,
+        "max": 58,
+        "mean": 56.7
+      }
+    },
+    {
+      "id": "danh_sach_don.mac_dinh",
+      "rpc": "danh_sach_don",
+      "role": "quan_ly",
+      "params": {
+        "p_trang_thai": [
+          "TAM",
+          "DA_XAC_NHAN",
+          "HOAN_THANH"
+        ],
+        "p_tu_ngay": "2026-10-01",
+        "p_den_ngay": "2026-10-09",
+        "p_trang": 1,
+        "p_kich_thuoc": 50
+      },
+      "status": "ok",
+      "samplesMs": [
+        6.87804199999664,
+        6.854082999998354,
+        6.936500000003434,
+        5.57341599999927,
+        6.415750000000116
+      ],
+      "rows": 50,
+      "summary": {
+        "n": 5,
+        "p50": 6.9,
+        "p95": 6.9,
+        "max": 6.9,
+        "mean": 6.5
+      }
+    },
+    {
+      "id": "danh_sach_don.mac_dinh",
+      "rpc": "danh_sach_don",
+      "role": "thu_kho",
+      "params": {
+        "p_trang_thai": [
+          "TAM",
+          "DA_XAC_NHAN",
+          "HOAN_THANH"
+        ],
+        "p_tu_ngay": "2026-10-01",
+        "p_den_ngay": "2026-10-09",
+        "p_trang": 1,
+        "p_kich_thuoc": 50
+      },
+      "status": "ok",
+      "samplesMs": [
+        6.526000000005297,
+        4.986458999999741,
+        5.1996670000007725,
+        4.954416000000492,
+        5.639625000003434
+      ],
+      "rows": 50,
+      "summary": {
+        "n": 5,
+        "p50": 5.2,
+        "p95": 6.5,
+        "max": 6.5,
+        "mean": 5.5
+      }
+    },
+    {
+      "id": "dem_don_theo_trang_thai.mac_dinh",
+      "rpc": "dem_don_theo_trang_thai",
+      "role": "quan_ly",
+      "params": {
+        "p_tu_ngay": "2026-10-01",
+        "p_den_ngay": "2026-10-09"
+      },
+      "status": "ok",
+      "samplesMs": [
+        3.710958000003302,
+        2.3949999999967986,
+        3.7620000000024447,
+        2.915167000006477,
+        3.404167000000598
+      ],
+      "rows": 4,
+      "summary": {
+        "n": 5,
+        "p50": 3.4,
+        "p95": 3.8,
+        "max": 3.8,
+        "mean": 3.2
+      }
+    },
+    {
+      "id": "dem_don_theo_trang_thai.mac_dinh",
+      "rpc": "dem_don_theo_trang_thai",
+      "role": "thu_kho",
+      "params": {
+        "p_tu_ngay": "2026-10-01",
+        "p_den_ngay": "2026-10-09"
+      },
+      "status": "ok",
+      "samplesMs": [
+        2.069083000002138,
+        1.986457999999402,
+        3.0080419999940204,
+        2.792458000003535,
+        3.0703340000036405
+      ],
+      "rows": 4,
+      "summary": {
+        "n": 5,
+        "p50": 2.8,
+        "p95": 3.1,
+        "max": 3.1,
+        "mean": 2.6
+      }
+    },
+    {
+      "id": "danh_sach_chung_tu.hoa_don",
+      "rpc": "danh_sach_chung_tu",
+      "role": "quan_ly",
+      "params": {
+        "p_loai_ct": "XUAT",
+        "p_tu_ngay": "2026-10-01",
+        "p_den_ngay": "2026-10-09",
+        "p_trang": 1,
+        "p_kich_thuoc": 50
+      },
+      "status": "ok",
+      "samplesMs": [
+        7.094875000002503,
+        6.9042090000002645,
+        7.517165999997815,
+        6.3232090000019525,
+        6.843667000001005
+      ],
+      "rows": 50,
+      "summary": {
+        "n": 5,
+        "p50": 6.9,
+        "p95": 7.5,
+        "max": 7.5,
+        "mean": 6.9
+      }
+    },
+    {
+      "id": "danh_sach_chung_tu.hoa_don",
+      "rpc": "danh_sach_chung_tu",
+      "role": "thu_kho",
+      "params": {
+        "p_loai_ct": "XUAT",
+        "p_tu_ngay": "2026-10-01",
+        "p_den_ngay": "2026-10-09",
+        "p_trang": 1,
+        "p_kich_thuoc": 50
+      },
+      "status": "ok",
+      "samplesMs": [
+        6.0917499999995925,
+        6.33758300000045,
+        7.9221249999973224,
+        6.074582999994163,
+        6.403875000003609
+      ],
+      "rows": 50,
+      "summary": {
+        "n": 5,
+        "p50": 6.3,
+        "p95": 7.9,
+        "max": 7.9,
+        "mean": 6.6
+      }
+    },
+    {
+      "id": "the_kho_san_pham",
+      "rpc": "the_kho_san_pham",
+      "role": "quan_ly",
+      "params": {
+        "p_san_pham_id": "7f35feaf-fa0b-4918-be3c-bed20479ff8b",
+        "p_trang": 1,
+        "p_kich_thuoc": 50
+      },
+      "status": "ok",
+      "samplesMs": [
+        113.80466599999636,
+        103.82079199999862,
+        99.7219169999953,
+        101.39370799999597,
+        100.43141699999978
+      ],
+      "rows": 50,
+      "summary": {
+        "n": 5,
+        "p50": 101.4,
+        "p95": 113.8,
+        "max": 113.8,
+        "mean": 103.8
+      }
+    },
+    {
+      "id": "the_kho_san_pham",
+      "rpc": "the_kho_san_pham",
+      "role": "thu_kho",
+      "params": {
+        "p_san_pham_id": "7f35feaf-fa0b-4918-be3c-bed20479ff8b",
+        "p_trang": 1,
+        "p_kich_thuoc": 50
+      },
+      "status": "ok",
+      "samplesMs": [
+        100.87104199999885,
+        100.12770900000032,
+        99.27066699999705,
+        99.19724999999744,
+        99.40033399999811
+      ],
+      "rows": 50,
+      "summary": {
+        "n": 5,
+        "p50": 99.4,
+        "p95": 100.9,
+        "max": 100.9,
+        "mean": 99.8
+      }
+    },
+    {
+      "id": "lich_su_giao_dich_doi_tac",
+      "rpc": "lich_su_giao_dich_doi_tac",
+      "role": "quan_ly",
+      "params": {
+        "p_doi_tac_id": "412f471d-02f9-4685-9d7e-65153fb27a7c",
+        "p_trang": 1,
+        "p_kich_thuoc": 50
+      },
+      "status": "ok",
+      "samplesMs": [
+        29.91554200000246,
+        21.690041000001656,
+        21.956208000003244,
+        21.169000000001688,
+        21.799749999998312
+      ],
+      "rows": 50,
+      "summary": {
+        "n": 5,
+        "p50": 21.8,
+        "p95": 29.9,
+        "max": 29.9,
+        "mean": 23.3
+      }
+    },
+    {
+      "id": "tim_san_pham.1_ky_tu",
+      "rpc": "tim_san_pham",
+      "role": "quan_ly",
+      "params": {
+        "p_tu_khoa": "6",
+        "p_gioi_han": 20
+      },
+      "status": "ok",
+      "samplesMs": [
+        32.83441599999787,
+        32.56549999999697,
+        32.17804199999955,
+        31.73254199999792,
+        30.76933299999655
+      ],
+      "rows": 20,
+      "summary": {
+        "n": 5,
+        "p50": 32.2,
+        "p95": 32.8,
+        "max": 32.8,
+        "mean": 32
+      }
+    },
+    {
+      "id": "tim_san_pham.1_ky_tu",
+      "rpc": "tim_san_pham",
+      "role": "thu_kho",
+      "params": {
+        "p_tu_khoa": "6",
+        "p_gioi_han": 20
+      },
+      "status": "ok",
+      "samplesMs": [
+        30.520708999996714,
+        32.11333399999421,
+        31.716416999996,
+        32.21575000000303,
+        30.983165999998164
+      ],
+      "rows": 20,
+      "summary": {
+        "n": 5,
+        "p50": 31.7,
+        "p95": 32.2,
+        "max": 32.2,
+        "mean": 31.5
+      }
+    },
+    {
+      "id": "tim_san_pham.5_ky_tu",
+      "rpc": "tim_san_pham",
+      "role": "quan_ly",
+      "params": {
+        "p_tu_khoa": "nhong",
+        "p_gioi_han": 20
+      },
+      "status": "ok",
+      "samplesMs": [
+        5.204291999994894,
+        6.124666000003344,
+        5.53308300000208,
+        5.064457999993465,
+        5.004000000000815
+      ],
+      "rows": 20,
+      "summary": {
+        "n": 5,
+        "p50": 5.2,
+        "p95": 6.1,
+        "max": 6.1,
+        "mean": 5.4
+      }
+    },
+    {
+      "id": "tim_san_pham.5_ky_tu",
+      "rpc": "tim_san_pham",
+      "role": "thu_kho",
+      "params": {
+        "p_tu_khoa": "nhong",
+        "p_gioi_han": 20
+      },
+      "status": "ok",
+      "samplesMs": [
+        6.980790999994497,
+        5.403416000001016,
+        5.722166999999899,
+        6.200000000004366,
+        5.96541700000671
+      ],
+      "rows": 20,
+      "summary": {
+        "n": 5,
+        "p50": 6,
+        "p95": 7,
+        "max": 7,
+        "mean": 6.1
+      }
+    },
+    {
+      "id": "xoa_dong_phieu_nhap",
+      "rpc": "chung_tu_dong.delete",
+      "role": "quan_ly",
+      "params": {
+        "table": "chung_tu_dong",
+        "op": "delete",
+        "eq": "id",
+        "count": "exact"
+      },
+      "status": "ok",
+      "samplesMs": [
+        2.2240829999936977,
+        4.865375000001222,
+        12.034166999997979,
+        2.8039579999967827,
+        2.4029999999984284
+      ],
+      "rows": 1,
+      "summary": {
+        "n": 5,
+        "p50": 2.8,
+        "p95": 12,
+        "max": 12,
+        "mean": 4.9
+      }
+    }
+  ]
+}

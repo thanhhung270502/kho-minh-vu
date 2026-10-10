@@ -746,3 +746,56 @@ Plans:
 - [x] 20-15-PLAN.md — W4: Chi tiết đơn hai cột + thêm dòng cộng dồn qua RPC
 - [x] 20-16-PLAN.md — W5: Ma trận quyền route, cổng kiểm toàn bộ, UAT trình duyệt (checkpoint)
 **UI hint**: yes
+
+### Phase 21: Đồng bộ KiotViet hằng ngày
+
+**Goal**: Trong giai đoạn KiotViet còn là nơi nhập liệu duy nhất, mỗi ngày người dùng export file Excel từ KiotViet, thả vào `data/kiotviet-sync/inbox/`, chạy `npm run sync:kiotviet` — hệ mới nhận đủ danh mục, đối tác và mọi chứng từ phát sinh, chạy lại không trùng, tồn khớp KiotViet.
+**Depends on**: Phase 20. Script mới hoàn toàn (`scripts/kiotviet-sync/`), KHÔNG dùng lại `scripts/import-*`, `_nap-chung-tu.ts`, `_supabase-admin.ts`.
+**Requirements**: TBD
+**Quyết định đã chốt (08/10/2026)**:
+
+- Nguồn: 9 file Excel export tay (sản phẩm, NCC, khách hàng, hóa đơn, nhập hàng, trả hàng, trả hàng nhập, chuyển hàng, kiểm kho). Không dùng KiotViet Public API, không cào phiên web.
+- Nhịp: một lần/ngày, chạy tay. KiotViet là nguồn duy nhất — không ai nhập trực tiếp trên hệ mới trong giai đoạn này.
+- 1 kho (Kho 1). Không lấy giá (đơn giá 0). Người nhận hóa đơn = khách hàng thật từ KiotViet (upsert đối tác). Tài khoản riêng "Đồng bộ KiotViet" là người tạo mọi phiếu sync.
+
+**Success Criteria** (what must be TRUE):
+
+  1. `npm run sync:kiotviet` mặc định chỉ đọc + báo cáo; `--ghi` mới nạp; trỏ cloud mà thiếu `--cloud` thì dừng, và luôn in rõ host đang trỏ
+  2. Chạy lại cùng bộ file lần hai: 0 phiếu thêm, 0 phiếu sửa — nhận diện theo số phiếu KiotViet + dấu vân tay nội dung
+  3. Phiếu bị sửa trên KiotViet → phiếu cũ hủy bằng bút toán đảo, ghi phiếu mới; phiếu "Đã hủy" trên KiotViet → hủy theo; không xóa gì khỏi sổ cái
+  4. Mỗi phiếu tạo + dòng + ghi sổ trong MỘT RPC Postgres (một transaction); xuất âm tự gắn lý do lệch tồn
+  5. Đối tác/mã hàng mới hoặc đổi trên KiotViet được upsert trước khi nạp chứng từ
+  6. Bảng nhật ký sync (có RLS) ghi mỗi lần chạy: file, số phiếu thêm/sửa/hủy/bỏ qua/lỗi; báo cáo markdown ở `data/kiotviet-sync/reports/`, file đã xử lý chuyển sang `processed/<ngày>/`
+  7. Báo cáo đối chiếu tồn hệ mới với cột tồn file sản phẩm; `--can-ton` sinh phiếu Điều chỉnh đưa về khớp
+  8. README hướng dẫn export từng màn KiotViet (bộ lọc, khoảng ngày) và lệnh chạy hằng ngày
+
+**Plans**: 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 21 to break down)
+
+### Phase 22: Tối ưu truy vấn khi dữ liệu phình theo thời gian (Wave 0 + Wave 1)
+
+**Goal**: Có thước đo hiệu năng ở quy mô 5 năm (~1 triệu dòng sổ cái), và mọi đường đọc theo ngày / theo số phiếu / xóa dòng phiếu đi qua index thay vì quét cả bảng — không đổi dữ liệu, không đổi kết quả trả về của RPC nào.
+**Depends on**: Không phụ thuộc phase đang mở. Migration đánh số sau 0123. Audit đầy đủ (số đo phonzy, 13 rủi ro xếp hạng, Wave 2–4 để sau): `.planning/phases/22-toi-uu-du-lieu-lon/22-AUDIT.md`
+**Requirements**: TBD
+**Success Criteria** (what must be TRUE):
+
+  1. Script sinh dữ liệu quy mô 5 năm trên Supabase LOCAL (chặn mọi host khác 127.0.0.1/localhost), ghi qua RPC ghi sổ để trigger tồn/giá vốn chạy thật, đánh dấu để dọn được; chạy lại không nhân đôi
+  2. Script benchmark gọi các RPC trong bảng rủi ro của audit qua supabase-js bằng tài khoản quản lý và thủ kho, in p50/p95, lưu kết quả để so trước/sau
+  3. Có baseline đo ở hai mức (dữ liệu hiện tại và 5 năm) TRƯỚC khi áp migration index
+  4. Một migration thêm index cho: khóa ngoại thiếu index (`kho_movement.chung_tu_dong_id`, `chung_tu.chung_tu_goc_id`, `de_nghi_gop_ma.chung_tu_id`), lọc ngày (`kho_movement.ngay`, `chung_tu.created_at`/`ngay_ghi_so`, `don_dat_hang.ngay_dh`, `nhat_ky_sua(bang, sua_luc)`), thứ tự danh sách chứng từ, trigram cho `so_ct`/`so_dh`; bỏ index chết trên cột đã ngừng dùng
+  5. Các RPC lọc sổ cái/chứng từ theo ngày viết lại điều kiện dùng được index (không bọc `at time zone`/cast quanh cột) — pgTAP chứng minh kết quả cũ và mới TRÙNG KHỚP trên cùng bộ dữ liệu, kể cả bút toán đảo và ranh giới nửa đêm giờ Việt Nam
+  6. `EXPLAIN` xác nhận xóa dòng phiếu, `danh_sach_don`, `tim_kiem_toan_cuc` (số phiếu/số đơn) dùng index; benchmark sau migration được ghi vào SUMMARY cạnh baseline — *đạt một phần: nhánh tìm theo số chứng từ (`so_ct`) của `tim_kiem_toan_cuc` vẫn Seq Scan `chung_tu`; người dùng duyệt chuyển sang Wave 2 (10/10/2026)*
+  7. `npm run check`, pgTAP local và `npm run test:integration` xanh
+
+**Plans**: 7 plans · **Completed**: 2026-10-10 (6/7 SC đạt, SC6 một phần → Wave 2; 0124/0125 mới áp LOCAL)
+
+Plans:
+- [x] 22-01-PLAN.md — W1: Guard LOCAL dùng chung, 5 lệnh bench:*, danh mục BENCH + tồn đầu kỳ, bench:clean
+- [x] 22-02-PLAN.md — W2: Bộ sinh chứng từ theo ngày qua đường ghi sổ thật (bench:seed, 99 ngày → 5 năm)
+- [x] 22-03-PLAN.md — W3: Bộ đo RPC qua PostgREST bằng quản lý + thủ kho (bench:run, bench:compare)
+- [x] 22-04-PLAN.md — W4: bench:explain + baseline 99 ngày và 5 năm TRƯỚC migration (cổng chặn D-12)
+- [x] 22-05-PLAN.md — W5: Migration 0124 — index khóa ngoại, lọc ngày, danh sách chứng từ, trigram; bỏ index chết
+- [x] 22-06-PLAN.md — W6: pgTAP 115 so khớp hàm cũ/mới + migration 0125 điều kiện ngày dùng được index
+- [x] 22-07-PLAN.md — W7: Đo lại 5 năm + EXPLAIN sau, cổng check / db:test / test:integration

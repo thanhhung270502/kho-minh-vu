@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: "- [ ] **Phase 1: Nền dữ liệu** - Schema 13 bảng, sổ cái bất biến, trigger tồn kho + giá vốn, RLS bốn vai trò, chuyển danh mục thật — kiểm chứng bằng SQL, chưa có giao diện"
 status: Milestone complete
-stopped_at: Completed 18-07-PLAN.md
-last_updated: "2026-10-04T08:43:55.441Z"
-last_activity: 2026-10-04
+stopped_at: Completed 22-03-PLAN.md
+last_updated: "2026-10-09T10:13:00.256Z"
+last_activity: "2026-10-08 - Completed quick task 261008-w3x: Setup Vitest unit + integration test và CI"
 progress:
-  total_phases: 11
+  total_phases: 13
   completed_phases: 8
-  total_plans: 144
-  completed_plans: 111
+  total_plans: 151
+  completed_plans: 114
 ---
 
 # Project State
@@ -26,6 +26,13 @@ See: .planning/PROJECT.md (updated 2026-10-03)
 
 Phase: 20
 Plan: Not started
+
+### Phase 22 — đã xong (10/10/2026)
+
+- Wave 0 + Wave 1 của `22-AUDIT.md`: bộ `bench:*` (seed 5 năm ~15 phút, run, compare, explain, clean) chỉ chạy LOCAL; migration **0124** (11 index, bỏ 3) và **0125** (điều kiện ngày dùng index trong `tong_quan_chi_so`, `phan_tich_theo_ky`, `nhap_xuat_theo_ky`) **mới áp ở local**.
+- 5 năm: dashboard 2.699→170 ms, xóa dòng phiếu 56→2,8 ms, nhập–xuất theo kỳ 84→19 ms. pgTAP 1015/1015, integration 15/15.
+- SC6 đạt một phần, người dùng duyệt chuyển sang Wave 2: `tim_kiem_toan_cuc` nhánh `so_ct` vẫn Seq Scan `chung_tu` (126 ms quản lý / 308 ms thủ kho).
+- Test pgTAP 115 chứa bản sao hàm cũ (`*_cu`, `*_sai`) — Wave 2 viết lại các hàm này phải gỡ hoặc chụp lại.
 
 ### Phase 18 — đã xong (03/10/2026)
 
@@ -898,10 +905,13 @@ Recent decisions affecting current work:
 
 - Phase 9 added (2026-09-26): Quản lý hình ảnh — ảnh mã hàng lưu Google Drive qua Apps Script, lớp lưu trữ trừu tượng (`noi_luu`/`khoa_luu`, hiển thị qua `/anh/<id>` có cache) để sau chuyển cloud không đổi giao diện
 - Phase 20 added (2026-10-04): Giao diện 3b và tính năng còn thiếu — design system "hướng 3b" + tính năng thiếu ở Tổng quan, Đơn đặt, Chi tiết hàng hóa, tìm kiếm ⌘K
+- Phase 21 added (2026-10-08): Đồng bộ KiotViet hằng ngày — script mới `scripts/kiotviet-sync/` nạp 9 file Excel export tay, idempotent, ghi sổ atomic qua RPC; 1 kho, không giá, khách thật, tài khoản sync riêng
+- Phase 22 added (2026-10-09): Tối ưu truy vấn khi dữ liệu phình — Wave 0 (sinh dữ liệu 5 năm + benchmark RPC) và Wave 1 (index + điều kiện ngày dùng được index); Wave 2–4 trong `22-AUDIT.md` để phase sau
 
 ### Pending Todos
 
-None yet.
+- [Phase 22 → Wave 2] `tim_kiem_toan_cuc` tìm theo số chứng từ (`so_ct`) vẫn quét cả `chung_tu` dù có `idx_chung_tu_so_ct_trgm` — nghi do điều kiện phân quyền/`loai_ct` (chưa kiểm chứng). Bằng chứng: `.planning/phases/22-toi-uu-du-lieu-lon/bench/explain-after-5y.txt`.
+- [Phase 22] Đẩy 0124 + 0125 lên cloud ngoài giờ văn phòng — chờ người dùng chọn thời điểm; tính cùng các migration chưa lên (`rnpq` mới tới 0084).
 
 ### Blockers/Concerns
 
@@ -924,7 +934,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-10-03T15:11:55.680Z
-Stopped at: Completed 18-07-PLAN.md
+Last session: 2026-10-09T10:13:00.251Z
+Stopped at: Completed 22-03-PLAN.md
 Last activity: 2026-10-08 - Completed quick task 261008-w3x: Setup Vitest unit + integration test và CI
 Resume file: None
