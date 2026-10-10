@@ -33,7 +33,7 @@ export function GlobalSearch() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="hidden h-[38px] w-[440px] max-w-full cursor-pointer items-center gap-2.5 rounded-[10px] border-0 bg-nen-phu px-3 text-left text-[15.5px] text-trung-tinh-350 lg:flex"
+        className="hidden h-[38px] w-[440px] max-w-full cursor-pointer items-center gap-2.5 rounded-full border-0 bg-nen-tim px-3.5 text-left text-[15.5px] text-[#7A8699] lg:flex"
       >
         <SearchOutlined style={{ fontSize: 15 }} />
         <span className="flex-1">Tìm mã hàng, số phiếu, đối tác…</span>

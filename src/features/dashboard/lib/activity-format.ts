@@ -44,15 +44,15 @@ const VERBS: Record<ActivityAction, string> = {
   ghi_so: "ghi sổ",
 };
 
-/** Chấm màu theo thao tác — cùng màu với StatusDot: cam = còn việc, mực = đã chốt, xám = hủy. */
+/** Chấm màu theo thao tác — cùng màu với StatusDot: cam = còn việc, xanh dương = đã xác nhận, xanh lá = đã chốt, xám = hủy. */
 export const ACTIVITY_DOT: Record<ActivityAction, string> = {
   tao: "bg-trung-tinh-400",
   sua: "bg-canh-bao",
-  xac_nhan: "bg-chu-chinh",
+  xac_nhan: "bg-brand-500",
   mo_khoa: "bg-canh-bao",
-  hoan_thanh: "bg-chu-chinh",
+  hoan_thanh: "bg-thanh-cong",
   huy: "bg-trung-tinh-250",
-  ghi_so: "bg-chu-chinh",
+  ghi_so: "bg-thanh-cong",
 };
 
 /** "tạo đơn", "nhập Excel 24 mã hàng", "ghi sổ 86 phiếu nhập" — chưa có tên người. */

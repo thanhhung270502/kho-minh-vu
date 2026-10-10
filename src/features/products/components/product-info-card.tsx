@@ -56,7 +56,7 @@ export function ProductInfoCard({ product }: { product: ProductDetail }) {
   ];
 
   return (
-    <section className="overflow-hidden rounded-the border border-vien">
+    <section className="overflow-hidden rounded-the border border-vien bg-nen-the shadow-the">
       <h2 className="m-0 px-5 py-4 text-[16px] font-extrabold">Thông tin hàng</h2>
       <div className="grid grid-cols-2 lg:grid-cols-4">
         {fields.map((field) => {

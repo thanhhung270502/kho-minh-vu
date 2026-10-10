@@ -4,9 +4,9 @@ import { cn } from "../utils/cn";
 
 const DOT: Record<StatusTone, string> = {
   pending: "bg-canh-bao",
-  active: "bg-trung-tinh-400",
-  done: "bg-chu-chinh",
-  complete: "bg-chu-chinh",
+  active: "bg-brand-500",
+  done: "bg-thanh-cong",
+  complete: "bg-thanh-cong",
   danger: "bg-nguy-hiem",
   muted: "bg-trung-tinh-250",
 };
@@ -22,9 +22,9 @@ const TEXT: Record<StatusTone, string> = {
 
 const BADGE: Record<StatusTone, string> = {
   pending: "bg-canh-bao-nen text-canh-bao-chu",
-  active: "bg-[#F3F3F1] text-trung-tinh-600",
-  done: "bg-trung-tinh-75 text-chu-chinh",
-  complete: "bg-chu-chinh text-white",
+  active: "bg-brand-50 text-brand-700",
+  done: "bg-thanh-cong-nen text-thanh-cong-chu",
+  complete: "bg-thanh-cong-nen text-thanh-cong-chu",
   danger: "bg-nguy-hiem/10 text-nguy-hiem",
   muted: "bg-trung-tinh-75 text-trung-tinh-350",
 };
