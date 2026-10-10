@@ -42,13 +42,13 @@ export function TopNav({ user, entries, activeHref, search }: TopNavProps) {
   );
 
   return (
-    <header data-no-print className="sticky top-0 z-20 bg-nen-the">
+    <header data-no-print className="sticky top-0 z-20 bg-nen-the shadow-thanh">
       <div className="flex h-15 items-center gap-4 px-4 max-lg:border-b max-lg:border-vien lg:px-6">
         <Link
           href="/"
           className="flex shrink-0 items-center gap-2.5 text-chu-chinh hover:text-chu-chinh lg:w-65"
         >
-          <span className="flex size-7 items-center justify-center rounded-full bg-chu-chinh text-[12.5px] font-extrabold text-white">
+          <span className="flex size-7 items-center justify-center rounded-full bg-brand-500 text-[12.5px] font-extrabold text-white">
             MV
           </span>
           <span className="text-[16px] font-extrabold tracking-[-0.02em]">

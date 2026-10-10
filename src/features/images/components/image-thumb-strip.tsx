@@ -29,7 +29,7 @@ export function ImageThumbStrip({
           aria-pressed={image.id === selectedId}
           onClick={() => onSelect(image.id)}
           className={`relative size-14 overflow-hidden rounded-[10px] ${
-            image.id === selectedId ? "ring-2 ring-chu-chinh" : "ring-1 ring-vien"
+            image.id === selectedId ? "ring-2 ring-brand-500" : "ring-1 ring-vien"
           }`}
         >
           <Image
