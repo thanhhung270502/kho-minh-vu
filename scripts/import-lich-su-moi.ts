@@ -103,15 +103,27 @@ async function main() {
     if (code) target.set(key(code), readNumber(r.cells["ton_kho"]) ?? 0);
   }
   const deletedLines: string[] = [];
-  const dropDeleted = (list: Doc[]) =>
+  const badQtyLines: string[] = [];
+  // Bỏ dòng ngay khi đọc (như các script nạp cũ) để chế độ kiểm tra thấy đúng thứ sẽ nạp.
+  const dropUnloadable = (list: Doc[]) =>
     list
       .map((d) => {
-        for (const l of d.dong) if (isDeletedCode(l.ma_hang)) deletedLines.push(`${d.so} ${l.ma_hang} ${l.so_luong}`);
-        return { ...d, dong: d.dong.filter((l) => !isDeletedCode(l.ma_hang)) };
+        const dong = d.dong.filter((l) => {
+          if (isDeletedCode(l.ma_hang)) {
+            deletedLines.push(`${d.so} ${l.ma_hang} ${l.so_luong}`);
+            return false;
+          }
+          if (l.so_luong === null || !laSoLuongHopLe(l.so_luong)) {
+            badQtyLines.push(`${d.so} ${l.ma_hang} ${l.so_luong}`);
+            return false;
+          }
+          return true;
+        });
+        return { ...d, dong };
       })
       .filter((d) => d.dong.length > 0);
-  const receipts = dropDeleted(await readDocs(receiptFile, "NHAP"));
-  const invoices = dropDeleted(await readDocs(invoiceFile, "XUAT"));
+  const receipts = dropUnloadable(await readDocs(receiptFile, "NHAP"));
+  const invoices = dropUnloadable(await readDocs(invoiceFile, "XUAT"));
   const docs = [...receipts, ...invoices];
 
   const admin = taoAdminClient();
@@ -154,6 +166,10 @@ async function main() {
     hoa_don: invoices.length, don_dat_tu_hoa_don: new Set(invoices.map((d) => d.ma_dat_hang).filter(Boolean)).size,
     dong_chung_tu: docs.reduce((s, d) => s + d.dong.length, 0),
     dong_bo_qua_ma_da_xoa: deletedLines.length,
+    dong_bo_qua_so_luong_khong_hop_le: badQtyLines.length,
+    vi_du_so_luong_khong_hop_le: badQtyLines.slice(0, 10),
+    // Phiếu trống ngày ghi sổ vào ngày đầu kỳ (OPENING_DATE).
+    phieu_khong_co_ngay: docs.filter((d) => !d.ngay).map((d) => d.so).slice(0, 20),
     dvt_sua_thanh_cai: fixedUnit.length,
     ma_trong_chung_tu_khong_co_trong_danh_muc: [...missingCodes].slice(0, 20),
     dvt_chua_co: missing(catalog.dong.map((d) => d.dvt), knownUnit),
@@ -163,13 +179,20 @@ async function main() {
     doi_tac_chua_co: missing(docs.map((d) => partnerCode(d.ma_doi_tac)), partnerCodes),
     nguoi_trong_file: people,
     nguoi_chua_co_tai_khoan: accountPeople.filter((p) => !userByName.has(key(p))),
+    // uq_chung_tu_hoa_don_cua_don (0078): một đơn tối đa một hóa đơn chưa hủy — vi phạm thì
+    // bước nối hóa đơn chết ở cuối lần nạp, nên chặn từ bước kiểm tra.
+    don_dat_nhieu_hoa_don_chua_huy: [...Map.groupBy(invoices.filter((d) => d.ma_dat_hang && !d.canceled), (d) => d.ma_dat_hang ?? "")]
+      .filter(([, list]) => list.length > 1)
+      .map(([so, list]) => `${so}: ${list.map((d) => d.so).join(", ")}`)
+      .slice(0, 20),
   };
   console.log(JSON.stringify(report, null, 2));
 
   const blocking = report.ma_trong_chung_tu_khong_co_trong_danh_muc.length + report.dvt_chua_co.length +
-    report.xu_ly_chua_co.length + report.nhom_hang_chua_co.length + report.kho_chua_co.length + report.doi_tac_chua_co.length;
+    report.xu_ly_chua_co.length + report.nhom_hang_chua_co.length + report.kho_chua_co.length + report.doi_tac_chua_co.length +
+    report.don_dat_nhieu_hoa_don_chua_huy.length;
   if (blocking) {
-    console.log("\nDỪNG: danh mục còn thiếu (xem các mục *_chua_co / *_khong_co ở trên).");
+    console.log("\nDỪNG: danh mục còn thiếu hoặc đơn đặt có nhiều hóa đơn chưa hủy (xem các mục *_chua_co / *_khong_co / don_dat_* ở trên).");
     return;
   }
   if (report.nguoi_chua_co_tai_khoan.length) {
@@ -228,6 +251,7 @@ async function main() {
   const toLines = (doc: Doc): DocLine[] =>
     doc.dong.flatMap((l) => {
       const p = productByCode.get(key(l.ma_hang ?? ""));
+      // Số lượng đã lọc ở dropUnloadable, mã đã kiểm ở bước kiểm tra — tới đây là lỗi lập trình.
       if (!p || l.so_luong === null || !laSoLuongHopLe(l.so_luong)) throw new Error(`${doc.so}: dòng ${l.dong} không hợp lệ`);
       return [{ san_pham_id: p.id, so_luong: l.so_luong, ghi_chu: l.ghi_chu, kho_id: p.kho_mac_dinh_id ?? k1 }];
     });
@@ -273,7 +297,7 @@ async function main() {
   let done = 0;
   for (const date of dates) {
     for (const kind of ["NHAP", "XUAT"] as const) {
-      const queue = pending.filter((d) => d.ngay === date && d.kind === kind).sort((a, b) => a.so.localeCompare(b.so));
+      const queue = pending.filter((d) => (d.ngay ?? "") === date && d.kind === kind).sort((a, b) => a.so.localeCompare(b.so));
       await Promise.all(Array.from({ length: WORKERS }, async () => {
         for (let doc = queue.shift(); doc; doc = queue.shift()) {
           await ghiSo.createAndPost(header(doc), toLines(doc));
@@ -307,37 +331,57 @@ async function main() {
     if (error) throw new Error(`${doc.so} hủy: ${error.message}`);
   }
 
-  // --- 7. Đơn đặt: một đơn cho mỗi Mã đặt hàng của hóa đơn, Hoàn thành, nối hóa đơn --
-  // Nối hóa đơn là bước CUỐI: đơn còn hóa đơn chưa nối là đơn dở dang của lần trước.
+  // --- 7. Đơn đặt: một đơn cho mỗi Mã đặt hàng, gộp MỌI hóa đơn của nó, nối hóa đơn --
+  // Đơn mà mọi hóa đơn đều hủy → DA_HUY; còn lại HOAN_THANH. Dòng đơn = một dòng mỗi mã
+  // (so_luong_da_xuat của hệ tính theo mã — xem _cap_nhat_tien_do_ddh, 0050), lấy từ hóa
+  // đơn chưa hủy; đã xuất = đặt. Nối hóa đơn là bước CUỐI: đơn còn hóa đơn chưa nối là
+  // đơn dở dang của lần trước.
   const orders = await readAll<{ id: string; so_dh: string }>("don_dat_hang", "id, so_dh");
   const orderBySo = new Map(orders.map((o) => [o.so_dh, o.id]));
+  const byOrder = Map.groupBy(invoices.filter((d) => d.ma_dat_hang), (d) => d.ma_dat_hang ?? "");
   let orderCount = 0;
-  for (const doc of invoices.filter((d) => d.ma_dat_hang)) {
-    const so = doc.ma_dat_hang ?? "";
-    const invoice = docBySo.get(doc.so);
-    if (!invoice || invoice.don_dat_hang_id) continue;
+  for (const [so, group] of byOrder) {
+    group.sort((a, b) => (a.ngay ?? "").localeCompare(b.ngay ?? "") || a.so.localeCompare(b.so));
+    const unlinked = group
+      .map((d) => docBySo.get(d.so))
+      .filter((c): c is NonNullable<typeof c> => !!c && !c.don_dat_hang_id);
+    if (unlinked.length === 0) continue;
+    const first = group[0];
+    const allCanceled = group.every((d) => d.canceled);
     let orderId = orderBySo.get(so);
     if (!orderId) {
       const { data, error } = await admin.from("don_dat_hang").insert({
-        so_dh: so, ngay_dh: doc.ngay ?? OPENING_DATE, trang_thai: "HOAN_THANH",
-        doi_tac_id: partnerId.get(key(partnerCode(doc.ma_doi_tac) ?? "")) ?? null,
-        ghi_chu: doc.ghi_chu,
-        nguoi_tao_id: userByName.get(key(doc.creator)) ?? null,
-        nguoi_xac_nhan_id: userByName.get(key(doc.nguoi_ban ?? "")) ?? null,
-        ngay_xac_nhan: doc.ngay ? `${doc.ngay}T00:00:00+07:00` : null,
+        so_dh: so, ngay_dh: first.ngay ?? OPENING_DATE, trang_thai: allCanceled ? "DA_HUY" : "HOAN_THANH",
+        doi_tac_id: partnerId.get(key(partnerCode(first.ma_doi_tac) ?? "")) ?? null,
+        ghi_chu: first.ghi_chu,
+        nguoi_tao_id: userByName.get(key(first.creator)) ?? null,
+        nguoi_xac_nhan_id: userByName.get(key(first.nguoi_ban ?? "")) ?? null,
+        ngay_xac_nhan: first.ngay ? `${first.ngay}T00:00:00+07:00` : null,
       }).select("id").single();
       if (error) throw new Error(`${so}: ${error.message}`);
       orderId = data.id;
       orderCount++;
     }
-    const { count } = await admin.from("don_dat_hang_dong").select("id", { count: "exact", head: true }).eq("don_dat_hang_id", orderId);
+    const { count, error: countError } = await admin
+      .from("don_dat_hang_dong").select("id", { count: "exact", head: true }).eq("don_dat_hang_id", orderId);
+    if (countError) throw new Error(`${so} đếm dòng: ${countError.message}`);
     if (!count) {
+      const sources = allCanceled ? group : group.filter((d) => !d.canceled);
+      const perProduct = new Map<string, { qty: number; note: string | null }>();
+      for (const l of sources.flatMap(toLines)) {
+        const cur = perProduct.get(l.san_pham_id);
+        perProduct.set(l.san_pham_id, { qty: (cur?.qty ?? 0) + l.so_luong, note: cur?.note ?? l.ghi_chu });
+      }
+      // Một lệnh insert = đủ dòng hoặc không dòng nào — lần chạy lại không gặp đơn thiếu dòng.
       const { error } = await admin.from("don_dat_hang_dong").insert(
-        toLines(doc).map((l) => ({ don_dat_hang_id: orderId, san_pham_id: l.san_pham_id, so_luong_dat: l.so_luong, so_luong_da_xuat: l.so_luong, don_gia: 0, ghi_chu: l.ghi_chu })),
+        [...perProduct].map(([san_pham_id, { qty, note }]) => ({
+          don_dat_hang_id: orderId, san_pham_id, so_luong_dat: qty, so_luong_da_xuat: allCanceled ? 0 : qty, don_gia: 0, ghi_chu: note,
+        })),
       );
       if (error) throw new Error(`${so} dòng: ${error.message}`);
     }
-    const { error: linkError } = await admin.from("chung_tu").update({ don_dat_hang_id: orderId }).eq("id", invoice.id);
+    const { error: linkError } = await admin
+      .from("chung_tu").update({ don_dat_hang_id: orderId }).in("id", unlinked.map((c) => c.id));
     if (linkError) throw linkError;
   }
   console.log(`Đơn đặt: tạo ${orderCount}`);
