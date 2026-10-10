@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { config } from "dotenv";
 
+import { usernameToEmail } from "../src/shared/lib/text";
 import type { Database } from "../src/types/database.types";
 
 config({ path: ".env.local" });
@@ -71,7 +72,9 @@ export function samplePassword(): string {
  * Tài khoản phải có quyền ghi chứng từ / tạo mã hàng (thường là quản lý).
  */
 export async function dangNhapTaiKhoanNap(client: SupabaseClient<Database>): Promise<void> {
-  const email = process.env.IMPORT_USER_EMAIL?.trim();
+  // Ghi tên đăng nhập (vd. "quanly") cũng được — đổi sang email nội bộ y như màn đăng nhập.
+  const raw = process.env.IMPORT_USER_EMAIL?.trim();
+  const email = raw && !raw.includes("@") ? usernameToEmail(raw) : raw;
   const password = process.env.IMPORT_USER_PASSWORD;
   if (!email || !password) {
     console.error(
