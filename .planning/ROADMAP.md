@@ -792,7 +792,7 @@ Plans:
 **Plans**: 7 plans
 
 Plans:
-- [ ] 22-01-PLAN.md — W1: Guard LOCAL dùng chung, 5 lệnh bench:*, danh mục BENCH + tồn đầu kỳ, bench:clean
+- [x] 22-01-PLAN.md — W1: Guard LOCAL dùng chung, 5 lệnh bench:*, danh mục BENCH + tồn đầu kỳ, bench:clean
 - [ ] 22-02-PLAN.md — W2: Bộ sinh chứng từ theo ngày qua đường ghi sổ thật (bench:seed, 99 ngày → 5 năm)
 - [ ] 22-03-PLAN.md — W3: Bộ đo RPC qua PostgREST bằng quản lý + thủ kho (bench:run, bench:compare)
 - [ ] 22-04-PLAN.md — W4: bench:explain + baseline 99 ngày và 5 năm TRƯỚC migration (cổng chặn D-12)
