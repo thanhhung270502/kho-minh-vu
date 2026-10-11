@@ -180,6 +180,7 @@ export type Database = {
       }
       chung_tu: {
         Row: {
+          ban_sua_cua_id: string | null
           chung_tu_goc_id: string | null
           created_at: string
           doi_tac_id: string | null
@@ -206,6 +207,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ban_sua_cua_id?: string | null
           chung_tu_goc_id?: string | null
           created_at?: string
           doi_tac_id?: string | null
@@ -232,6 +234,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ban_sua_cua_id?: string | null
           chung_tu_goc_id?: string | null
           created_at?: string
           doi_tac_id?: string | null
@@ -258,6 +261,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "chung_tu_ban_sua_cua_id_fkey"
+            columns: ["ban_sua_cua_id"]
+            isOneToOne: false
+            referencedRelation: "chung_tu"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "chung_tu_chung_tu_goc_id_fkey"
             columns: ["chung_tu_goc_id"]
@@ -1720,6 +1730,7 @@ export type Database = {
       chi_tiet_chung_tu: {
         Args: { p_id: string }
         Returns: {
+          ban_sua_cua_id: string
           chung_tu_goc_id: string
           created_at: string
           doi_tac_id: string
@@ -1740,6 +1751,7 @@ export type Database = {
           nguoi_nhan_ids: string[]
           nguon_nhap: Database["public"]["Enums"]["nguon_nhap"]
           so_ct: string
+          so_ct_ban_sua: string
           so_ct_goc: string
           so_dh: string
           ten_doi_tac: string
@@ -2618,6 +2630,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      mo_sua_chung_tu: {
+        Args: { p_chung_tu_id: string; p_ly_do: string }
+        Returns: string
       }
       nap_anh_kiotviet: {
         Args: {
