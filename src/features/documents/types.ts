@@ -71,6 +71,9 @@ export type DocumentDetail = {
   approvedByName: string | null;
   /** Người xác nhận đơn gốc của hóa đơn (0115) — "Người duyệt đơn" ở màn Duyệt đơn. */
   orderApprovedByName: string | null;
+  /** Phiếu đã ghi sổ mà phiếu nháp này đang sửa (0124) — đã đảo sổ, mang số "<số>-S<n>". */
+  revisedFromId: string | null;
+  revisedFromNo: string | null;
 };
 
 export type DocumentLine = {
@@ -150,6 +153,8 @@ export function toDocumentDetail(row: DocumentDetailDb): DocumentDetail {
     approvedById: row.nguoi_duyet_id,
     approvedByName: row.ho_ten_nguoi_duyet,
     orderApprovedByName: row.ho_ten_nguoi_xac_nhan_don,
+    revisedFromId: row.ban_sua_cua_id,
+    revisedFromNo: row.so_ct_ban_sua,
   };
 }
 

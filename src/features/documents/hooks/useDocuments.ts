@@ -7,6 +7,7 @@ import { productKeys } from "@/features/products/api/product.keys";
 import {
   clearNegativeReason,
   postDocumentWithReason,
+  reopenPostedDocument,
   saveNegativeReason,
   voidDocument,
 } from "../api/document.api";
@@ -81,6 +82,21 @@ export function useVoidDocument(id: string, options?: { extraKeys?: ExtraKeys })
     mutationFn: (reason: string) => voidDocument(id, reason),
     onSuccess: () => {
       refresh();
+      void queryClient.invalidateQueries({ queryKey: productKeys.all });
+      for (const key of options?.extraKeys ?? []) {
+        void queryClient.invalidateQueries({ queryKey: key });
+      }
+    },
+  });
+}
+
+/** Mở sửa phiếu đã ghi sổ — tồn đổi ngay (đảo sổ) nên làm mới cả tồn và mọi danh sách phiếu. */
+export function useReopenPostedDocument(id: string, options?: { extraKeys?: ExtraKeys }) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (reason: string) => reopenPostedDocument(id, reason),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: documentKeys.all });
       void queryClient.invalidateQueries({ queryKey: productKeys.all });
       for (const key of options?.extraKeys ?? []) {
         void queryClient.invalidateQueries({ queryKey: key });
