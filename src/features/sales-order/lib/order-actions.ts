@@ -19,7 +19,7 @@ export type OrderAction =
  * - Xác nhận / Mở khóa / Đóng sớm: quyền chức vụ "Xác nhận" (`canApprove`).
  * - Hủy đơn: phạm vi quản trị (`canCancel`).
  * - Đơn đã hoàn thành không hủy ở đây — hủy hóa đơn của nó, đơn tự về Đã xác nhận.
- * - Sửa đơn đã hoàn thành = mở sửa hóa đơn (`canEditInvoice`, 0124); đơn đã xác nhận
+ * - Sửa đơn đã hoàn thành = mở sửa hóa đơn (`canEditInvoice`, 0127); đơn đã xác nhận
  *   sửa bằng "unlock" (về Đơn tạm).
  */
 export function orderActionsFor(status: OrderStatus, permissions: OrderPermissions): OrderAction[] {

@@ -1,4 +1,4 @@
--- 0124: sửa hóa đơn / phiếu nhập ĐÃ GHI SỔ — đảo sổ rồi ghi lại, giữ nguyên số phiếu.
+-- 0127: sửa hóa đơn / phiếu nhập ĐÃ GHI SỔ — đảo sổ rồi ghi lại, giữ nguyên số phiếu.
 --
 -- Trước đây phiếu HOAN_THANH chỉ có đường Hủy (bút toán đảo) rồi tạo phiếu mới ra số
 -- mới. mo_sua_chung_tu làm trong MỘT transaction:
@@ -20,7 +20,7 @@
 
 alter table public.chung_tu add column ban_sua_cua_id uuid references public.chung_tu(id);
 comment on column public.chung_tu.ban_sua_cua_id is
-  'Phiếu đã ghi sổ mà phiếu này là bản sửa (mo_sua_chung_tu, 0124). Phiếu cũ đã đảo sổ, mang số "<số>-S<n>".';
+  'Phiếu đã ghi sổ mà phiếu này là bản sửa (mo_sua_chung_tu, 0127). Phiếu cũ đã đảo sổ, mang số "<số>-S<n>".';
 create index idx_chung_tu_ban_sua_cua on public.chung_tu (ban_sua_cua_id) where ban_sua_cua_id is not null;
 
 -- -----------------------------------------------------------------------------
@@ -128,7 +128,7 @@ end;
 $$;
 
 comment on function public.mo_sua_chung_tu(uuid, text) is
-  'Sửa hóa đơn / phiếu nhập đã ghi sổ: đảo sổ phiếu cũ (đổi số thành <số>-S<n>), trả về id phiếu nháp mang lại số cũ — 0124.';
+  'Sửa hóa đơn / phiếu nhập đã ghi sổ: đảo sổ phiếu cũ (đổi số thành <số>-S<n>), trả về id phiếu nháp mang lại số cũ — 0127.';
 revoke all on function public.mo_sua_chung_tu(uuid, text) from public, anon;
 grant execute on function public.mo_sua_chung_tu(uuid, text) to authenticated, service_role;
 

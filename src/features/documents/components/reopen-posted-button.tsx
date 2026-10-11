@@ -18,13 +18,13 @@ type Props = {
   label?: string;
   /** Đường dẫn màn chi tiết của bản sửa — mỗi màn (Duyệt đơn / Nhập hàng) một route. */
   detailHref: (id: string) => string;
-  /** Câu báo khi thiếu quyền — hóa đơn và phiếu nhập khác luật (0124). */
+  /** Câu báo khi thiếu quyền — hóa đơn và phiếu nhập khác luật (0127). */
   forbiddenMessage: string;
   extraInvalidateKeys?: ExtraKeys;
 };
 
 /**
- * Sửa phiếu đã ghi sổ (0124): đảo sổ phiếu cũ, phiếu cũ đổi số "<số>-S<n>", mở bản
+ * Sửa phiếu đã ghi sổ (0127): đảo sổ phiếu cũ, phiếu cũ đổi số "<số>-S<n>", mở bản
  * nháp mang lại số cũ để sửa rồi ghi sổ lại. Chỉ hiện khi phiếu đã ghi sổ và có quyền.
  */
 export function ReopenPostedButton({

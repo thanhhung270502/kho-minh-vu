@@ -71,7 +71,7 @@ export type DocumentDetail = {
   approvedByName: string | null;
   /** Người xác nhận đơn gốc của hóa đơn (0115) — "Người duyệt đơn" ở màn Duyệt đơn. */
   orderApprovedByName: string | null;
-  /** Phiếu đã ghi sổ mà phiếu nháp này đang sửa (0124) — đã đảo sổ, mang số "<số>-S<n>". */
+  /** Phiếu đã ghi sổ mà phiếu nháp này đang sửa (0127) — đã đảo sổ, mang số "<số>-S<n>". */
   revisedFromId: string | null;
   revisedFromNo: string | null;
 };

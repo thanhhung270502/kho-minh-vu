@@ -1,5 +1,5 @@
 -- =============================================================================
--- 0124 — Sửa hóa đơn / phiếu nhập đã ghi sổ: đảo sổ, phiếu cũ đổi số "<số>-S<n>",
+-- 0127 — Sửa hóa đơn / phiếu nhập đã ghi sổ: đảo sổ, phiếu cũ đổi số "<số>-S<n>",
 -- bản nháp giữ số cũ; ghi sổ bản sửa thì dòng đơn đặt (đơn Hoàn thành) theo hóa đơn.
 -- Khuôn: supabase/tests/31_hoan_thanh_don_test.sql
 -- =============================================================================

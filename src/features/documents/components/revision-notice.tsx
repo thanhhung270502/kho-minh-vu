@@ -5,7 +5,7 @@ import { Alert } from "antd";
 import type { DocumentDetail } from "../types";
 
 /**
- * Bản nháp mở từ "Sửa phiếu" (0124): phiếu cũ đã đảo sổ, nên trong lúc chưa ghi sổ
+ * Bản nháp mở từ "Sửa phiếu" (0127): phiếu cũ đã đảo sổ, nên trong lúc chưa ghi sổ
  * lại thì phiếu này KHÔNG có mặt trong tồn. Nhắc người dùng bấm Ghi sổ.
  */
 export function RevisionNotice({ document }: { document: DocumentDetail }) {
