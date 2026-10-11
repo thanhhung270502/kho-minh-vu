@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { OrderDetailView } from "@/features/sales-order/components/order-detail";
 import { requirePermission } from "@/features/auth/api/current-user.server";
-import { can } from "@/shared/lib/permissions";
+import { can, isAdmin } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Đơn đặt" };
 
@@ -27,6 +27,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         canComplete: can(user, "xac_nhan_don"),
         // Hủy đơn chỉ phạm vi quản trị (huy_duoc_don, 0078).
         canCancel: user.role === "quan_ly",
+        canEditInvoice: isAdmin(user),
       }}
     />
   );

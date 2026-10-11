@@ -22,10 +22,10 @@ const COPY: Record<
   { title: (orderNo: string) => string; description: string; okText: string }
 > = {
   unlock: {
-    title: (orderNo) => `Mở khóa đơn ${orderNo}`,
+    title: (orderNo) => `Sửa đơn ${orderNo}`,
     description:
-      "Đơn quay về trạng thái Đơn tạm, văn phòng sửa lại được. Lần mở khóa này được ghi vào nhật ký sửa.",
-    okText: "Mở khóa",
+      "Đơn quay về trạng thái Đơn tạm để sửa dòng, ngày, người nhận; sửa xong xác nhận lại. Lần sửa này được ghi vào nhật ký sửa.",
+    okText: "Mở sửa",
   },
   "close-early": {
     title: (orderNo) => `Đóng sớm đơn ${orderNo}`,

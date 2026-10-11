@@ -7,7 +7,7 @@ import { canImportDocuments } from "@/features/document-excel/lib/document-acces
 import { OrderExcelButton } from "@/features/sales-order/components/order-excel-button";
 import { OrderTable } from "@/features/sales-order/components/order-table";
 import { PageHeader } from "@/shared/components/page-header";
-import { can } from "@/shared/lib/permissions";
+import { can, isAdmin } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Đơn đặt" };
 
@@ -30,6 +30,7 @@ export default async function SalesOrderPage() {
             canApprove: can(user, "xac_nhan_don"),
             canComplete: can(user, "xac_nhan_don"),
             canCancel: user.role === "quan_ly",
+            canEditInvoice: isAdmin(user),
           }}
           excelActions={
             <DocumentExcelActions

@@ -710,15 +710,16 @@ assert.deepEqual(
 // Phase 12 (DON-02/03/05): nút theo trạng thái × quyền. Hoàn thành: QL + VP
 // (canEdit); Hủy / Xác nhận / Mở khóa / Đóng sớm: chỉ QL (canApprove).
 {
-  const ql = { canEdit: true, canApprove: true, canComplete: true, canCancel: true };
-  const vp = { canEdit: true, canApprove: false, canComplete: true, canCancel: false };
-  const tk = { canEdit: false, canApprove: false, canComplete: false, canCancel: false };
+  const ql = { canEdit: true, canApprove: true, canComplete: true, canCancel: true, canEditInvoice: true };
+  const vp = { canEdit: true, canApprove: false, canComplete: true, canCancel: false, canEditInvoice: false };
+  const tk = { canEdit: false, canApprove: false, canComplete: false, canCancel: false, canEditInvoice: false };
   assert.deepEqual(orderActionsFor("TAM", ql), ["approve", "cancel"]);
   assert.deepEqual(orderActionsFor("TAM", vp), []);
   assert.deepEqual(orderActionsFor("DA_XAC_NHAN", ql), ["complete", "print", "unlock", "close-early", "cancel"]);
   assert.deepEqual(orderActionsFor("DA_XAC_NHAN", vp), ["complete", "print"]);
   assert.deepEqual(orderActionsFor("DA_XAC_NHAN", tk), ["print"]);
-  assert.deepEqual(orderActionsFor("HOAN_THANH", ql), ["print"], "đơn hoàn thành: hủy hóa đơn ở màn hóa đơn, không hủy đơn");
+  assert.deepEqual(orderActionsFor("HOAN_THANH", ql), ["print", "edit-invoice"], "đơn hoàn thành: không hủy đơn, sửa qua hóa đơn");
+  assert.deepEqual(orderActionsFor("HOAN_THANH", vp), ["print"], "thiếu quyền sửa hóa đơn: chỉ in");
   assert.deepEqual(orderActionsFor("DA_HUY", ql), []);
   assert.ok(!orderActionsFor("DA_XAC_NHAN", ql).includes("create-issue" as never), "không còn nút Tạo hóa đơn rời");
   // Phase 16: Xác nhận / Hoàn thành theo quyền chức vụ, Hủy đơn vẫn theo phạm vi quản trị.
