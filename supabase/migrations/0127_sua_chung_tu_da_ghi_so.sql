@@ -95,16 +95,16 @@ begin
       ghi_chu = coalesce(ghi_chu || E'\n', '') || 'Sửa: ' || trim(p_ly_do) || ' (bản sửa giữ số ' || v_ct.so_ct || ')'
   where id = p_chung_tu_id;
 
-  -- 3. Bản sửa: nháp, đúng số cũ, chép đầu phiếu. Tổng tính lại khi ghi sổ.
+  -- 3. Bản sửa: nháp, đúng số cũ, chép đầu phiếu (người nhận nằm ở chung_tu_nguoi_nhan, chép ở dưới). Tổng tính lại khi ghi sổ.
   insert into public.chung_tu (
     so_ct, loai_ct, ngay_ct, kho_id, kho_den_id, doi_tac_id, don_dat_hang_id, chung_tu_goc_id,
     trang_thai, giam_gia, ly_do_xuat_am, ghi_chu_ly_do, ghi_chu, nguoi_tao_id, nguon_nhap,
-    pham_vi_nhom_hang, nguoi_nhan_id, ban_sua_cua_id
+    pham_vi_nhom_hang, ban_sua_cua_id
   ) values (
     v_ct.so_ct, v_ct.loai_ct, v_ct.ngay_ct, v_ct.kho_id, v_ct.kho_den_id, v_ct.doi_tac_id,
     v_ct.don_dat_hang_id, v_ct.chung_tu_goc_id, 'NHAP_LIEU', v_ct.giam_gia, v_ct.ly_do_xuat_am,
     v_ct.ghi_chu_ly_do, v_ct.ghi_chu, v_ct.nguoi_tao_id, v_ct.nguon_nhap, v_ct.pham_vi_nhom_hang,
-    v_ct.nguoi_nhan_id, p_chung_tu_id
+    p_chung_tu_id
   )
   returning id into v_moi;
 
