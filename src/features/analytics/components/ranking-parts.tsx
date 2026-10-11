@@ -9,7 +9,7 @@ export const fmt = (v: number) => v.toLocaleString("vi-VN", { maximumFractionDig
 export const pct = (v: number) => `${(v * 100).toLocaleString("vi-VN", { maximumFractionDigits: 1 })}%`;
 
 const TONE = {
-  blue: "bg-[#2f54eb]",
+  blue: "bg-brand-500",
   green: "bg-green-500",
   red: "bg-red-500",
   orange: "bg-orange-400",

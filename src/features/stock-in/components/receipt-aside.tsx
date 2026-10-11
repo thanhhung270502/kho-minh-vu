@@ -79,7 +79,7 @@ export function ReceiptAside({ receipt, canEdit }: Props) {
   const metaValue = "text-[15.5px] font-semibold";
 
   return (
-    <aside className="flex flex-col gap-4 rounded-the border border-vien bg-white p-5">
+    <aside className="flex flex-col gap-4 rounded-the border border-vien bg-nen-the p-5 shadow-the">
       <h2 className="m-0 text-[16px] font-extrabold">Thông tin phiếu</h2>
 
       <div className="flex flex-col gap-1.5">

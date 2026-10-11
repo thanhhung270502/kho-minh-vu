@@ -148,7 +148,7 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
 
   return (
     <>
-      <div className="overflow-x-auto rounded-the border border-vien bg-white">
+      <div className="overflow-x-auto rounded-the border border-vien bg-nen-the shadow-the">
         <Table<IssueLine>
           rowKey="id"
           size="small"

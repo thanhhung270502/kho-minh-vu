@@ -3,12 +3,12 @@
 // được từ đây.
 
 /**
- * Dãy màu biểu đồ Recharts — design system đơn sắc 3b: series
- * chính màu mực, series phụ xám, chỉ dùng cam/đỏ khi series mang nghĩa cảnh báo.
+ * Dãy màu biểu đồ Recharts — theme trắng–xanh dương: series
+ * chính xanh dương, series phụ xanh nhạt, chỉ dùng cam/đỏ khi series mang nghĩa cảnh báo.
  */
 export const CHART_COLORS = [
-  "#0A0A0A",
-  "#D4D4D4",
+  "#0070F4",
+  "#B5D4FC",
   "#737373",
   "#BF6600",
   "#CC2827",
@@ -17,7 +17,7 @@ export const CHART_COLORS = [
 
 /** Màu ngữ nghĩa — khớp colorPrimary/Success/Warning/Error ở antd-theme.ts. */
 export const SEMANTIC_COLORS = {
-  primary: "#0A0A0A",
+  primary: "#0070F4",
   success: "#2F9E5B",
   warning: "#BF6600",
   danger: "#CC2827",

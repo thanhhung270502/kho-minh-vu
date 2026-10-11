@@ -72,7 +72,7 @@ export function StockByGroupTable({ rows, groupBy }: Props) {
       render: (_: unknown, row) => (
         <div className="h-1.5 w-full rounded-full bg-trung-tinh-75">
           <div
-            className="h-1.5 rounded-full bg-chu-chinh"
+            className="h-1.5 rounded-full bg-brand-500"
             style={{ width: `${Math.min(100, Math.max(0, percentOf(row)))}%` }}
           />
         </div>

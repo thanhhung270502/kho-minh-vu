@@ -34,7 +34,7 @@ export function ProductImageAside({
     list.find((i) => i.id === selectedId) ?? list.find((i) => i.isPrimary) ?? list[0] ?? null;
 
   return (
-    <section className="rounded-the border border-vien bg-nen-the p-4">
+    <section className="rounded-the border border-vien bg-nen-the p-4 shadow-the">
       <div className="mb-3 flex items-center justify-between gap-2">
         <span className="text-[16px] font-extrabold">
           Hình ảnh <span className="font-semibold text-trung-tinh-300">· {list.length}</span>

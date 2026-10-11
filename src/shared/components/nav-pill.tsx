@@ -21,7 +21,7 @@ export const PILL_CLASS =
 /** Lớp màu theo trạng thái — tách khỏi PILL_CLASS để hàng đo ẩn dùng chung kích thước. */
 export function pillTone(active: boolean): string {
   return active
-    ? "border-chu-chinh font-bold text-chu-chinh hover:text-chu-chinh"
+    ? "border-brand-500 font-bold text-brand-500 hover:text-brand-500"
     : "border-transparent font-semibold text-chu-phu hover:text-chu-chinh";
 }
 

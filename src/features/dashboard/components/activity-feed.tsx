@@ -56,7 +56,7 @@ export function ActivityFeed() {
   const feed = useActivityFeed(group);
 
   return (
-    <section className="flex flex-col gap-1 rounded-[18px] border border-vien bg-nen-the p-5">
+    <section className="flex flex-col gap-1 rounded-[18px] border border-vien bg-nen-the p-5 shadow-the">
       <div className="flex items-center justify-between gap-2 pb-2">
         <span className="flex flex-col">
           <span className="whitespace-nowrap text-[16px] font-extrabold">Hoạt động gần đây</span>

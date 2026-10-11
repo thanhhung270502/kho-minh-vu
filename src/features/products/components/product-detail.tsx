@@ -67,7 +67,7 @@ export function ProductDetailView({
               <div className="flex min-w-0 flex-col gap-5">
                 <ProductInfoCard product={product} />
                 {product.kind === "COMBO" ? (
-                  <section className="rounded-the border border-vien px-5 py-4">
+                  <section className="rounded-the border border-vien bg-nen-the px-5 py-4 shadow-the">
                     <h2 className="m-0 mb-3 text-[16px] font-extrabold">Thành phần combo</h2>
                     <ComboComponents comboId={id} canEdit={permissions.canEdit} />
                   </section>
@@ -78,7 +78,7 @@ export function ProductDetailView({
                   minStock={product.minStock}
                   canViewCost={permissions.canViewCost}
                 />
-                <section className="rounded-the border border-vien px-5 pb-4">
+                <section className="rounded-the border border-vien bg-nen-the px-5 pb-4 shadow-the">
                   <Tabs
                     items={[
                       {

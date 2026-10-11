@@ -31,7 +31,7 @@ export function DetailPanel({ title, onClose, extra, forceDrawer = false, childr
   }
 
   return (
-    <aside className="sticky top-4 max-h-[calc(100vh-2rem)] w-[360px] shrink-0 overflow-y-auto rounded-the border border-vien bg-nen-the p-4">
+    <aside className="sticky top-4 max-h-[calc(100vh-2rem)] w-[360px] shrink-0 overflow-y-auto rounded-the border border-vien bg-nen-the p-4 shadow-the">
       <div className="mb-3 flex items-start gap-2">
         <div className="min-w-0 flex-1 text-base font-semibold">{title}</div>
         {extra}

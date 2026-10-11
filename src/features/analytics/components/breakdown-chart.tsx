@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { useCodeDictionary } from "@/features/product-codes/hooks/useCodeDictionary";
+import { SEMANTIC_COLORS } from "@/shared/lib/design-tokens";
 
 import {
   BREAKDOWN_DIMENSIONS,
@@ -56,8 +57,8 @@ export function BreakdownChart({ rows }: { rows: PeriodRow[] }) {
               <Tooltip
                 formatter={(v, name) => [Number(v).toLocaleString("vi-VN"), name === "sold" ? "Kỳ này" : "Kỳ trước"]}
               />
-              <Bar dataKey="sold" fill="#2f54eb" radius={[0, 4, 4, 0]} maxBarSize={22} />
-              <Bar dataKey="soldPrev" fill="#c7d2fe" radius={[0, 4, 4, 0]} maxBarSize={22} />
+              <Bar dataKey="sold" fill={SEMANTIC_COLORS.primary} radius={[0, 4, 4, 0]} maxBarSize={22} />
+              <Bar dataKey="soldPrev" fill="#B5D4FC" radius={[0, 4, 4, 0]} maxBarSize={22} />
             </BarChart>
           </ResponsiveContainer>
         </div>

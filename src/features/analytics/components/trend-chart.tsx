@@ -4,6 +4,8 @@ import { Card, Select } from "antd";
 import { useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
+import { SEMANTIC_COLORS } from "@/shared/lib/design-tokens";
+
 import { changeRatio } from "../lib/period-analysis";
 import { stepLabel, type SeriesStep } from "../lib/period";
 import type { FlowPoint } from "../types";
@@ -11,7 +13,7 @@ import { ChangePill } from "./stat-card";
 
 type Metric = "sold" | "received";
 const METRIC_LABELS: Record<Metric, string> = { sold: "Xuất hàng", received: "Nhập hàng" };
-const COLORS: Record<Metric, string> = { sold: "#2f54eb", received: "#13a8a8" };
+const COLORS: Record<Metric, string> = { sold: SEMANTIC_COLORS.primary, received: "#13a8a8" };
 const STEP_TEXT: Record<SeriesStep, string> = { ngay: "theo ngày", tuan: "theo tuần", thang: "theo tháng" };
 
 type Props = {

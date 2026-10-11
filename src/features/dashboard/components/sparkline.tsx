@@ -3,10 +3,13 @@ export function Sparkline({
   values,
   width = 56,
   height = 28,
+  className = "text-brand-500",
 }: {
   values: number[];
   width?: number;
   height?: number;
+  /** Màu nét vẽ qua `text-*` (nét dùng currentColor). */
+  className?: string;
 }) {
   if (values.length < 2) return null;
 
@@ -28,7 +31,7 @@ export function Sparkline({
       width={width}
       height={height}
       aria-hidden
-      className="shrink-0 text-chu-chinh"
+      className={`shrink-0 ${className}`}
     >
       <polyline
         points={points}

@@ -37,7 +37,7 @@ function countLabel(count: number | null | undefined): string {
 function AttentionRow({ item }: { item: Item }) {
   const empty = item.count === 0;
   return (
-    <div className="flex gap-3 border-t border-vien-input py-3">
+    <div className="flex gap-3 border-t border-[#D6E6FB] py-3">
       <div
         title={item.count === null ? LOAD_FAILED_HINT : undefined}
         className={`w-[30px] shrink-0 text-[22px] leading-[1.1] font-extrabold tracking-[-0.03em] tabular-nums ${
@@ -160,7 +160,7 @@ export function AttentionPanel({ canViewAnalysis }: { canViewAnalysis: boolean }
   }, [canViewAnalysis, analysisRows.isPending, analysisRows.data, settings.isPending, settings.data]);
 
   return (
-    <section className="flex flex-col gap-1 rounded-[18px] border border-vien bg-nen-the p-5">
+    <section className="flex flex-col gap-1 rounded-[18px] border border-[#D6E6FB] bg-linear-to-b from-brand-50 to-brand-25 p-5">
       <QueryState query={overview} skeleton={<Skeleton active paragraph={{ rows: 6 }} />}>
         {(kpis) => {
           const items = buildItems(kpis, {
