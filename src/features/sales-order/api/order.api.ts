@@ -114,7 +114,7 @@ export async function updateOrderHeader(
   if (error) throw error;
   if (!count) {
     throw new Error(
-      "Không lưu được — đơn đã xác nhận hoặc tài khoản không có quyền sửa.",
+      "Không lưu được — đơn đã duyệt hoặc tài khoản không có quyền sửa.",
     );
   }
 }
@@ -136,7 +136,7 @@ export async function addOrderLine(
   const row = data?.[0];
   if (!row) {
     throw new Error(
-      "Không thêm được dòng — đơn đã xác nhận hoặc tài khoản không có quyền sửa.",
+      "Không thêm được dòng — đơn đã duyệt hoặc tài khoản không có quyền sửa.",
     );
   }
   return toAddOrderLineResult(row);
@@ -152,7 +152,7 @@ export async function updateOrderLine(
     .eq("id", id);
   if (error) throw error;
   if (!count) {
-    throw new Error("Không sửa được dòng — đơn đã xác nhận hoặc thiếu quyền.");
+    throw new Error("Không sửa được dòng — đơn đã duyệt hoặc thiếu quyền.");
   }
 }
 
@@ -163,7 +163,7 @@ export async function deleteOrderLine(id: string): Promise<void> {
     .eq("id", id);
   if (error) throw error;
   if (!count) {
-    throw new Error("Không xóa được dòng — đơn đã xác nhận hoặc thiếu quyền.");
+    throw new Error("Không xóa được dòng — đơn đã duyệt hoặc thiếu quyền.");
   }
 }
 

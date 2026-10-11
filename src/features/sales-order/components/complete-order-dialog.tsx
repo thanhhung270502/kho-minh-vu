@@ -49,7 +49,7 @@ export function CompleteOrderDialog({ open, onClose, orderId, orderNo, lineCount
 
   async function run() {
     if (negative && !reason) {
-      setError("Chọn lý do xuất âm trước khi hoàn thành.");
+      setError("Chọn lý do xuất âm trước khi bấm Đã giao.");
       return;
     }
     if (reason === "KHAC" && !note.trim()) {
@@ -62,7 +62,7 @@ export function CompleteOrderDialog({ open, onClose, orderId, orderNo, lineCount
       const invoiceId = await complete.mutateAsync(
         negative && reason ? { code: reason, note: note.trim() || null } : undefined,
       );
-      message.success(`Đã hoàn thành đơn ${orderNo} — hóa đơn đã ghi sổ.`);
+      message.success(`Đã giao đơn ${orderNo} — hóa đơn đã ghi sổ.`);
       close();
       router.push(`/duyet-don/${invoiceId}`);
     } catch (caught) {
@@ -93,8 +93,8 @@ export function CompleteOrderDialog({ open, onClose, orderId, orderNo, lineCount
   return (
     <Modal
       open={open}
-      title={`Hoàn thành đơn ${orderNo}?`}
-      okText={negative ? "Hoàn thành, xuất âm" : "Hoàn thành"}
+      title={`Xác nhận đã giao đơn ${orderNo}?`}
+      okText={negative ? "Đã giao, xuất âm" : "Đã giao"}
       okButtonProps={negative ? { danger: true } : undefined}
       cancelText="Thôi"
       confirmLoading={complete.isPending}
@@ -106,7 +106,7 @@ export function CompleteOrderDialog({ open, onClose, orderId, orderNo, lineCount
 
       <p className="mb-3">
         Ghi sổ hóa đơn {lineCount} dòng, tổng {orderedQuantity.toLocaleString("vi-VN")} — trừ tồn
-        ngay theo kho mặc định của từng mã. Sai thì quản lý hủy hóa đơn, đơn quay về Đã xác nhận.
+        ngay theo kho mặc định của từng mã. Sai thì quản lý hủy hóa đơn, đơn quay về Đã duyệt.
       </p>
 
       {negative ? (

@@ -42,21 +42,21 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
 
   function confirmApprove() {
     modal.confirm({
-      title: `Xác nhận đơn ${order.orderNo}?`,
-      content: `Đơn có ${lines.length} dòng, tổng số lượng đặt ${order.orderedQuantity.toLocaleString("vi-VN")}. Sau khi xác nhận, muốn sửa tiếp phải bấm Sửa đơn.`,
-      okText: "Xác nhận đơn",
+      title: `Duyệt đơn ${order.orderNo}?`,
+      content: `Đơn có ${lines.length} dòng, tổng số lượng đặt ${order.orderedQuantity.toLocaleString("vi-VN")}. Sau khi duyệt, muốn sửa tiếp phải bấm Sửa đơn.`,
+      okText: "Duyệt đơn",
       cancelText: "Xem lại",
       onOk: async () => {
         try {
           await approve.mutateAsync();
-          message.success("Đã xác nhận. In phiếu, giao xong bấm Hoàn thành.");
+          message.success("Đã duyệt. In phiếu, giao xong bấm Đã giao.");
         } catch (error) {
           if (isPostgrestError(error) && error.code === "23514") {
             message.error(error.message);
             return;
           }
           if (errorCode(error) === "42501") {
-            message.error("Chỉ quản lý được xác nhận đơn.");
+            message.error("Chỉ quản lý được duyệt đơn.");
             return;
           }
           const explained = explainError(error);
@@ -73,12 +73,12 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
       <Space wrap>
         {actions.includes("approve") ? (
           <Button type="primary" loading={approve.isPending} onClick={confirmApprove}>
-            Xác nhận đơn
+            Duyệt đơn
           </Button>
         ) : null}
         {actions.includes("complete") ? (
           <Button type="primary" onClick={() => setCompleteOpen(true)}>
-            Hoàn thành
+            Đã giao
           </Button>
         ) : null}
         {actions.includes("print") ? (

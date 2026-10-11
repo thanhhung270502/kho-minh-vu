@@ -8,7 +8,7 @@ import { StatusDot } from "@/shared/components/status-dot";
 import { NegativeStockPanel } from "@/features/documents/components/negative-stock-panel";
 import { PostDocumentButton } from "@/features/documents/components/post-document-button";
 import { VoidDocumentDialog } from "@/features/documents/components/void-document-dialog";
-import { DOC_STATUS_TONES, DOC_STATUS_LABELS } from "@/features/documents/types";
+import { DOC_STATUS_TONES, RETURN_STATUS_LABELS } from "@/features/documents/types";
 import { negativeReasonLabel } from "@/features/documents/lib/negative-reasons";
 import { PageHeader } from "@/shared/components/page-header";
 import { QueryState } from "@/shared/components/query-state";
@@ -52,7 +52,7 @@ export function ReturnDetailView({
 
         const returnLines = lines.data ?? [];
         const isTraNcc = doc.docType === "TRA_NCC";
-        const typeLabel = isTraNcc ? "Trả hàng NCC" : "Khách trả hàng";
+        const typeLabel = isTraNcc ? "Trả hàng NCC" : "Trả hàng";
         // TRA_KHACH sinh từ phiếu XUAT; TRA_NCC sinh từ phiếu NHAP (0057).
         const sourceHref = isTraNcc
           ? `/nhap-hang/${doc.sourceDocId}`
@@ -65,7 +65,7 @@ export function ReturnDetailView({
               description={
                 <span className="flex flex-wrap items-center gap-2">
                   <StatusDot tone={DOC_STATUS_TONES[doc.status]} variant="badge">
-                    {DOC_STATUS_LABELS[doc.status]}
+                    {RETURN_STATUS_LABELS[doc.status]}
                   </StatusDot>
                   <Tag>{typeLabel}</Tag>
                   {doc.sourceDocId ? (

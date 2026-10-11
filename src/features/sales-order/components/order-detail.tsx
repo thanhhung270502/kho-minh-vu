@@ -79,8 +79,8 @@ export function OrderDetailView({
                 className="mb-4"
                 type="info"
                 showIcon
-                title="Đơn đã xác nhận nên khóa sửa"
-                description="Muốn sửa đầu đơn hoặc dòng đơn, bấm Sửa đơn (người có quyền Xác nhận) để đưa đơn về đơn tạm."
+                title="Đơn đã duyệt nên khóa sửa"
+                description="Muốn sửa đầu đơn hoặc dòng đơn, bấm Sửa đơn (người có quyền Xác nhận) để đưa đơn về phiếu tạm."
               />
             ) : null}
             {order.status === "HOAN_THANH" ? (
