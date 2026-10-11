@@ -36,6 +36,8 @@ describe("documents/types", () => {
       ten_nguoi_nhan: ["Thủ kho K1"],
       ho_ten_nguoi_duyet: "Quản lý",
       ho_ten_nguoi_xac_nhan_don: "Quản lý",
+      ban_sua_cua_id: null as unknown as string,
+      so_ct_ban_sua: null as unknown as string,
     });
     expect(internalIssue.staffRecipients).toStrictEqual([
       { id: "nd-1", name: "Thủ kho K1" },

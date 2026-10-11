@@ -10,18 +10,21 @@ describe("order-actions", () => {
         canApprove: true,
         canComplete: true,
         canCancel: true,
+        canEditInvoice: true,
       };
       const vp = {
         canEdit: true,
         canApprove: false,
         canComplete: true,
         canCancel: false,
+        canEditInvoice: false,
       };
       const tk = {
         canEdit: false,
         canApprove: false,
         canComplete: false,
         canCancel: false,
+        canEditInvoice: false,
       };
       expect(orderActionsFor("TAM", ql)).toStrictEqual(["approve", "cancel"]);
       expect(orderActionsFor("TAM", vp)).toStrictEqual([]);
@@ -39,8 +42,9 @@ describe("order-actions", () => {
       expect(orderActionsFor("DA_XAC_NHAN", tk)).toStrictEqual(["print"]);
       expect(
         orderActionsFor("HOAN_THANH", ql),
-        "đơn hoàn thành: hủy hóa đơn ở màn hóa đơn, không hủy đơn",
-      ).toStrictEqual(["print"]);
+        "đơn hoàn thành: sửa qua hóa đơn (canEditInvoice), không hủy đơn",
+      ).toStrictEqual(["print", "edit-invoice"]);
+      expect(orderActionsFor("HOAN_THANH", vp)).toStrictEqual(["print"]);
       expect(orderActionsFor("DA_HUY", ql)).toStrictEqual([]);
       expect(
         !orderActionsFor("DA_XAC_NHAN", ql).includes("create-issue" as never),
