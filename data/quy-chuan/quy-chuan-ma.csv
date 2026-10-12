@@ -1,0 +1,321 @@
+1.HÃNG XE,MÃ HÓA,2.DÒNG XE,MÃ HÓA,4.LINH KIỆN,MÃ HÓA,5.XỬ LÝ,MÃ HÓA,6.MÀU,MÃ HÓA
+HONDA,H,Air Blade,A,Ốp chắn bùn trước,01,xi,X,đỏ bóng,ĐOB
+HONDA,H,SH 300i,S300,Ốp chắn bùn trước lớn,01A,sơn,S,trắng bóng,TB
+HONDA,H,ADV,ADV,Ốp chắn bùn trước nhỏ,01B,carbon,CB,vàng bóng,VB
+HONDA,H,Beat,BT,Ốp chắn bùn sau,02,PVC,PVC,xanh bóng,XB
+HONDA,H,Click,CL,Ốp chắn bùn sau lớn,02A,nano,NM,đen bóng,ĐB
+HONDA,H,Cub,CUB,Ốp chắn bùn sau nhỏ,02B,PC,PC,đen mờ,ĐM
+HONDA,H,Dream,DR,Ốp chắn gió mặt đồng hồ,03,PP,PP,đô bóng,ĐÔB
+HONDA,H,Dream Lùn,DRL,Ốp chắn gió mặt đồng hồ lớn,03A,ABS,ABS,xám bạc,XABA
+HONDA,H,Future,F,Ốp chắn gió mặt đồng hồ nhỏ,03B,ASA,ASA,cam đen,CĐ
+HONDA,H,Future X,FX,Ốp chắn gió mặt đồng hồ trung,03C,PA,PA,đỏ,ĐO
+HONDA,H,Lead,L,Cao su gác chân sau,010,phôi PP,PPH,cam bóng,CB
+HONDA,H,MSX,MX,Ốp mặt nạ trước lớn,04A,phôi nhôm,PPN,cam,C
+HONDA,H,PCX,P,Ốp mặt nạ trước nhỏ,04B,phôi PC,PPC,đen bạc,ĐBA
+HONDA,H,Scoopy,SP,Ốp mặt nạ trước trên,04C,inox,I,đỏ mờ,ĐOM
+HONDA,H,SH,S,Ốp mặt nạ trước dưới,04D,phôi inox,PPI,xanh đen,XĐ
+HONDA,H,SH Mode,SM,Ốp mặt đồng hồ,05,nhôm,N,xanh mờ,XM
+HONDA,H,Sonic,SN,Cao su phụ kiện thảm lót chân,32C,sắt,SA,bạc bóng,BAB
+HONDA,H,Vario,VR,Ốp đèn pha,06A,phôi sắt,PPS,bạc mờ,BAM
+HONDA,H,Vision,V,Ốp trên đèn pha,06B,nhập khẩu,NK,đen,Đ
+HONDA,H,Wave,W,Ốp dưới đèn pha,06C,PS,PS,khói,K
+HONDA,H,Wave Blade,B,Thảm cao su lót chân,32A,POM,POM,xi vàng,CKV
+,,Wave Thái,WT,Cao su phụ kiện thảm lót chân (gắn hàng inox),32D,,,trắng,T
+HONDA,H,VIPER,VI,Chóa đèn Led,06E,,,tím,TI
+,,UC3,UC3,Kiếng đèn Led,06F,,,vàng,V
+VINFAST,V,EVO,EV,Đèn mắt cú,06G,,,xanh lá,XL
+,,ICON-E,IC,Nắp cao su bình nước phụ,89C,,,[xanh đen bóng],-5305
+HONDA,H,Winner,WN,Co pô e,85,,,cam đen bóng,CĐB
+HONDA,H,Winner X,WNX,Ốp nắp bình xăng,07,,,đỏ bạc mờ,ĐOBAM
+HONDA,H,ACTIVA,ATV,Ốp nắp nước,08,,,đen trắng,ĐT
+PIAGGIO,P,Liberty,LBT,Ốp két tản nhiệt,11,,,đỏ trắng,ĐOT
+PIAGGIO,P,Vespa,VE,Két tản nhiệt (thay thế),11T,,,bạc đen mờ,BAĐM
+SUZUKI,S,Raider,RD,Ốp bầu lọc gió,12,,,đen đỏ mờ,ĐĐOM
+SUZUKI,S,Satria,ST,Ốp bầu lọc gió lớn,12A,,,xanh,X
+SUZUKI,S,Sport,SU,Ốp bầu lọc gió trung,12B,,,khói trắng,KT
+SUZUKI,S,Hayate,YT,Ốp bầu lọc gió nhỏ,12C,,,khói nhạt,KN
+SUZUKI,S,Viva,VV,Đế bầu lọc gió,12Đ,,,khói đậm,KĐA
+SYM,SY,Attila,AT,Ốp lóc máy lớn,13A,,,hồng,H
+SYM,SY,Impulse,I,Ốp lóc máy trước,13B,,,đen nhám,ĐNH
+SYM,SY,Shark,S,Ốp lóc máy sau,13C,,,bạc đen,BAĐ
+YAMAHA,Y,Acruzo,AC,Ốp lóc máy dài,13D,,,đỏ cam,ĐOC
+YAMAHA,Y,Exciter,E,Chụp lóc máy tròn,13E,,,đỏ đen,ĐOĐ
+YAMAHA,Y,NEO'S,NE,Chụp lóc máy vuông,13F,,,trắng đen,TĐ
+YAMAHA,Y,Fazzio,FA,Ốp phuộc trước,14,,,vàng đen,VĐ
+YAMAHA,Y,Freego,FG,Ốp cảm biến tốc độ,15,,,đen bạc bóng,ĐBAB
+YAMAHA,Y,Janus,JN,Ốp pô,16A,,,đen đỏ bóng,ĐĐOB
+YAMAHA,Y,FZ,FZ,Che pô (thay thế),16AT,,,hồng đen,HĐ
+YAMAHA,Y,Jupiter,J,Mũi tên pô,16B,,,đen đồng bóng,ĐĐOGB
+YAMAHA,Y,Feliz,FE,Ốp đèn hậu,17,,,cam đồng,CĐOG
+YAMAHA,Y,Flazz,FL,Ốp đèn hậu lớn,17A,,,cam vàng,CV
+YAMAHA,Y,Latte,LT,Ốp đèn hậu nhỏ,17B,,,đen cam,ĐC
+YAMAHA,Y,Lexi,LX,Kiếng đèn lái,17C,,,xi xanh tím,CKXT
+YAMAHA,Y,Luvias,LFI,Ốp đèn soi biển số lớn,18A,,,đen đồng,ĐĐOG
+KAWASAKI,K,Max III,M3,Catte,50,,,đỏ bạc,ĐOBA
+YAMAHA,Y,N-Max,NM,Ốp đèn soi biển số nhỏ,18B,,,đỏ đen bóng,ĐOĐB
+YAMAHA,Y,Nouvo,N,Ốp bánh mâm,19,,,đỏ đồng,ĐOĐOG
+YAMAHA,Y,Nozza,NZ,Ốp tay dắt sau,20,,,đen xanh,ĐX
+YAMAHA,Y,NVX,NX,Tay dắt sau (thay thế),20A,,,xanh bạc bóng,XBAB
+YAMAHA,Y,PG-1,PG,Tay dắt sau (thay thế) nhôm,20AN,,,xanh đen mờ,XĐM
+YAMAHA,Y,Sirius,S,Logo,21,,,xanh trắng bóng,XTB
+YAMAHA,Y,Spark,SP,Ống phuộc,22,,,bạc,BA
+YAMAHA,Y,X-Max,XM,Ốp đuôi pô,23,,,đỏ trắng mờ,ĐOTM
+YAMAHA,Y,YA-Z,Z,Bợ cổ,008,,,đô đen mờ,ĐÔĐM
+YAMAHA,Y,YA-R15,R15,Ốp hông lớn,24A,,,đô trắng mờ,ĐÔTM
+YAMAHA,Y,YA-TFX,TX,Ốp hông nhỏ,24B,,,đen trắng mờ,ĐTM
+YAMAHA,Y,FASCINO,FCN,Ốp yếm,24C,,,trắng đen bóng,TĐB
+YAMAHA,Y,GEAR,G,Ốp che nhông trước,41,,,sơn carbon,SCB
+DATBIKE,DB,Quantum S,QTS,Phản quang phuộc,25,,,trắng đỏ,TĐO
+VUTRU,VT,Winner R,WNR,Phản quang dè,26,,,[đỏ bạc bóng],-4210
+XUẤT YAMAHA,YY,Elegant,EG,Baga,27,,,[xanh bạc bóng],-4214
+XUẤT HONDA,HH,ERA,ELG,Baga mũi,27A,,,xanh lá bóng,XLB
+,,Galaxy,GL,Mica che phuộc ,28,,,[xanh lá bạc bóng],-4224
+,,Angela,AG,Ốp xi nhan trước,29,,,khói xanh,KX
+,,Axelo,AX,Ốp xi nhan sau,30,,,xanh biển,XBI
+,,TAURUS,TR,Ốp nắp đồ nghề,31,,,xanh ngọc,XN
+,,,,Thảm lót chân,32,,,xám,XA
+,,,,Hộc chứa đồ,33,,,nâu bóng,NAB
+,,,,Ghép trên hộc chứa đồ,33B,,,xanh đá,XĐA
+,,,,Nút đậy lỗ kiếng,34,,,xám ghi bóng,XAGB
+,,,,Long đền kiếng,34B,,,đô đen,ĐÔĐ
+,,,,Chắn bùn trước,35A,,,đô nâu,ĐÔNA
+,,,,Chắn bùn sau (theo xe),35B,,,trắng nâu,TNA
+,,,,Chắn bùn phụ,35C,,,xi 7 màu,CK7M
+,,,,Chắn bùn trong (kiểu Indo),35D,,,xám bóng,XAB
+,,,,Chắn bùn trong,35,,,vàng kem,VKE
+,,,,Mặt nạ,75,,,[đỏ nâu],-2102
+,,,,Kính chắn gió,91,,,bạc đen bóng,BAĐB
+,,,,Vỏ kiếng,028A,,,[xanh rêu đen],-5501
+,,,,Đầu đèn,46,,,kem bóng,KEB
+,,,,Gác chân trước,09A,,,xám đen,XAĐ
+,,,,Ốp bas gác chân trước,09C,,,[xanh đá nâu],-5202
+,,,,Thùng chứa đồ,68B,,,kem đen,KEĐ
+,,,,Bình nước phụ,89A,,,xanh tím,XTI
+,,,,Cánh quạt tản nhiệt,37,,,xanh nhám,XNH
+,,,,Ốp sườn,56,,,xanh xám,XXA
+,,,,Ốp yếm trước,61,,,sơn đen,SĐ
+,,,,Bạc thao,BT,,,xanh rêu bóng,XRB
+,,,,Móc giỏ,60,,,bạc mờ đen,BAMĐ
+,,,,Nối móc giỏ,NMG,,,[xanh đá đen],-5201
+,,,,Đế móc giỏ,60Đ,,,[đồng nâu],-0402
+,,,,Lưỡi móc giỏ,LMG,,,[hồng nâu],-0502
+,,,,Bulong đũa thắng sau,BLĐTS,,,[xanh ngọc đen],-5401
+,,,,Bulong pat thắng sau,BLPTS,,,trắng ngà bóng,TNB
+,,,,Long đền chân kiếng,LĐCK,,,đen mờ đen,ĐMĐ
+,,,,Long đền,LĐ,,,đen bóng đen,ĐBĐ
+,,,,Long đền tay kiếng,LĐTK,,,[đen bóng xanh],-1208
+,,,,Long đền xoay kiếng,LĐXK,,,[đen bóng đô],-1209
+,,,,Gù,G,,,[đen bóng bạc],-1215
+,,,,Gù best,GB,,,xám chì,XACH
+,,,,Gù chỉ âm,GCA,,,xanh nhám đen,XNHĐ
+,,,,Gù chống rung,GCR,,,xanh xám đen,XXAĐ
+,,,,Gù lõm chỉ âm,GLCA,,,[xi-xanh đá],-0206
+,,,,Gù ty chống rung,GTCR,,,xanh mực đen,XMUĐ
+,,,,Tán gù,TG,,,đen mờ đen bóng,ĐMĐB
+,,,,Thân tăng sên,TTS,,,đô,ĐÔ
+,,,,Cục canh,CC,,,vàng trắng bóng,VTB
+,,,,Đầu tay thắng,ĐTT,,,vàng đen bóng,VĐB
+,,,,Ghép 2 đầu tay thắng,GĐTT,,,vàng xám bạc,VXABA
+,,,,Ống lót đầu tay thắng,OLĐTT,,,đen bóng đen mờ,ĐBĐM
+,,,,Lưỡi gà,LG,,,đen bóng trắng,ĐBT
+,,,,Nắp bình dầu,NBD,,,trắng đen mờ,TĐM
+,,,,Lỗ tai kéo gấp,LTKG,,,xám đen mờ,XAĐM
+,,,,Lỗ tai pat biển số,LTPBS,,,[đen bóng nâu],-1202
+,,,,Lỗ tai tăng sên,LTTS,,,[bạc mờ nâu],-4102
+,,,,Nắp bình xăng,NBX,,,đen đồng mờ,ĐĐOGM
+,,,,Nắp tăng sên,NTS,,,đen bạc mờ,ĐBAM
+,,,,Nâng phuộc,NP,,,trắng mờ,TM
+,,,,Chống đổ,CĐ,,,đen đỏ,ĐĐO
+,,,,Gác chân,GC,,,đỏ bóng đen mờ,ĐOBĐM
+,,,,Tán Salaya,TSAL,,,xanh bóng đen mờ,XBĐM
+,,,,Tán đùm sau,TĐS,,,trắng bóng đen mờ,TBĐM
+,,,,Tán,T,,,[xanh ngọc nâu],-5402
+,,,,Tay thắng,64,,,hồng bóng,HB
+,,,,Tay KCH,TKCH,,,khói xanh lá,KXL
+,,,,Pat biển số,PBS,,,khói đỏ,KĐO
+,,,,Chân chống chữ U,CCCU,,,bạc trắng,BAT
+,,,,Két nước,KN,,,đỏ mờ đen,ĐOMĐ
+,,,,Pat,PAT,,,đỏ mờ trắng,ĐOMT
+,,,,Chân KCH,CKCH,,,hồng trắng,HT
+,,,,Nắp,NA,,,xanh trắng,XT
+,,,,Thông gió trước,97,,,xám trắng,XAT
+,,,,Thông gió trước có đèn,97B,,,xanh mực trắng,XMUT
+,,,,Gác chân trước nhỏ,09B,,,xanh mực,XMU
+,,,,Cao su phụ kiện gác chân trước,09D,,,xanh mờ đen,XMĐ
+,,,,Cao su phụ kiện gác chân trước nhỏ,09E,,,bạc đỏ,BAĐO
+,,,,Ốp thân máy,57,,,cam bạc mờ,CBAM
+,,,,Đuôi rùa,18C,,,cam trắng,CT
+,,,,Logo cao su,002,,,đen trắng bóng,ĐTB
+,,,,Nắp nước (thay thế),08T,,,đen vàng,ĐV
+,,,,Ốp gác chân sau,10A,,,khói đen,KĐ
+,,,,Bầu lọc gió (thay thế),12T,,,T2022,T2022
+,,,,Chắn gió mặt đồng hồ (thay thế),03T,,,CTS1022,CTS1022
+,,,,Cao su phụ kiện gác chân trước (gắn hàng inox),09F,,,CTS1023,CTS1023
+,,,,Collar Baga,27-001,,,CTS1024,CTS1024
+,,,,Chắn bùn trong nối dài,35N,,,N200,N200
+,,,,Thân - thùng chứa đồ,68F,,,N211,N211
+,,,,Nắp - thùng chứa đồ,68E,,,N8051,N8051
+,,,,Nắp hộc chứa đồ,33A,,,N8052,N8052
+,,,,Thân hộc chứa đồ,33C,,,giả cổ,GCO
+,,,,Kính chắn gió (phần kính lớn),91A,,,7 màu,7M
+,,,,Kính chắn gió (miếng ghép nhỏ),91B,,,xanh dương,XD
+,,,,Bas kính chắn gió,91C,,,xanh chuối,XC
+,,,,Đế kính chắn gió,91D,,,[xi-nâu bóng],-0226
+,,,,Bầu lọc gió (thay thế) - phần thân,12D,,,nâu mờ,NAM
+,,,,Bầu lọc gió (thay thế) - phần nắp,12E,,,T2022 đỏ,T2022ĐO
+,,,,Ốp đầu đèn,47,,,T2022 xanh,T2022X
+,,,,Chụp gù tay lái,59A,,,T2022 vàng,T2022V
+,,,,Kiếng đèn xi nhan sau (thay thế),30TB,,,T2022 trắng,T2022T
+,,,,Thân đèn xi nhan sau (thay thế),30TA,,,[xi-đen mờ],-0201
+,,,,Đế kẹp đèn xi nhau sau (thay thế),30TD,,,[xi-CB],-0203
+,,,,Gác chân sau,10B,,,[xi-CBM],-0230
+,,,,Cục gù tay lái,59,,,[xi-đen bóng],-0240
+,,,,Logo cao su gác chân trước,009-002,,,[đen mờ],-01
+,,,,Ốp bụng giữa,56B,,,[CB],-03
+,,,,Nắp bình xăng (thay thế),07T,,,[T2022],-30
+,,,,Nắp đồ nghề (thay thế),31T,,,[đen bóng],-40
+,,,,Ốp mặt nạ trước trung,04E,,,[trắng bóng],-04
+,,,,Chắn bùn sau (kiểu Sonic),35SN,,,[7 màu],-31
+,,,,Bợ cổ trên,008A,,,[chrome],-23
+,,,,Bợ cổ dưới,008B,,,[CTS 1022],-36
+,,,,Chụp đuôi pô (thay thế),23T,,,[CTS 1023],-37
+,,,,Chắn bùn trước nối dài,35NT,,,[CTS 1024],-35
+,,,,Chỉ mũi chế,75C,,,[đen  bóng],-05
+,,,,Bas mặt nạ,75D,,,[bạc bóng],-15
+,,,,Ghép che két nước,039B,,,[bạc mờ],-20
+,,,,Bửng,61A,,,[đen bạc bóng],-4205
+,,,,Thanh ghép 3 sọc,75B,,,[xanh rêu nâu],-5502
+,,,,Mặt cười,75G,,,[đen đồng bóng],-0405
+,,,,Nền mặt nạ,75F,,,[đen đồng mờ],-0701
+,,,,Tam giác,52,,,[xi-cam bóng],-0218
+,,,,Ốp bánh mâm - số 1,19A,,,[xi-bạc bóng],-0215
+,,,,Ốp bánh mâm - số 2,19B,,,[xi-đỏ bóng],-0210
+,,,,Ốp bánh mâm - số 3,19C,,,[xi-đen  bóng],-0205
+,,,,Ốp bánh mâm - số 4,19D,,,[xi-xanh bóng],-0208
+,,,,Che cổ pô,54,,,[xi-trắng bóng],-0204
+,,,,Nắp dầu,34A,,,[xi-đô bóng],-0209
+,,,,Logo thảm cao su,002A,,,[xi-kem bóng],-0219
+,,,,Chắn bùn trước - phần dè,35A1,,,[xi-bạc mờ],-0220
+,,,,Chắn bùn trước - phần tai dè,35A2,,,[xi-xám ghi],-0229
+,,,,Lót lườn,58,,,[nano vàng-trắng bóng],-0304
+,,,,Chắn bùn sau (kiểu FZ),35FZ,,,[nano vàng-đô bóng],-0309
+,,,,Chắn bùn trong (có catte),35CT,,,[nano vàng-đen bóng],-0305
+,,,,Chắn bùn trong (phần dè không catte),35CT1,,,[nano vàng-xám ghi],-0329
+,,,,Đuôi rùa dè sau,77,,,[nano vàng-đen mờ],-0301
+,,,,Đầu đèn pha (thay thế),36T,,,[đen mờ-xi],-1123
+,,,,Đế đèn pha (thay thế),49,,,[đen mờ-đen],-1101
+,,,,Mặt đồng hồ (thay thế),05T,,,[đen mờ-đen bóng],-1105
+,,,,Pha đèn (theo xe),06D,,,[đen bóng-đen],-1201
+,,,,Đế đèn led,06Đ,,,[đen bóng trắng],-1204
+,,,,Nắp chụp đầu đèn,008C,,,[đỏ đen],-2101
+,,,,Ốp đèn sương mù,29B,,,[trắng đen],-3101
+,,,,Kiếng đèn sương mù,29A,,,[trắng nâu],-3102
+,,,,Nắp ghép đế sương mù,29C,,,[trắng ngà nâu],-3202
+,,,,Ghép trong đế sương mù,29D,,,[xanh đen],-5301
+,,,,Đế sương mù,29E,,,[xanh nâu],-5302
+,,,,Đèn sương mù audi,29F,,,[bạc đen],-4201
+,,,,Đuôi đèn dè sau,18D,,,[đô đen],-2201
+,,,,Bas bảng tên,04F,,,[đô nâu],-2202
+,,,,Ốp hông sau,24D,,,[xanh nhám đen],-5601
+,,,,Tấm che phuộc giữa,28,,,[xanh xám đen],-5701
+,,,,Mỏ cày,79,,,[kem đen],-0101
+,,,,Bas bản lề - thùng chứa đồ,68G,,,[kem nâu],-0102
+,,,,Ghép trên - thùng chứa đồ,68H,,,[xám đen],-4301
+,,,,Đế ghép đèn tay dắt sau nhôm,20BN,,,[xám ghi đen],-4401
+,,,,Kiếng đèn tay dắt sau nhôm,20CN,,,[xanh bóng],-08
+,,,,Choá đèn tay dắt sau nhôm,20DN,,,[đô bóng],-09
+,,,,Cao su gấp,016,,,[xám bóng],-11
+,,,,Đế ghép đuôi đèn soi biển số,18E,,,[xám ghi bóng],-29
+,,,,Kiếng ghép đuôi đèn soi biển số,18F,,,[kem bóng],-19
+,,,,Chắn bùn trong (ốp gấp),35OG,,,[xanh nhám],-21
+,,,,Ốp gấp,95,,,[xanh xám],-22
+,,,,Dè ốp gấp,96,,,[nâu mới],-42
+,,,,Khẩu trang đèn,06H,,,[nâu đen],-0901
+,,,,Tay dắt sau (thay thế) sắt,20AS,,,trắng viền đen,TSĐ
+,,,,Sên tải,063A,,,khói viền đen,KSĐ
+,,,,Sên cam,063B,,,đỏ bạc bóng,ĐOBAB
+,,,,Dĩa,062,,,trắng bạc bóng,TBAB
+,,,,Ốp che bầu lọc gió,12F,,,vàng bạc bóng,VBAB
+,,,,Ốp ghi đông,36,,,xanh lá bạc bóng,XLBAB
+,,,,Ốp dưới đèn pha - (miếng ghép),06B1,,,[cam bóng],-18
+,,,,Mỏ cày - (miếng ghép),79B,,,[đỏ mờ],-17
+,,,,Chụp con rùa đèn lái,094,,,[đỏ bóng],-10
+,,,,Ốp con sò,44,,,[bạc mờ đen],-4101
+,,,,Ốp gò má,39,,,đỏ trắng bóng,ĐOTB
+,,,,Xi nhan sừng trâu,29G,,,[xám kem bóng],-43
+,,,,Cao su ốp bình xăng,099,,,[xám kem nâu],-4502
+,,,,Thanh ghép bửng,61B,,,xám kem bóng,XAKB
+,,,,Chắn bùn phụ (4 chân),35C4,,,[xi-xanh biển],-0212
+,,,,Cao su nắp đậy lỗ ốc thảm lót chân,005,,,[xi-xanh ngọc],-0213
+,,,,Nút dậy lỗ sườn,040A,,,[xanh biển đen],-5101
+,,,,Cây kiếng,028T,,,xanh biển đen,XBIĐ
+,,,,Kiếng đèn lái - phần kiếng ngoài,17D,,,xanh ngọc đen,XNĐ
+,,,,Kiếng đèn lái - phần kiếng trong,17E,,,xám mờ,XAM
+,,,,Ốp nắp đồ nghề (phần nắp lớn),31A,,,[đỏ mờ đen],-2301
+,,,,Ốp nắp đồ nghề (phần nắp nhỏ),31B,,,[xanh tím đen],-5801
+,,,,Cao su kính chắn gió,91E,,,[xám mờ đen],-4601
+,,,,Ốp con rùa che dây điện,058,,,trắng kem mờ,TKM
+,,,,Móc giỏ trên,60A,,,[xanh bóng GP],-14
+,,,,Móc giỏ dưới,60B,,,đỏ viền đen,ĐOSĐ
+,,,,Chốt móc giỏ,60C,,,xanh viền đen,XSĐ
+,,,,Catte lớn,50A,,,sơn carbon T2022,SCBT2022
+,,,,Catte nhỏ,50B,,,xanh bạc mờ,XBAM
+,,,,Catte ngắn,50C,,,xanh đen bóng,XĐB
+,,,,Catte dài,50D,,,xi,XI
+,,,,Catte bọc sên,50E,,,[xi-CTS 1022],-0236
+,,,,Tam giác lớn,52A,,,[xi-CTS 1023],-0237
+,,,,Tam giác nhỏ,52B,,,[xi-CTS 1024],-0235
+,,,,Đế đèn định vị,013,,,[bạc đen  bóng],-4205
+,,,,Bạc lót đế đèn mắt cú,013A,,,[bạc đỏ bóng],-4210
+,,,,Cao su gác chân trước,009,,,[bạc CB],-4203
+,,,,Che két nước,11A,,,[bạc CBM],-4230
+,,,,Phụ kiện ghép baga,27B,,,[bạc CTS 1022],-4236
+,,,,Nhông,064,,,[bạc CTS 1023],-4237
+,,,,Cao su che sơn mặt nạ,003,,,[bạc CTS 1024],-4235
+,,,,Nút công tắc đèn,041,,,[bạc đen mờ],-4201
+,,,,Đế kiếng,028C,,,[bạc đen bóng],-4240
+,,,,Thùng chứa đồ sau,68D,,,,
+,,,,Đế thùng chứa đồ sau,68Đ,,,,
+,,,,Chắn bùn trong (K10),35K10,,,,
+,,,,Chắn bùn sau (trái tim),35TT,,,,
+,,,,Chắn bùn sau (tròn),35TR,,,,
+,,,,Chụp lóc máy (thay thế),13T,,,,
+,,,,Nắp thăm nhớt lóc máy,13G,,,,
+,,,,Chắn bùn sau (K3),35K3,,,,
+,,,,Chắn bùn sau (K9),35K9,,,,
+,,,,Chắn bùn sau (K11),35K11,,,,
+,,,,Chắn bùn sau (K12),35K12,,,,
+,,,,Chắn bùn sau (K16),35K16,,,,
+,,,,Chắn bùn sau (K13),35K13,,,,
+,,,,Ốp lóc máy lớn (phần đế lóc máy),13A1,,,,
+,,,,Ốp lóc máy lớn (phần miếng ghép lóc máy),13A2,,,,
+,,,,Giá kẹp phản quang phuộc,25C,,,,
+,,,,Bạc lót phản quang phuộc,25D,,,,
+,,,,Cao su đèn sương mù,29H,,,,
+,,,,Đế đèn soi biển số,38A,,,,
+,,,,Kiếng đèn soi biển số,38B,,,,
+,,,,Cao su đèn soi biển số,38C,,,,
+,,,,Bas gài đèn soi biển số,38D,,,,
+,,,,Đèn soi biển số,38,,,,
+,,,,Ghép nhựa đèn lái,17F,,,,
+,,,,Ghép trong đèn lái,17G,,,,
+,,,,Đế đèn lái,17H,,,,
+,,,,Cao su cần số,006A,,,,
+,,,,Xi nhan trước (thay thế),29T,,,,
+,,,,Đế đèn xi nhan trước (thay thế),29TA,,,,
+,,,,Kiếng đèn xi nhan trước (thay thế),29TB,,,,
+,,,,Cao su đèn xi nhan sau (thay thế),30TC,,,,
+,,,,Xi nhan sau (thay thế),30T,,,,
+,,,,Cao su chân kiếng,028J,,,,
+,,,,Ruột gù tay lái,59B,,,,
+,,,,Collar nối gù tay lái,59-001,,,,
+,,,,Cao su tay lái,037A,,,,
+,,,,Đế phản quang phuộc,25A,,,,
+,,,,Kiếng phản quang phuộc,25B,,,,
+,,,,Hộc cốp,53A,,,,
+,,,,Chuông kiếng,028B,,,,
+,,,,Rổ bụng giữa,68K,,,,
+,,,,Miếng ghép hộc cốp,53B,,,,
+,,,,Miếng ghép kiếng,028D,,,,
+,,,,Collar hộc chứa đồ,33-001,,,,
+,,,,Ron kiếng,028F,,,,

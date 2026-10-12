@@ -162,6 +162,10 @@ async function readViaWorkbook(source: string | Buffer): Promise<RawSheet[]> {
   });
 }
 
+function isUnresolvedSharedString(value: unknown): boolean {
+  return typeof value === "object" && value !== null && "sharedString" in value;
+}
+
 async function readViaStream(source: string | Buffer): Promise<RawSheet[]> {
   const reader = new ExcelJS.stream.xlsx.WorkbookReader(
     typeof source === "string" ? source : Readable.from(source),
@@ -179,7 +183,13 @@ async function readViaStream(source: string | Buffer): Promise<RawSheet[]> {
     let rowIndex = 0;
     for await (const row of sheet) {
       rowIndex++;
-      rows.push({ rowNumber: row.number ?? rowIndex, values: (row.values as unknown[]) ?? [] });
+      const values = (row.values as unknown[]) ?? [];
+      // File lưu từ Excel đặt sharedStrings.xml SAU worksheet: reader stream chưa có bảng chuỗi
+      // nên trả {sharedString: n} thay vì chữ, và KHÔNG ném lỗi — tiêu đề thành "[object Object]".
+      if (values.some(isUnresolvedSharedString)) {
+        throw new Error("Reader stream chưa nạp bảng chuỗi dùng chung (sharedStrings nằm sau worksheet)");
+      }
+      rows.push({ rowNumber: row.number ?? rowIndex, values });
     }
     sheets.push({ rows });
   }

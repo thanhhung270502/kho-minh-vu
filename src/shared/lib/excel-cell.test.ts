@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import ExcelJS from "exceljs";
 import { describe, expect, it } from "vitest";
 
@@ -63,5 +66,17 @@ describe("readFirstSheet", () => {
     const sheet = await readFirstSheet(buf, { requiredHeader: "ma_hang" });
 
     expect(sheet.rawHeaders.filter(Boolean)).toStrictEqual(["Code", "Name"]);
+  });
+});
+
+describe("readFirstSheet — file lưu từ Excel (sharedStrings sau worksheet)", () => {
+  // Fixture là file mẫu nhập danh mục do người dùng mở và lưu lại bằng Excel (ticket Notion 11/10).
+  it("không để lọt {sharedString} thành tiêu đề, kể cả khi không có requiredHeader", async () => {
+    const buf = readFileSync(join(__dirname, "__fixtures__/luu-tu-excel.xlsx"));
+
+    const sheet = await readFirstSheet(buf);
+
+    expect(sheet.headers).toContain("ma_hang");
+    expect(sheet.rows[0].cells.ma_hang).toBe("BLMN");
   });
 });
