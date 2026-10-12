@@ -26,14 +26,16 @@ export type CountFileRow = {
 };
 
 const CODE_COLUMN = "ma_hang";
-const COUNT_COLUMN = "so_dem";
+/** "Tồn thực tế" là tên cột từ 0129; "Số đếm" của file mẫu tải trước đó vẫn nạp được. */
+const COUNT_COLUMNS = ["ton_thuc_te", "so_dem"] as const;
 
 export async function readCountFile(buf: Buffer): Promise<CountFileRow[]> {
   const sheet = await readFirstSheet(buf);
+  const COUNT_COLUMN = COUNT_COLUMNS.find((column) => sheet.headers.includes(column));
 
-  if (!sheet.headers.includes(CODE_COLUMN) || !sheet.headers.includes(COUNT_COLUMN)) {
+  if (!sheet.headers.includes(CODE_COLUMN) || !COUNT_COLUMN) {
     throw new Error(
-      "Dòng đầu của file phải có hai cột “Mã hàng” và “Số đếm”. Dùng đúng file mẫu hệ vừa xuất ra, không đổi tên cột.",
+      "Dòng đầu của file phải có hai cột “Mã hàng” và “Tồn thực tế”. Dùng đúng file mẫu hệ vừa xuất ra, không đổi tên cột.",
     );
   }
 

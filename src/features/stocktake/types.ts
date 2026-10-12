@@ -7,6 +7,7 @@ type Fn = Database["public"]["Functions"];
 
 type SessionRowDb = Fn["danh_sach_phien_kiem_ke"]["Returns"][number];
 type CountSheetRowDb = Fn["bang_dem_kiem_ke"]["Returns"][number];
+type NegativeStockRowDb = Fn["ma_ton_am_theo_kho"]["Returns"][number];
 
 // --- Mô hình miền (khóa camelCase tiếng Anh) --------------------------------
 
@@ -21,6 +22,8 @@ export type StocktakeSession = {
   /** `null` = toàn kho, không giới hạn nhóm hàng. */
   categoryIds: string[] | null;
   categoryNames: string | null;
+  /** Phiên chọn theo mã (0129): số mã đã chọn. `null` = phiên theo nhóm / toàn kho. */
+  selectedProductCount: number | null;
   state: StocktakeSessionState;
   countedCount: number;
   scopeCount: number;
@@ -68,6 +71,8 @@ export function toStocktakeSession(row: SessionRowDb): StocktakeSession {
     warehouseName: row.ten_kho,
     categoryIds: row.pham_vi_nhom_hang,
     categoryNames: row.ten_nhom_pham_vi,
+    // `== null`: database chưa chạy 0129 không trả cột này (undefined) — coi như phiên theo nhóm.
+    selectedProductCount: row.so_ma_chon == null ? null : Number(row.so_ma_chon),
     state: row.trang_thai,
     countedCount: Number(row.so_da_dem),
     scopeCount: Number(row.so_trong_pham_vi),
@@ -76,6 +81,18 @@ export function toStocktakeSession(row: SessionRowDb): StocktakeSession {
     postedAt: row.ngay_ghi_so,
     createdAt: row.created_at,
   };
+}
+
+/** Mã đang tồn âm của một kho — để thêm nhanh vào phiên chọn theo mã (0129). */
+export type NegativeStockProduct = {
+  id: string;
+  code: string;
+  name: string;
+  stock: number;
+};
+
+export function toNegativeStockProduct(row: NegativeStockRowDb): NegativeStockProduct {
+  return { id: row.san_pham_id, code: row.ma_hang, name: row.ten_hang, stock: Number(row.ton) };
 }
 
 export function toCountSheetRow(row: CountSheetRowDb): CountSheetRow {

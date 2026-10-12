@@ -53,8 +53,8 @@ export function CountExcelImport({ sessionId, editable }: Props) {
       <div className="flex flex-col gap-2">
         <Typography.Text strong>1. Tải file mẫu</Typography.Text>
         <Typography.Paragraph type="secondary" className="mb-0">
-          Mỗi nhóm một file. File không có số tồn — người đếm điền cột Số đếm. Để trống = chưa
-          đếm.
+          Mỗi nhóm một file, có cột Tồn (số trên sổ) để đối chiếu — người đếm điền cột Tồn
+          thực tế. Để trống = chưa đếm.
         </Typography.Paragraph>
         <div className="flex flex-wrap items-center gap-2">
           <Select

@@ -1,11 +1,21 @@
 import { z } from "zod";
 
-/** `categoryIds` rỗng = mở phiên cho toàn kho, không giới hạn nhóm hàng. */
-export const openSessionSchema = z.object({
-  warehouseId: z.string().uuid("Chọn kho"),
-  categoryIds: z.array(z.string().uuid()),
-  note: z.string().trim().max(500).optional(),
-});
+/**
+ * `scope` "category": `categoryIds` rỗng = toàn kho. `scope` "products": kiểm đúng
+ * các mã trong `productIds` (0129) — phải chọn ít nhất một mã.
+ */
+export const openSessionSchema = z
+  .object({
+    warehouseId: z.string().uuid("Chọn kho"),
+    scope: z.enum(["category", "products"]),
+    categoryIds: z.array(z.string().uuid()),
+    productIds: z.array(z.string().uuid()),
+    note: z.string().trim().max(500).optional(),
+  })
+  .refine((v) => v.scope !== "products" || v.productIds.length > 0, {
+    message: "Chọn ít nhất một mã cần kiểm",
+    path: ["productIds"],
+  });
 
 export const countQuantitySchema = z
   .number({ message: "Nhập số đếm" })

@@ -1,5 +1,6 @@
 "use client";
 
+import { PrinterOutlined } from "@ant-design/icons";
 import { Button, Grid, Segmented, Tabs } from "antd";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -79,9 +80,15 @@ export function SessionDetail({ sessionId, canCount, canApprove, canViewStock }:
 
         return (
           <>
-            <Link href="/kiem-ke" className="mb-2 inline-block text-sm">
-              ← Phiên kiểm kê
-            </Link>
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <Link href="/kiem-ke" className="text-sm">
+                ← Phiên kiểm kê
+              </Link>
+              {/* Phiếu giấy để đi đếm: mã, tên, tồn, ô trống ghi tồn thực tế (0129). */}
+              <Link href={`/kiem-ke/${sessionId}/in`} target="_blank">
+                <Button icon={<PrinterOutlined />}>In phiếu kiểm</Button>
+              </Link>
+            </div>
 
             <SessionHeader session={data} canVoid={canApprove} />
 

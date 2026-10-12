@@ -18,6 +18,7 @@ import {
   SESSION_STATUS_LABELS,
   sessionStatus,
 } from "../lib/session-status";
+import { scopeLabel } from "../lib/session-scope";
 import type { StocktakeSession, StocktakeSessionState } from "../types";
 import { OpenSessionDrawer } from "./open-session-drawer";
 import { useStickyTableOffset } from "@/shared/hooks/use-sticky-table-offset";
@@ -80,10 +81,10 @@ const COLUMNS: TableColumnsType<StocktakeSession> = [
   { title: "Kho", dataIndex: "warehouseName", width: 120 },
   {
     title: "Phạm vi",
-    dataIndex: "categoryNames",
+    key: "scope",
     width: 200,
     ellipsis: true,
-    render: (names: string | null) => names ?? "Toàn kho",
+    render: (_, row) => scopeLabel(row),
   },
   { title: "Tiến độ", width: 160, render: (_, row) => progressColumn(row) },
   {

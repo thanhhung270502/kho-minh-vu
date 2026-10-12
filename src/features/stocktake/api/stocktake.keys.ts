@@ -11,4 +11,5 @@ export const stocktakeKeys = {
   sheet: (sessionId: string, categoryId?: string) =>
     ["stocktake", "sheet", sessionId, categoryId ?? null] as const,
   lookups: ["stocktake", "lookups"] as const,
+  negative: (warehouseId: string) => ["stocktake", "negative", warehouseId] as const,
 };

@@ -11,6 +11,7 @@ import { StatusDot } from "@/shared/components/status-dot";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 
 import { useVoidSession } from "../hooks/useStocktake";
+import { scopeLabel } from "../lib/session-scope";
 import { SESSION_STATUS_TONES, SESSION_STATUS_LABELS, sessionStatus } from "../lib/session-status";
 import { voidSessionSchema, type VoidSessionInput } from "../schemas/stocktake.schema";
 import type { StocktakeSession } from "../types";
@@ -118,7 +119,7 @@ export function SessionHeader({ session, canVoid }: Props) {
         column={{ xs: 1, sm: 2, lg: 4 }}
         items={[
           { key: "warehouse", label: "Kho", children: session.warehouseName },
-          { key: "scope", label: "Phạm vi", children: session.categoryNames ?? "Toàn kho" },
+          { key: "scope", label: "Phạm vi", children: scopeLabel(session) },
           {
             key: "date",
             label: "Ngày mở",
