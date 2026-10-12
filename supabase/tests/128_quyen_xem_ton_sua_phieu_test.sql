@@ -55,6 +55,10 @@ select (select id from public.san_pham where ma_hang = 'Q128-XT') as sp,
        (select id from public.kho where ma = 'K1') as k1;
 grant select on t_q to authenticated;
 
+-- auth.users không đọc được khi đã đăng nhập, nên lấy id văn phòng trước.
+create temp table t_vp as select id from auth.users where email = 'vanphong@khominhvu.local';
+grant select on t_vp to authenticated;
+
 insert into public.ton_kho (kho_id, san_pham_id, so_luong)
 select k1, sp, 7 from t_q
 on conflict (kho_id, san_pham_id) do update set so_luong = excluded.so_luong;
@@ -121,6 +125,7 @@ select throws_ok(
   '23514', null, 'bật Sửa phiếu: qua cửa quyền ngay (đơn không tồn tại → 23514)');
 
 -- ─── 16-18: Admin luôn có; phân quyền nhận hai khóa mới ─────────────────────
+select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 
 select ok(public.co_quyen('xem_ton_kho') and public.co_quyen('sua_phieu'),
@@ -129,7 +134,7 @@ select ok(public.quyen_cua_toi() @> array['xem_ton_kho', 'sua_phieu'],
   'quyen_cua_toi của Admin có hai quyền mới');
 select is(
   public.dat_quyen_nguoi_dung(
-    (select id from auth.users where email = 'vanphong@khominhvu.local'),
+    (select id from t_vp),
     array['xem_ton_kho', 'sua_phieu']),
   array['sua_phieu', 'xem_ton_kho'],
   'dat_quyen_nguoi_dung tích được hai quyền mới');
