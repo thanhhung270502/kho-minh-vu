@@ -17,11 +17,14 @@ import {
 } from "./new-product-file";
 
 export async function readNewProductFile(buf: Buffer): Promise<NewProductFileRow[]> {
-  const sheet = await readFirstSheet(buf);
+  const sheet = await readFirstSheet(buf, { requiredHeader: "ma_hang" });
 
   // "Tên hàng" được để trống (cả cột): route tự điền từ sheet tên hàng chuẩn.
   if (!sheet.headers.includes("ma_hang")) {
-    throw new Error("Dòng đầu của file phải có cột “Mã hàng”. Tải file mẫu 4 cột rồi điền vào đó.");
+    throw new Error(
+      "Không thấy cột “Mã hàng” trong file. Tải file mẫu 4 cột rồi điền vào đó. " +
+        (sheet.rawHeaders.length ? `Các cột đọc được: ${sheet.rawHeaders.filter(Boolean).join(", ")}.` : "File không có dòng nào."),
+    );
   }
 
   return sheet.rows.map((raw) => {
