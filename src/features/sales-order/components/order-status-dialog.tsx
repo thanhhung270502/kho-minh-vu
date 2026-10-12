@@ -24,7 +24,7 @@ const COPY: Record<
   unlock: {
     title: (orderNo) => `Sửa đơn ${orderNo}`,
     description:
-      "Đơn quay về trạng thái Phiếu tạm để sửa dòng, ngày, người nhận; sửa xong duyệt lại. Lần sửa này được ghi vào nhật ký sửa.",
+      "Đơn hàng sẽ chuyển về trạng thái 'Đơn tạm' để tiến hành chỉnh sửa. Thao tác này sẽ được lưu vào nhật ký hệ thống.",
     okText: "Mở sửa",
   },
   "close-early": {
