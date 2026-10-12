@@ -144,7 +144,7 @@ export function NewProductImportDialog({ open, onClose }: { open: boolean; onClo
             onApply={(patch) => dispatch({ type: "edit", rows: state.selected, patch })}
             onClear={() => dispatch({ type: "select", rows: [] })}
           />
-          <div className="overflow-x-auto">
+          <div>
             <PreviewTable
               rows={state.drafts}
               problems={problems}
