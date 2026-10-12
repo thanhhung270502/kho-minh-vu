@@ -89,11 +89,7 @@ export function VoidDocumentDialog({ document, canVoid, extraInvalidateKeys }: P
           title="Điều xảy ra khi hủy phiếu đã ghi sổ"
           description={
             <ul className="mb-0 ps-4">
-              <li>Tồn quay lại bằng bút toán đảo — bản ghi gốc giữ nguyên, không xóa gì.</li>
-              <li>
-                <strong>Giá vốn KHÔNG quay lại</strong> — bình quân gia quyền là trung bình lịch
-                sử, không hoàn tác được.
-              </li>
+              <li>Tồn quay lại lúc đầu</li>
               {document.orderId ? (
                 <li>Đơn đặt hàng gắn với hóa đơn này quay về Đã duyệt — hoàn thành lại hoặc hủy đơn.</li>
               ) : null}
