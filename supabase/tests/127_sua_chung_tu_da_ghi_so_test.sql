@@ -6,6 +6,13 @@
 begin;
 select plan(14);
 
+-- 0128: quyền Xem tồn kho bắt đầu từ không — bật cho tài khoản mẫu trong transaction
+-- này để các khẳng định về tồn giữ nguyên nghĩa (test riêng của quyền: 128_*).
+insert into public.nguoi_dung_quyen (nguoi_dung_id, quyen)
+select id, 'xem_ton_kho' from auth.users
+where email in ('vanphong@khominhvu.local', 'thukho1@khominhvu.local', 'chixem@khominhvu.local')
+on conflict do nothing;
+
 create or replace function pg_temp.dang_nhap_nhu(p_email text)
 returns void language plpgsql as $helper$
 declare v_id uuid; v_nd public.nguoi_dung; v_kho jsonb;
@@ -80,7 +87,7 @@ select throws_ok(
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select throws_ok(
   $$ select public.mo_sua_chung_tu(pg_temp.ct('PN-SUA-1'), 'sửa số') $$,
-  '42501', null, 'Phiếu nhập đã ghi sổ: chỉ quản lý được sửa'
+  '42501', null, 'Phiếu nhập đã ghi sổ: thiếu quyền Sửa phiếu thì không sửa được (0128)'
 );
 select pg_temp.dang_xuat();
 
