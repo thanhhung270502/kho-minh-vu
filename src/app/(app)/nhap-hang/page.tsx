@@ -28,6 +28,7 @@ export default async function StockInPage() {
             // D-11: chỉ quản lý hủy phiếu đã ghi sổ. Chặn thật ở database.
             canVoid: user.role === "quan_ly",
             canReopen: can(user, "sua_phieu"),
+            canReturn: can(user, "xac_nhan_don"),
           }}
           excelActions={<DocumentExcelActions kind="phieu-nhap" canImport={canImportDocuments(user, "phieu-nhap")} />}
         />

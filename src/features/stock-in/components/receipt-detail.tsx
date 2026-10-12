@@ -93,7 +93,7 @@ export function ReceiptDetailView({
                     canEdit={permissions.canEdit}
                   />
 
-                  <ReturnButton document={receipt} canEdit={permissions.canEdit} />
+                  <ReturnButton document={receipt} canEdit={permissions.canReturn} />
                 </Space>
               }
             />

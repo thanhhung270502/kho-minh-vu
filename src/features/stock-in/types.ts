@@ -29,4 +29,6 @@ export type ReceiptPermissions = {
   canVoid: boolean;
   /** Mở sửa phiếu nhập đã duyệt — quyền Sửa phiếu (mo_sua_chung_tu, 0128). */
   canReopen: boolean;
+  /** Lập phiếu trả NCC — quyền Xác nhận / duyệt đơn (0130), không phải Nhập kho. */
+  canReturn: boolean;
 };

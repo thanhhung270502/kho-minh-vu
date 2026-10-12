@@ -24,6 +24,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         // D-11: chỉ quản lý hủy phiếu đã ghi sổ. Chặn thật ở database (plan 10).
         canVoid: user.role === "quan_ly",
             canReopen: can(user, "sua_phieu"),
+            canReturn: can(user, "xac_nhan_don"),
       }}
     />
   );
