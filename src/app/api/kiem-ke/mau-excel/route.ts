@@ -120,7 +120,8 @@ export async function GET(request: NextRequest) {
     rows.map((row) => ({
       code: row.ma_hang,
       name: row.ten_hang,
-      stock: Number(row.ton_hien_tai),
+      // null = không có quyền Xem tồn kho (0128) — giữ null để file bỏ cột Tồn, đừng ép về 0.
+      stock: row.ton_hien_tai === null ? null : Number(row.ton_hien_tai),
     })),
     {
       sessionNo: session.so_ct,

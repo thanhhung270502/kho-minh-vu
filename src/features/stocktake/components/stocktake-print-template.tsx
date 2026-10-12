@@ -9,6 +9,8 @@ import type { CountSheetRow, StocktakeSession } from "../types";
 /**
  * Phiếu "Kiểm kho" (0129): Mã hàng, Tên hàng, Tồn (số trên sổ lúc in), Tồn thực tế
  * để trống cho người đếm ghi tay. Người dùng chọn hiện số sổ trên phiếu (12/10/2026).
+ * Không có quyền Xem tồn kho (0128) thì bang_dem_kiem_ke trả tồn null — bỏ hẳn cột Tồn,
+ * không in 0 (người đếm sẽ tưởng kho hết hàng).
  */
 export function StocktakePrintTemplate({
   session,
@@ -17,6 +19,8 @@ export function StocktakePrintTemplate({
   session: StocktakeSession;
   rows: CountSheetRow[];
 }) {
+  const showStock = rows.some((row) => row.currentStock !== null);
+
   return (
     <PrintSheet>
       {(printedAt) => (
@@ -40,7 +44,7 @@ export function StocktakePrintTemplate({
                 <th className={`${printCell} w-10`}>STT</th>
                 <th className={`${printCell} w-36`}>Mã hàng</th>
                 <th className={printCell}>Tên hàng</th>
-                <th className={`${printCell} w-20`}>Tồn</th>
+                {showStock ? <th className={`${printCell} w-20`}>Tồn</th> : null}
                 <th className={`${printCell} w-28`}>Tồn thực tế</th>
               </tr>
             </thead>
@@ -50,9 +54,11 @@ export function StocktakePrintTemplate({
                   <td className={`${printCell} text-center`}>{index + 1}</td>
                   <td className={`${printCell} text-center font-bold`}>{row.code}</td>
                   <td className={printCell}>{row.name}</td>
-                  <td className={`${printCell} text-center`}>
-                    {row.currentStock.toLocaleString("vi-VN")}
-                  </td>
+                  {showStock ? (
+                    <td className={`${printCell} text-center`}>
+                      {row.currentStock?.toLocaleString("vi-VN") ?? ""}
+                    </td>
+                  ) : null}
                   <td className={printCell} />
                 </tr>
               ))}

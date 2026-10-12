@@ -31,8 +31,8 @@ export const STOCKTAKE_TEMPLATE_COLUMNS: readonly StocktakeTemplateColumn[] = [
 export type StocktakeTemplateRow = {
   code: string;
   name: string;
-  /** Tồn sổ của kho phiên lúc tải file. */
-  stock: number;
+  /** Tồn sổ của kho phiên lúc tải file. null = người tải không có quyền Xem tồn kho (0128). */
+  stock: number | null;
 };
 
 export type StocktakeTemplateMeta = {
@@ -77,8 +77,12 @@ export async function buildCountTemplate(
   wb.creator = "Kho Minh Vũ";
   wb.created = new Date();
 
+  // Không có quyền Xem tồn kho (0128) thì mọi dòng tồn null — bỏ hẳn cột Tồn, không ghi 0.
+  const showStock = rows.some((row) => row.stock !== null);
+  const columns = STOCKTAKE_TEMPLATE_COLUMNS.filter((c) => showStock || c.key !== "ton");
+
   const ws = wb.addWorksheet(sheetTitle(meta.categoryName));
-  ws.columns = STOCKTAKE_TEMPLATE_COLUMNS.map((c) => ({
+  ws.columns = columns.map((c) => ({
     header: c.title,
     key: c.key,
     width: c.width,
@@ -87,11 +91,10 @@ export async function buildCountTemplate(
   ws.views = [{ state: "frozen", ySplit: 1 }];
   ws.autoFilter = {
     from: { row: 1, column: 1 },
-    to: { row: 1, column: STOCKTAKE_TEMPLATE_COLUMNS.length },
+    to: { row: 1, column: columns.length },
   };
 
-  const soDemColIndex =
-    STOCKTAKE_TEMPLATE_COLUMNS.findIndex((c) => c.key === "ton_thuc_te") + 1;
+  const soDemColIndex = columns.findIndex((c) => c.key === "ton_thuc_te") + 1;
   ws.getRow(1).getCell(soDemColIndex).fill = {
     type: "pattern",
     pattern: "solid",
