@@ -55,10 +55,13 @@ export function ProductScopePicker({ warehouseId, value, onChange }: Props) {
         return;
       }
       const next = merge(value, rows);
+      const added = next.length - value.length;
+      if (added === 0) {
+        message.info(`Cả ${rows.length.toLocaleString("vi-VN")} mã đang âm đã có trong danh sách.`);
+        return;
+      }
       onChange(next);
-      message.success(
-        `Đã thêm ${(next.length - value.length).toLocaleString("vi-VN")} mã đang âm.`,
-      );
+      message.success(`Đã thêm ${added.toLocaleString("vi-VN")} mã đang âm.`);
     } catch (error) {
       const explained = explainError(error);
       message.error(`${explained.title}. ${explained.action}`);
