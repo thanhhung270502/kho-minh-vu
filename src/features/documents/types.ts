@@ -71,6 +71,9 @@ export type DocumentDetail = {
   approvedByName: string | null;
   /** Người xác nhận đơn gốc của hóa đơn (0115) — "Người duyệt đơn" ở màn Duyệt đơn. */
   orderApprovedByName: string | null;
+  /** Phiếu đã ghi sổ mà phiếu nháp này đang sửa (0127) — đã đảo sổ, mang số "<số>-S<n>". */
+  revisedFromId: string | null;
+  revisedFromNo: string | null;
 };
 
 export type DocumentLine = {
@@ -90,10 +93,15 @@ export type DocumentLine = {
 };
 
 export const DOC_STATUS_LABELS: Record<DocStatus, string> = {
-  NHAP_LIEU: "Đang nhập liệu",
+  NHAP_LIEU: "Phiếu tạm",
   HOAN_THANH: "Đã ghi sổ",
   DA_HUY: "Đã hủy",
 };
+
+/** Người dùng gọi hóa đơn đã ghi sổ là "Đã duyệt", phiếu nhập "Đã nhập", phiếu trả "Đã trả" (09/10/2026). */
+export const ISSUE_STATUS_LABELS: Record<DocStatus, string> = { ...DOC_STATUS_LABELS, HOAN_THANH: "Đã duyệt" };
+export const RECEIPT_STATUS_LABELS: Record<DocStatus, string> = { ...DOC_STATUS_LABELS, HOAN_THANH: "Đã nhập" };
+export const RETURN_STATUS_LABELS: Record<DocStatus, string> = { ...DOC_STATUS_LABELS, HOAN_THANH: "Đã trả" };
 
 export const DOC_STATUS_TONES: Record<DocStatus, StatusTone> = {
   NHAP_LIEU: "pending",
@@ -150,6 +158,8 @@ export function toDocumentDetail(row: DocumentDetailDb): DocumentDetail {
     approvedById: row.nguoi_duyet_id,
     approvedByName: row.ho_ten_nguoi_duyet,
     orderApprovedByName: row.ho_ten_nguoi_xac_nhan_don,
+    revisedFromId: row.ban_sua_cua_id,
+    revisedFromNo: row.so_ct_ban_sua,
   };
 }
 

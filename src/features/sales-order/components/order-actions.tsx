@@ -4,8 +4,10 @@ import { App, Button, Space } from "antd";
 import Link from "next/link";
 import { useState } from "react";
 
+import { ReopenPostedButton } from "@/features/documents/components/reopen-posted-button";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 
+import { orderKeys } from "../api/order.keys";
 import { useApproveOrder } from "../hooks/useOrders";
 import { orderActionsFor } from "../lib/order-actions";
 import type { OrderDetail, OrderLine, OrderPermissions } from "../types";
@@ -20,6 +22,8 @@ type Props = {
 };
 
 type ReasonMode = "unlock" | "close-early" | "cancel";
+
+const ORDER_KEYS = [orderKeys.all];
 
 /**
  * Nút theo trạng thái × quyền — bảng ở `lib/order-actions.ts`. Ẩn nút chỉ là
@@ -38,21 +42,21 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
 
   function confirmApprove() {
     modal.confirm({
-      title: `Xác nhận đơn ${order.orderNo}?`,
-      content: `Đơn có ${lines.length} dòng, tổng số lượng đặt ${order.orderedQuantity.toLocaleString("vi-VN")}. Sau khi xác nhận, chỉ quản lý mở khóa lại được để sửa tiếp.`,
-      okText: "Xác nhận đơn",
+      title: `Duyệt đơn ${order.orderNo}?`,
+      content: `Đơn có ${lines.length} dòng, tổng số lượng đặt ${order.orderedQuantity.toLocaleString("vi-VN")}. Sau khi duyệt, muốn sửa tiếp phải bấm Sửa đơn.`,
+      okText: "Duyệt đơn",
       cancelText: "Xem lại",
       onOk: async () => {
         try {
           await approve.mutateAsync();
-          message.success("Đã xác nhận. In phiếu, giao xong bấm Hoàn thành.");
+          message.success("Đã duyệt. In phiếu, giao xong bấm Đã giao.");
         } catch (error) {
           if (isPostgrestError(error) && error.code === "23514") {
             message.error(error.message);
             return;
           }
           if (errorCode(error) === "42501") {
-            message.error("Chỉ quản lý được xác nhận đơn.");
+            message.error("Chỉ quản lý được duyệt đơn.");
             return;
           }
           const explained = explainError(error);
@@ -69,12 +73,12 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
       <Space wrap>
         {actions.includes("approve") ? (
           <Button type="primary" loading={approve.isPending} onClick={confirmApprove}>
-            Xác nhận đơn
+            Duyệt đơn
           </Button>
         ) : null}
         {actions.includes("complete") ? (
           <Button type="primary" onClick={() => setCompleteOpen(true)}>
-            Hoàn thành
+            Đã giao
           </Button>
         ) : null}
         {actions.includes("print") ? (
@@ -82,8 +86,23 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
             <Button>In phiếu</Button>
           </Link>
         ) : null}
+        {actions.includes("edit-invoice") && order.invoice ? (
+          <ReopenPostedButton
+            document={{
+              id: order.invoice.id,
+              docNo: order.invoice.number,
+              status: "HOAN_THANH",
+              orderId,
+            }}
+            label="Sửa đơn"
+            canReopen
+            detailHref={(draftId) => `/duyet-don/${draftId}`}
+            forbiddenMessage="Chức vụ của bạn chưa có quyền Sửa hóa đơn."
+            extraInvalidateKeys={ORDER_KEYS}
+          />
+        ) : null}
         {actions.includes("unlock") ? (
-          <Button onClick={() => openReason("unlock")}>Mở khóa</Button>
+          <Button onClick={() => openReason("unlock")}>Sửa đơn</Button>
         ) : null}
         {actions.includes("close-early") ? (
           <Button onClick={() => openReason("close-early")}>Đóng sớm</Button>

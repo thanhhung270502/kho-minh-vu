@@ -8,7 +8,7 @@ export type {
 } from "@/features/documents/types";
 export {
   DOC_STATUS_TONES,
-  DOC_STATUS_LABELS,
+  RECEIPT_STATUS_LABELS as DOC_STATUS_LABELS,
   toDocumentDetail,
   toDocumentLine,
   toDocumentRow,

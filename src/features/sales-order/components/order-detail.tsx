@@ -79,8 +79,8 @@ export function OrderDetailView({
                 className="mb-4"
                 type="info"
                 showIcon
-                title="Đơn đã xác nhận nên khóa sửa"
-                description="Muốn sửa đầu đơn hoặc dòng đơn, nhờ quản lý mở lại đơn về đơn tạm trước."
+                title="Đơn đã duyệt nên khóa sửa"
+                description="Muốn sửa đầu đơn hoặc dòng đơn, bấm Sửa đơn (người có quyền Xác nhận) để đưa đơn về phiếu tạm."
               />
             ) : null}
             {order.status === "HOAN_THANH" ? (
@@ -96,7 +96,7 @@ export function OrderDetailView({
                       <Link href={`/duyet-don/${order.invoice.id}`} className="font-mono">
                         {order.invoice.number}
                       </Link>{" "}
-                      đã ghi sổ. Giao sai thì quản lý hủy hóa đơn đó — đơn quay về Đã xác nhận.
+                      đã ghi sổ. Giao sai thì bấm Sửa đơn để sửa hóa đơn — ghi sổ lại xong, dòng đơn chép theo hóa đơn.
                     </>
                   ) : (
                     "Đơn đóng sớm, không có hóa đơn. Khách lấy thêm thì lập đơn mới."

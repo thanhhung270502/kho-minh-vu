@@ -34,6 +34,7 @@ export type OrderDetail = {
   id: string;
   orderNo: string;
   orderDate: string;
+  deliveryDate: string | null;
   status: OrderStatus;
   recipients: OrderRecipients;
   createdByName: string | null;
@@ -97,6 +98,8 @@ export function toOrderDetail(row: OrderDetailDb): OrderDetail {
     id: row.id,
     orderNo: row.so_dh,
     orderDate: row.ngay_dh,
+    // RPC trả null khi chưa đặt ngày giao dù type sinh tự động khai `string`.
+    deliveryDate: row.ngay_giao_du_kien,
     status: row.trang_thai,
     recipients: {
       partner: row.doi_tac_id
@@ -154,6 +157,8 @@ export type OrderPermissions = {
   canComplete: boolean;
   /** Hủy đơn — theo phạm vi quản trị (huy_don, 0078), không thuộc 9 quyền chức vụ. */
   canCancel: boolean;
+  /** Sửa đơn đã hoàn thành = mở sửa hóa đơn của nó (0127) — cùng quyền Hủy hóa đơn. */
+  canEditInvoice: boolean;
 };
 
 export type OrderStatusCounts = {

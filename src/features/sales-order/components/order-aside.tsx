@@ -1,6 +1,6 @@
 "use client";
 
-import { App, Input, Typography } from "antd";
+import { App, DatePicker, Input, Typography } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 
@@ -113,16 +113,51 @@ export function OrderAside({ order, editable }: Props) {
         )}
       </div>
 
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-1.5">
+          <div className="text-xs font-bold text-chu-phu">{fieldLabel("orderDate", "Ngày đơn")}</div>
+          {editable ? (
+            <DatePicker
+              className="w-full"
+              format="DD/MM/YYYY"
+              allowClear={false}
+              value={dayjs(order.orderDate)}
+              onChange={(value) =>
+                value ? void save("orderDate", { orderDate: value.format("YYYY-MM-DD") }) : null
+              }
+            />
+          ) : (
+            <span className="text-[15.5px]">{dayjs(order.orderDate).format("DD/MM/YYYY")}</span>
+          )}
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <div className="text-xs font-bold text-chu-phu">
+            {fieldLabel("deliveryDate", "Ngày giao dự kiến")}
+          </div>
+          {editable ? (
+            <DatePicker
+              className="w-full"
+              format="DD/MM/YYYY"
+              placeholder="Chưa hẹn"
+              value={order.deliveryDate ? dayjs(order.deliveryDate) : null}
+              onChange={(value) =>
+                void save("deliveryDate", { deliveryDate: value ? value.format("YYYY-MM-DD") : null })
+              }
+            />
+          ) : (
+            <span className="text-[15.5px]">
+              {order.deliveryDate ? dayjs(order.deliveryDate).format("DD/MM/YYYY") : "—"}
+            </span>
+          )}
+        </div>
+      </div>
+
       <hr className="m-0 border-vien" />
 
       <dl className="m-0 grid grid-cols-2 gap-x-4 gap-y-3">
         <div>
           <dt className={metaLabel}>Số đơn</dt>
           <dd className={`m-0 font-mono ${metaValue}`}>{order.orderNo}</dd>
-        </div>
-        <div>
-          <dt className={metaLabel}>Ngày đơn</dt>
-          <dd className={`m-0 ${metaValue}`}>{dayjs(order.orderDate).format("DD/MM/YYYY")}</dd>
         </div>
         <div>
           <dt className={metaLabel}>Người tạo</dt>
