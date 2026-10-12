@@ -20,6 +20,8 @@ export type ProductDetailPermissions = {
   canEdit: boolean;
   canViewHistory: boolean;
   canViewCost: boolean;
+  /** Quyền Xem tồn kho (0128). */
+  canViewStock: boolean;
 };
 
 export function ProductDetailView({
@@ -72,39 +74,47 @@ export function ProductDetailView({
                     <ComboComponents comboId={id} canEdit={permissions.canEdit} />
                   </section>
                 ) : null}
-                <WarehouseStockTable
-                  productId={id}
-                  unitName={product.unitName}
-                  minStock={product.minStock}
-                  canViewCost={permissions.canViewCost}
-                />
-                <section className="rounded-the border border-vien bg-nen-the px-5 pb-4 shadow-the">
-                  <Tabs
-                    items={[
-                      {
-                        key: "stock-card",
-                        label: "Thẻ kho",
-                        children: <StockCard productId={id} />,
-                      },
-                      ...(permissions.canViewHistory
-                        ? [
-                            {
-                              key: "audit-log",
-                              label: "Lịch sử sửa",
-                              children: (
-                                <AuditLog
-                                  table="san_pham"
-                                  id={id}
-                                  fieldLabels={FIELD_LABELS}
-                                  renderValue={buildRenderValue(lookups.data)}
-                                />
-                              ),
-                            },
-                          ]
-                        : []),
-                    ]}
+                {permissions.canViewStock ? (
+                  <WarehouseStockTable
+                    productId={id}
+                    unitName={product.unitName}
+                    minStock={product.minStock}
+                    canViewCost={permissions.canViewCost}
                   />
-                </section>
+                ) : null}
+                {permissions.canViewStock || permissions.canViewHistory ? (
+                  <section className="rounded-the border border-vien bg-nen-the px-5 pb-4 shadow-the">
+                    <Tabs
+                      items={[
+                        ...(permissions.canViewStock
+                          ? [
+                              {
+                                key: "stock-card",
+                                label: "Thẻ kho",
+                                children: <StockCard productId={id} />,
+                              },
+                            ]
+                          : []),
+                        ...(permissions.canViewHistory
+                          ? [
+                              {
+                                key: "audit-log",
+                                label: "Lịch sử sửa",
+                                children: (
+                                  <AuditLog
+                                    table="san_pham"
+                                    id={id}
+                                    fieldLabels={FIELD_LABELS}
+                                    renderValue={buildRenderValue(lookups.data)}
+                                  />
+                                ),
+                              },
+                            ]
+                          : []),
+                      ]}
+                    />
+                  </section>
+                ) : null}
               </div>
               {imagesSection ? <aside className="min-w-0">{imagesSection}</aside> : null}
             </div>

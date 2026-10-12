@@ -35,7 +35,7 @@ export const userProfileSchema = z
     warehouseIds: z.array(z.string().uuid()).default([]),
     /** Cờ cũ (0063) — kiểm kho nay chỉ Admin; giữ để truyền lại giá trị đang có. */
     approveStocktake: z.boolean().default(false),
-    /** 9 quyền tích theo người (0117); bỏ qua khi là Admin. */
+    /** Quyền tích theo người (0117, 0128); bỏ qua khi là Admin. */
     permissions: z.array(z.enum(PERMISSION_KEYS)).default([]),
   })
   .refine((v) => v.role !== "thu_kho" || v.warehouseIds.length > 0, {

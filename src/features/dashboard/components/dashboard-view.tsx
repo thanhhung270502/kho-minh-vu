@@ -20,7 +20,14 @@ import { StockByGroupSection } from "./stock-by-group-section";
  * tồn chậm) nằm ở trang Phân tích — không lặp lại ở đây. Nút "Làm mới" gọi lại
  * cả trang bằng một lần invalidate — không polling, không Realtime (D-14).
  */
-export function DashboardView({ canViewAnalysis }: { canViewAnalysis: boolean }) {
+export function DashboardView({
+  canViewAnalysis,
+  canViewStock,
+}: {
+  canViewAnalysis: boolean;
+  /** Quyền Xem tồn kho (0128) — không có thì không có khối xuất âm / tồn theo nhóm. */
+  canViewStock: boolean;
+}) {
   const { refresh, isRefreshing } = useRefreshDashboard();
   const overview = useOverviewKpis();
 
@@ -50,13 +57,17 @@ export function DashboardView({ canViewAnalysis }: { canViewAnalysis: boolean })
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="flex min-w-0 flex-col gap-5">
           <KpiStrip />
-          <div id="xuat-am" className="scroll-mt-28">
-            <NegativeStockSection />
-          </div>
-          <StockByGroupSection />
+          {canViewStock ? (
+            <>
+              <div id="xuat-am" className="scroll-mt-28">
+                <NegativeStockSection />
+              </div>
+              <StockByGroupSection />
+            </>
+          ) : null}
         </div>
         <aside className="flex min-w-0 flex-col gap-4">
-          <AttentionPanel canViewAnalysis={canViewAnalysis} />
+          <AttentionPanel canViewAnalysis={canViewAnalysis} canViewStock={canViewStock} />
           <ActivityFeed />
         </aside>
       </div>

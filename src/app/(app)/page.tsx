@@ -21,5 +21,12 @@ export default async function DashboardPage() {
   // Phase 16: theo quyền "Xem dashboard" của chức vụ (chặn thật ở co_quyen, 0083).
   if (!can(user, "xem_dashboard")) redirect(homePathFor(user));
 
-  return <DashboardView canViewAnalysis={can(user, "xem_phan_tich")} />;
+  // Phân tích và các khối tồn đều dựa trên số tồn — cần quyền Xem tồn kho (RPC chặn, 0128).
+  const canViewStock = can(user, "xem_ton_kho");
+  return (
+    <DashboardView
+      canViewAnalysis={can(user, "xem_phan_tich") && canViewStock}
+      canViewStock={canViewStock}
+    />
+  );
 }

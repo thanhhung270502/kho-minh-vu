@@ -13,7 +13,7 @@ import {
 import { staffSchema } from "@/shared/schemas/staff.schema";
 import { filterNavItems, NAV_ITEMS } from "@/shared/lib/navigation";
 
-/** Bộ quyền mẫu (0117): Admin luôn đủ 9 quyền (quyen_cua_toi), nhân viên theo người tích. */
+/** Bộ quyền mẫu (0117): Admin luôn đủ mọi quyền (quyen_cua_toi), nhân viên theo người tích. */
 const DEFAULT_TITLE: Record<Role, BusinessPermission[]> = {
   quan_ly: BUSINESS_PERMISSIONS.map((p) => p.key),
   van_phong: ["nhap_kho", "tao_don", "xac_nhan_don", "tao_ma_hang"],

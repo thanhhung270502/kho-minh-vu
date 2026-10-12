@@ -68,6 +68,7 @@ export function ProductTable({
       productId={id}
       forecast={showForecast ? (forecastMap.get(id) ?? null) : undefined}
       canEdit={permissions.canEdit}
+      canViewStock={permissions.canViewStock}
       onEdit={(editId) => setDrawer({ open: true, id: editId })}
       onCopy={(fromId) => setDrawer({ open: true, id: null, copyFromId: fromId })}
     />
@@ -96,13 +97,19 @@ export function ProductTable({
 
   const columns = buildProductColumns({
     filter,
+    canViewStock: permissions.canViewStock,
     forecasts: showForecast ? { byId: forecastMap, loading: analysis.isPending || settings.isPending } : null,
   });
 
   return (
     <>
       <ListLayout
-        filterPanel={<ProductFilterPanel filter={filter} lookups={lookups.data} onChange={changeFilter} />}
+        filterPanel={<ProductFilterPanel
+            filter={filter}
+            lookups={lookups.data}
+            canViewStock={permissions.canViewStock}
+            onChange={changeFilter}
+          />}
         toolbar={
           <ProductToolbar
             filter={filter}

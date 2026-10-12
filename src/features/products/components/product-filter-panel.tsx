@@ -19,6 +19,8 @@ import type { Lookups } from "../types";
 type Props = {
   filter: ProductFilter;
   lookups: Lookups | undefined;
+  /** Quyền Xem tồn kho (0128) — không có thì không lọc theo tồn (RPC cũng bỏ qua). */
+  canViewStock: boolean;
   onChange: (filter: ProductFilter) => void;
 };
 
@@ -55,7 +57,7 @@ function FilterGroup({ label, children }: { label: string; children: ReactNode }
   );
 }
 
-export function ProductFilterPanel({ filter, lookups, onChange }: Props) {
+export function ProductFilterPanel({ filter, lookups, canViewStock, onChange }: Props) {
   /** Mọi thay đổi điều kiện đều về trang 1 — giữ trang cũ dễ rơi vào trang trống. */
   function change(patch: Partial<ProductFilter>) {
     onChange({ ...filter, ...patch, page: 1 });
@@ -136,16 +138,18 @@ export function ProductFilterPanel({ filter, lookups, onChange }: Props) {
         />
       </FilterGroup>
 
-      <FilterGroup label="Tồn">
-        <Select
-          allowClear
-          className="w-full"
-          placeholder="Tồn"
-          value={filter.stockStatus}
-          options={STOCK_STATUS_OPTIONS}
-          onChange={(value) => change({ stockStatus: value ?? null })}
-        />
-      </FilterGroup>
+      {canViewStock ? (
+        <FilterGroup label="Tồn">
+          <Select
+            allowClear
+            className="w-full"
+            placeholder="Tồn"
+            value={filter.stockStatus}
+            options={STOCK_STATUS_OPTIONS}
+            onChange={(value) => change({ stockStatus: value ?? null })}
+          />
+        </FilterGroup>
+      ) : null}
 
       <FilterGroup label="Hình ảnh">
         <Select

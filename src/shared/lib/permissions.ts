@@ -36,9 +36,9 @@ export function hasPermission(
 }
 
 /**
- * 9 quyền nghiệp vụ tích theo TỪNG NGƯỜI (0117). Khóa là giá trị CHECK của
+ * Quyền nghiệp vụ tích theo TỪNG NGƯỜI (0117; 0128 thêm Xem tồn kho, Sửa phiếu). Khóa là giá trị CHECK của
  * `nguoi_dung_quyen.quyen` — hợp đồng với database, giữ tiếng Việt. Tài khoản
- * Quản lý/Admin luôn đủ cả 9 (quyen_cua_toi trả đủ). Chặn thật ở `co_quyen()`;
+ * Quản lý/Admin luôn đủ cả (quyen_cua_toi trả đủ). Chặn thật ở `co_quyen()`;
  * ở đây chỉ để ẩn/hiện giao diện. Việc chỉ Admin làm (kiểm kho, nhân viên phụ
  * trách, hủy hóa đơn đã ghi sổ) kiểm bằng `isAdmin`.
  */
@@ -51,7 +51,9 @@ export type BusinessPermission =
   | "tao_doi_tac"
   | "tao_ma_hang"
   | "xem_dashboard"
-  | "xem_phan_tich";
+  | "xem_phan_tich"
+  | "xem_ton_kho"
+  | "sua_phieu";
 
 export const BUSINESS_PERMISSIONS: ReadonlyArray<{ key: BusinessPermission; label: string; hint: string }> = [
   { key: "tao_tai_khoan", label: "Tạo tài khoản", hint: "Thêm, sửa, khóa tài khoản nhân viên, đặt lại mật khẩu" },
@@ -63,6 +65,8 @@ export const BUSINESS_PERMISSIONS: ReadonlyArray<{ key: BusinessPermission; labe
   { key: "tao_ma_hang", label: "Tạo mã hàng", hint: "Thêm, sửa mã hàng, ảnh, danh mục phụ, nhập Excel" },
   { key: "xem_dashboard", label: "Xem trang Tổng quan", hint: "" },
   { key: "xem_phan_tich", label: "Xem trang Phân tích", hint: "" },
+  { key: "xem_ton_kho", label: "Xem tồn kho", hint: "Thấy số tồn ở danh mục, phiếu, thẻ kho, tổng quan, phân tích" },
+  { key: "sua_phieu", label: "Sửa phiếu", hint: "Sửa đơn đặt, hóa đơn, phiếu nhập đã duyệt" },
 ];
 
 /** Người dùng hiện tại tối thiểu cho các hàm kiểm quyền — vai trò (phạm vi) + quyền theo người. */

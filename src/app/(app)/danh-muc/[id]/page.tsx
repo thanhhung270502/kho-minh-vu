@@ -26,6 +26,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         canViewHistory: hasPermission(user.role, "edit-catalog"),
         // Chặn thật ở RPC gia_von_san_pham — đây chỉ ẩn cột Giá trị.
         canViewCost: hasPermission(user.role, "view-cost"),
+        // Chặn thật ở RLS ton_kho / the_kho_san_pham (0128) — đây ẩn bảng tồn và thẻ kho.
+        canViewStock: can(user, "xem_ton_kho"),
       }}
       imagesSection={
         <ProductImageAside productId={id} canEdit={can(user, "tao_ma_hang")} />

@@ -80,7 +80,7 @@ export function OrderDetailView({
                 type="info"
                 showIcon
                 title="Đơn đã duyệt nên khóa sửa"
-                description="Muốn sửa đầu đơn hoặc dòng đơn, bấm Sửa đơn (người có quyền Xác nhận) để đưa đơn về phiếu tạm."
+                description="Muốn sửa đầu đơn hoặc dòng đơn, bấm Sửa đơn (người có quyền Sửa phiếu) để đưa đơn về phiếu tạm."
               />
             ) : null}
             {order.status === "HOAN_THANH" ? (

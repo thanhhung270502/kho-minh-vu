@@ -32,6 +32,8 @@ export type NavItem = {
   icon: NavIconId;
   /** Mảng = hiện khi có một trong các quyền. */
   permission: AnyPermission | readonly AnyPermission[];
+  /** Quyền phải có THÊM (và) — vd. Phân tích cần cả Xem tồn kho (0128). */
+  alsoRequires?: AnyPermission;
   /** null = không vào thanh tab đáy, nằm trong mục "Khác". */
   mobilePriority: number | null;
   /** Thuộc nhóm nào trên menu máy tính; thanh tab đáy vẫn dùng danh sách phẳng. */
@@ -126,6 +128,8 @@ export const NAV_ITEMS: NavItem[] = [
     shortLabel: "Phân tích",
     icon: "analytics",
     permission: "xem_phan_tich",
+    // Phân tích dựa trên số tồn — phan_tich_ton_kho chặn khi thiếu quyền Xem tồn kho (0128).
+    alsoRequires: "xem_ton_kho",
     mobilePriority: null,
   },
   {
@@ -194,7 +198,11 @@ export function filterNavItems(
   user: PermissionSubject,
   items: NavItem[],
 ): NavItem[] {
-  return items.filter((item) => allows(user, item.permission));
+  return items.filter(
+    (item) =>
+      allows(user, item.permission) &&
+      (item.alsoRequires === undefined || allows(user, item.alsoRequires)),
+  );
 }
 
 /**

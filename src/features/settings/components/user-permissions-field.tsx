@@ -8,7 +8,7 @@ import { BUSINESS_PERMISSIONS, type BusinessPermission, type Role } from "@/shar
 type Values = { permissions: BusinessPermission[] };
 
 /**
- * 9 quyền tích theo từng người (0117). Quản lý/Admin luôn đủ — hiện tích sẵn và khóa.
+ * Quyền tích theo từng người (0117, 0128). Quản lý/Admin luôn đủ — hiện tích sẵn và khóa.
  * Không có quyền Phân quyền thì chỉ xem được. Chặn thật ở dat_quyen_nguoi_dung.
  */
 export function UserPermissionsField<T extends Values>({

@@ -29,7 +29,8 @@ export type ProductRow = {
   defaultWarehouseId: string | null;
   minStock: number;
   maxStock: number | null;
-  totalStock: number;
+  /** null = tài khoản không có quyền Xem tồn kho (RPC trả null, 0128) — khác 0 là hết hàng. */
+  totalStock: number | null;
   isActive: boolean;
   kind: ProductKind;
   /** Mã trong bộ mã hóa (hãng / dòng / linh kiện) — tên tra bằng bộ mã hóa ở giao diện. */
@@ -129,6 +130,8 @@ export type CatalogPermissions = {
   canEdit: boolean;
   /** "Điền quy chuẩn từ mã" cho cả danh mục — chỉ quản lý (RPC còn chặn bằng quyền Tạo mã hàng). */
   canFillStandard: boolean;
+  /** Quyền Xem tồn kho (0128) — không có thì ẩn cột Tồn, lọc theo tồn, thẻ kho. */
+  canViewStock: boolean;
 };
 
 /**
@@ -216,7 +219,7 @@ export function toProductRow(row: ProductRowDb): ProductRow {
     defaultWarehouseId: row.kho_mac_dinh_id,
     minStock: Number(row.ton_toi_thieu),
     maxStock: row.ton_toi_da === null ? null : Number(row.ton_toi_da),
-    totalStock: Number(row.tong_ton),
+    totalStock: row.tong_ton === null ? null : Number(row.tong_ton),
     isActive: row.dang_kinh_doanh,
     kind: toProductKind(row.loai_hang),
     brandCode: row.hang_xe,
@@ -249,7 +252,7 @@ export function toProductDetail(row: ProductDetailDb): ProductDetail {
     defaultWarehouseId: row.kho_mac_dinh_id,
     minStock: Number(row.ton_toi_thieu),
     maxStock: row.ton_toi_da === null ? null : Number(row.ton_toi_da),
-    totalStock: Number(row.tong_ton),
+    totalStock: row.tong_ton === null ? null : Number(row.tong_ton),
     isActive: row.dang_kinh_doanh,
     updatedAt: row.updated_at,
     // Chi tiết trả đúng một mã — không có khái niệm tổng số dòng.

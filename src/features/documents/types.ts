@@ -88,8 +88,11 @@ export type DocumentLine = {
   unitPrice: number;
   amount: number;
   note: string | null;
-  /** Tồn hiện tại của kho dòng này — dùng tô màu dòng vượt tồn (D-12). */
-  currentStock: number;
+  /**
+   * Tồn hiện tại của kho dòng này — dùng tô màu dòng vượt tồn (D-12). null = tài khoản
+   * không có quyền Xem tồn kho (dong_chung_tu trả null, 0128): không biết tồn nên không tô.
+   */
+  currentStock: number | null;
 };
 
 export const DOC_STATUS_LABELS: Record<DocStatus, string> = {
@@ -169,8 +172,8 @@ export function toDocumentDetail(row: DocumentDetailDb): DocumentDetail {
  * phép so sánh vẫn đúng cú pháp nhưng vô nghĩa nghiệp vụ, caller tự lọc bằng
  * `documentCanGoNegative()` (`lib/doc-type-labels.ts`) trước khi dùng.
  */
-export function exceedsStock(line: DocumentLine): boolean {
-  return line.quantity > line.currentStock;
+export function exceedsStock(line: DocumentLine): line is DocumentLine & { currentStock: number } {
+  return line.currentStock !== null && line.quantity > line.currentStock;
 }
 
 export function toDocumentLine(row: DocumentLineDb): DocumentLine {
@@ -186,7 +189,7 @@ export function toDocumentLine(row: DocumentLineDb): DocumentLine {
     unitPrice: Number(row.don_gia),
     amount: Number(row.thanh_tien),
     note: row.ghi_chu,
-    currentStock: Number(row.ton_hien_tai),
+    currentStock: row.ton_hien_tai === null ? null : Number(row.ton_hien_tai),
   };
 }
 

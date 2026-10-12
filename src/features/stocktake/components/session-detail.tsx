@@ -15,7 +15,13 @@ import { DiscrepancyTable } from "./discrepancy-table";
 import { SessionHeader } from "./session-header";
 import { UncountedPanel } from "./uncounted-panel";
 
-type Props = { sessionId: string; canCount: boolean; canApprove: boolean };
+type Props = {
+  sessionId: string;
+  canCount: boolean;
+  canApprove: boolean;
+  /** Quyền Xem tồn kho (0128) — không có thì không có tab Bảng lệch (tồn sổ trả null). */
+  canViewStock: boolean;
+};
 
 type TabKey = "dem" | "lech" | "excel";
 
@@ -32,7 +38,7 @@ function readTab(value: string | null): TabKey {
  * Excel dưới một đầu phiên. Tab đang chọn giữ trên URL (`?tab=`) để F5 không
  * mất — khuôn `history-screen.tsx` (URL là nguồn sự thật cho state điều hướng).
  */
-export function SessionDetail({ sessionId, canCount, canApprove }: Props) {
+export function SessionDetail({ sessionId, canCount, canApprove, canViewStock }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -80,7 +86,7 @@ export function SessionDetail({ sessionId, canCount, canApprove }: Props) {
             <SessionHeader session={data} canVoid={canApprove} />
 
             <Tabs
-              activeKey={activeTab}
+              activeKey={!canViewStock && activeTab === "lech" ? "dem" : activeTab}
               onChange={changeTab}
               items={[
                 {
@@ -104,27 +110,31 @@ export function SessionDetail({ sessionId, canCount, canApprove }: Props) {
                     </div>
                   ),
                 },
-                {
-                  key: "lech",
-                  label: "Bảng lệch & duyệt",
-                  children: (
-                    <div className="flex flex-col gap-6">
-                      {/* Panel nói về việc SẮP duyệt — phiên đã duyệt/đã hủy thì chỉ còn bảng lệch. */}
-                      {data.state === "NHAP_LIEU" ? (
-                        <UncountedPanel
-                          sessionId={sessionId}
-                          editable={editable}
-                          canApprove={canApprove}
-                        />
-                      ) : null}
-                      <DiscrepancyTable
-                        sessionId={sessionId}
-                        editable={editable}
-                        canApprove={canApprove}
-                      />
-                    </div>
-                  ),
-                },
+                ...(canViewStock
+                  ? [
+                    {
+                      key: "lech",
+                      label: "Bảng lệch & duyệt",
+                      children: (
+                        <div className="flex flex-col gap-6">
+                          {/* Panel nói về việc SẮP duyệt — phiên đã duyệt/đã hủy thì chỉ còn bảng lệch. */}
+                          {data.state === "NHAP_LIEU" ? (
+                            <UncountedPanel
+                              sessionId={sessionId}
+                              editable={editable}
+                              canApprove={canApprove}
+                            />
+                          ) : null}
+                          <DiscrepancyTable
+                            sessionId={sessionId}
+                            editable={editable}
+                            canApprove={canApprove}
+                          />
+                        </div>
+                      ),
+                    },
+                    ]
+                  : []),
                 {
                   key: "excel",
                   label: "Nhập Excel",
