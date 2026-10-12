@@ -37,7 +37,7 @@ function docCo(v: unknown): boolean | null {
   return null;
 }
 
-function nhanDang(headers: string[]): DinhDangFile {
+function nhanDang(headers: string[], rawHeaders: string[]): DinhDangFile {
   const co = (k: string) => headers.includes(k);
 
   // Cột "Xử lý" từng tên "Công đoạn" — file tải về trước đó vẫn nhập được.
@@ -46,7 +46,8 @@ function nhanDang(headers: string[]): DinhDangFile {
 
   throw new Error(
     "Không nhận ra mẫu file. Cần các cột: Mã hàng, Tên hàng, Đơn vị tính, Xử lý — " +
-      "hoặc dùng thẳng file DanhSachSanPham xuất từ KiotViet.",
+      "hoặc dùng thẳng file DanhSachSanPham xuất từ KiotViet." +
+      (rawHeaders.length ? ` Các cột đọc được: ${rawHeaders.filter(Boolean).join(", ")}.` : " File không có dòng nào."),
   );
 }
 
@@ -102,14 +103,14 @@ export async function readCatalogFile(
 ): Promise<{ dinhDang: DinhDangFile; dong: ImportRowPayload[] }> {
   let doc;
   try {
-    doc = await readFirstSheet(buf);
+    doc = await readFirstSheet(buf, { requiredHeader: "ma_hang" });
   } catch {
     throw new Error(
       "Không đọc được file Excel. Kiểm tra file còn mở được bằng Excel và đúng đuôi .xlsx.",
     );
   }
 
-  const dinhDang = nhanDang(doc.headers);
+  const dinhDang = nhanDang(doc.headers, doc.rawHeaders);
   const dong = doc.rows.map((d) =>
     dinhDang === "mau_moi" ? parseTemplateRow(d.cells, d.rowNumber) : parseKiotVietRow(d.cells, d.rowNumber),
   );

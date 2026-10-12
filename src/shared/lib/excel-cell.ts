@@ -121,6 +121,11 @@ function buildRow(
   return { rowNumber, cells };
 }
 
+type RawSheet = { rows: Array<{ rowNumber: number; values: unknown[] }> };
+
+/** Số dòng đầu được quét để tìm dòng tiêu đề khi file có dòng tiêu đề phụ phía trên. */
+const HEADER_SCAN_ROWS = 10;
+
 /**
  * Đường dự phòng: đọc cả workbook vào bộ nhớ.
  *
@@ -134,7 +139,7 @@ function buildRow(
  * KiotViet — nên dùng nó làm ĐƯỜNG DỰ PHÒNG kèm `ignoreNodes: ["styles"]`,
  * chứ không thay thế.
  */
-async function readViaWorkbook(source: string | Buffer): Promise<ParsedSheet> {
+async function readViaWorkbook(source: string | Buffer): Promise<RawSheet[]> {
   const workbook = new ExcelJS.Workbook();
 
   if (typeof source === "string") {
@@ -148,32 +153,20 @@ async function readViaWorkbook(source: string | Buffer): Promise<ParsedSheet> {
     );
   }
 
-  const sheet = workbook.worksheets[0];
-  if (!sheet) return { headers: [], rawHeaders: [], rows: [] };
-
-  let headers: string[] = [];
-  let rawHeaders: string[] = [];
-  const rows: RawRow[] = [];
-
-  sheet.eachRow({ includeEmpty: false }, (row, rowIndex) => {
-    const values = (row.values as unknown[]) ?? [];
-
-    if (rowIndex === 1) {
-      rawHeaders = values.map((v, i) => (i === 0 ? "" : (readString(v) ?? `cot_${i}`)));
-      headers = values.map((v, i) =>
-        i === 0 ? "" : normalizeHeader(readString(v) ?? `cot_${i}`),
-      );
-      return;
-    }
-
-    const parsed = buildRow(values, headers, row.number ?? rowIndex);
-    if (parsed) rows.push(parsed);
+  return workbook.worksheets.map((sheet) => {
+    const rows: RawSheet["rows"] = [];
+    sheet.eachRow({ includeEmpty: false }, (row, rowIndex) => {
+      rows.push({ rowNumber: row.number ?? rowIndex, values: (row.values as unknown[]) ?? [] });
+    });
+    return { rows };
   });
-
-  return { headers: headers.filter(Boolean), rawHeaders, rows };
 }
 
-async function readViaStream(source: string | Buffer): Promise<ParsedSheet> {
+function isUnresolvedSharedString(value: unknown): boolean {
+  return typeof value === "object" && value !== null && "sharedString" in value;
+}
+
+async function readViaStream(source: string | Buffer): Promise<RawSheet[]> {
   const reader = new ExcelJS.stream.xlsx.WorkbookReader(
     typeof source === "string" ? source : Readable.from(source),
     {
@@ -184,49 +177,98 @@ async function readViaStream(source: string | Buffer): Promise<ParsedSheet> {
     },
   );
 
-  let rawHeaders: string[] = [];
-  let normalizedHeaders: string[] = [];
-
-  const rows: RawRow[] = [];
-
+  const sheets: RawSheet[] = [];
   for await (const sheet of reader) {
-    let headers: string[] = [];
+    const rows: RawSheet["rows"] = [];
     let rowIndex = 0;
-
     for await (const row of sheet) {
       rowIndex++;
       const values = (row.values as unknown[]) ?? [];
-
-      if (rowIndex === 1) {
-        rawHeaders = values.map((v, i) => (i === 0 ? "" : (readString(v) ?? `cot_${i}`)));
-        headers = values.map((v, i) =>
-          i === 0 ? "" : normalizeHeader(readString(v) ?? `cot_${i}`),
-        );
-        normalizedHeaders = headers.filter(Boolean);
-        continue;
+      // File lưu từ Excel đặt sharedStrings.xml SAU worksheet: reader stream chưa có bảng chuỗi
+      // nên trả {sharedString: n} thay vì chữ, và KHÔNG ném lỗi — tiêu đề thành "[object Object]".
+      if (values.some(isUnresolvedSharedString)) {
+        throw new Error("Reader stream chưa nạp bảng chuỗi dùng chung (sharedStrings nằm sau worksheet)");
       }
-
-      const parsed = buildRow(values, headers, row.number ?? rowIndex);
-      if (parsed) rows.push(parsed);
+      rows.push({ rowNumber: row.number ?? rowIndex, values });
     }
-
-    break; // chỉ đọc sheet đầu tiên
+    sheets.push({ rows });
   }
-
-  return { headers: normalizedHeaders, rawHeaders, rows };
+  return sheets;
 }
 
-export async function readFirstSheet(source: string | Buffer): Promise<ParsedSheet> {
-  try {
-    return await readViaStream(source);
-  } catch (streamError) {
+function toHeaders(values: unknown[]): { raw: string[]; normalized: string[] } {
+  return {
+    raw: values.map((v, i) => (i === 0 ? "" : (readString(v) ?? `cot_${i}`))),
+    normalized: values.map((v, i) => (i === 0 ? "" : normalizeHeader(readString(v) ?? `cot_${i}`))),
+  };
+}
+
+/**
+ * Chọn sheet và dòng tiêu đề. Không có `requiredHeader` thì như cũ: sheet đầu, dòng 1.
+ * Có thì tìm sheet đầu tiên có dòng (trong HEADER_SCAN_ROWS dòng đầu) chứa cột đó —
+ * file người dùng sửa tay hay có dòng tiêu đề phụ phía trên hoặc sheet hướng dẫn đứng trước.
+ * Không sheet nào có thì trả về dòng 1 của sheet đầu để báo lỗi kèm đúng các cột đã đọc.
+ */
+function parseSheets(sheets: RawSheet[], requiredHeader?: string): ParsedSheet | null {
+  const nonEmpty = sheets.filter((sheet) => sheet.rows.length > 0);
+  if (nonEmpty.length === 0) return requiredHeader ? null : { headers: [], rawHeaders: [], rows: [] };
+
+  let sheet = nonEmpty[0];
+  let headerAt = 0;
+
+  if (requiredHeader) {
+    let found = false;
+    for (const candidate of nonEmpty) {
+      const at = candidate.rows
+        .slice(0, HEADER_SCAN_ROWS)
+        .findIndex((row) => toHeaders(row.values).normalized.includes(requiredHeader));
+      if (at >= 0) {
+        sheet = candidate;
+        headerAt = at;
+        found = true;
+        break;
+      }
+    }
+    if (!found) return null;
+  }
+
+  const { raw, normalized } = toHeaders(sheet.rows[headerAt].values);
+  const rows: RawRow[] = [];
+  for (const row of sheet.rows.slice(headerAt + 1)) {
+    const parsed = buildRow(row.values, normalized, row.rowNumber);
+    if (parsed) rows.push(parsed);
+  }
+
+  return { headers: normalized.filter(Boolean), rawHeaders: raw, rows };
+}
+
+export async function readFirstSheet(
+  source: string | Buffer,
+  options: { requiredHeader?: string } = {},
+): Promise<ParsedSheet> {
+  const { requiredHeader } = options;
+  const attempts = [readViaStream, readViaWorkbook];
+  let firstError: unknown = null;
+  let readable: RawSheet[] | null = null;
+
+  for (const read of attempts) {
     try {
-      return await readViaWorkbook(source);
-    } catch {
-      // Ném lỗi của reader chính: nó sát nguyên nhân thật hơn.
-      throw streamError;
+      const sheets = await read(source);
+      const parsed = parseSheets(sheets, requiredHeader);
+      if (parsed) return parsed;
+      // Đọc được nhưng không có cột bắt buộc: reader còn lại có thể thấy khác (stream nuốt lỗi im lặng).
+      readable ??= sheets;
+    } catch (error) {
+      // Giữ lỗi của reader chính: nó sát nguyên nhân thật hơn.
+      firstError ??= error;
     }
   }
+
+  if (readable) {
+    // Không có cột bắt buộc ở đâu cả: trả dòng 1 của sheet đầu để nơi gọi báo lỗi kèm các cột đã đọc.
+    return parseSheets(readable) ?? { headers: [], rawHeaders: [], rows: [] };
+  }
+  throw firstError;
 }
 
 /**
