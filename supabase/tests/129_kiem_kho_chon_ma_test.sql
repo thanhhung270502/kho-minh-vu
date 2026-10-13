@@ -107,6 +107,8 @@ select ok(
   'ma_ton_am_theo_kho không trả mã tồn dương');
 
 -- ─── 12: cùng cửa quyền Kiểm kho ────────────────────────────────────────────
+-- auth.users không đọc được khi đang là authenticated — quay về postgres trước khi đổi người.
+select set_config('role', 'postgres', true);
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
 select throws_ok(
   format($$ select * from public.ma_ton_am_theo_kho(%L) $$, (select k1 from t_k)),
