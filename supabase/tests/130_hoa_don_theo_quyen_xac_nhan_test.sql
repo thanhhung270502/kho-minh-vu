@@ -72,10 +72,15 @@ select throws_ok(
 select throws_ok(
   $$ select public.huy_chung_tu((select id from t_q130), 'thử hủy') $$,
   '42501', null, 'chỉ Tạo đơn: không hủy được hóa đơn nháp');
-select is(
-  (with u as (update public.chung_tu set ghi_chu = 'sửa' where id = (select id from t_q130) returning 1)
-   select count(*) from u),
-  0::bigint, 'chỉ Tạo đơn: sửa hóa đơn nháp không tác dụng (RLS lọc)');
+create or replace function pg_temp.sua_hoa_don_nhap()
+returns bigint language plpgsql as $h$
+declare v_n bigint;
+begin
+  update public.chung_tu set ghi_chu = 'sửa' where id = (select id from t_q130);
+  get diagnostics v_n = row_count;
+  return v_n;
+end $h$;
+select is(pg_temp.sua_hoa_don_nhap(), 0::bigint, 'chỉ Tạo đơn: sửa hóa đơn nháp không tác dụng (RLS lọc)');
 
 -- ─── 7-9: bật Xác nhận / duyệt đơn — qua cửa quyền ngay ─────────────────────
 select pg_temp.dang_xuat();
