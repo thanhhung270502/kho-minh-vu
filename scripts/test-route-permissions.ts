@@ -119,6 +119,8 @@ const MA_TRAN: Dong[] = [
   // client (SessionDetail), page.tsx chỉ notFound() khi CHUỖI không đúng
   // khuôn UUID. Phạm vi kho siết ở RPC, không phải ở route.
   { route: "/kiem-ke/00000000-0000-4000-8000-000000000000", ky_vong: AI_CUNG_XEM },
+  // 0129: phiếu in "Kiểm kho" — cùng quyền xem với trang chi tiết phiên.
+  { route: "/kiem-ke/00000000-0000-4000-8000-000000000000/in", ky_vong: AI_CUNG_XEM },
   // Phase 10 (GON-02): màn đã gỡ — redirect trong next.config.ts chạy TRƯỚC
   // proxy nên cả khách cũng nhận →/danh-muc (rồi mới bị đẩy về đăng nhập).
   { route: "/lich-su-kiotviet", ky_vong: ALL("→/danh-muc") },

@@ -3,8 +3,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Alert, Form, Input, Select } from "antd";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { FormDrawer } from "@/shared/components/form-drawer";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
@@ -12,6 +12,8 @@ import { filterByLabel } from "@/shared/lib/text";
 
 import { useOpenSession, useStocktakeLookups } from "../hooks/useStocktake";
 import { openSessionSchema, type OpenSessionInput } from "../schemas/stocktake.schema";
+import type { PickedProduct } from "./product-scope-picker";
+import { SessionScopeFields } from "./session-scope-fields";
 
 type Props = { open: boolean; onClose: () => void; isStorekeeper: boolean };
 
@@ -25,11 +27,24 @@ export function OpenSessionDrawer({ open, onClose, isStorekeeper }: Props) {
     handleSubmit,
     reset,
     setError,
-    formState: { errors },
+    setValue,
+    formState: { errors, isSubmitted },
   } = useForm<OpenSessionInput>({
     resolver: zodResolver(openSessionSchema),
-    defaultValues: { warehouseId: "", categoryIds: [], note: "" },
+    defaultValues: { warehouseId: "", scope: "category", categoryIds: [], productIds: [], note: "" },
   });
+  const warehouseId = useWatch({ control, name: "warehouseId" });
+  // Form chỉ giữ mảng id; mã + tên để hiện danh sách giữ ở đây (0129).
+  const [picked, setPicked] = useState<PickedProduct[]>([]);
+
+  function changePicked(next: PickedProduct[]) {
+    setPicked(next);
+    setValue(
+      "productIds",
+      next.map((p) => p.id),
+      { shouldValidate: isSubmitted },
+    );
+  }
 
   const allWarehouses = lookups.data?.warehouses ?? [];
   const assignedIds = lookups.data?.assignedWarehouseIds ?? [];
@@ -43,7 +58,9 @@ export function OpenSessionDrawer({ open, onClose, isStorekeeper }: Props) {
     reset({
       // Đúng một kho thì chọn sẵn, đỡ một bước bấm.
       warehouseId: warehouses.length === 1 ? (warehouses[0]?.id ?? "") : "",
+      scope: "category",
       categoryIds: [],
+      productIds: [],
       note: "",
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -51,12 +68,14 @@ export function OpenSessionDrawer({ open, onClose, isStorekeeper }: Props) {
 
   function close() {
     if (openSession.isPending) return;
+    setPicked([]);
     onClose();
   }
 
   const onSave = handleSubmit(async (values) => {
     try {
       const id = await openSession.mutateAsync(values);
+      setPicked([]);
       onClose();
       router.push(`/kiem-ke/${id}`);
     } catch (caught) {
@@ -127,30 +146,15 @@ export function OpenSessionDrawer({ open, onClose, isStorekeeper }: Props) {
           />
         </Form.Item>
 
-        <Form.Item
-          label="Nhóm hàng"
-          help="Bỏ trống = đếm toàn kho (dùng cho đợt đếm đầu kỳ trước go-live)."
-        >
-          <Controller
-            name="categoryIds"
-            control={control}
-            render={({ field }) => (
-              <Select
-                mode="multiple"
-                showSearch
-                placeholder="Chọn nhóm hàng"
-                loading={lookups.isPending}
-                value={field.value}
-                onChange={field.onChange}
-                filterOption={filterByLabel}
-                options={(lookups.data?.categories ?? []).map((c) => ({
-                  value: c.id,
-                  label: c.name,
-                }))}
-              />
-            )}
-          />
-        </Form.Item>
+        <SessionScopeFields
+          control={control}
+          productIdsError={errors.productIds?.message}
+          categories={lookups.data?.categories ?? []}
+          categoriesLoading={lookups.isPending}
+          warehouseId={warehouseId}
+          picked={picked}
+          onPickedChange={changePicked}
+        />
 
         <Form.Item label="Ghi chú">
           <Controller

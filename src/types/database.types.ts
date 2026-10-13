@@ -200,6 +200,7 @@ export type Database = {
           nguoi_tao_id: string | null
           nguon_nhap: Database["public"]["Enums"]["nguon_nhap"] | null
           pham_vi_nhom_hang: string[] | null
+          pham_vi_san_pham: string[] | null
           so_ct: string
           tong_so_luong: number
           tong_tien: number
@@ -227,6 +228,7 @@ export type Database = {
           nguoi_tao_id?: string | null
           nguon_nhap?: Database["public"]["Enums"]["nguon_nhap"] | null
           pham_vi_nhom_hang?: string[] | null
+          pham_vi_san_pham?: string[] | null
           so_ct: string
           tong_so_luong?: number
           tong_tien?: number
@@ -254,6 +256,7 @@ export type Database = {
           nguoi_tao_id?: string | null
           nguon_nhap?: Database["public"]["Enums"]["nguon_nhap"] | null
           pham_vi_nhom_hang?: string[] | null
+          pham_vi_san_pham?: string[] | null
           so_ct?: string
           tong_so_luong?: number
           tong_tien?: number
@@ -1989,6 +1992,7 @@ export type Database = {
           so_trong_pham_vi: number
           ten_kho: string
           ten_nhom_pham_vi: string
+          so_ma_chon: number
           tong_so_dong: number
           trang_thai: Database["public"]["Enums"]["trang_thai_ct"]
         }[]
@@ -2229,6 +2233,7 @@ export type Database = {
           nguoi_tao_id: string | null
           nguon_nhap: Database["public"]["Enums"]["nguon_nhap"] | null
           pham_vi_nhom_hang: string[] | null
+          pham_vi_san_pham: string[] | null
           so_ct: string
           tong_so_luong: number
           tong_tien: number
@@ -2302,6 +2307,7 @@ export type Database = {
           nguoi_tao_id: string | null
           nguon_nhap: Database["public"]["Enums"]["nguon_nhap"] | null
           pham_vi_nhom_hang: string[] | null
+          pham_vi_san_pham: string[] | null
           so_ct: string
           tong_so_luong: number
           tong_tien: number
@@ -2372,6 +2378,7 @@ export type Database = {
           nguoi_tao_id: string | null
           nguon_nhap: Database["public"]["Enums"]["nguon_nhap"] | null
           pham_vi_nhom_hang: string[] | null
+          pham_vi_san_pham: string[] | null
           so_ct: string
           tong_so_luong: number
           tong_tien: number
@@ -2422,6 +2429,7 @@ export type Database = {
           nguoi_tao_id: string | null
           nguon_nhap: Database["public"]["Enums"]["nguon_nhap"] | null
           pham_vi_nhom_hang: string[] | null
+          pham_vi_san_pham: string[] | null
           so_ct: string
           tong_so_luong: number
           tong_tien: number
@@ -2568,6 +2576,15 @@ export type Database = {
         Args: { p_combo_id: string; p_thanh_phan: Json }
         Returns: number
       }
+      ma_ton_am_theo_kho: {
+        Args: { p_kho_id: string }
+        Returns: {
+          ma_hang: string
+          san_pham_id: string
+          ten_hang: string
+          ton: number
+        }[]
+      }
       mo_khoa_don: {
         Args: { p_id: string; p_ly_do: string }
         Returns: {
@@ -2597,6 +2614,7 @@ export type Database = {
           p_ghi_chu?: string
           p_kho_id: string
           p_nhom_hang_ids?: string[]
+          p_san_pham_ids?: string[]
         }
         Returns: {
           chung_tu_goc_id: string | null
@@ -2618,6 +2636,7 @@ export type Database = {
           nguoi_tao_id: string | null
           nguon_nhap: Database["public"]["Enums"]["nguon_nhap"] | null
           pham_vi_nhom_hang: string[] | null
+          pham_vi_san_pham: string[] | null
           so_ct: string
           tong_so_luong: number
           tong_tien: number
@@ -2833,6 +2852,7 @@ export type Database = {
           nguoi_tao_id: string | null
           nguon_nhap: Database["public"]["Enums"]["nguon_nhap"] | null
           pham_vi_nhom_hang: string[] | null
+          pham_vi_san_pham: string[] | null
           so_ct: string
           tong_so_luong: number
           tong_tien: number
@@ -2868,6 +2888,7 @@ export type Database = {
           nguoi_tao_id: string | null
           nguon_nhap: Database["public"]["Enums"]["nguon_nhap"] | null
           pham_vi_nhom_hang: string[] | null
+          pham_vi_san_pham: string[] | null
           so_ct: string
           tong_so_luong: number
           tong_tien: number

@@ -152,19 +152,17 @@ async function main() {
 
   console.log("✓ đọc Excel: file KiotViet thật + mẫu hệ mới quay vòng");
 
-  // --- Mẫu đếm kiểm kê (D-08: không cột số liệu hệ thống) + đọc lại --------
-  assert.equal(STOCKTAKE_TEMPLATE_COLUMNS.length, 4, "mẫu đếm có đúng 4 cột");
-  assert.ok(
-    !STOCKTAKE_TEMPLATE_COLUMNS.some(
-      (c) => /ton/i.test(c.key) || /tồn/i.test(c.title),
-    ),
-    "mẫu đếm không có cột tồn nào (D-08)",
+  // --- Mẫu đếm kiểm kê (0129: Mã, Tên, Tồn, Tồn thực tế) + đọc lại ---------
+  assert.deepEqual(
+    STOCKTAKE_TEMPLATE_COLUMNS.map((c) => c.title),
+    ["Mã hàng", "Tên hàng", "Tồn", "Tồn thực tế"],
+    "mẫu đếm cùng bốn cột với phiếu in Kiểm kho (0129)",
   );
 
   const baDong = [
-    { code: "MA001", name: "Hàng 1", unit: "CÁI" },
-    { code: "MA002", name: "Hàng 2", unit: "BỘ" },
-    { code: "MA003", name: "Hàng 3", unit: "CÁI" },
+    { code: "MA001", name: "Hàng 1", stock: 4 },
+    { code: "MA002", name: "Hàng 2", stock: 0 },
+    { code: "MA003", name: "Hàng 3", stock: -2 },
   ];
   const bufMauTrong = await buildCountTemplate(baDong, {
     sessionNo: "PK26-000001",
@@ -175,7 +173,7 @@ async function main() {
   assert.equal(mauTrong.length, 3, "đọc lại đủ 3 dòng vừa xuất");
   assert.ok(
     mauTrong.every((d) => d.so_dem === null),
-    "ô Số đếm để trống = chưa đếm, không phải 0",
+    "ô Tồn thực tế để trống = chưa đếm, không phải 0 (cột Tồn không bị đọc thành số đếm)",
   );
   assert.deepEqual(
     mauTrong.map((d) => d.ma_hang),
@@ -196,7 +194,7 @@ async function main() {
   );
   const wsDaDien = wbDaDien.worksheets[0];
   const soDemCol =
-    STOCKTAKE_TEMPLATE_COLUMNS.findIndex((c) => c.key === "so_dem") + 1;
+    STOCKTAKE_TEMPLATE_COLUMNS.findIndex((c) => c.key === "ton_thuc_te") + 1;
   wsDaDien.getRow(2).getCell(soDemCol).value = 5;
   wsDaDien.getRow(3).getCell(soDemCol).value = "1.234,5";
   wsDaDien.getRow(4).getCell(soDemCol).value = null;
@@ -212,7 +210,7 @@ async function main() {
   const nhieuDong = Array.from({ length: 1200 }, (_, i) => ({
     code: `MA${String(i + 1).padStart(5, "0")}`,
     name: `Hàng ${i + 1}`,
-    unit: "CÁI",
+    stock: i,
   }));
   const bufNhieu = await buildCountTemplate(nhieuDong, {
     sessionNo: "PK26-000002",
@@ -226,7 +224,18 @@ async function main() {
     "quay vòng 1.200 dòng vẫn đọc đủ, không mất dòng vì lệch thứ tự zip",
   );
 
-  // File thiếu cột "Số đếm" → báo lỗi đọc hiểu được, nói rõ cần hai cột nào.
+  // File mẫu cũ (trước 0129) có cột "Số đếm" thay "Tồn thực tế" — vẫn nạp được.
+  const wbCu = new ExcelJS.Workbook();
+  const wsCu = wbCu.addWorksheet("Đếm");
+  wsCu.columns = [
+    { header: "Mã hàng", key: "ma_hang" },
+    { header: "Số đếm", key: "so_dem" },
+  ];
+  wsCu.addRow({ ma_hang: "MA001", so_dem: 7 });
+  const cu = await readCountFile(Buffer.from(await wbCu.xlsx.writeBuffer()));
+  assert.deepEqual(cu, [{ ma_hang: "MA001", so_dem: 7 }], "file mẫu cũ cột Số đếm vẫn đọc được");
+
+  // File thiếu cột số đếm → báo lỗi đọc hiểu được, nói rõ cần hai cột nào.
   const wbThieuCot = new ExcelJS.Workbook();
   const wsThieuCot = wbThieuCot.addWorksheet("Đếm");
   wsThieuCot.columns = [
@@ -237,12 +246,12 @@ async function main() {
   const bufThieuCot = Buffer.from(await wbThieuCot.xlsx.writeBuffer());
   await assert.rejects(
     () => readCountFile(bufThieuCot),
-    /Mã hàng.*Số đếm|Số đếm.*Mã hàng/,
-    "thiếu cột Số đếm báo lỗi tiếng Việt nói rõ cần hai cột Mã hàng và Số đếm",
+    /Mã hàng.*Tồn thực tế|Tồn thực tế.*Mã hàng/,
+    "thiếu cột Tồn thực tế báo lỗi tiếng Việt nói rõ cần hai cột Mã hàng và Tồn thực tế",
   );
 
   console.log(
-    "✓ mẫu đếm kiểm kê: xuất/đọc quay vòng, không lộ số liệu hệ thống, ô trống = chưa đếm",
+    "✓ mẫu đếm kiểm kê: xuất/đọc quay vòng, cột Tồn thực tế, ô trống = chưa đếm",
   );
 
   await kiemFileNhapMaMoi();

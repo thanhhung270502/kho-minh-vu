@@ -1,12 +1,15 @@
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Database } from "@/types/database.types";
+import { fetchAllPages } from "@/shared/lib/fetch-all-pages";
 import type { Page } from "@/shared/types";
 
 import type { OpenSessionInput } from "../schemas/stocktake.schema";
 import {
   toCountSheetRow,
+  toNegativeStockProduct,
   toStocktakeSession,
   type CountSheetRow,
+  type NegativeStockProduct,
   type StocktakeLookups,
   type StocktakeSession,
 } from "../types";
@@ -53,14 +56,21 @@ export async function fetchCountSheet(
   sessionId: string,
   categoryId?: string,
 ): Promise<CountSheetRow[]> {
-  const { data, error } = await getSupabaseBrowserClient().rpc(
-    "bang_dem_kiem_ke",
-    // p_nhom_hang_id là uuid: chuỗi rỗng làm Postgres ném 22P02, không lọc thì bỏ hẳn tham số.
-    { p_chung_tu_id: sessionId, p_nhom_hang_id: categoryId || undefined },
-  );
-  if (error) throw error;
+  // Phiên toàn kho có hơn 3.000 mã — vượt max_rows 1000, phải tải theo trang
+  // (RPC xếp theo ma_hang nên thứ tự ổn định giữa các trang).
+  const rows = await fetchAllPages(async (from, to) => {
+    const { data, error } = await getSupabaseBrowserClient()
+      .rpc(
+        "bang_dem_kiem_ke",
+        // p_nhom_hang_id là uuid: chuỗi rỗng làm Postgres ném 22P02, không lọc thì bỏ hẳn tham số.
+        { p_chung_tu_id: sessionId, p_nhom_hang_id: categoryId || undefined },
+      )
+      .range(from, to);
+    if (error) throw error;
+    return data ?? [];
+  });
 
-  return (data ?? []).map(toCountSheetRow);
+  return rows.map(toCountSheetRow);
 }
 
 /**
@@ -106,12 +116,24 @@ export async function openSession(input: OpenSessionInput): Promise<string> {
     "mo_phien_kiem_ke",
     {
       p_kho_id: input.warehouseId,
-      p_nhom_hang_ids: input.categoryIds.length ? input.categoryIds : undefined,
+      // Một phiên theo nhóm HOẶC theo mã (0129) — gửi đúng một trong hai.
+      p_nhom_hang_ids:
+        input.scope === "category" && input.categoryIds.length ? input.categoryIds : undefined,
+      p_san_pham_ids: input.scope === "products" ? input.productIds : undefined,
       p_ghi_chu: input.note || undefined,
     },
   );
   if (error) throw error;
   return data.id;
+}
+
+/** Mã đang tồn âm của một kho — nút "Thêm các mã đang âm" khi mở phiên (0129). */
+export async function fetchNegativeStockProducts(warehouseId: string): Promise<NegativeStockProduct[]> {
+  const { data, error } = await getSupabaseBrowserClient().rpc("ma_ton_am_theo_kho", {
+    p_kho_id: warehouseId,
+  });
+  if (error) throw error;
+  return (data ?? []).map(toNegativeStockProduct);
 }
 
 export async function saveCount(input: {

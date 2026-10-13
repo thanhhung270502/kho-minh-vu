@@ -8,7 +8,7 @@
  */
 import ExcelJS from "exceljs";
 
-export type StocktakeTemplateColumnKey = "ma_hang" | "ten_hang" | "dvt" | "so_dem";
+export type StocktakeTemplateColumnKey = "ma_hang" | "ten_hang" | "ton" | "ton_thuc_te";
 
 export type StocktakeTemplateColumn = {
   key: StocktakeTemplateColumnKey;
@@ -17,26 +17,28 @@ export type StocktakeTemplateColumn = {
 };
 
 /**
- * KHÔNG thêm cột số liệu hệ thống nào (D-08, T-06-56) — file mẫu đếm đầu kỳ/định
- * kỳ không được lộ số sổ sách, tránh người đếm chép theo số có sẵn thay vì đếm
- * thật.
+ * Cùng bốn cột với phiếu in "Kiểm kho" (0129): người dùng chọn hiện số sổ để người
+ * đếm so ngay (12/10/2026) — thay quyết định cũ D-08 giấu số sổ. Chỉ cột "Tồn thực tế"
+ * được đọc khi nạp lại; "Tồn" là số sổ lúc tải file, sửa cũng không có tác dụng.
  */
 export const STOCKTAKE_TEMPLATE_COLUMNS: readonly StocktakeTemplateColumn[] = [
   { key: "ma_hang", title: "Mã hàng", width: 22 },
   { key: "ten_hang", title: "Tên hàng", width: 40 },
-  { key: "dvt", title: "ĐVT", width: 10 },
-  { key: "so_dem", title: "Số đếm", width: 12 },
+  { key: "ton", title: "Tồn", width: 12 },
+  { key: "ton_thuc_te", title: "Tồn thực tế", width: 14 },
 ] as const;
 
 export type StocktakeTemplateRow = {
   code: string;
   name: string;
-  unit: string | null;
+  /** Tồn sổ của kho phiên lúc tải file. null = người tải không có quyền Xem tồn kho (0128). */
+  stock: number | null;
 };
 
 export type StocktakeTemplateMeta = {
   sessionNo: string;
   warehouseName: string;
+  /** Nhãn phạm vi in vào sheet Hướng dẫn và tên sheet: tên nhóm, "N mã chọn" hoặc null (toàn kho). */
   categoryName: string | null;
 };
 
@@ -50,10 +52,10 @@ function sheetTitle(categoryName: string | null): string {
 }
 
 const GUIDE_ROWS: Array<[string, string]> = [
-  ["Chỉ điền cột Số đếm", "Các cột còn lại chỉ để đối chiếu, không cần sửa."],
+  ["Chỉ điền cột Tồn thực tế", "Cột Tồn là số trên sổ lúc tải file — để đối chiếu, sửa cũng không có tác dụng."],
   [
     "Để trống = chưa đếm",
-    "Ô Số đếm để trống nghĩa là mã hàng đó CHƯA ĐẾM — không phải đếm được 0.",
+    "Ô Tồn thực tế để trống nghĩa là mã hàng đó CHƯA ĐẾM — không phải đếm được 0.",
   ],
   [
     "Không đổi tên cột, không thêm sheet phía trước",
@@ -75,8 +77,12 @@ export async function buildCountTemplate(
   wb.creator = "Kho Minh Vũ";
   wb.created = new Date();
 
+  // Không có quyền Xem tồn kho (0128) thì mọi dòng tồn null — bỏ hẳn cột Tồn, không ghi 0.
+  const showStock = rows.some((row) => row.stock !== null);
+  const columns = STOCKTAKE_TEMPLATE_COLUMNS.filter((c) => showStock || c.key !== "ton");
+
   const ws = wb.addWorksheet(sheetTitle(meta.categoryName));
-  ws.columns = STOCKTAKE_TEMPLATE_COLUMNS.map((c) => ({
+  ws.columns = columns.map((c) => ({
     header: c.title,
     key: c.key,
     width: c.width,
@@ -85,11 +91,10 @@ export async function buildCountTemplate(
   ws.views = [{ state: "frozen", ySplit: 1 }];
   ws.autoFilter = {
     from: { row: 1, column: 1 },
-    to: { row: 1, column: STOCKTAKE_TEMPLATE_COLUMNS.length },
+    to: { row: 1, column: columns.length },
   };
 
-  const soDemColIndex =
-    STOCKTAKE_TEMPLATE_COLUMNS.findIndex((c) => c.key === "so_dem") + 1;
+  const soDemColIndex = columns.findIndex((c) => c.key === "ton_thuc_te") + 1;
   ws.getRow(1).getCell(soDemColIndex).fill = {
     type: "pattern",
     pattern: "solid",
@@ -100,8 +105,8 @@ export async function buildCountTemplate(
     const added = ws.addRow({
       ma_hang: row.code,
       ten_hang: row.name,
-      dvt: row.unit,
-      so_dem: null,
+      ton: row.stock,
+      ton_thuc_te: null,
     });
     added.getCell(soDemColIndex).fill = {
       type: "pattern",
@@ -118,7 +123,7 @@ export async function buildCountTemplate(
   guide.getRow(1).font = { bold: true };
   guide.addRow({ muc: "Phiên kiểm kê", noi_dung: meta.sessionNo });
   guide.addRow({ muc: "Kho", noi_dung: meta.warehouseName });
-  guide.addRow({ muc: "Nhóm hàng", noi_dung: meta.categoryName ?? "Toàn kho" });
+  guide.addRow({ muc: "Phạm vi", noi_dung: meta.categoryName ?? "Toàn kho" });
   for (const [muc, noiDung] of GUIDE_ROWS) guide.addRow({ muc, noi_dung: noiDung });
 
   const out = await wb.xlsx.writeBuffer();

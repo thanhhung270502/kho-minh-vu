@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/features/auth/api/current-user.server";
 import { buildCountTemplate } from "@/features/stocktake/lib/count-template.server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { explainError, type ExplainedError } from "@/shared/lib/errors";
+import { fetchAllPages } from "@/shared/lib/fetch-all-pages";
 import { removeDiacritics } from "@/shared/lib/text";
 
 // exceljs — không chạy được trên Edge runtime.
@@ -83,17 +84,21 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const { data, error } = await supabase.rpc("bang_dem_kiem_ke", {
-    p_chung_tu_id: phien,
-    p_nhom_hang_id: nhom ?? undefined,
-  });
-
-  if (error) {
+  // Phiên toàn kho vượt max_rows 1000 — tải theo trang, nếu không file thiếu mã.
+  const fetchSheetPage = async (from: number, to: number) => {
+    const { data, error } = await supabase
+      .rpc("bang_dem_kiem_ke", { p_chung_tu_id: phien, p_nhom_hang_id: nhom ?? undefined })
+      .range(from, to);
+    if (error) throw error;
+    return data ?? [];
+  };
+  let rows: Awaited<ReturnType<typeof fetchSheetPage>>;
+  try {
+    rows = await fetchAllPages(fetchSheetPage);
+  } catch (error) {
     const explained = explainError(error);
     return errorResponse(explained.title, explained.action, statusFor(explained));
   }
-
-  const rows = data ?? [];
   if (rows.length === 0) {
     return errorResponse(
       "Nhóm này không có mã nào trong phạm vi phiên",
@@ -103,15 +108,20 @@ export async function GET(request: NextRequest) {
   }
 
   // Nhóm đã lọc thì mọi dòng cùng ten_nhom — lấy từ dòng đầu, không truy vấn
-  // thêm bảng nhom_hang.
-  const categoryName = nhom ? (rows[0].ten_nhom ?? null) : null;
+  // thêm bảng nhom_hang. Phiên chọn theo mã (0129) ghi "N mã chọn".
+  const categoryName = nhom
+    ? (rows[0].ten_nhom ?? null)
+    : session.so_ma_chon != null
+      ? `${Number(session.so_ma_chon).toLocaleString("vi-VN")} mã chọn`
+      : null;
 
-  // CHỈ ghi mã/tên/ĐVT vào file — KHÔNG đọc/ghi cột số liệu hệ thống nào (D-08).
+  // Mã, tên, tồn sổ lúc tải, ô trống Tồn thực tế — cùng cột với phiếu in (0129).
   const buf = await buildCountTemplate(
     rows.map((row) => ({
       code: row.ma_hang,
       name: row.ten_hang,
-      unit: row.ten_dvt,
+      // null = không có quyền Xem tồn kho (0128) — giữ null để file bỏ cột Tồn, đừng ép về 0.
+      stock: row.ton_hien_tai === null ? null : Number(row.ton_hien_tai),
     })),
     {
       sessionNo: session.so_ct,
