@@ -2816,6 +2816,10 @@ export type Database = {
         Args: { p_chung_tu_id: string }
         Returns: boolean
       }
+      phieu_nhap_trong_pham_vi: {
+        Args: { p_chung_tu_id: string }
+        Returns: boolean
+      }
       quyen_cua_toi: { Args: never; Returns: string[] }
       quyet_ghi_chu: {
         Args: {
@@ -2853,6 +2857,10 @@ export type Database = {
         Returns: string
       }
       sinh_so_dh: { Args: { p_nam?: number }; Returns: string }
+      so_dong_an_nhom_hang: {
+        Args: { p_chung_tu_id: string }
+        Returns: number
+      }
       tach_nguoi_ban: { Args: { p_ghi_chu: string }; Returns: string }
       tach_nguoi_nhap: { Args: { p_ghi_chu: string }; Returns: string }
       tao_don: {
