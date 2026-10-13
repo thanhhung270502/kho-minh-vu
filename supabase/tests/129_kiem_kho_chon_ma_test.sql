@@ -60,6 +60,7 @@ insert into t_phien
 select id from public.mo_phien_kiem_ke((select k1 from t_k), null, 'test 0129',
   array[(select a from t_k), (select b from t_k), (select a from t_k)]);
 
+-- _pham_vi_kiem_ke bị thu quyền với authenticated — đo qua bang_dem_kiem_ke, nó gọi hàm đó.
 -- array_agg(distinct) không giữ thứ tự chọn — so như tập hợp.
 select ok(
   (select cardinality(pham_vi_san_pham) = 2
@@ -67,8 +68,8 @@ select ok(
    from public.chung_tu where id = (select id from t_phien)),
   'lưu đúng các mã đã chọn, bỏ trùng');
 select set_eq(
-  format($$ select san_pham_id from public._pham_vi_kiem_ke(%L) $$, (select id from t_phien)),
-  format($$ values (%L::uuid), (%L::uuid) $$, (select a from t_k), (select b from t_k)),
+  format($$ select ma_hang from public.bang_dem_kiem_ke(%L) $$, (select id from t_phien)),
+  $$ values ('Q129-A'), ('Q129-B') $$,
   'phạm vi phiên = đúng các mã đã chọn, không kéo thêm mã theo kho mặc định / tồn');
 select is((select so_ma_chon from public.danh_sach_phien_kiem_ke(p_chung_tu_id => (select id from t_phien))),
   2, 'danh sách phiên trả so_ma_chon = 2');
