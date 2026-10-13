@@ -5,7 +5,7 @@ milestone_name: "- [ ] **Phase 1: Nền dữ liệu** - Schema 13 bảng, sổ c
 status: Milestone complete
 stopped_at: Completed 22-03-PLAN.md
 last_updated: "2026-10-09T10:13:00.256Z"
-last_activity: "2026-10-08 - Completed quick task 261008-w3x: Setup Vitest unit + integration test và CI"
+last_activity: "2026-10-13 - Completed quick task 261013-w3y: Phân quyền theo nhóm hàng — nền database"
 progress:
   total_phases: 13
   completed_phases: 8
@@ -931,10 +931,11 @@ Recent decisions affecting current work:
 | 260928-t0j | Seed tài khoản demo đúng quyền, tự focus ô mã ở phiếu nhập/đơn hàng, migration ten_danh_muc | 2026-09-28 | 0d93f8b | [260928-t0j-seed-quyen-focus-o-ma-ten-danh-muc](./quick/260928-t0j-seed-quyen-focus-o-ma-ten-danh-muc/) |
 | 261004-g6p | Tăng tốc chuyển trang: loading.tsx, cache getCurrentUser, đọc quyền song song | 2026-10-04 | 2bbd9e8 | [261004-g6p-speed-up-navigation](./quick/261004-g6p-speed-up-navigation/) |
 | 261008-w3x | Setup Vitest unit + integration test (Supabase local) và CI | 2026-10-08 | 8813618 | [261008-w3x-setup-vitest-unit-integration-test-va-ci](./quick/261008-w3x-setup-vitest-unit-integration-test-va-ci/) |
+| 261013-w3y | Phân quyền theo nhóm hàng — PR 1/4 nền database (bảng, hàm phạm vi, RPC, RLS) | 2026-10-13 | 85df8ac | [261013-w3y-phan-quyen-theo-nhom-hang-nen-database](./quick/261013-w3y-phan-quyen-theo-nhom-hang-nen-database/) |
 
 ## Session Continuity
 
 Last session: 2026-10-09T10:13:00.251Z
 Stopped at: Completed 22-03-PLAN.md
-Last activity: 2026-10-08 - Completed quick task 261008-w3x: Setup Vitest unit + integration test và CI
+Last activity: 2026-10-13 - Completed quick task 261013-w3y: Phân quyền theo nhóm hàng — nền database
 Resume file: None
