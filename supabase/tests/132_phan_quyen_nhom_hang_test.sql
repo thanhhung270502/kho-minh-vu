@@ -11,6 +11,10 @@ create or replace function pg_temp.dang_nhap_id(p_id uuid)
 returns void language plpgsql as $helper$
 declare v_nd public.nguoi_dung; v_kho jsonb;
 begin
+  -- Đọc hồ sơ bằng postgres: nếu vẫn mang vai tài khoản trước, RLS nguoi_dung giấu dòng
+  -- của tài khoản mới và claim vai_tro thành rỗng.
+  perform set_config('request.jwt.claims', '', true);
+  perform set_config('role', 'postgres', true);
   select * into v_nd from public.nguoi_dung where id = p_id;
   select coalesce(jsonb_agg(kho_id), '[]'::jsonb) into v_kho
   from public.nguoi_dung_kho where nguoi_dung_id = p_id;
