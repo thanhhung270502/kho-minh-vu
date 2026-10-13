@@ -5,7 +5,7 @@ milestone_name: "- [ ] **Phase 1: Nền dữ liệu** - Schema 13 bảng, sổ c
 status: Milestone complete
 stopped_at: Completed 22-03-PLAN.md
 last_updated: "2026-10-09T10:13:00.256Z"
-last_activity: "2026-10-13 - Completed quick task 261013-x6q: Phân quyền theo nhóm hàng — lọc danh mục, tìm mã, tồn kho"
+last_activity: "2026-10-14 - Completed quick task 261014-059: Phân quyền theo nhóm hàng — lọc phiếu nhập"
 progress:
   total_phases: 13
   completed_phases: 8
@@ -934,10 +934,11 @@ Recent decisions affecting current work:
 | 261013-w3y | Phân quyền theo nhóm hàng — PR 1/4 nền database (bảng, hàm phạm vi, RPC, RLS) | 2026-10-13 | 85df8ac | [261013-w3y-phan-quyen-theo-nhom-hang-nen-database](./quick/261013-w3y-phan-quyen-theo-nhom-hang-nen-database/) |
 | 261013-wg8 | Phân quyền theo nhóm hàng — PR 2/4 màn chọn nhóm hàng (Cài đặt → Người dùng) | 2026-10-13 | 656b73c | [261013-wg8-phan-quyen-theo-nhom-hang-man-chon-nhom-](./quick/261013-wg8-phan-quyen-theo-nhom-hang-man-chon-nhom-/) |
 | 261013-x6q | Phân quyền theo nhóm hàng — PR 3/4 lọc danh mục, tìm mã, tồn kho, phân tích tồn (0134, 0135) | 2026-10-13 | 3de683d | [261013-x6q-phan-quyen-theo-nhom-hang-loc-danh-muc-t](./quick/261013-x6q-phan-quyen-theo-nhom-hang-loc-danh-muc-t/) |
+| 261014-059 | Phân quyền theo nhóm hàng — PR 4/4 lọc phiếu nhập (0136) + báo dòng bị ẩn | 2026-10-14 | 1368676 | [261014-059-phan-quyen-theo-nhom-hang-loc-phieu-nhap](./quick/261014-059-phan-quyen-theo-nhom-hang-loc-phieu-nhap/) |
 
 ## Session Continuity
 
 Last session: 2026-10-09T10:13:00.251Z
 Stopped at: Completed 22-03-PLAN.md
-Last activity: 2026-10-13 - Completed quick task 261013-x6q: Phân quyền theo nhóm hàng — lọc danh mục, tìm mã, tồn kho
+Last activity: 2026-10-14 - Completed quick task 261014-059: Phân quyền theo nhóm hàng — lọc phiếu nhập
 Resume file: None
