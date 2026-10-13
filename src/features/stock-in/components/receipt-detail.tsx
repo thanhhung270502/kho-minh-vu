@@ -43,7 +43,7 @@ export function ReceiptDetailView({
       emptyDescription={
         <div className="flex flex-col items-center gap-3">
           <span>
-            Không tìm thấy phiếu này, hoặc phiếu không thuộc kho bạn được phân công.
+            Không tìm thấy phiếu này, hoặc phiếu thuộc kho / nhóm hàng bạn không được giao.
           </span>
           <Link href="/nhap-hang">
             <Button size="small">Về danh sách phiếu nhập</Button>
