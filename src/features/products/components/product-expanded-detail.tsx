@@ -17,6 +17,8 @@ type Props = {
   forecast: ProductForecast | null | undefined;
   /** Quyền Tạo mã hàng — sửa thành phần combo. */
   canEdit: boolean;
+  /** Quyền Xem tồn kho (0128) — không có thì không có tab Thẻ kho. */
+  canViewStock: boolean;
   /** Hàng nút đáy — bảng ghép vào (Chỉnh sửa, Sao chép, Ngừng KD, Xem chi tiết). */
   renderActions?: (product: ProductDetail) => ReactNode;
 };
@@ -25,7 +27,7 @@ type Props = {
  * Chi tiết mã hàng mở ngay dưới dòng được bấm ở /danh-muc (ảnh mẫu KiotViet).
  * Điện thoại dùng cùng nội dung trong ngăn kéo toàn màn.
  */
-export function ProductExpandedDetail({ productId, forecast, canEdit, renderActions }: Props) {
+export function ProductExpandedDetail({ productId, forecast, canEdit, canViewStock, renderActions }: Props) {
   const detail = useProductDetail(productId);
   const product = detail.data;
 
@@ -59,7 +61,9 @@ export function ProductExpandedDetail({ productId, forecast, canEdit, renderActi
               <Typography.Text type="secondary">Chưa có mô tả.</Typography.Text>
             ),
           },
-          { key: "stock-card", label: "Thẻ kho", children: <StockCard productId={productId} /> },
+          ...(canViewStock
+            ? [{ key: "stock-card", label: "Thẻ kho", children: <StockCard productId={productId} /> }]
+            : []),
         ]}
       />
       {renderActions ? (

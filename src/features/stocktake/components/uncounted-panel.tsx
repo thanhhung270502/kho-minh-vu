@@ -98,7 +98,7 @@ export function UncountedPanel({ sessionId, editable, canApprove }: Props) {
                         key: "currentStock",
                         width: 120,
                         align: "right",
-                        render: (value: number) => value.toLocaleString("vi-VN"),
+                        render: (value: number | null) => (value === null ? "—" : value.toLocaleString("vi-VN")),
                       },
                       {
                         title: "Tồn KiotViet tạm",

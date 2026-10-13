@@ -11,7 +11,7 @@ import {
 } from "@/shared/lib/permissions";
 import { editUserFormSchema } from "@/features/settings/schemas/user.schema";
 
-/** Bộ quyền mẫu (0117): Admin luôn đủ 9 quyền (quyen_cua_toi), nhân viên theo người tích. */
+/** Bộ quyền mẫu (0117): Admin luôn đủ mọi quyền (quyen_cua_toi), nhân viên theo người tích. */
 const DEFAULT_TITLE: Record<Role, BusinessPermission[]> = {
   quan_ly: BUSINESS_PERMISSIONS.map((p) => p.key),
   van_phong: ["nhap_kho", "tao_don", "xac_nhan_don", "tao_ma_hang"],
@@ -54,7 +54,7 @@ describe("permissions", () => {
 
   it("quyền tích theo người (0117, QUYEN-01/02)", () => {
     {
-      // Khóa = giá trị CHECK của nguoi_dung_quyen.quyen (0117) — đúng 9, đúng thứ tự yêu cầu.
+      // Khóa = giá trị CHECK của nguoi_dung_quyen.quyen (0117, 0128) — đúng 11, đúng thứ tự yêu cầu.
       expect(BUSINESS_PERMISSIONS.map((p) => p.key)).toStrictEqual([
         "tao_tai_khoan",
         "phan_quyen",
@@ -65,6 +65,8 @@ describe("permissions", () => {
         "tao_ma_hang",
         "xem_dashboard",
         "xem_phan_tich",
+        "xem_ton_kho",
+        "sua_phieu",
       ]);
       expect(Object.keys(SCOPE_LABELS).length, "4 phạm vi = 4 vai trò cũ").toBe(
         4,
@@ -77,7 +79,7 @@ describe("permissions", () => {
             BUSINESS_PERMISSIONS.map((p) => p.key),
           ),
         ),
-        "đủ 9 quyền vẫn không phải Admin",
+        "đủ mọi quyền vẫn không phải Admin",
       ).toBe(false);
 
       const base = {

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 
 import { requirePermission } from "@/features/auth/api/current-user.server";
-import { isAdmin } from "@/shared/lib/permissions";
+import { can, isAdmin } from "@/shared/lib/permissions";
 import { SessionDetail } from "@/features/stocktake/components/session-detail";
 
 export const metadata: Metadata = { title: "Phiên kiểm kê" };
@@ -23,6 +23,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         sessionId={id}
         canCount={isAdmin(user)}
         canApprove={user.canApproveStocktake}
+        canViewStock={can(user, "xem_ton_kho")}
       />
     </Suspense>
   );

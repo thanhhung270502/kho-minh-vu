@@ -89,9 +89,9 @@ export function IssueDetailView({
                   <ReturnButton document={issue} canEdit={permissions.canEdit} />
                   <ReopenPostedButton
                     document={issue}
-                    canReopen={permissions.canVoid}
+                    canReopen={permissions.canReopen}
                     detailHref={(draftId) => `/duyet-don/${draftId}`}
-                    forbiddenMessage="Chức vụ của bạn chưa có quyền Sửa hóa đơn."
+                    forbiddenMessage="Tài khoản chưa có quyền Sửa phiếu. Liên hệ quản lý."
                     extraInvalidateKeys={ORDER_KEYS}
                   />
                   <VoidDocumentDialog document={issue} canVoid={permissions.canVoid} />

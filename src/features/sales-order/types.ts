@@ -155,9 +155,11 @@ export type OrderPermissions = {
   canApprove: boolean;
   /** Hoàn thành đơn (tạo + ghi sổ hóa đơn) — quyền chức vụ "Hoàn thành". */
   canComplete: boolean;
-  /** Hủy đơn — theo phạm vi quản trị (huy_don, 0078), không thuộc 9 quyền chức vụ. */
+  /** Hủy đơn — theo phạm vi quản trị (huy_don, 0078), không thuộc quyền tích theo người. */
   canCancel: boolean;
-  /** Sửa đơn đã hoàn thành = mở sửa hóa đơn của nó (0127) — cùng quyền Hủy hóa đơn. */
+  /** Sửa đơn đã duyệt (về Phiếu tạm, mo_khoa_don) — quyền Sửa phiếu (0128). */
+  canUnlock: boolean;
+  /** Sửa đơn đã hoàn thành = mở sửa hóa đơn của nó (0127) — quyền Sửa phiếu (0128). */
   canEditInvoice: boolean;
 };
 

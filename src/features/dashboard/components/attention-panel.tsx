@@ -66,6 +66,8 @@ function AttentionRow({ item }: { item: Item }) {
 }
 
 type Counts = {
+  /** Không có quyền Xem tồn kho (0128) → bỏ hai việc về tồn âm. */
+  canViewStock: boolean;
   reorder: { count: number | null | undefined; description: string } | null;
   negative: number | null | undefined;
   negativeToday: number | null | undefined;
@@ -84,7 +86,8 @@ function buildItems(kpis: OverviewKpis, counts: Counts): Item[] {
       href: "/phan-tich#can-nhap",
     });
   }
-  items.push(
+  if (counts.canViewStock) {
+    items.push(
     {
       key: "negative",
       title: "Mã tồn âm",
@@ -103,6 +106,9 @@ function buildItems(kpis: OverviewKpis, counts: Counts): Item[] {
       cta: "Xem phiếu",
       href: "#xuat-am",
     },
+    );
+  }
+  items.push(
     {
       key: "pending",
       title: "Phiếu chờ ghi sổ",
@@ -130,10 +136,17 @@ function stateOf<T>(query: { isPending: boolean; isError: boolean; data?: T }, p
  * Việc cần xử lý hôm nay. "Cần nhập hàng" cùng con số với thẻ "Mã cần nhập" của
  * trang Phân tích (đề nghị nhập > 0, nhịp bán 30 ngày) — chỉ hiện với người được xem Phân tích.
  */
-export function AttentionPanel({ canViewAnalysis }: { canViewAnalysis: boolean }) {
+export function AttentionPanel({
+  canViewAnalysis,
+  canViewStock,
+}: {
+  canViewAnalysis: boolean;
+  canViewStock: boolean;
+}) {
   const overview = useOverviewKpis();
-  const groups = useStockByGroup("category", null);
-  const negativeToday = useNegativeStockReport(null);
+  // ton_theo_nhom / bao_cao_xuat_am chặn khi thiếu quyền Xem tồn kho (0128) — không gọi.
+  const groups = useStockByGroup("category", null, { enabled: canViewStock });
+  const negativeToday = useNegativeStockReport(null, { enabled: canViewStock });
   const analysisRows = useAnalysisRows(REORDER_PACE_DAYS, { enabled: canViewAnalysis });
   const settings = useAnalysisSettings({ enabled: canViewAnalysis });
 
@@ -164,6 +177,7 @@ export function AttentionPanel({ canViewAnalysis }: { canViewAnalysis: boolean }
       <QueryState query={overview} skeleton={<Skeleton active paragraph={{ rows: 6 }} />}>
         {(kpis) => {
           const items = buildItems(kpis, {
+            canViewStock,
             reorder,
             negative: stateOf(groups, (rows) => rows.reduce((total, row) => total + row.negative, 0)),
             negativeToday: stateOf(negativeToday, (lines) => lines.length),

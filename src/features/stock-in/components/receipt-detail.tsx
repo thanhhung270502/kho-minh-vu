@@ -74,9 +74,9 @@ export function ReceiptDetailView({
 
                   <ReopenPostedButton
                     document={receipt}
-                    canReopen={permissions.canVoid}
+                    canReopen={permissions.canReopen}
                     detailHref={(draftId) => `/nhap-hang/${draftId}`}
-                    forbiddenMessage="Chỉ quản lý sửa được phiếu nhập đã ghi sổ."
+                    forbiddenMessage="Tài khoản chưa có quyền Sửa phiếu. Liên hệ quản lý."
                   />
 
                   {/* Phiếu chưa ghi sổ: người nhập tự hủy được. Đã ghi sổ: chỉ quản lý (D-11). */}
@@ -93,7 +93,7 @@ export function ReceiptDetailView({
                     canEdit={permissions.canEdit}
                   />
 
-                  <ReturnButton document={receipt} canEdit={permissions.canEdit} />
+                  <ReturnButton document={receipt} canEdit={permissions.canReturn} />
                 </Space>
               }
             />

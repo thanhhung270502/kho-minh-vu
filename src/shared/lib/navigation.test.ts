@@ -12,7 +12,7 @@ import {
   NAV_ITEMS,
 } from "@/shared/lib/navigation";
 
-/** Bộ quyền mẫu (0117): Admin luôn đủ 9 quyền (quyen_cua_toi), nhân viên theo người tích. */
+/** Bộ quyền mẫu (0117): Admin luôn đủ mọi quyền (quyen_cua_toi), nhân viên theo người tích. */
 const DEFAULT_TITLE: Record<Role, BusinessPermission[]> = {
   quan_ly: BUSINESS_PERMISSIONS.map((p) => p.key),
   van_phong: ["nhap_kho", "tao_don", "xac_nhan_don", "tao_ma_hang"],
@@ -152,10 +152,19 @@ describe("navigation", () => {
       ).toStrictEqual(["Hàng hóa", "Đơn hàng", "Nhập hàng", "Đối tác"]);
       expect(
         buildNavEntries(
+          filterNavItems(
+            as("thu_kho", ["xem_phan_tich", "xem_ton_kho"]),
+            NAV_ITEMS,
+          ),
+        ).some((e) => e.label === "Phân tích"),
+        "0117: tích Xem trang Phân tích (kèm Xem tồn kho) thì thấy menu",
+      ).toBeTruthy();
+      expect(
+        buildNavEntries(
           filterNavItems(as("thu_kho", ["xem_phan_tich"]), NAV_ITEMS),
         ).some((e) => e.label === "Phân tích"),
-        "0117: tích Xem trang Phân tích thì thấy menu",
-      ).toBeTruthy();
+        "0128: thiếu Xem tồn kho thì không thấy menu Phân tích",
+      ).toBeFalsy();
       expect(
         !buildNavEntries(filterNavItems(as("van_phong"), NAV_ITEMS)).some(
           (e) => e.label === "Phân tích",

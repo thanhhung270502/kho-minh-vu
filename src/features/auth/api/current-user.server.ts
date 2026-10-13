@@ -25,7 +25,7 @@ export type CurrentUser = {
    * `duyet_duoc_kiem_ke()` (0063).
    */
   canApproveStocktake: boolean;
-  /** 9 quyền theo người (0117) — đọc từ bảng nên đổi là có hiệu lực ở lần tải trang kế tiếp. */
+  /** Quyền theo người (0117, 0128) — đọc từ bảng nên đổi là có hiệu lực ở lần tải trang kế tiếp. */
   permissions: BusinessPermission[];
 };
 
@@ -81,7 +81,12 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     mustChangePassword: data.phai_doi_mat_khau,
     canApproveStocktake: data.vai_tro === "quan_ly" || data.duyet_kiem_ke,
     // RPC trả text[] — chỉ giữ khóa giao diện biết (CHECK 0082 cùng danh sách).
-    permissions: (granted ?? []).filter((p): p is BusinessPermission => KNOWN.has(p)),
+    // Admin luôn đủ mọi quyền (co_quyen); không phụ thuộc danh sách của quyen_cua_toi
+    // để giao diện mới không thiếu quyền khi chạy trước migration thêm khóa (0128).
+    permissions:
+      data.vai_tro === "quan_ly"
+        ? BUSINESS_PERMISSIONS.map((p) => p.key)
+        : (granted ?? []).filter((p): p is BusinessPermission => KNOWN.has(p)),
   };
 });
 

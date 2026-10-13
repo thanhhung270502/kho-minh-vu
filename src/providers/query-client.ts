@@ -30,6 +30,7 @@ function shouldRetry(failureCount: number, error: unknown): boolean {
  * quyền bị thu hẹp thì lần thử lại vẫn 42501 và dừng ở đó, không lặp vô hạn.
  */
 let refreshInFlight: Promise<unknown> | null = null;
+const refreshedQueries = new Set<string>();
 
 async function refreshSessionOnce(): Promise<boolean> {
   if (typeof window === "undefined") return false;
@@ -70,9 +71,15 @@ function createQueryClient(): QueryClient {
       },
     },
     queryCache: new QueryCache({
+      onSuccess: (_data, query) => {
+        refreshedQueries.delete(query.queryHash);
+      },
       onError: (error, query) => {
         if (explainError(error).kind !== "forbidden") return;
-        if (query.state.fetchFailureCount > 1) return;
+        // `fetchFailureCount` về 0 mỗi lần fetch mới nên không chặn được vòng
+        // invalidate → 42501 → invalidate; nhớ theo query đã làm mới một lần.
+        if (refreshedQueries.has(query.queryHash)) return;
+        refreshedQueries.add(query.queryHash);
 
         void refreshSessionOnce().then((refreshed) => {
           if (refreshed) {

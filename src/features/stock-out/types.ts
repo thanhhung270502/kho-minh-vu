@@ -46,6 +46,8 @@ export type IssuePermissions = {
   canEdit: boolean;
   /** Hủy phiếu xuất đã ghi sổ — chỉ quản lý (đã chặn thật ở database). */
   canVoid: boolean;
+  /** Mở sửa hóa đơn đã duyệt — quyền Sửa phiếu (mo_sua_chung_tu, 0128). */
+  canReopen: boolean;
 };
 
 /** Kiểu trả của RPC `goi_y_ma_trung` (D-14) — gợi ý mã gần giống còn tồn. */

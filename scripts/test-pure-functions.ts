@@ -210,7 +210,7 @@ for (const xau of [
 }
 
 
-/** Bộ quyền mẫu (0117): Admin luôn đủ 9 quyền (quyen_cua_toi), nhân viên theo người tích. */
+/** Bộ quyền mẫu (0117): Admin luôn đủ mọi quyền (quyen_cua_toi), nhân viên theo người tích. */
 const DEFAULT_TITLE: Record<Role, BusinessPermission[]> = {
   quan_ly: BUSINESS_PERMISSIONS.map((p) => p.key),
   van_phong: ["nhap_kho", "tao_don", "xac_nhan_don", "tao_ma_hang"],
@@ -435,8 +435,12 @@ assert.equal(allows(as("thu_kho"), ["manage-users", "phan_quyen"]), false);
     "chỉ xem không có Tổng quan, Cài đặt",
   );
   assert.ok(
-    buildNavEntries(filterNavItems(as("thu_kho", ["xem_phan_tich"]), NAV_ITEMS)).some((e) => e.label === "Phân tích"),
-    "0117: tích Xem trang Phân tích thì thấy menu",
+    buildNavEntries(filterNavItems(as("thu_kho", ["xem_phan_tich", "xem_ton_kho"]), NAV_ITEMS)).some((e) => e.label === "Phân tích"),
+    "0117: tích Xem trang Phân tích (kèm Xem tồn kho) thì thấy menu",
+  );
+  assert.ok(
+    !buildNavEntries(filterNavItems(as("thu_kho", ["xem_phan_tich"]), NAV_ITEMS)).some((e) => e.label === "Phân tích"),
+    "0128: thiếu Xem tồn kho thì không thấy menu Phân tích",
   );
   assert.ok(
     !buildNavEntries(filterNavItems(as("van_phong"), NAV_ITEMS)).some((e) => e.label === "Phân tích"),
@@ -710,9 +714,9 @@ assert.deepEqual(
 // Phase 12 (DON-02/03/05): nút theo trạng thái × quyền. Hoàn thành: QL + VP
 // (canEdit); Hủy / Xác nhận / Mở khóa / Đóng sớm: chỉ QL (canApprove).
 {
-  const ql = { canEdit: true, canApprove: true, canComplete: true, canCancel: true, canEditInvoice: true };
-  const vp = { canEdit: true, canApprove: false, canComplete: true, canCancel: false, canEditInvoice: false };
-  const tk = { canEdit: false, canApprove: false, canComplete: false, canCancel: false, canEditInvoice: false };
+  const ql = { canEdit: true, canApprove: true, canComplete: true, canCancel: true, canUnlock: true, canEditInvoice: true };
+  const vp = { canEdit: true, canApprove: false, canComplete: true, canCancel: false, canUnlock: false, canEditInvoice: false };
+  const tk = { canEdit: false, canApprove: false, canComplete: false, canCancel: false, canUnlock: false, canEditInvoice: false };
   assert.deepEqual(orderActionsFor("TAM", ql), ["approve", "cancel"]);
   assert.deepEqual(orderActionsFor("TAM", vp), []);
   assert.deepEqual(orderActionsFor("DA_XAC_NHAN", ql), ["complete", "print", "unlock", "close-early", "cancel"]);
@@ -727,6 +731,11 @@ assert.deepEqual(
   assert.deepEqual(orderActionsFor("TAM", nvXacNhan), ["approve"], "bật Xác nhận cho Nhân viên: không kèm Hủy đơn");
   assert.deepEqual(orderActionsFor("DA_XAC_NHAN", { ...ql, canComplete: false }), ["print", "unlock", "close-early", "cancel"],
     "tắt Hoàn thành: mất nút Hoàn thành dù vẫn sửa được đơn");
+  // 0128: Sửa đơn đã duyệt theo quyền Sửa phiếu, tách khỏi Xác nhận.
+  assert.deepEqual(orderActionsFor("DA_XAC_NHAN", { ...vp, canUnlock: true }), ["complete", "print", "unlock"],
+    "chỉ có Sửa phiếu: được Sửa đơn, không Đóng sớm");
+  assert.deepEqual(orderActionsFor("DA_XAC_NHAN", { ...ql, canUnlock: false }), ["complete", "print", "close-early", "cancel"],
+    "tắt Sửa phiếu: mất nút Sửa đơn, vẫn Đóng sớm");
 
   // Lỗi xuất âm thiếu lý do của ghi_so_chung_tu (bẫy 8: object thường, không instanceof).
   assert.equal(needsNegativeReason({ code: "23514", message: "Phải chọn lý do xuất âm cho phiếu PX26-000010" }), true);
@@ -1381,15 +1390,15 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
 
 // --- 0117: quyền tích theo người (QUYEN-01/02) ------------------------------
 {
-  // Khóa = giá trị CHECK của nguoi_dung_quyen.quyen (0117) — đúng 9, đúng thứ tự yêu cầu.
+  // Khóa = giá trị CHECK của nguoi_dung_quyen.quyen (0117, 0128) — đúng 11, đúng thứ tự yêu cầu.
   assert.deepEqual(
     BUSINESS_PERMISSIONS.map((p) => p.key),
     ["tao_tai_khoan", "phan_quyen", "tao_don", "xac_nhan_don", "nhap_kho",
-     "tao_doi_tac", "tao_ma_hang", "xem_dashboard", "xem_phan_tich"],
+     "tao_doi_tac", "tao_ma_hang", "xem_dashboard", "xem_phan_tich", "xem_ton_kho", "sua_phieu"],
   );
   assert.equal(Object.keys(SCOPE_LABELS).length, 4, "4 phạm vi = 4 vai trò cũ");
   assert.equal(isAdmin(as("quan_ly")), true);
-  assert.equal(isAdmin(as("van_phong", BUSINESS_PERMISSIONS.map((p) => p.key))), false, "đủ 9 quyền vẫn không phải Admin");
+  assert.equal(isAdmin(as("van_phong", BUSINESS_PERMISSIONS.map((p) => p.key))), false, "đủ mọi quyền vẫn không phải Admin");
 
   const base = { fullName: "An", jobTitleId: "11111111-1111-4111-8111-111111111111", role: "van_phong", warehouseIds: [] };
   const noPerms = editUserFormSchema.safeParse(base);

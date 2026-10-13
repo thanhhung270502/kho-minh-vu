@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { IssueDetailView } from "@/features/stock-out/components/issue-detail";
 import { requirePermission } from "@/features/auth/api/current-user.server";
-import { hasPermission, isAdmin } from "@/shared/lib/permissions";
+import { can, isAdmin } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Duyệt đơn" };
 
@@ -20,10 +20,12 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     <IssueDetailView
       id={id}
       permissions={{
-        canEdit: hasPermission(user.role, "edit-catalog"),
+        // 0130: lập / sửa / duyệt hóa đơn theo quyền Xác nhận / duyệt đơn (chặn thật ở RLS + RPC).
+            canEdit: can(user, "xac_nhan_don"),
         // D-06: chỉ quản lý hủy phiếu đã ghi sổ. Chặn thật ở database (0046).
         // Hủy hóa đơn đã ghi sổ = quyền "Sửa hóa đơn" (huy_chung_tu, 0083).
         canVoid: isAdmin(user),
+            canReopen: can(user, "sua_phieu"),
       }}
     />
   );

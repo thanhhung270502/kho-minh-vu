@@ -102,7 +102,7 @@ export function ReceiptExpanded({ id, permissions }: Props) {
                 <Link href={`/nhap-hang/${id}`}>
                   <Button type="primary">Mở phiếu</Button>
                 </Link>
-                <ReturnButton document={receipt} canEdit={permissions.canEdit} />
+                <ReturnButton document={receipt} canEdit={permissions.canReturn} />
                 <Link href={`/nhap-hang/${id}/in`} target="_blank">
                   <Button>In phiếu</Button>
                 </Link>

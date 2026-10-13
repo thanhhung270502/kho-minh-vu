@@ -8,6 +8,13 @@
 begin;
 select plan(32);
 
+-- 0128: quyền Xem tồn kho bắt đầu từ không — bật cho tài khoản mẫu trong transaction
+-- này để các khẳng định về tồn giữ nguyên nghĩa (test riêng của quyền: 128_*).
+insert into public.nguoi_dung_quyen (nguoi_dung_id, quyen)
+select id, 'xem_ton_kho' from auth.users
+where email in ('vanphong@khominhvu.local', 'thukho1@khominhvu.local', 'chixem@khominhvu.local')
+on conflict do nothing;
+
 -- 0117: hoàn thành đơn đi theo quyền Xác nhận/duyệt đơn — bật cho văn phòng trong
 -- transaction này để văn phòng làm được luồng hoàn thành.
 insert into public.nguoi_dung_quyen (nguoi_dung_id, quyen)

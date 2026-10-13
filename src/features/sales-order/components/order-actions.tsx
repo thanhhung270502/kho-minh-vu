@@ -97,7 +97,7 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
             label="Sửa đơn"
             canReopen
             detailHref={(draftId) => `/duyet-don/${draftId}`}
-            forbiddenMessage="Chức vụ của bạn chưa có quyền Sửa hóa đơn."
+            forbiddenMessage="Tài khoản chưa có quyền Sửa phiếu. Liên hệ quản lý."
             extraInvalidateKeys={ORDER_KEYS}
           />
         ) : null}

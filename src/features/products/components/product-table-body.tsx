@@ -50,7 +50,7 @@ export function ProductTableBody({
 }: Props) {
   const offsetHeader = useStickyTableOffset();
   const allStockIsZero =
-    rows.length > 0 && rows.every((row) => Number(row.totalStock) === 0);
+    rows.length > 0 && rows.every((row) => row.totalStock === 0);
 
   function handleTableChange(
     pagination: { current?: number; pageSize?: number },

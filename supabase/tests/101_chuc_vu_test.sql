@@ -62,7 +62,7 @@ select set_eq($$ select ma || ':' || pham_vi from public.chuc_vu where ma in ('Q
   array['QUAN_LY:quan_ly','NHAN_VIEN:van_phong','THU_KHO:thu_kho','CHI_XEM:chi_xem'],
   'bốn chức vụ mặc định, mỗi cái mang đúng phạm vi');
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
-select is(cardinality(public.quyen_cua_toi()), 9, 'Quản lý có đủ 9 quyền');
+select is(cardinality(public.quyen_cua_toi()), 11, 'Quản lý có đủ 11 quyền (0128 thêm Xem tồn kho, Sửa phiếu)');
 select pg_temp.dang_xuat();
 select is(pg_temp.quyen_cua('vanphong@khominhvu.local'),
   array['nhap_kho','tao_don','tao_ma_hang'],

@@ -8,5 +8,6 @@ export function canImportDocuments(user: PermissionSubject | null | undefined, k
   if (!user || user.role === "chi_xem") return false;
   if (kind === "don-dat") return can(user, "tao_don");
   if (kind === "phieu-nhap") return can(user, "nhap_kho");
-  return user.role === "quan_ly" || user.role === "van_phong";
+  // 0130: nhập hóa đơn từ Excel = lập hóa đơn → quyền Xác nhận / duyệt đơn.
+  return can(user, "xac_nhan_don");
 }

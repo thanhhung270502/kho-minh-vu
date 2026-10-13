@@ -17,6 +17,8 @@ function sortOrderFor(filter: ProductFilter, field: SortField) {
 
 type Params = {
   filter: ProductFilter;
+  /** Quyền Xem tồn kho (0128) — không có thì bỏ hẳn cột Tồn. */
+  canViewStock: boolean;
   /** null = người xem không có quyền xem phân tích → không có cột dự báo. */
   forecasts: { byId: Map<string, ProductForecast>; loading: boolean } | null;
 };
@@ -26,7 +28,31 @@ type Params = {
  * Hãng/dòng/linh kiện/xử lý, nhóm hàng… xem ở dòng mở rộng; sửa bằng nút
  * "Chỉnh sửa" trong dòng mở rộng (không còn cột "Sửa").
  */
-export function buildProductColumns({ filter, forecasts }: Params): TableColumnsType<ProductRow> {
+export function buildProductColumns({ filter, canViewStock, forecasts }: Params): TableColumnsType<ProductRow> {
+  const stockColumns: TableColumnsType<ProductRow> = canViewStock
+    ? [
+        {
+          title: "Tồn",
+          dataIndex: "totalStock",
+          key: "totalStock",
+          width: 100,
+          align: "right",
+          className: "tabular-nums",
+          sorter: true,
+          sortOrder: sortOrderFor(filter, "totalStock"),
+          render: (stock: number, row: ProductRow) =>
+            row.kind === "COMBO" ? (
+              <Tooltip title="Combo không có tồn riêng — tồn nằm ở các mã thành phần">
+                <Typography.Text type="secondary">Combo</Typography.Text>
+              </Tooltip>
+            ) : Number(stock) === 0 ? (
+              <Typography.Text type="secondary">0</Typography.Text>
+            ) : (
+              formatNumber(stock)
+            ),
+        },
+      ]
+    : [];
   return [
     thumbnailColumn(),
     {
@@ -57,26 +83,7 @@ export function buildProductColumns({ filter, forecasts }: Params): TableColumns
       sortOrder: sortOrderFor(filter, "name"),
       render: (name: string) => <Tooltip title={name}>{name}</Tooltip>,
     },
-    {
-      title: "Tồn",
-      dataIndex: "totalStock",
-      key: "totalStock",
-      width: 100,
-      align: "right",
-      className: "tabular-nums",
-      sorter: true,
-      sortOrder: sortOrderFor(filter, "totalStock"),
-      render: (stock: number, row: ProductRow) =>
-        row.kind === "COMBO" ? (
-          <Tooltip title="Combo không có tồn riêng — tồn nằm ở các mã thành phần">
-            <Typography.Text type="secondary">Combo</Typography.Text>
-          </Tooltip>
-        ) : Number(stock) === 0 ? (
-          <Typography.Text type="secondary">0</Typography.Text>
-        ) : (
-          formatNumber(stock)
-        ),
-    },
+    ...stockColumns,
     ...(forecasts ? forecastColumns(forecasts) : []),
   ];
 }

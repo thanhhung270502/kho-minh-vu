@@ -32,10 +32,11 @@ export function useFlowByDay(days: number) {
 }
 
 /** `placeholderData` giữ bảng cũ khi đổi ngày — không nháy trắng. */
-export function useNegativeStockReport(date: string | null) {
+export function useNegativeStockReport(date: string | null, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: dashboardKeys.negativeStock(date),
     queryFn: () => fetchNegativeStockReport(date),
+    enabled: options.enabled ?? true,
     placeholderData: keepPreviousData,
   });
 }
@@ -44,10 +45,12 @@ export function useNegativeStockReport(date: string | null) {
 export function useStockByGroup(
   groupBy: StockGroupBy,
   warehouseId: string | null,
+  options: { enabled?: boolean } = {},
 ) {
   return useQuery({
     queryKey: dashboardKeys.stockByGroup(groupBy, warehouseId),
     queryFn: () => fetchStockByGroup(groupBy, warehouseId),
+    enabled: options.enabled ?? true,
     placeholderData: keepPreviousData,
   });
 }

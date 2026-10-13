@@ -95,13 +95,15 @@ select pg_temp.dang_xuat();
 
 -- ─── Nhập đơn hàng (phiếu nhập) — phiếu xuất không bị ảnh hưởng ────────────
 select pg_temp.dat_quyen('thukho1@khominhvu.local', 'nhap_kho', false);
+-- 0130: phiếu xuất cần quyền Xác nhận / duyệt đơn — bật để chỉ thử riêng Nhập kho.
+select pg_temp.dat_quyen('thukho1@khominhvu.local', 'xac_nhan_don', true);
 select pg_temp.dang_nhap_nhu('thukho1@khominhvu.local');
 select throws_ok(
   $$ insert into public.chung_tu (so_ct, loai_ct, kho_id) values ('PN-Q102', 'NHAP', (select id from public.kho where ma = 'K1')) $$,
   '42501', null, 'tắt Nhập đơn hàng: thủ kho không tạo được phiếu nhập');
 select lives_ok(
   $$ insert into public.chung_tu (so_ct, loai_ct, kho_id) values ('PX-Q102', 'XUAT', (select id from public.kho where ma = 'K1')) $$,
-  'phiếu xuất vẫn tạo được — chỉ phiếu nhập bị chặn');
+  'phiếu xuất (có quyền Xác nhận) vẫn tạo được — tắt Nhập kho chỉ chặn phiếu nhập');
 select pg_temp.dang_xuat();
 
 -- ─── Tạo mã hàng (cả danh mục phụ) ─────────────────────────────────────────

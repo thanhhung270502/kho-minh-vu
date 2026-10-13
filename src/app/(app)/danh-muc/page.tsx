@@ -25,12 +25,14 @@ export default async function ProductsPage() {
           permissions={{
             canEdit: can(user, "tao_ma_hang"),
             canFillStandard: user.role === "quan_ly" && can(user, "tao_ma_hang"),
+            canViewStock: can(user, "xem_ton_kho"),
           }}
           // Quyền khớp RLS danh mục phụ (0015/0040): quản lý + văn phòng.
           // Danh mục phụ đi cùng quyền Tạo mã hàng (RLS 0083).
           extraActions={can(user, "tao_ma_hang") ? <LookupManagerButton /> : null}
-          // Thủ kho không thấy đơn đặt / dự kiến hết hàng (PANEL-01).
-          showForecast={can(user, "xem_phan_tich")}
+          // Thủ kho không thấy đơn đặt / dự kiến hết hàng (PANEL-01). Dự báo dựa trên
+          // tồn nên cần cả quyền Xem tồn kho (phan_tich_ton_kho chặn, 0128).
+          showForecast={can(user, "xem_phan_tich") && can(user, "xem_ton_kho")}
         />
       </Suspense>
     </>

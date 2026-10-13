@@ -66,7 +66,8 @@ export function IssueLineTable({ issue, lines, editable }: Props) {
   }
 
   function isOverStock(line: IssueLine): boolean {
-    return currentQuantity(line) > line.currentStock;
+    // Không có quyền Xem tồn kho → tồn null (0128): không biết nên không tô dòng.
+    return line.currentStock !== null && currentQuantity(line) > line.currentStock;
   }
 
   function handleQuantityInput(id: string, value: number | null, fallback: number) {

@@ -42,7 +42,8 @@ export type CountSheetRow = {
   counted: number | null;
   bookQuantity: number | null;
   discrepancy: number | null;
-  currentStock: number;
+  /** null = không có quyền Xem tồn kho (bang_dem_kiem_ke trả null, 0128). */
+  currentStock: number | null;
   kiotVietStock: number | null;
   countedAt: string | null;
   countedBy: string | null;
@@ -89,7 +90,7 @@ export function toCountSheetRow(row: CountSheetRowDb): CountSheetRow {
     counted: row.so_dem === null ? null : Number(row.so_dem),
     bookQuantity: row.ton_so === null ? null : Number(row.ton_so),
     discrepancy: row.lech === null ? null : Number(row.lech),
-    currentStock: Number(row.ton_hien_tai),
+    currentStock: row.ton_hien_tai === null ? null : Number(row.ton_hien_tai),
     kiotVietStock: row.ton_kiotviet === null ? null : Number(row.ton_kiotviet),
     countedAt: row.dem_luc,
     countedBy: row.nguoi_dem,

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { ReturnDetailView } from "@/features/returns/components/return-detail";
 import { requirePermission } from "@/features/auth/api/current-user.server";
-import { hasPermission } from "@/shared/lib/permissions";
+import { can } from "@/shared/lib/permissions";
 
 export const metadata: Metadata = { title: "Phiếu trả hàng" };
 
@@ -26,7 +26,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     <ReturnDetailView
       id={id}
       permissions={{
-        canEdit: hasPermission(user.role, "edit-catalog"),
+        // 0130: phiếu trả theo quyền Xác nhận / duyệt đơn (chặn thật ở RLS + RPC).
+        canEdit: can(user, "xac_nhan_don"),
         // D-06: chỉ quản lý hủy phiếu đã ghi sổ. Chặn thật ở database (0051).
         canVoid: user.role === "quan_ly",
       }}
