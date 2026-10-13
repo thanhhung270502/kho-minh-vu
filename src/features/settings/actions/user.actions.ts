@@ -77,6 +77,49 @@ async function savePermissions(session: AdminSession, id: string, permissions: s
   if (error) throw error;
 }
 
+/** null = tất cả nhóm hàng. */
+function groupScopeOf(values: { productGroupScope: "all" | "some"; productGroupIds: string[] }): string[] | null {
+  return values.productGroupScope === "all" ? null : values.productGroupIds;
+}
+
+function sameGroups(a: string[] | null, b: string[] | null): boolean {
+  if (a === null || b === null) return a === b;
+  const set = new Set(a);
+  return set.size === new Set(b).size && b.every((x) => set.has(x));
+}
+
+/**
+ * Nhóm hàng được xem (dat_nhom_hang_nguoi_dung, 0132). Chỉ gọi khi giá trị đổi: RPC từ
+ * chối người không phải Admin tự sửa phạm vi của mình, mà form của chính họ vẫn gửi lại
+ * giá trị cũ mỗi lần lưu hồ sơ.
+ */
+async function saveProductGroups(session: AdminSession, id: string, next: string[] | null) {
+  const { data, error: readError } = await session.supabase
+    .from("nguoi_dung_nhom_hang")
+    .select("nhom_hang_ids")
+    .eq("nguoi_dung_id", id)
+    .maybeSingle();
+  if (readError) throw readError;
+  if (sameGroups(data?.nhom_hang_ids ?? null, next)) return;
+
+  // Bỏ tham số = tất cả nhóm (default null, 0133).
+  const { error } = await session.supabase.rpc("dat_nhom_hang_nguoi_dung", {
+    p_id: id,
+    p_nhom_hang_ids: next ?? undefined,
+  });
+  if (error) throw error;
+}
+
+/** Quyền và nhóm hàng đi cùng nhau — cả hai cần quyền Phân quyền. */
+async function saveAccess(
+  session: AdminSession,
+  id: string,
+  values: { permissions: string[]; productGroupScope: "all" | "some"; productGroupIds: string[] },
+) {
+  await savePermissions(session, id, values.permissions);
+  await saveProductGroups(session, id, groupScopeOf(values));
+}
+
 /** Giữ ít nhất một quản lý đang hoạt động, nếu không sẽ không ai vào được Cài đặt nữa. */
 async function hasOtherManager(
   { supabase }: AdminSession,
@@ -138,6 +181,12 @@ async function scopeOfJobTitle({ supabase }: AdminSession, jobTitleId: string) {
  */
 function describeProfileError(error: unknown): string {
   if (isPostgrestError(error) && error.code === "23514") return error.message;
+  return explainError(error).action;
+}
+
+/** RPC quyền / nhóm hàng soạn sẵn câu tiếng Việt cho 23514 / 22023 (thiếu nhóm, nhóm đã bị xóa…). */
+function describeAccessError(error: unknown): string {
+  if (isPostgrestError(error) && (error.code === "23514" || error.code === "22023")) return error.message;
   return explainError(error).action;
 }
 
@@ -203,10 +252,10 @@ export async function createUser(input: CreateUserInput): Promise<ActionResult> 
   // Không có quyền Phân quyền thì tài khoản mới bắt đầu không có quyền nào.
   if (scope !== "quan_ly" && session.canAssign) {
     try {
-      await savePermissions(session, created.user.id, values.permissions);
+      await saveAccess(session, created.user.id, values);
     } catch (error) {
       revalidatePath("/cai-dat/nguoi-dung");
-      return { ok: false, message: `Đã tạo tài khoản nhưng chưa lưu được quyền: ${explainError(error).action}` };
+      return { ok: false, message: `Đã tạo tài khoản nhưng chưa lưu được quyền / nhóm hàng: ${describeAccessError(error)}` };
     }
   }
 
@@ -231,9 +280,9 @@ export async function updateUser(
   // Chỉ có quyền Phân quyền: giữ nguyên hồ sơ, chỉ ghi quyền.
   if (!session.canProfile) {
     try {
-      await savePermissions(session, values.id, values.permissions);
+      await saveAccess(session, values.id, values);
     } catch (error) {
-      return { ok: false, message: explainError(error).action };
+      return { ok: false, message: describeAccessError(error) };
     }
     revalidatePath("/cai-dat/nguoi-dung");
     return { ok: true };
@@ -269,9 +318,9 @@ export async function updateUser(
 
   if (nextScope !== "quan_ly" && session.canAssign) {
     try {
-      await savePermissions(session, values.id, values.permissions);
+      await saveAccess(session, values.id, values);
     } catch (permissionError) {
-      return { ok: false, message: `Đã lưu hồ sơ nhưng chưa lưu được quyền: ${explainError(permissionError).action}` };
+      return { ok: false, message: `Đã lưu hồ sơ nhưng chưa lưu được quyền / nhóm hàng: ${describeAccessError(permissionError)}` };
     }
   }
 

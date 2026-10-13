@@ -22,6 +22,7 @@ import { editUserFormSchema, createUserFormSchema } from "../schemas/user.schema
 import { TempPasswordField, generateTempPassword } from "./temp-password-field";
 import { UserAccountTypeField } from "./user-account-type-field";
 import { UserPermissionsField } from "./user-permissions-field";
+import { UserProductGroupsField } from "./user-product-groups-field";
 
 type UserFormValues = {
   fullName: string;
@@ -33,14 +34,22 @@ type UserFormValues = {
   tempPassword: string;
   approveStocktake: boolean;
   permissions: BusinessPermission[];
+  productGroupScope: "all" | "some";
+  productGroupIds: string[];
 };
 
 /** Quyền của NGƯỜI ĐANG ĐĂNG NHẬP với màn tài khoản (0117). */
 export type AccountAccess = { isAdmin: boolean; canProfile: boolean; canAssign: boolean };
 
-type Props = { open: boolean; user: UserRow | null; onClose: () => void; access: AccountAccess };
+type Props = {
+  open: boolean;
+  user: UserRow | null;
+  onClose: () => void;
+  access: AccountAccess;
+  currentUserId: string;
+};
 
-export function UserDrawer({ open, user, onClose, access }: Props) {
+export function UserDrawer({ open, user, onClose, access, currentUserId }: Props) {
   const { message, notification } = App.useApp();
   const queryClient = useQueryClient();
   const [dangChay, batDau] = useTransition();
@@ -70,6 +79,8 @@ export function UserDrawer({ open, user, onClose, access }: Props) {
       tempPassword: "",
       approveStocktake: false,
       permissions: [],
+      productGroupScope: "all",
+      productGroupIds: [],
     },
   });
 
@@ -87,6 +98,8 @@ export function UserDrawer({ open, user, onClose, access }: Props) {
             tempPassword: "",
             approveStocktake: user.duyet_kiem_ke,
             permissions: user.permissions,
+            productGroupScope: user.productGroupIds ? "some" : "all",
+            productGroupIds: user.productGroupIds ?? [],
           }
         : {
             fullName: "",
@@ -97,6 +110,8 @@ export function UserDrawer({ open, user, onClose, access }: Props) {
             tempPassword: generateTempPassword(),
             approveStocktake: false,
             permissions: [],
+            productGroupScope: "all",
+            productGroupIds: [],
           },
     );
   }, [open, user, reset]);
@@ -115,6 +130,8 @@ export function UserDrawer({ open, user, onClose, access }: Props) {
             warehouseIds: v.role === "thu_kho" ? v.warehouseIds : [],
             approveStocktake: v.approveStocktake,
             permissions: v.permissions,
+            productGroupScope: v.productGroupScope,
+            productGroupIds: v.productGroupIds,
           })
         : await createUser({
             fullName: v.fullName,
@@ -125,6 +142,8 @@ export function UserDrawer({ open, user, onClose, access }: Props) {
             tempPassword: v.tempPassword,
             approveStocktake: v.approveStocktake,
             permissions: v.permissions,
+            productGroupScope: v.productGroupScope,
+            productGroupIds: v.productGroupIds,
           });
 
       if (!kq.ok) {
@@ -141,7 +160,7 @@ export function UserDrawer({ open, user, onClose, access }: Props) {
       if (isNew) {
         message.success(`Đã tạo tài khoản ${normalizeUsername(v.username)}`);
       } else {
-        // Chỉ đổi quyền thì có hiệu lực ngay (co_quyen đọc bảng); đổi loại / kho thì cần token mới.
+        // Đổi quyền / nhóm hàng có hiệu lực ngay (đọc bảng); đổi loại / kho thì cần token mới.
         const roleChanged = user.vai_tro !== v.role;
         const previousWarehouses = userWarehouses(user).map((k) => k.id);
         const warehousesChanged =
@@ -255,6 +274,14 @@ export function UserDrawer({ open, user, onClose, access }: Props) {
         ) : null}
 
         <UserPermissionsField control={control} role={role} canAssign={access.canAssign} />
+
+        <UserProductGroupsField
+          control={control}
+          errors={errors}
+          isAdminTarget={role === "quan_ly"}
+          isSelf={!access.isAdmin && user?.id === currentUserId}
+          canAssign={access.canAssign}
+        />
 
         {isNew ? (
           <Form.Item
