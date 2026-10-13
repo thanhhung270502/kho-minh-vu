@@ -5,7 +5,7 @@ milestone_name: "- [ ] **Phase 1: Nền dữ liệu** - Schema 13 bảng, sổ c
 status: Milestone complete
 stopped_at: Completed 22-03-PLAN.md
 last_updated: "2026-10-09T10:13:00.256Z"
-last_activity: "2026-10-13 - Completed quick task 261013-w3y: Phân quyền theo nhóm hàng — nền database"
+last_activity: "2026-10-13 - Completed quick task 261013-wg8: Phân quyền theo nhóm hàng — màn chọn nhóm hàng"
 progress:
   total_phases: 13
   completed_phases: 8
@@ -932,10 +932,11 @@ Recent decisions affecting current work:
 | 261004-g6p | Tăng tốc chuyển trang: loading.tsx, cache getCurrentUser, đọc quyền song song | 2026-10-04 | 2bbd9e8 | [261004-g6p-speed-up-navigation](./quick/261004-g6p-speed-up-navigation/) |
 | 261008-w3x | Setup Vitest unit + integration test (Supabase local) và CI | 2026-10-08 | 8813618 | [261008-w3x-setup-vitest-unit-integration-test-va-ci](./quick/261008-w3x-setup-vitest-unit-integration-test-va-ci/) |
 | 261013-w3y | Phân quyền theo nhóm hàng — PR 1/4 nền database (bảng, hàm phạm vi, RPC, RLS) | 2026-10-13 | 85df8ac | [261013-w3y-phan-quyen-theo-nhom-hang-nen-database](./quick/261013-w3y-phan-quyen-theo-nhom-hang-nen-database/) |
+| 261013-wg8 | Phân quyền theo nhóm hàng — PR 2/4 màn chọn nhóm hàng (Cài đặt → Người dùng) | 2026-10-13 | 656b73c | [261013-wg8-phan-quyen-theo-nhom-hang-man-chon-nhom-](./quick/261013-wg8-phan-quyen-theo-nhom-hang-man-chon-nhom-/) |
 
 ## Session Continuity
 
 Last session: 2026-10-09T10:13:00.251Z
 Stopped at: Completed 22-03-PLAN.md
-Last activity: 2026-10-13 - Completed quick task 261013-w3y: Phân quyền theo nhóm hàng — nền database
+Last activity: 2026-10-13 - Completed quick task 261013-wg8: Phân quyền theo nhóm hàng — màn chọn nhóm hàng
 Resume file: None
