@@ -35,7 +35,7 @@ const COPY: Record<
   },
 };
 
-/** Copy khuôn `void-receipt-dialog.tsx`: ô lý do bắt buộc ≥ 5 ký tự, chặn
+/** Copy khuôn `void-receipt-dialog.tsx`: ô lý do không bắt buộc (0137), chặn
  * đóng khi đang gửi, bắt lỗi 42501/23514 riêng, fallback explainError. */
 export function OrderStatusDialog({ mode, open, onClose, orderId, orderNo }: Props) {
   const unlock = useUnlockOrder(orderId);
@@ -54,11 +54,6 @@ export function OrderStatusDialog({ mode, open, onClose, orderId, orderNo }: Pro
   }
 
   async function run() {
-    if (reason.trim().length < 5) {
-      setError("Nhập lý do, ít nhất 5 ký tự — lý do sẽ lưu vào nhật ký sửa.");
-      return;
-    }
-
     try {
       await mutation.mutateAsync(reason.trim());
       close();
@@ -98,7 +93,7 @@ export function OrderStatusDialog({ mode, open, onClose, orderId, orderNo }: Pro
         autoFocus
         rows={3}
         value={reason}
-        placeholder="Lý do (lưu vào nhật ký sửa)"
+        placeholder="Lý do (không bắt buộc)"
         onChange={(event) => setReason(event.target.value)}
       />
     </Modal>

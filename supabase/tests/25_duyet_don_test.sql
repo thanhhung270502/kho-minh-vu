@@ -178,16 +178,16 @@ select is(
 );
 
 -- =============================================================================
--- 12: mo_khoa_don voi ly do qua ngan -> 23514
+-- 12: mo_khoa_don khong can ly do (0137) - xac nhan lai de test 13 co don DA_XAC_NHAN
 -- =============================================================================
 select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 select public.xac_nhan_don((select don_id from t_don));
-select throws_ok(
-  format($$ select public.mo_khoa_don(%L, 'abc') $$, (select don_id from t_don)),
-  '23514', null,
-  'mo_khoa_don voi ly do 3 ky tu bi 23514'
+select lives_ok(
+  format($$ select public.mo_khoa_don(%L, '') $$, (select don_id from t_don)),
+  'mo_khoa_don voi ly do rong van chay (0137)'
 );
+select public.xac_nhan_don((select don_id from t_don));
 
 -- =============================================================================
 -- 13: dong_don_som tren don DA_XAC_NHAN chua giao du -> HOAN_THANH

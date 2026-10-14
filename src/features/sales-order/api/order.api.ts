@@ -204,7 +204,7 @@ export async function completeOrder(
   return data.id;
 }
 
-/** Hủy đơn chưa hoàn thành — chỉ quản lý, lý do >= 5 ký tự (0078). */
+/** Hủy đơn chưa hoàn thành — chỉ quản lý, lý do không bắt buộc (0137). */
 export async function cancelOrder(id: string, reason: string): Promise<void> {
   const { error } = await getSupabaseBrowserClient().rpc("huy_don", {
     p_id: id,
