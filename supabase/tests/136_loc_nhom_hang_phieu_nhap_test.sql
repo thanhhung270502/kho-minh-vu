@@ -78,6 +78,13 @@ from (values ('ZQ136-MIX', 'ZQ136-SPA', 3), ('ZQ136-MIX', 'ZQ136-SPB', 5),
 join public.chung_tu ct on ct.so_ct = x.so
 join public.san_pham sp on sp.ma_hang = x.ma;
 
+-- Hóa đơn thử: CI chạy trên DB rỗng nên không thể trông chờ hóa đơn có sẵn.
+insert into public.chung_tu (so_ct, loai_ct, kho_id)
+select 'XUAT-ZQ-136', 'XUAT', t.k1 from t;
+insert into public.chung_tu_dong (chung_tu_id, san_pham_id, so_luong, don_gia, thanh_tien)
+select ct.id, sp.id, 1, 100, 100
+from public.chung_tu ct, public.san_pham sp where ct.so_ct = 'XUAT-ZQ-136' and sp.ma_hang = 'ZQ136-SPB';
+
 create temp table t_ct as
 select (select id from public.chung_tu where so_ct = 'ZQ136-MIX') as mix,
        (select id from public.chung_tu where so_ct = 'ZQ136-B') as b,
@@ -161,7 +168,7 @@ select ok(
 
 -- ─── 5. Phiếu loại khác không bị ảnh hưởng ──────────────────────────────────
 select is(
-  (select count(*) from public.danh_sach_chung_tu(p_loai_ct => 'XUAT', p_kich_thuoc => 1)),
+  (select count(*) from public.danh_sach_chung_tu(p_loai_ct => 'XUAT', p_tu_khoa => 'XUAT-ZQ-136')),
   1::bigint, 'hóa đơn (XUAT): người bị giới hạn vẫn thấy như cũ');
 
 select * from finish();

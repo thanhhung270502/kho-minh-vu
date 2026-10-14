@@ -1,7 +1,6 @@
 -- =============================================================================
 -- 0134 + 0135 — các hàm danh mục / tìm mã / tồn kho / phân tích lọc theo nhóm hàng được xem (0132).
--- Tài khoản thử tự tạo (zq134); mã thử tiền tố ZQ134-. Phần tồn / thẻ kho / dashboard so
--- trên dữ liệu thật theo kiểu TƯƠNG ĐỐI (bẫy 16) — chạy được trên DB là bản sao production.
+-- Tài khoản, nhóm, mã, tồn thử đều tự tạo (zq134 / ZQ134-) — không neo vào dữ liệu đang sống (bẫy 16).
 -- =============================================================================
 begin;
 select plan(23);
@@ -37,16 +36,9 @@ select gen_random_uuid() as u_gh,   -- bị giới hạn
        gen_random_uuid() as u_tu,   -- không giới hạn
        gen_random_uuid() as nhom_a,
        gen_random_uuid() as nhom_b,
-       -- mã thật có nhiều biến động nhất → dùng thử thẻ kho
-       (select mv.san_pham_id from public.kho_movement mv group by 1 order by count(*) desc limit 1) as sp_that;
-alter table t add column nhom_sp_that uuid;
-update t set nhom_sp_that = (select nhom_hang_id from public.san_pham where id = t.sp_that);
--- nhóm thật nhiều dòng tồn nhất, KHÁC nhóm của sp_that
-alter table t add column nhom_g uuid;
-update t set nhom_g = (
-  select sp.nhom_hang_id from public.ton_kho tk join public.san_pham sp on sp.id = tk.san_pham_id
-  where sp.nhom_hang_id is not null and sp.nhom_hang_id is distinct from t.nhom_sp_that
-  group by 1 order by count(*) desc limit 1);
+       gen_random_uuid() as nhom_g,      -- nhóm được cấp thêm, có hàng tồn
+       gen_random_uuid() as nhom_c,      -- nhóm KHÔNG được cấp, có hàng tồn + thẻ kho
+       (select id from public.kho where ma = 'K1') as k1;
 grant select on t to authenticated;
 
 insert into auth.users (id, email, aud, role)
@@ -61,12 +53,23 @@ select x.id, q from t, lateral (values (t.u_gh), (t.u_tu)) x(id),
 
 insert into public.nhom_hang (id, ma, ten)
 select nhom_a, 'ZQ134-A', 'ZQ134 nhóm A' from t union all
-select nhom_b, 'ZQ134-B', 'ZQ134 nhóm B' from t;
+select nhom_b, 'ZQ134-B', 'ZQ134 nhóm B' from t union all
+select nhom_g, 'ZQ134-G', 'ZQ134 nhóm G' from t union all
+select nhom_c, 'ZQ134-C', 'ZQ134 nhóm C' from t;
 insert into public.san_pham (ma_hang, ten_hang, dvt_id, cong_doan_id, nhom_hang_id)
 select x.ma, x.ten, (select id from public.don_vi_tinh where ma = 'CAI'),
        (select id from public.cong_doan where ma = 'MUA_NGOAI'), x.nhom
 from t, lateral (values ('ZQ134-SPA', 'Hàng zq134 nhóm A', t.nhom_a),
-                        ('ZQ134-SPB', 'Hàng zq134 nhóm B', t.nhom_b)) x(ma, ten, nhom);
+                        ('ZQ134-SPB', 'Hàng zq134 nhóm B', t.nhom_b),
+                        ('TONG-134', 'Mặt hàng nhóm G', t.nhom_g),
+                        ('TONC-134', 'Mặt hàng nhóm C', t.nhom_c)) x(ma, ten, nhom);
+
+-- Tồn + thẻ kho tự tạo (CI chạy trên DB rỗng — bẫy 16).
+insert into public.kho_movement (kho_id, san_pham_id, so_luong, gia_von_tai_thoi_diem)
+select t.k1, sp.id, 10, 0 from t join public.san_pham sp on sp.ma_hang in ('TONG-134', 'TONC-134');
+
+alter table t add column sp_that uuid;
+update t set sp_that = (select id from public.san_pham where ma_hang = 'TONC-134');
 
 create temp table t_sp as
 select (select id from public.san_pham where ma_hang = 'ZQ134-SPA') as a,
