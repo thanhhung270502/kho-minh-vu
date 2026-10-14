@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+import {
+  DEFAULT_DOC_STATUSES,
+  docStatusesToRpc,
+  isDefaultDocStatuses,
+  readDocStatuses,
+  writeDocStatuses,
+} from "@/features/documents/lib/status-filter";
 import { readDate, readUuid } from "@/features/documents/lib/url-filter";
 import { isDefaultDateRange, readDateRangeOrThisMonth } from "@/shared/lib/date-presets";
 import type { Database } from "@/types/database.types";
@@ -23,7 +30,8 @@ export {
 
 export type IssueFilter = {
   q: string;
-  status: DocStatus | null;
+  /** Trạng thái được tích — luôn ít nhất một; mặc định ẩn Đã hủy (giống Đơn đặt, 0138). */
+  statuses: DocStatus[];
   partnerId: string | null;
   fromDate: string | null;
   toDate: string | null;
@@ -32,7 +40,7 @@ export type IssueFilter = {
 
 export const DEFAULT_ISSUE_FILTER: IssueFilter = {
   q: "",
-  status: null,
+  statuses: DEFAULT_DOC_STATUSES,
   partnerId: null,
   fromDate: null,
   toDate: null,
@@ -41,12 +49,10 @@ export const DEFAULT_ISSUE_FILTER: IssueFilter = {
 
 export const ISSUE_PAGE_SIZE = 50;
 
-const STATUSES: DocStatus[] = ["NHAP_LIEU", "HOAN_THANH", "DA_HUY"];
-
 /** Đếm điều kiện đang bật, KHÔNG tính ô tìm (ô tìm nằm ngoài panel). */
 export function countActiveIssueFilters(filter: IssueFilter): number {
   let count = 0;
-  if (filter.status !== null) count++;
+  if (!isDefaultDocStatuses(filter.statuses)) count++;
   if (filter.partnerId !== null) count++;
   // Mặc định tháng này không tính là đang lọc.
   if ((filter.fromDate !== null || filter.toDate !== null) && !isDefaultDateRange(filter.fromDate, filter.toDate)) count++;
@@ -56,14 +62,13 @@ export function countActiveIssueFilters(filter: IssueFilter): number {
 export function readIssueFilterFromUrl(params: {
   get(k: string): string | null;
 }): IssueFilter {
-  const status = params.get("trang_thai");
   // `Number(null)` là 0 chứ không phải NaN — phải chặn trước khi Number().
   const rawPage = params.get("trang");
   const page = rawPage === null || rawPage.trim() === "" ? 1 : Number(rawPage);
 
   return {
     q: params.get("q")?.trim() ?? "",
-    status: STATUSES.includes(status as DocStatus) ? (status as DocStatus) : null,
+    statuses: readDocStatuses(params.get("trang_thai")),
     partnerId: readUuid(params.get("doi_tac")),
     // URL chưa chọn ngày → tháng này.
     ...readDateRangeOrThisMonth(params, readDate),
@@ -74,7 +79,8 @@ export function readIssueFilterFromUrl(params: {
 export function writeIssueFilterToUrl(filter: IssueFilter): URLSearchParams {
   const params = new URLSearchParams();
   if (filter.q) params.set("q", filter.q);
-  if (filter.status) params.set("trang_thai", filter.status);
+  const statuses = writeDocStatuses(filter.statuses);
+  if (statuses) params.set("trang_thai", statuses);
   if (filter.partnerId) params.set("doi_tac", filter.partnerId);
   // Tháng này là mặc định — không ghi lên URL để link lưu lại vẫn "tháng này" khi sang tháng.
   if (!isDefaultDateRange(filter.fromDate, filter.toDate)) {
@@ -91,13 +97,26 @@ type ListArgs = Database["public"]["Functions"]["danh_sach_chung_tu"]["Args"];
 export function toIssueListRpcArgs(filter: IssueFilter): ListArgs {
   return {
     p_loai_ct: "XUAT",
-    p_trang_thai: filter.status ?? undefined,
+    p_trang_thai: docStatusesToRpc(filter.statuses),
     p_doi_tac_id: filter.partnerId ?? undefined,
     p_tu_ngay: filter.fromDate ?? undefined,
     p_den_ngay: filter.toDate ?? undefined,
     p_tu_khoa: filter.q || undefined,
     p_trang: filter.page,
     p_kich_thuoc: ISSUE_PAGE_SIZE,
+  };
+}
+
+type CountArgs = Database["public"]["Functions"]["dem_chung_tu_theo_trang_thai"]["Args"];
+
+/** Số đếm cạnh ô trạng thái: đúng bộ lọc của danh sách trừ trạng thái và trang — tích ô hay sang trang không đếm lại. */
+export function toIssueStatusCountRpcArgs(filter: IssueFilter): CountArgs {
+  return {
+    p_loai_ct: "XUAT",
+    p_doi_tac_id: filter.partnerId ?? undefined,
+    p_tu_ngay: filter.fromDate ?? undefined,
+    p_den_ngay: filter.toDate ?? undefined,
+    p_tu_khoa: filter.q || undefined,
   };
 }
 

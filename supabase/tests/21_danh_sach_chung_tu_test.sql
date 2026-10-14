@@ -2,7 +2,7 @@
 -- NHAP-01 — RPC đọc danh sách và chi tiết chứng từ
 -- =============================================================================
 begin;
-select plan(8);
+select plan(11);
 
 -- 0130: hóa đơn / phiếu trả theo quyền Xác nhận / duyệt đơn — bật cho tài khoản mẫu
 -- trong transaction này để các khẳng định về chứng từ giữ nguyên nghĩa.
@@ -98,10 +98,34 @@ select is(
 );
 
 select is(
-  (select count(*) from public.danh_sach_chung_tu(p_loai_ct => 'NHAP', p_trang_thai => 'NHAP_LIEU') d
+  (select count(*) from public.danh_sach_chung_tu(p_loai_ct => 'NHAP', p_trang_thai => array['NHAP_LIEU']::public.trang_thai_ct[]) d
     where d.so_ct like 'PN-DS-%'),
   1::bigint,
   'lọc theo trạng thái chỉ còn phiếu chưa ghi sổ'
+);
+
+-- 0138: tích nhiều trạng thái cùng lúc; mảng rỗng = không lọc.
+select is(
+  (select count(*) from public.danh_sach_chung_tu(p_loai_ct => 'NHAP',
+      p_trang_thai => array['NHAP_LIEU', 'HOAN_THANH']::public.trang_thai_ct[]) d
+    where d.so_ct like 'PN-DS-%'),
+  3::bigint,
+  'tích Nháp + Hoàn thành trả đủ ba phiếu (0138)'
+);
+select is(
+  (select count(*) from public.danh_sach_chung_tu(p_loai_ct => 'NHAP',
+      p_trang_thai => array[]::public.trang_thai_ct[]) d
+    where d.so_ct like 'PN-DS-%'),
+  3::bigint,
+  'mảng trạng thái rỗng coi như không lọc (0138)'
+);
+
+-- 0138: đếm theo trạng thái cùng bộ lọc (trừ trạng thái), đủ mọi trạng thái kể cả 0.
+select is(
+  (select array_agg(c.trang_thai::text || '=' || c.so_chung_tu order by c.trang_thai)
+     from public.dem_chung_tu_theo_trang_thai(p_loai_ct => 'NHAP', p_tu_khoa => 'PN-DS-') c),
+  array['NHAP_LIEU=1', 'HOAN_THANH=2', 'DA_HUY=0'],
+  'dem_chung_tu_theo_trang_thai: 1 nháp, 2 hoàn thành, 0 hủy (0138)'
 );
 
 select is(

@@ -1886,7 +1886,7 @@ export type Database = {
           p_loai_ct?: Database["public"]["Enums"]["loai_ct"]
           p_nguon_nhap?: Database["public"]["Enums"]["nguon_nhap"]
           p_trang?: number
-          p_trang_thai?: Database["public"]["Enums"]["trang_thai_ct"]
+          p_trang_thai?: Database["public"]["Enums"]["trang_thai_ct"][]
           p_tu_khoa?: string
           p_tu_ngay?: string
         }
@@ -2147,6 +2147,21 @@ export type Database = {
           ten_nhom_hang: string
           tong_da_ban: number
           tong_so_dong: number
+        }[]
+      }
+      dem_chung_tu_theo_trang_thai: {
+        Args: {
+          p_den_ngay?: string
+          p_doi_tac_id?: string
+          p_kho_id?: string
+          p_loai_ct?: Database["public"]["Enums"]["loai_ct"]
+          p_nguon_nhap?: Database["public"]["Enums"]["nguon_nhap"]
+          p_tu_khoa?: string
+          p_tu_ngay?: string
+        }
+        Returns: {
+          so_chung_tu: number
+          trang_thai: Database["public"]["Enums"]["trang_thai_ct"]
         }[]
       }
       dem_don_theo_trang_thai: {
@@ -3134,7 +3149,7 @@ export type Database = {
           p_loai_ct: Database["public"]["Enums"]["loai_ct"]
           p_nguon_nhap?: Database["public"]["Enums"]["nguon_nhap"]
           p_toi_da?: number
-          p_trang_thai?: Database["public"]["Enums"]["trang_thai_ct"]
+          p_trang_thai?: Database["public"]["Enums"]["trang_thai_ct"][]
           p_tu_khoa?: string
           p_tu_ngay?: string
         }

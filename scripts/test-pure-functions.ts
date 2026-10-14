@@ -605,7 +605,7 @@ assert.equal(extractPhoneNumber("NGỌC"), null, "ghi chú không có số thì 
 // --- Bộ lọc phiếu nhập (Phase 3) -------------------------------------------
 const sampleReceiptFilter: ReceiptFilter = {
   q: "PN26",
-  status: "HOAN_THANH",
+  statuses: ["HOAN_THANH"],
   partnerId: "11111111-1111-4111-8111-111111111111",
   warehouseId: "22222222-2222-4222-8222-222222222222",
   source: "NHA_MAY",

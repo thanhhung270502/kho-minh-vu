@@ -1,3 +1,10 @@
+import {
+  DEFAULT_DOC_STATUSES,
+  docStatusesToRpc,
+  isDefaultDocStatuses,
+  readDocStatuses,
+  writeDocStatuses,
+} from "@/features/documents/lib/status-filter";
 import { readDate, readUuid } from "@/features/documents/lib/url-filter";
 import { isDefaultDateRange, readDateRangeOrThisMonth } from "@/shared/lib/date-presets";
 import type { Database } from "@/types/database.types";
@@ -17,7 +24,8 @@ export {
 
 export type ReceiptFilter = {
   q: string;
-  status: DocStatus | null;
+  /** Trạng thái được tích — luôn ít nhất một; mặc định ẩn Đã hủy (giống Đơn đặt, 0138). */
+  statuses: DocStatus[];
   partnerId: string | null;
   warehouseId: string | null;
   source: ReceiptSource | null;
@@ -28,7 +36,7 @@ export type ReceiptFilter = {
 
 export const DEFAULT_RECEIPT_FILTER: ReceiptFilter = {
   q: "",
-  status: null,
+  statuses: DEFAULT_DOC_STATUSES,
   partnerId: null,
   warehouseId: null,
   source: null,
@@ -39,13 +47,12 @@ export const DEFAULT_RECEIPT_FILTER: ReceiptFilter = {
 
 export const RECEIPT_PAGE_SIZE = 50;
 
-const STATUSES: DocStatus[] = ["NHAP_LIEU", "HOAN_THANH", "DA_HUY"];
 const SOURCES: ReceiptSource[] = ["NCC", "NHA_MAY"];
 
 /** Đếm điều kiện đang bật, KHÔNG tính ô tìm (ô tìm nằm ngoài panel). */
 export function countActiveReceiptFilters(filter: ReceiptFilter): number {
   let count = 0;
-  if (filter.status !== null) count++;
+  if (!isDefaultDocStatuses(filter.statuses)) count++;
   if (filter.partnerId !== null) count++;
   if (filter.warehouseId !== null) count++;
   if (filter.source !== null) count++;
@@ -57,7 +64,6 @@ export function countActiveReceiptFilters(filter: ReceiptFilter): number {
 export function readReceiptFilterFromUrl(params: {
   get(k: string): string | null;
 }): ReceiptFilter {
-  const status = params.get("trang_thai");
   const source = params.get("nguon");
   // `Number(null)` là 0 chứ không phải NaN — phải chặn trước khi Number().
   const rawPage = params.get("trang");
@@ -65,7 +71,7 @@ export function readReceiptFilterFromUrl(params: {
 
   return {
     q: params.get("q")?.trim() ?? "",
-    status: STATUSES.includes(status as DocStatus) ? (status as DocStatus) : null,
+    statuses: readDocStatuses(params.get("trang_thai")),
     partnerId: readUuid(params.get("ncc")),
     warehouseId: readUuid(params.get("kho")),
     source: SOURCES.includes(source as ReceiptSource)
@@ -80,7 +86,8 @@ export function readReceiptFilterFromUrl(params: {
 export function writeReceiptFilterToUrl(filter: ReceiptFilter): URLSearchParams {
   const params = new URLSearchParams();
   if (filter.q) params.set("q", filter.q);
-  if (filter.status) params.set("trang_thai", filter.status);
+  const statuses = writeDocStatuses(filter.statuses);
+  if (statuses) params.set("trang_thai", statuses);
   if (filter.partnerId) params.set("ncc", filter.partnerId);
   if (filter.warehouseId) params.set("kho", filter.warehouseId);
   if (filter.source) params.set("nguon", filter.source);
@@ -98,7 +105,7 @@ type ListArgs = Database["public"]["Functions"]["danh_sach_chung_tu"]["Args"];
 export function toReceiptListRpcArgs(filter: ReceiptFilter): ListArgs {
   return {
     p_loai_ct: "NHAP",
-    p_trang_thai: filter.status ?? undefined,
+    p_trang_thai: docStatusesToRpc(filter.statuses),
     p_doi_tac_id: filter.partnerId ?? undefined,
     p_kho_id: filter.warehouseId ?? undefined,
     p_nguon_nhap: filter.source ?? undefined,
@@ -107,5 +114,20 @@ export function toReceiptListRpcArgs(filter: ReceiptFilter): ListArgs {
     p_tu_khoa: filter.q || undefined,
     p_trang: filter.page,
     p_kich_thuoc: RECEIPT_PAGE_SIZE,
+  };
+}
+
+type CountArgs = Database["public"]["Functions"]["dem_chung_tu_theo_trang_thai"]["Args"];
+
+/** Số đếm cạnh ô trạng thái: đúng bộ lọc của danh sách trừ trạng thái và trang — tích ô hay sang trang không đếm lại. */
+export function toReceiptStatusCountRpcArgs(filter: ReceiptFilter): CountArgs {
+  return {
+    p_loai_ct: "NHAP",
+    p_doi_tac_id: filter.partnerId ?? undefined,
+    p_kho_id: filter.warehouseId ?? undefined,
+    p_nguon_nhap: filter.source ?? undefined,
+    p_tu_ngay: filter.fromDate ?? undefined,
+    p_den_ngay: filter.toDate ?? undefined,
+    p_tu_khoa: filter.q || undefined,
   };
 }

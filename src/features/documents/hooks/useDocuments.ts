@@ -1,17 +1,19 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { productKeys } from "@/features/products/api/product.keys";
 
 import {
   clearNegativeReason,
+  fetchDocumentStatusCounts,
   postDocumentWithReason,
   reopenPostedDocument,
   saveNegativeReason,
   voidDocument,
+  type DocumentStatusCountArgs,
 } from "../api/document.api";
-import { documentKeys } from "../api/document.keys";
+import { documentKeys, type DocumentScope } from "../api/document.keys";
 import type { NegativeReasonCode } from "../lib/negative-reasons";
 
 /**
@@ -25,6 +27,15 @@ import type { NegativeReasonCode } from "../lib/negative-reasons";
  * khớp mờ theo tiền tố, một lượt invalidate này phủ luôn mọi danh sách/chi
  * tiết/dòng của cả ba chiều nhập/xuất/trả, không cần biết `scope` gọi từ đâu.
  */
+/** Số đếm từng trạng thái cho bộ lọc của Nhập hàng / Hóa đơn (0138). */
+export function useDocumentStatusCounts(scope: DocumentScope, args: DocumentStatusCountArgs) {
+  return useQuery({
+    queryKey: documentKeys.statusCounts(scope, args),
+    queryFn: () => fetchDocumentStatusCounts(args),
+    placeholderData: keepPreviousData,
+  });
+}
+
 function useRefreshDocument(id: string) {
   const queryClient = useQueryClient();
   return () => {

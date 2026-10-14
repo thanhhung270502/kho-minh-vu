@@ -3,6 +3,8 @@
 import { Button, Select } from "antd";
 import type { ReactNode } from "react";
 
+import { DocStatusFilter } from "@/features/documents/components/doc-status-filter";
+import { useDocumentStatusCounts } from "@/features/documents/hooks/useDocuments";
 import { usePartners } from "@/features/partners/hooks/usePartners";
 import { DEFAULT_PARTNER_FILTER } from "@/features/partners/types";
 import { useLookups } from "@/features/products/hooks/useProducts";
@@ -12,6 +14,7 @@ import { filterByLabel } from "@/shared/lib/text";
 import {
   DEFAULT_RECEIPT_FILTER,
   countActiveReceiptFilters,
+  toReceiptStatusCountRpcArgs,
   type ReceiptFilter,
 } from "../schemas/receipt.schema";
 import { DOC_STATUS_LABELS } from "../types";
@@ -35,6 +38,7 @@ export function ReceiptFilterPanel({
   const lookups = useLookups();
   // Danh sách NCC đang hoạt động — dùng lại RPC đối tác của Phase 2.
   const suppliers = usePartners({ ...DEFAULT_PARTNER_FILTER, kind: "NCC" });
+  const counts = useDocumentStatusCounts("nhap", toReceiptStatusCountRpcArgs(filter));
 
   /** Đổi điều kiện nào cũng về trang 1 — giữ trang cũ dễ rơi vào trang trống. */
   function change(patch: Partial<ReceiptFilter>) {
@@ -44,16 +48,12 @@ export function ReceiptFilterPanel({
   return (
     <div className="flex flex-col gap-3">
       <FilterGroup label="Trạng thái">
-        <Select
-          allowClear
-          className="w-full"
-          placeholder="Tất cả"
-          value={filter.status}
-          options={(["NHAP_LIEU", "HOAN_THANH", "DA_HUY"] as const).map((status) => ({
-            value: status,
-            label: DOC_STATUS_LABELS[status],
-          }))}
-          onChange={(value) => change({ status: value ?? null })}
+        <DocStatusFilter
+          selected={filter.statuses}
+          onChange={(statuses) => change({ statuses })}
+          labels={DOC_STATUS_LABELS}
+          counts={counts.data}
+          countsFailed={counts.isError}
         />
       </FilterGroup>
 

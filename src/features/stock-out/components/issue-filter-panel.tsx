@@ -1,23 +1,20 @@
 "use client";
 
-import { Button, Select } from "antd";
+import { Button } from "antd";
 import type { ReactNode } from "react";
 
+import { DocStatusFilter } from "@/features/documents/components/doc-status-filter";
+import { useDocumentStatusCounts } from "@/features/documents/hooks/useDocuments";
 import { DateRangeFilter } from "@/shared/components/date-range-filter";
 import { PartnerSearchInput } from "@/shared/components/partner-search-input";
 
 import {
   DEFAULT_ISSUE_FILTER,
   countActiveIssueFilters,
+  toIssueStatusCountRpcArgs,
   type IssueFilter,
 } from "../schemas/issue.schema";
-import { DOC_STATUS_LABELS, type DocStatus } from "../types";
-
-// Bẫy 11: antd v6 bỏ hỗ trợ option có value rỗng dạng null trong danh sách
-// options — mục "Tất cả" phải là một option với chuỗi rỗng làm value.
-const ALL_STATUS = "";
-
-const STATUSES: DocStatus[] = ["NHAP_LIEU", "HOAN_THANH", "DA_HUY"];
+import { DOC_STATUS_LABELS } from "../types";
 
 function FilterGroup({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -35,6 +32,7 @@ export function IssueFilterPanel({
   filter: IssueFilter;
   onChange: (filter: IssueFilter) => void;
 }) {
+  const counts = useDocumentStatusCounts("xuat", toIssueStatusCountRpcArgs(filter));
 
   /** Đổi điều kiện nào cũng về trang 1 — giữ trang cũ dễ rơi vào trang trống. */
   function change(patch: Partial<IssueFilter>) {
@@ -44,21 +42,12 @@ export function IssueFilterPanel({
   return (
     <div className="flex flex-col gap-3">
       <FilterGroup label="Trạng thái">
-        <Select
-          className="w-full"
-          value={filter.status ?? ALL_STATUS}
-          options={[
-            { value: ALL_STATUS, label: "Tất cả" },
-            ...STATUSES.map((status) => ({
-              value: status,
-              label: DOC_STATUS_LABELS[status],
-            })),
-          ]}
-          onChange={(selected) =>
-            change({
-              status: selected === ALL_STATUS ? null : (selected as DocStatus),
-            })
-          }
+        <DocStatusFilter
+          selected={filter.statuses}
+          onChange={(statuses) => change({ statuses })}
+          labels={DOC_STATUS_LABELS}
+          counts={counts.data}
+          countsFailed={counts.isError}
         />
       </FilterGroup>
 
