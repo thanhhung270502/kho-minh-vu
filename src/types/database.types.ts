@@ -1233,6 +1233,30 @@ export type Database = {
           },
         ]
       }
+      nguoi_dung_nhom_hang: {
+        Row: {
+          created_at: string
+          nguoi_cap_nhat_id: string | null
+          nguoi_dung_id: string
+          nhom_hang_ids: string[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          nguoi_cap_nhat_id?: string | null
+          nguoi_dung_id: string
+          nhom_hang_ids: string[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          nguoi_cap_nhat_id?: string | null
+          nguoi_dung_id?: string
+          nhom_hang_ids?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       nguoi_dung_quyen: {
         Row: {
           created_at: string
@@ -2095,6 +2119,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      dat_nhom_hang_nguoi_dung: {
+        Args: { p_id: string; p_nhom_hang_ids?: string[] }
+        Returns: string[]
+      }
       dat_quyen_nguoi_dung: {
         Args: { p_id: string; p_quyen: string[] }
         Returns: string[]
@@ -2755,6 +2783,7 @@ export type Database = {
           so_luong: number
         }[]
       }
+      nhom_hang_duoc_xem: { Args: never; Returns: string[] }
       phan_tich_theo_ky: {
         Args: { p_den: string; p_kho_id?: string; p_tu: string }
         Returns: Json
@@ -2784,6 +2813,10 @@ export type Database = {
         }[]
       }
       phieu_co_dong_thuoc_kho_hien_tai: {
+        Args: { p_chung_tu_id: string }
+        Returns: boolean
+      }
+      phieu_nhap_trong_pham_vi: {
         Args: { p_chung_tu_id: string }
         Returns: boolean
       }
@@ -2824,6 +2857,10 @@ export type Database = {
         Returns: string
       }
       sinh_so_dh: { Args: { p_nam?: number }; Returns: string }
+      so_dong_an_nhom_hang: {
+        Args: { p_chung_tu_id: string }
+        Returns: number
+      }
       tach_nguoi_ban: { Args: { p_ghi_chu: string }; Returns: string }
       tach_nguoi_nhap: { Args: { p_ghi_chu: string }; Returns: string }
       tao_don: {
@@ -3077,7 +3114,9 @@ export type Database = {
         }
       }
       xem_duoc_lich_su_kiotviet: { Args: never; Returns: boolean }
+      xem_duoc_nhom: { Args: { p_nhom_hang_id: string }; Returns: boolean }
       xem_duoc_phan_tich: { Args: never; Returns: boolean }
+      xem_duoc_san_pham: { Args: { p_san_pham_id: string }; Returns: boolean }
       xoa_anh: {
         Args: { p_id: string }
         Returns: {

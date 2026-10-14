@@ -13,6 +13,8 @@ import {
   userListKey,
   userWarehouses,
   fetchUsers,
+  fetchProductGroups,
+  productGroupOptionsKey,
   type UserRow,
 } from "../api/user.api";
 import { ResetPasswordDialog } from "./reset-password-dialog";
@@ -27,6 +29,9 @@ export function UserTable({ currentUserId, access }: { currentUserId: string; ac
   const queryClient = useQueryClient();
   const [, batDau] = useTransition();
   const users = useQuery({ queryKey: userListKey, queryFn: fetchUsers });
+  // Chỉ để hiện tên nhóm trong tooltip — lỗi tải thì tooltip ghi "(nhóm đã xóa)", không chặn bảng.
+  const groups = useQuery({ queryKey: productGroupOptionsKey, queryFn: fetchProductGroups });
+  const groupNames = new Map((groups.data ?? []).map((g) => [g.id, g.name]));
 
   const [filter, setFilter] = useState<UserFilter>("dang");
   const [drawer, setDrawer] = useState<{ mo: boolean; nd: UserRow | null }>({
@@ -119,6 +124,23 @@ export function UserTable({ currentUserId, access }: { currentUserId: string; ac
           </span>
         ) : (
           <span className="text-gray-400">Tất cả kho</span>
+        ),
+    },
+    {
+      title: "Nhóm hàng",
+      key: "nhom_hang",
+      width: 130,
+      render: (_, d) =>
+        d.vai_tro === "quan_ly" || d.productGroupIds === null ? (
+          <span className="text-gray-400">Tất cả nhóm</span>
+        ) : (
+          <Tooltip
+            title={d.productGroupIds.map((id) => groupNames.get(id) ?? "(nhóm đã xóa)").join(", ")}
+          >
+            <Tag color="orange" className="m-0">
+              {d.productGroupIds.length} nhóm
+            </Tag>
+          </Tooltip>
         ),
     },
     {
@@ -220,7 +242,7 @@ export function UserTable({ currentUserId, access }: { currentUserId: string; ac
                 columns={columns}
                 dataSource={dong}
                 loading={users.isFetching}
-                scroll={{ x: 1150 }}
+                scroll={{ x: 1280 }}
                 pagination={false}
                 locale={{ emptyText: "Không có tài khoản nào ở trạng thái này." }}
               />
@@ -234,6 +256,7 @@ export function UserTable({ currentUserId, access }: { currentUserId: string; ac
         user={drawer.nd}
         onClose={() => setDrawer((s) => ({ ...s, mo: false }))}
         access={access}
+        currentUserId={currentUserId}
       />
 
       <ResetPasswordDialog user={resetTarget} onClose={() => setResetTarget(null)} />

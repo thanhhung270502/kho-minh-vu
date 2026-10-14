@@ -76,3 +76,15 @@ export async function findActivePartnerId(code: string): Promise<string | null> 
   if (error) throw error;
   return data?.id ?? null;
 }
+
+/**
+ * Số dòng của phiếu nhập thuộc nhóm hàng người dùng không được xem (0136). Lớn hơn 0 thì
+ * các dòng đó đã bị ẩn khỏi phiếu và phiếu chỉ còn xem được — database chặn sửa / ghi sổ / hủy.
+ */
+export async function fetchHiddenLineCount(id: string): Promise<number> {
+  const { data, error } = await getSupabaseBrowserClient().rpc("so_dong_an_nhom_hang", {
+    p_chung_tu_id: id,
+  });
+  if (error) throw error;
+  return data ?? 0;
+}

@@ -37,10 +37,17 @@ export const userProfileSchema = z
     approveStocktake: z.boolean().default(false),
     /** Quyền tích theo người (0117, 0128); bỏ qua khi là Admin. */
     permissions: z.array(z.enum(PERMISSION_KEYS)).default([]),
+    /** Nhóm hàng được xem (0132): "all" = tất cả, "some" = chỉ productGroupIds. Bỏ qua khi là Admin. */
+    productGroupScope: z.enum(["all", "some"]).default("all"),
+    productGroupIds: z.array(z.string().uuid()).default([]),
   })
   .refine((v) => v.role !== "thu_kho" || v.warehouseIds.length > 0, {
     path: ["warehouseIds"],
     message: "Chọn ít nhất một kho được vào",
+  })
+  .refine((v) => v.role === "quan_ly" || v.productGroupScope === "all" || v.productGroupIds.length > 0, {
+    path: ["productGroupIds"],
+    message: "Chọn ít nhất một nhóm hàng, hoặc chọn “Tất cả nhóm hàng”",
   });
 
 export const createUserSchema = z

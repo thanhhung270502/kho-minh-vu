@@ -17,7 +17,12 @@ import {
 } from "@/features/documents/api/document.api";
 import { productKeys } from "@/features/products/api/product.keys";
 
-import { createReceipt, fetchReceipts, type NewReceiptHeader } from "../api/receipt.api";
+import {
+  createReceipt,
+  fetchHiddenLineCount,
+  fetchReceipts,
+  type NewReceiptHeader,
+} from "../api/receipt.api";
 import { receiptKeys } from "../api/receipt.keys";
 import type {
   DocumentHeaderInput,
@@ -46,6 +51,14 @@ export function useReceiptLines(id: string) {
   return useQuery({
     queryKey: receiptKeys.lines(id),
     queryFn: () => fetchDocumentLines(id),
+    enabled: id !== "",
+  });
+}
+
+export function useReceiptHiddenLines(id: string) {
+  return useQuery({
+    queryKey: receiptKeys.hiddenLines(id),
+    queryFn: () => fetchHiddenLineCount(id),
     enabled: id !== "",
   });
 }

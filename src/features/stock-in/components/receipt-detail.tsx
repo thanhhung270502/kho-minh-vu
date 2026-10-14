@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Space } from "antd";
+import { Alert, Button, Space } from "antd";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -11,7 +11,7 @@ import { PageHeader } from "@/shared/components/page-header";
 import { StatusDot } from "@/shared/components/status-dot";
 import { QueryState } from "@/shared/components/query-state";
 
-import { useReceiptDetail, useReceiptLines } from "../hooks/useReceipts";
+import { useReceiptDetail, useReceiptHiddenLines, useReceiptLines } from "../hooks/useReceipts";
 import { DOC_STATUS_LABELS, DOC_STATUS_TONES, type ReceiptPermissions } from "../types";
 import { PostReceiptButton } from "./post-receipt-button";
 import { ReceiptAside } from "./receipt-aside";
@@ -20,13 +20,20 @@ import { VoidReceiptDialog } from "./void-receipt-dialog";
 
 export function ReceiptDetailView({
   id,
-  permissions,
+  permissions: granted,
 }: {
   id: string;
   permissions: ReceiptPermissions;
 }) {
   const detail = useReceiptDetail(id);
   const lines = useReceiptLines(id);
+  // 0136: dòng thuộc nhóm hàng không được xem đã bị ẩn — phiếu chỉ còn xem được.
+  // Lỗi / đang tải coi như 0: database vẫn chặn sửa, ghi sổ, hủy.
+  const hiddenLines = useReceiptHiddenLines(id).data ?? 0;
+  const permissions: ReceiptPermissions =
+    hiddenLines > 0
+      ? { canEdit: false, canVoid: false, canReopen: false, canReturn: false }
+      : granted;
   const [voidOpen, setVoidOpen] = useState(false);
 
   return (
@@ -36,7 +43,7 @@ export function ReceiptDetailView({
       emptyDescription={
         <div className="flex flex-col items-center gap-3">
           <span>
-            Không tìm thấy phiếu này, hoặc phiếu không thuộc kho bạn được phân công.
+            Không tìm thấy phiếu này, hoặc phiếu thuộc kho / nhóm hàng bạn không được giao.
           </span>
           <Link href="/nhap-hang">
             <Button size="small">Về danh sách phiếu nhập</Button>
@@ -99,6 +106,16 @@ export function ReceiptDetailView({
             />
 
             <RevisionNotice document={receipt} />
+
+            {hiddenLines > 0 ? (
+              <Alert
+                className="mb-4"
+                type="info"
+                showIcon
+                title={`Phiếu còn ${hiddenLines} dòng thuộc nhóm hàng bạn không được xem`}
+                description="Các dòng này bị ẩn và không tính vào tổng số lượng, tổng tiền. Phiếu chỉ xem được — cần sửa, ghi sổ hay hủy thì nhờ Quản lý/Admin hoặc người phụ trách nhóm đó."
+              />
+            ) : null}
 
             {/* Cùng khuôn trang đơn đặt: dòng hàng bên trái, thông tin phiếu bên phải. */}
             <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
