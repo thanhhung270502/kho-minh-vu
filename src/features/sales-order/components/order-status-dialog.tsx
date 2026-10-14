@@ -5,9 +5,9 @@ import { useState } from "react";
 
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 
-import { useCancelOrder, useCloseOrderEarly, useUnlockOrder } from "../hooks/useOrders";
+import { useCancelOrder, useUnlockOrder } from "../hooks/useOrders";
 
-type Mode = "unlock" | "close-early" | "cancel";
+type Mode = "unlock" | "cancel";
 
 type Props = {
   mode: Mode;
@@ -27,12 +27,6 @@ const COPY: Record<
       "Đơn hàng sẽ chuyển về trạng thái 'Đơn tạm' để tiến hành chỉnh sửa. Thao tác này sẽ được lưu vào nhật ký hệ thống.",
     okText: "Mở sửa",
   },
-  "close-early": {
-    title: (orderNo) => `Đóng sớm đơn ${orderNo}`,
-    description:
-      "Đơn chuyển sang Hoàn thành dù chưa giao đủ. Dùng khi khách không lấy nốt phần còn lại.",
-    okText: "Đóng sớm",
-  },
   cancel: {
     title: (orderNo) => `Hủy đơn ${orderNo}`,
     description:
@@ -45,9 +39,8 @@ const COPY: Record<
  * đóng khi đang gửi, bắt lỗi 42501/23514 riêng, fallback explainError. */
 export function OrderStatusDialog({ mode, open, onClose, orderId, orderNo }: Props) {
   const unlock = useUnlockOrder(orderId);
-  const closeEarly = useCloseOrderEarly(orderId);
   const cancel = useCancelOrder(orderId);
-  const mutation = mode === "unlock" ? unlock : mode === "close-early" ? closeEarly : cancel;
+  const mutation = mode === "unlock" ? unlock : cancel;
   const copy = COPY[mode];
 
   const [reason, setReason] = useState("");

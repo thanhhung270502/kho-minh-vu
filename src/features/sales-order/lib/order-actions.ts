@@ -7,7 +7,6 @@ export type OrderAction =
   | "complete"
   | "print"
   | "unlock"
-  | "close-early"
   | "cancel"
   | "edit-invoice";
 
@@ -16,7 +15,8 @@ export type OrderAction =
  * trí — chặn thật ở RPC (0052, 0078). Nút thiếu quyền KHÔNG render.
  *
  * - Hoàn thành (tạo + ghi sổ hóa đơn): quyền chức vụ "Hoàn thành" (`canComplete`).
- * - Xác nhận / Đóng sớm: quyền "Xác nhận" (`canApprove`).
+ * - Xác nhận: quyền "Xác nhận" (`canApprove`). Không có nút Đóng sớm — giao
+ *   thiếu thì Hoàn thành theo số thực giao.
  * - Sửa đơn đã duyệt ("unlock", về Phiếu tạm): quyền "Sửa phiếu" (`canUnlock`, 0128).
  * - Hủy đơn: phạm vi quản trị (`canCancel`).
  * - Đơn đã hoàn thành không hủy ở đây — hủy hóa đơn của nó, đơn tự về Đã xác nhận.
@@ -33,7 +33,6 @@ export function orderActionsFor(status: OrderStatus, permissions: OrderPermissio
       if (permissions.canComplete) actions.push("complete");
       actions.push("print");
       if (permissions.canUnlock) actions.push("unlock");
-      if (permissions.canApprove) actions.push("close-early");
       if (permissions.canCancel) actions.push("cancel");
       break;
     case "HOAN_THANH":

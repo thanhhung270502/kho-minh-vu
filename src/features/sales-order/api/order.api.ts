@@ -186,18 +186,6 @@ export async function unlockOrder(id: string, reason: string): Promise<void> {
   if (error) throw error;
 }
 
-/** D-05: quản lý đóng sớm khi khách không lấy nốt phần còn lại. */
-export async function closeOrderEarly(
-  id: string,
-  reason: string,
-): Promise<void> {
-  const { error } = await getSupabaseBrowserClient().rpc("dong_don_som", {
-    p_id: id,
-    p_ly_do: reason,
-  });
-  if (error) throw error;
-}
-
 /**
  * Hoàn thành đơn (0078): tạo hóa đơn từ đơn + ghi sổ trong MỘT transaction.
  * `reason` là mã lý do xuất âm (negative-reasons.ts) — chỉ gửi khi lần gọi

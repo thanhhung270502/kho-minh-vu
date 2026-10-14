@@ -712,14 +712,14 @@ assert.deepEqual(
 );
 
 // Phase 12 (DON-02/03/05): nút theo trạng thái × quyền. Hoàn thành: QL + VP
-// (canEdit); Hủy / Xác nhận / Mở khóa / Đóng sớm: chỉ QL (canApprove).
+// (canEdit); Hủy / Xác nhận / Mở khóa: chỉ QL (canApprove). Không còn Đóng sớm.
 {
   const ql = { canEdit: true, canApprove: true, canComplete: true, canCancel: true, canUnlock: true, canEditInvoice: true };
   const vp = { canEdit: true, canApprove: false, canComplete: true, canCancel: false, canUnlock: false, canEditInvoice: false };
   const tk = { canEdit: false, canApprove: false, canComplete: false, canCancel: false, canUnlock: false, canEditInvoice: false };
   assert.deepEqual(orderActionsFor("TAM", ql), ["approve", "cancel"]);
   assert.deepEqual(orderActionsFor("TAM", vp), []);
-  assert.deepEqual(orderActionsFor("DA_XAC_NHAN", ql), ["complete", "print", "unlock", "close-early", "cancel"]);
+  assert.deepEqual(orderActionsFor("DA_XAC_NHAN", ql), ["complete", "print", "unlock", "cancel"]);
   assert.deepEqual(orderActionsFor("DA_XAC_NHAN", vp), ["complete", "print"]);
   assert.deepEqual(orderActionsFor("DA_XAC_NHAN", tk), ["print"]);
   assert.deepEqual(orderActionsFor("HOAN_THANH", ql), ["print", "edit-invoice"], "đơn hoàn thành: không hủy đơn, sửa qua hóa đơn");
@@ -729,13 +729,13 @@ assert.deepEqual(
   // Phase 16: Xác nhận / Hoàn thành theo quyền chức vụ, Hủy đơn vẫn theo phạm vi quản trị.
   const nvXacNhan = { ...vp, canApprove: true };
   assert.deepEqual(orderActionsFor("TAM", nvXacNhan), ["approve"], "bật Xác nhận cho Nhân viên: không kèm Hủy đơn");
-  assert.deepEqual(orderActionsFor("DA_XAC_NHAN", { ...ql, canComplete: false }), ["print", "unlock", "close-early", "cancel"],
+  assert.deepEqual(orderActionsFor("DA_XAC_NHAN", { ...ql, canComplete: false }), ["print", "unlock", "cancel"],
     "tắt Hoàn thành: mất nút Hoàn thành dù vẫn sửa được đơn");
   // 0128: Sửa đơn đã duyệt theo quyền Sửa phiếu, tách khỏi Xác nhận.
   assert.deepEqual(orderActionsFor("DA_XAC_NHAN", { ...vp, canUnlock: true }), ["complete", "print", "unlock"],
-    "chỉ có Sửa phiếu: được Sửa đơn, không Đóng sớm");
-  assert.deepEqual(orderActionsFor("DA_XAC_NHAN", { ...ql, canUnlock: false }), ["complete", "print", "close-early", "cancel"],
-    "tắt Sửa phiếu: mất nút Sửa đơn, vẫn Đóng sớm");
+    "chỉ có Sửa phiếu: được Sửa đơn");
+  assert.deepEqual(orderActionsFor("DA_XAC_NHAN", { ...ql, canUnlock: false }), ["complete", "print", "cancel"],
+    "tắt Sửa phiếu: mất nút Sửa đơn");
 
   // Lỗi xuất âm thiếu lý do của ghi_so_chung_tu (bẫy 8: object thường, không instanceof).
   assert.equal(needsNegativeReason({ code: "23514", message: "Phải chọn lý do xuất âm cho phiếu PX26-000010" }), true);

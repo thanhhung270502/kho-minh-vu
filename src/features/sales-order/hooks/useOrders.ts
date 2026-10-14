@@ -14,7 +14,6 @@ import {
   addOrderLine,
   approveOrder,
   cancelOrder,
-  closeOrderEarly,
   completeOrder,
   createOrder,
   deleteOrderLine,
@@ -149,14 +148,6 @@ export function useUnlockOrder(id: string) {
   const refresh = useRefreshOrder(id);
   return useMutation({
     mutationFn: (reason: string) => unlockOrder(id, reason),
-    onSuccess: refresh,
-  });
-}
-
-export function useCloseOrderEarly(id: string) {
-  const refresh = useRefreshOrder(id);
-  return useMutation({
-    mutationFn: (reason: string) => closeOrderEarly(id, reason),
     onSuccess: refresh,
   });
 }
