@@ -7,6 +7,7 @@ type Fn = Database["public"]["Functions"];
 type DocumentRowDb = Fn["danh_sach_chung_tu"]["Returns"][number];
 type DocumentDetailDb = Fn["chi_tiet_chung_tu"]["Returns"][number];
 type DocumentLineDb = Fn["dong_chung_tu"]["Returns"][number];
+type DocStatusCountDb = Fn["dem_chung_tu_theo_trang_thai"]["Returns"][number];
 
 /**
  * Giá trị enum của database — không đổi. Tên trung tính vì bảy loại chứng từ
@@ -111,6 +112,15 @@ export const DOC_STATUS_TONES: Record<DocStatus, StatusTone> = {
   HOAN_THANH: "done",
   DA_HUY: "muted",
 };
+
+/** Số chứng từ theo trạng thái — RPC `dem_chung_tu_theo_trang_thai` (0138) trả đủ mọi trạng thái. */
+export type DocStatusCounts = Record<DocStatus, number>;
+
+export function toDocStatusCounts(rows: DocStatusCountDb[]): DocStatusCounts {
+  const counts: DocStatusCounts = { NHAP_LIEU: 0, HOAN_THANH: 0, DA_HUY: 0 };
+  for (const row of rows) counts[row.trang_thai] += Number(row.so_chung_tu);
+  return counts;
+}
 
 export function toDocumentRow(row: DocumentRowDb): DocumentRow {
   return {

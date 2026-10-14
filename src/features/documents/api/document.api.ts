@@ -9,10 +9,12 @@ import {
   type DocumentLineInput,
 } from "../schemas/document.schema";
 import {
+  toDocStatusCounts,
   toDocumentDetail,
   toDocumentLine,
   toDocumentLineRecipient,
   toDocumentRow,
+  type DocStatusCounts,
   type DocumentDetail,
   type DocumentLine,
   type DocumentLineRecipient,
@@ -38,6 +40,21 @@ export async function fetchDocuments(args: ListArgs): Promise<Page<DocumentRow>>
     rows: raw.map(toDocumentRow),
     total: Number(raw[0]?.tong_so_dong ?? 0),
   };
+}
+
+export type DocumentStatusCountArgs =
+  Database["public"]["Functions"]["dem_chung_tu_theo_trang_thai"]["Args"];
+
+/** Số đếm cạnh từng ô trạng thái — cùng bộ lọc với danh sách, trừ trạng thái. */
+export async function fetchDocumentStatusCounts(
+  args: DocumentStatusCountArgs,
+): Promise<DocStatusCounts> {
+  const { data, error } = await getSupabaseBrowserClient().rpc(
+    "dem_chung_tu_theo_trang_thai",
+    args,
+  );
+  if (error) throw error;
+  return toDocStatusCounts(data ?? []);
 }
 
 export async function fetchDocumentDetail(
