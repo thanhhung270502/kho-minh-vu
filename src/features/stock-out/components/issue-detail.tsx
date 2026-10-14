@@ -94,7 +94,7 @@ export function IssueDetailView({
                     forbiddenMessage="Tài khoản chưa có quyền Sửa phiếu. Liên hệ quản lý."
                     extraInvalidateKeys={ORDER_KEYS}
                   />
-                  <VoidDocumentDialog document={issue} canVoid={permissions.canVoid} />
+                  <VoidDocumentDialog document={issue} canVoid={permissions.canVoid} extraInvalidateKeys={ORDER_KEYS} />
                   <PostDocumentButton
                     document={issue}
                     lines={issueLines}

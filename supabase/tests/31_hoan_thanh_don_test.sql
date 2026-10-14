@@ -178,22 +178,23 @@ select throws_ok(
   '23505', null, 'Database chặn hóa đơn thứ hai cho cùng một đơn'
 );
 
--- ─── 17–19: hủy hóa đơn đưa đơn về Đã xác nhận, hoàn thành lại được ─────────
+-- ─── 17–19: hủy hóa đơn (không lý do) thì đơn hủy theo, không hoàn thành lại (0139) ─
+-- Trước 0139 đơn quay về Đã xác nhận — khách báo dễ bị duyệt và xuất hàng lần hai.
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
 select public.huy_chung_tu(
   (select id from public.chung_tu where don_dat_hang_id = pg_temp.don('DH-HTD-1') and loai_ct = 'XUAT'),
-  'Giao nhầm, làm lại');
+  '');
 select pg_temp.dang_xuat();
 select is((select trang_thai::text from public.don_dat_hang where id = pg_temp.don('DH-HTD-1')),
-  'DA_XAC_NHAN', 'Hủy hóa đơn: đơn quay về Đã xác nhận');
+  'DA_HUY', 'Hủy hóa đơn không lý do: đơn gốc hủy theo (0139)');
 select is(
   (select so_luong from public.ton_kho where kho_id = (select k1 from t_htd) and san_pham_id = (select sp from t_htd)),
   (select truoc from t_ton), 'Hủy hóa đơn: tồn quay về số cũ'
 );
 select pg_temp.dang_nhap_nhu('vanphong@khominhvu.local');
-select lives_ok(
+select throws_ok(
   $$ select public.hoan_thanh_don(pg_temp.don('DH-HTD-1'), 'LECH_TON_CHO_KIEM_KE') $$,
-  'Sau khi hủy hóa đơn, đơn hoàn thành lại được (hóa đơn đã hủy không chặn)'
+  '23514', null, 'Đơn đã hủy theo hóa đơn không hoàn thành lại được — chặn xuất hàng lần hai (0139)'
 );
 select pg_temp.dang_xuat();
 
@@ -219,7 +220,7 @@ select lives_ok(
 );
 select throws_ok(
   $$ select public.huy_don(pg_temp.don('DH-HTD-1'), 'Không được hủy đơn đã giao') $$,
-  '23514', null, 'Đơn đã hoàn thành không hủy được — hủy hóa đơn trước'
+  '23514', null, 'Đơn đã hủy (theo hóa đơn) không hủy lại được'
 );
 select throws_ok(
   $$ select public.hoan_thanh_don(pg_temp.don('DH-HTD-3'), 'LECH_TON_CHO_KIEM_KE') $$,

@@ -33,6 +33,9 @@ export function VoidDocumentDialog({ document, canVoid, extraInvalidateKeys }: P
 
   if (document.status !== "HOAN_THANH" || !canVoid) return null;
 
+  // 0139: hóa đơn hủy không bắt buộc lý do; phiếu nhập / trả vẫn bắt buộc (database cũng chặn).
+  const reasonRequired = document.docType !== "XUAT";
+
   function close() {
     if (voidDoc.isPending) return;
     setOpen(false);
@@ -41,7 +44,7 @@ export function VoidDocumentDialog({ document, canVoid, extraInvalidateKeys }: P
   }
 
   async function run() {
-    if (reason.trim().length < 5) {
+    if (reasonRequired && reason.trim().length < 5) {
       setError("Nhập lý do hủy, ít nhất 5 ký tự — lý do sẽ lưu vào phiếu.");
       return;
     }
@@ -51,7 +54,12 @@ export function VoidDocumentDialog({ document, canVoid, extraInvalidateKeys }: P
       close();
     } catch (caught) {
       if (errorCode(caught) === "42501") {
-        setError("Chỉ quản lý hủy được chứng từ đã ghi sổ.");
+        // Database nói đúng quyền nào thiếu (quyền chức vụ với hóa đơn, quản lý với phiếu nhập/trả).
+        setError(
+          isPostgrestError(caught)
+            ? `${caught.message}. Liên hệ quản lý để được cấp quyền.`
+            : "Tài khoản chưa đủ quyền hủy phiếu này. Liên hệ quản lý.",
+        );
         return;
       }
       if (isPostgrestError(caught) && caught.code === "23514") {
@@ -91,7 +99,10 @@ export function VoidDocumentDialog({ document, canVoid, extraInvalidateKeys }: P
             <ul className="mb-0 ps-4">
               <li>Tồn quay lại lúc đầu</li>
               {document.orderId ? (
-                <li>Đơn đặt hàng gắn với hóa đơn này quay về Đã duyệt — hoàn thành lại hoặc hủy đơn.</li>
+                <li>
+                  Đơn đặt {document.orderNo ?? "gắn với hóa đơn này"} cũng chuyển sang Đã hủy — cần giao lại thì
+                  tạo đơn mới.
+                </li>
               ) : null}
             </ul>
           }
@@ -101,7 +112,7 @@ export function VoidDocumentDialog({ document, canVoid, extraInvalidateKeys }: P
           autoFocus
           rows={3}
           value={reason}
-          placeholder="Lý do hủy (lưu vào phiếu)"
+          placeholder={reasonRequired ? "Lý do hủy (lưu vào phiếu)" : "Lý do hủy (không bắt buộc)"}
           onChange={(event) => setReason(event.target.value)}
         />
       </Modal>
