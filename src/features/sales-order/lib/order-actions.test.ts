@@ -35,7 +35,6 @@ describe("order-actions", () => {
         "complete",
         "print",
         "unlock",
-        "close-early",
         "cancel",
       ]);
       expect(orderActionsFor("DA_XAC_NHAN", vp)).toStrictEqual([
@@ -62,16 +61,20 @@ describe("order-actions", () => {
       expect(
         orderActionsFor("DA_XAC_NHAN", { ...ql, canComplete: false }),
         "tắt Hoàn thành: mất nút Hoàn thành dù vẫn sửa được đơn",
-      ).toStrictEqual(["print", "unlock", "close-early", "cancel"]);
+      ).toStrictEqual(["print", "unlock", "cancel"]);
       // 0128: Sửa đơn đã duyệt theo quyền Sửa phiếu, tách khỏi Xác nhận.
       expect(
         orderActionsFor("DA_XAC_NHAN", { ...vp, canUnlock: true }),
-        "chỉ có Sửa phiếu: được Sửa đơn, không Đóng sớm",
+        "chỉ có Sửa phiếu: được Sửa đơn",
       ).toStrictEqual(["complete", "print", "unlock"]);
       expect(
         orderActionsFor("DA_XAC_NHAN", { ...ql, canUnlock: false }),
-        "tắt Sửa phiếu: mất nút Sửa đơn, vẫn Đóng sớm",
-      ).toStrictEqual(["complete", "print", "close-early", "cancel"]);
+        "tắt Sửa phiếu: mất nút Sửa đơn",
+      ).toStrictEqual(["complete", "print", "cancel"]);
+      expect(
+        orderActionsFor("DA_XAC_NHAN", ql).includes("close-early" as never),
+        "không còn nút Đóng sớm",
+      ).toBe(false);
 
       // Lỗi xuất âm thiếu lý do của ghi_so_chung_tu (bẫy 8: object thường, không instanceof).
       expect(

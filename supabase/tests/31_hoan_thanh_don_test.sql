@@ -205,13 +205,13 @@ select throws_ok(
 );
 select pg_temp.dang_xuat();
 select pg_temp.dang_nhap_nhu('quanly@khominhvu.local');
-select throws_ok(
-  $$ select public.huy_don(pg_temp.don('DH-HTD-2'), 'ko') $$,
-  '23514', null, 'Lý do hủy quá ngắn bị từ chối'
-);
 select lives_ok(
-  $$ select public.huy_don(pg_temp.don('DH-HTD-2'), 'Khách đổi ý không lấy') $$,
-  'Quản lý hủy đơn tạm'
+  $$ select public.huy_don(pg_temp.don('DH-HTD-2'), null) $$,
+  'Quản lý hủy đơn tạm, không cần lý do (0137)'
+);
+select ok(
+  (select ghi_chu like '%[hủy]' from public.don_dat_hang where id = pg_temp.don('DH-HTD-2')),
+  'Hủy không lý do vẫn ghi nhãn [hủy], không xóa mất ghi chú'
 );
 select lives_ok(
   $$ select public.huy_don(pg_temp.don('DH-HTD-3'), 'Khách đổi ý không lấy') $$,

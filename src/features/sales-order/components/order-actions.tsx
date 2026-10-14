@@ -21,7 +21,7 @@ type Props = {
   permissions: OrderPermissions;
 };
 
-type ReasonMode = "unlock" | "close-early" | "cancel";
+type ReasonMode = "unlock" | "cancel";
 
 const ORDER_KEYS = [orderKeys.all];
 
@@ -103,9 +103,6 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
         ) : null}
         {actions.includes("unlock") ? (
           <Button onClick={() => openReason("unlock")}>Sửa đơn</Button>
-        ) : null}
-        {actions.includes("close-early") ? (
-          <Button onClick={() => openReason("close-early")}>Đóng sớm</Button>
         ) : null}
         {actions.includes("cancel") ? (
           <Button danger onClick={() => openReason("cancel")}>
