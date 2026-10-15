@@ -26,19 +26,43 @@ import {
   buildNewProductWorkbook,
   readNewProductFile,
 } from "../src/features/products/lib/read-new-product-file.server";
+import { TEMPLATE_COLUMNS } from "../src/features/products/lib/excel-template";
 import { NEW_PRODUCT_COLUMNS } from "../src/features/products/lib/new-product-file";
 
-/** Phase 15 (IMP-01/03): file 4 cột — mẫu, đọc, file lỗi đọc lại được. */
+/** Phase 15 (IMP-01/03): file nhập mã mới — cùng bố cục file cập nhật, đọc, file lỗi đọc lại được. */
 async function kiemFileNhapMaMoi() {
   const mau = new ExcelJS.Workbook();
   const bufMau = await buildNewProductWorkbook([]);
   await mau.xlsx.load(bufMau as unknown as Parameters<typeof mau.xlsx.load>[0]);
   assert.deepEqual(
     (mau.worksheets[0].getRow(1).values as unknown[]).slice(1),
-    ["Mã hàng", "Tên hàng", "Tồn kho", "Mô tả"],
-    "file mẫu đúng 4 cột theo thứ tự",
+    ["Mã hàng", "Tên hàng", "Nhóm hàng", "Tồn kho", "Đơn vị tính", "Xử lý", "Đang kinh doanh", "Mô tả", "Vị trí"],
+    "file mẫu đúng 9 cột như file cập nhật",
   );
-  assert.equal(NEW_PRODUCT_COLUMNS.length, 4);
+  assert.deepEqual(
+    NEW_PRODUCT_COLUMNS.map((c) => c.title),
+    TEMPLATE_COLUMNS.map((c) => c.title),
+    "mẫu nhập mới và mẫu cập nhật là MỘT bố cục",
+  );
+
+  // File cập nhật xuất ra (đủ 9 cột, có dữ liệu) nhập thẳng được ở màn nhập mã mới.
+  const capNhat = await readNewProductFile(
+    await buildTemplateWorkbook([
+      {
+        dong: 2, ma_hang: "CN-01", ten_hang: "Bố thắng", nhom_hang: "Bố thắng", tong_ton: 5,
+        dvt: "Cái", cong_doan: "Xi", dang_kinh_doanh: false, mo_ta: "Ghi", kho_mac_dinh: "Kho 2",
+      },
+    ]),
+  );
+  assert.deepEqual(
+    { code: capNhat[0].code, stock: capNhat[0].stock, text: capNhat[0].lookupText, active: capNhat[0].isActive },
+    {
+      code: "CN-01", stock: 5,
+      text: { category: "Bố thắng", unit: "Cái", stage: "Xi", warehouse: "Kho 2" },
+      active: false,
+    },
+    "đọc đủ Nhóm hàng / ĐVT / Xử lý / Vị trí / Đang kinh doanh",
+  );
 
   // Tiêu đề KHÔNG dấu, thứ tự đảo — vẫn đọc đúng; ô tồn định dạng Text vẫn là số (bẫy KiotViet 1).
   const wb = new ExcelJS.Workbook();
@@ -59,20 +83,21 @@ async function kiemFileNhapMaMoi() {
   assert.deepEqual(doc[2].problems, ["Tồn kho không phải là số"]);
   assert.deepEqual(doc[3].problems, ["Tồn kho không được âm"]);
 
-  // File lỗi = 4 cột mẫu + Lý do; đọc lại đúng như file mẫu (cột Lý do bị bỏ qua).
+  // File lỗi = 9 cột mẫu + Lý do; đọc lại đúng như file mẫu (cột Lý do bị bỏ qua).
   const loi = await buildNewProductWorkbook(
-    [{ code: "X-01", name: "Xích", stock: 3, description: "", reason: "Tên hàng đã có trong danh mục" }],
+    [{ code: "X-01", name: "Xích", stock: 3, unit: "Bộ", description: "", reason: "Tên hàng đã có trong danh mục" }],
   );
   const loiWb = new ExcelJS.Workbook();
   await loiWb.xlsx.load(loi as unknown as Parameters<typeof loiWb.xlsx.load>[0]);
   assert.deepEqual(
     (loiWb.worksheets[0].getRow(1).values as unknown[]).slice(1),
-    ["Mã hàng", "Tên hàng", "Tồn kho", "Mô tả", "Lý do"],
+    ["Mã hàng", "Tên hàng", "Nhóm hàng", "Tồn kho", "Đơn vị tính", "Xử lý", "Đang kinh doanh", "Mô tả", "Vị trí", "Lý do"],
   );
   const doLai = await readNewProductFile(loi);
   assert.equal(doLai.length, 1);
   assert.equal(doLai[0].code, "X-01");
   assert.equal(doLai[0].stock, 3);
+  assert.equal(doLai[0].lookupText?.unit, "Bộ", "file lỗi giữ chữ ĐVT để sửa rồi nhập lại");
 
   // Thiếu cột Mã hàng → báo rõ, không đọc bừa. Thiếu cột Tên hàng thì được:
   // route tự điền tên từ sheet tên hàng chuẩn.
@@ -89,7 +114,7 @@ async function kiemFileNhapMaMoi() {
   const docKhongTen = await readNewProductFile(Buffer.from(await khongTen.xlsx.writeBuffer()));
   assert.equal(docKhongTen[0]?.code, "X-02");
   assert.equal(docKhongTen[0]?.name, "");
-  console.log("✓ file nhập mã mới: mẫu 4 cột, đọc không dấu, tồn kiểu chữ, file lỗi đọc lại được");
+  console.log("✓ file nhập mã mới: cùng 9 cột file cập nhật, đọc file cập nhật, đọc không dấu, tồn kiểu chữ, file lỗi đọc lại được");
 }
 
 async function main() {

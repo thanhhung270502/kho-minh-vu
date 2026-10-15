@@ -1218,7 +1218,7 @@ function arow(over: Partial<AnalysisRow>): AnalysisRow {
   assert.deepEqual(payload.map((p) => p.dong), [2, 4], "bỏ dòng đang lỗi");
   assert.deepEqual(payload[1], {
     dong: 4, ma_hang: "C", ten_hang: "Cá", ton_kho: 1, mo_ta: "",
-    dvt_id: cai, nhom_hang_id: lh, loai_hang: "HANG_HOA",
+    dvt_id: cai, nhom_hang_id: lh, cong_doan_id: null, kho_mac_dinh_id: null, loai_hang: "HANG_HOA",
     dang_kinh_doanh: true, duoc_ban_truc_tiep: true, vi_tri_ke: "K-1",
   });
 }

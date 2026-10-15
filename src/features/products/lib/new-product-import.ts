@@ -1,7 +1,14 @@
 // File thuần (bẫy 9): logic màn xem trước "Nhập mã hàng mới" (IMP-02/03) —
 // component và file *.test.ts cùng import.
-import type { ProductKind } from "../types";
-import { duplicateProblemsInFile, type NewProductFileRow } from "./new-product-file";
+import { removeDiacritics } from "@/shared/lib/text";
+
+import type { LookupItem, Lookups, ProductKind } from "../types";
+import {
+  duplicateProblemsInFile,
+  type LookupText,
+  type NewProductExportRow,
+  type NewProductFileRow,
+} from "./new-product-file";
 
 /** Một dòng trên màn xem trước: cột từ file + các trường người dùng chọn. */
 export type DraftRow = {
@@ -21,32 +28,92 @@ export type DraftRow = {
   isActive: boolean;
   directSale: boolean;
   shelfLocation: string;
+  /** Xử lý (công đoạn); null = Mua ngoài. */
+  stageId: string | null;
+  /** Kho mặc định (cột "Vị trí" của file); null = kho ghi tồn. */
+  warehouseId: string | null;
+  /** Chữ trong file không khớp danh mục nào — báo lỗi tới khi người dùng chọn lại ô đó. */
+  unmatched: Partial<LookupText>;
 };
 
-export type DraftFields = Omit<DraftRow, "row" | "code" | "stock" | "description" | "fileProblems">;
+export type DraftFields = Omit<DraftRow, "row" | "code" | "stock" | "description" | "fileProblems" | "unmatched">;
 
-export function toDraftRows(rows: NewProductFileRow[], defaults: { unitId: string | null }): DraftRow[] {
-  return rows.map((r) => ({
-    row: r.row,
-    code: r.code,
-    name: r.name,
-    nameFromSheet: r.nameFromSheet,
-    stock: r.stock,
-    description: r.description,
-    fileProblems: r.problems,
-    kind: "HANG_HOA",
-    categoryId: null,
-    unitId: defaults.unitId,
-    isActive: true,
-    directSale: true,
-    shelfLocation: "",
-  }));
+const normalizeLookup = (value: string) => removeDiacritics(value).trim().replace(/\s+/g, " ").toUpperCase();
+
+/**
+ * Khớp chữ trong file với danh mục theo mã hoặc tên, không dấu, không hoa thường —
+ * cùng quy tắc `khop_danh_muc` của file cập nhật ("MUA_NGOAI" khớp cả "Mua ngoài").
+ * Nhiều mục cùng khớp thì không đoán: trả null để người dùng chọn.
+ */
+export function matchLookup(items: ReadonlyArray<LookupItem>, value: string): string | null {
+  const wanted = normalizeLookup(value);
+  if (wanted === "") return null;
+  const hits = items.filter(
+    (item) =>
+      normalizeLookup(item.code) === wanted ||
+      normalizeLookup(item.code.replace(/_/g, " ")) === wanted ||
+      normalizeLookup(item.name) === wanted,
+  );
+  return hits.length === 1 ? hits[0].id : null;
+}
+
+const LOOKUP_FIELDS = [
+  { text: "category", id: "categoryId", list: "categories", label: "nhóm hàng" },
+  { text: "unit", id: "unitId", list: "units", label: "đơn vị tính" },
+  { text: "stage", id: "stageId", list: "stages", label: "xử lý" },
+  { text: "warehouse", id: "warehouseId", list: "warehouses", label: "vị trí (kho)" },
+] as const;
+
+/** `lookups` vắng (danh mục chưa tải) = coi như mọi ô danh mục trong file đều chưa khớp. */
+export function toDraftRows(
+  rows: NewProductFileRow[],
+  defaults: { unitId: string | null; lookups?: Lookups },
+): DraftRow[] {
+  return rows.map((r) => {
+    const ids: Record<(typeof LOOKUP_FIELDS)[number]["id"], string | null> = {
+      categoryId: null,
+      unitId: null,
+      stageId: null,
+      warehouseId: null,
+    };
+    const unmatched: Partial<LookupText> = {};
+    for (const field of LOOKUP_FIELDS) {
+      const value = r.lookupText?.[field.text] ?? "";
+      if (value === "") continue;
+      ids[field.id] = matchLookup(defaults.lookups?.[field.list] ?? [], value);
+      if (ids[field.id] === null) unmatched[field.text] = value;
+    }
+    return {
+      row: r.row,
+      code: r.code,
+      name: r.name,
+      nameFromSheet: r.nameFromSheet,
+      stock: r.stock,
+      description: r.description,
+      fileProblems: r.problems,
+      kind: "HANG_HOA",
+      ...ids,
+      // Ô ĐVT để trống trong file = Cái; có chữ mà không khớp thì để người dùng chọn.
+      unitId: r.lookupText?.unit ? ids.unitId : defaults.unitId,
+      isActive: r.isActive ?? true,
+      directSale: true,
+      shelfLocation: "",
+      unmatched,
+    };
+  });
 }
 
 /** Áp một bộ giá trị cho các dòng đã chọn (theo số dòng file); dòng khác giữ nguyên. */
 export function applyToRows(rows: DraftRow[], selected: ReadonlyArray<number>, patch: Partial<DraftFields>): DraftRow[] {
   const picked = new Set(selected);
-  return rows.map((r) => (picked.has(r.row) ? { ...r, ...patch } : r));
+  // Người dùng đã chọn lại ô danh mục (kể cả xóa trống) → chữ không khớp trong file hết hiệu lực.
+  const resolved = LOOKUP_FIELDS.filter((field) => field.id in patch).map((field) => field.text);
+  return rows.map((r) => {
+    if (!picked.has(r.row)) return r;
+    const unmatched = { ...r.unmatched };
+    for (const text of resolved) delete unmatched[text];
+    return { ...r, ...patch, unmatched };
+  });
 }
 
 /**
@@ -81,7 +148,11 @@ export function draftProblems(rows: DraftRow[], catalog: Map<number, string[]>):
       ...(r.name.trim() === "" ? ["Thiếu tên hàng"] : []),
       ...r.fileProblems,
       ...(inFile.get(r.row) ?? []),
-      ...(r.unitId ? [] : ["Chưa chọn đơn vị tính"]),
+      ...LOOKUP_FIELDS.flatMap((field) => {
+        const value = r.unmatched[field.text];
+        return value ? [`Không có ${field.label} “${value}” — chọn lại`] : [];
+      }),
+      ...(r.unitId || r.unmatched.unit ? [] : ["Chưa chọn đơn vị tính"]),
       ...(catalog.get(r.row) ?? []),
     ];
     if (problems.length > 0) result.set(r.row, problems);
@@ -102,6 +173,10 @@ export type ImportPayloadRow = {
   mo_ta: string;
   dvt_id: string | null;
   nhom_hang_id: string | null;
+  /** 0141: cột "Xử lý" của file; null = Mua ngoài. */
+  cong_doan_id: string | null;
+  /** 0141: cột "Vị trí" của file; null = kho ghi tồn (p_kho_id). */
+  kho_mac_dinh_id: string | null;
   loai_hang: ProductKind;
   dang_kinh_doanh: boolean;
   duoc_ban_truc_tiep: boolean;
@@ -118,6 +193,8 @@ function toPayloadRow(r: DraftRow): ImportPayloadRow {
     mo_ta: r.description,
     dvt_id: r.unitId,
     nhom_hang_id: r.categoryId,
+    cong_doan_id: r.stageId,
+    kho_mac_dinh_id: r.warehouseId,
     loai_hang: r.kind,
     dang_kinh_doanh: r.isActive,
     duoc_ban_truc_tiep: r.directSale,
@@ -135,19 +212,29 @@ export function toCheckPayload(rows: DraftRow[]): ImportPayloadRow[] {
   return rows.map(toPayloadRow);
 }
 
-/** Dòng ghi ra file lỗi: 4 cột mẫu + lý do, đúng giá trị trong file để sửa rồi nhập lại. */
+const nameOf = (items: ReadonlyArray<LookupItem> | undefined, id: string | null, fallback = "") =>
+  (id ? items?.find((item) => item.id === id)?.name : undefined) ?? fallback;
+
+/** Dòng ghi ra file lỗi: đủ 9 cột như file mẫu + lý do, sửa rồi nhập lại được ngay. */
 export function toErrorExportRows(
   rows: DraftRow[],
   problems: Map<number, string[]>,
-): Array<{ code: string; name: string; stock: number | null; description: string; reason: string }> {
+  lookups?: Lookups,
+): NewProductExportRow[] {
   return rows
     .filter((r) => problems.has(r.row))
     .map((r) => ({
       code: r.code,
       name: r.name,
+      // Ô đã chọn trên màn → tên danh mục; ô chưa khớp → giữ đúng chữ trong file để sửa.
+      category: nameOf(lookups?.categories, r.categoryId, r.unmatched.category),
       // Tồn không đọc được thành số thì để trống, người dùng gõ lại.
       stock: r.fileProblems.length > 0 ? null : r.stock,
+      unit: nameOf(lookups?.units, r.unitId, r.unmatched.unit),
+      stage: nameOf(lookups?.stages, r.stageId, r.unmatched.stage),
+      isActive: r.isActive,
       description: r.description,
+      warehouse: nameOf(lookups?.warehouses, r.warehouseId, r.unmatched.warehouse),
       reason: (problems.get(r.row) ?? []).join("; "),
     }));
 }

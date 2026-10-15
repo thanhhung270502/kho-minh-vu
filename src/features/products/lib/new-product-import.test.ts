@@ -4,9 +4,12 @@ import {
   applyToRows,
   catalogProblemsFrom,
   draftProblems,
+  matchLookup,
   toDraftRows,
+  toErrorExportRows,
   toImportPayload,
 } from "@/features/products/lib/new-product-import";
+import type { Lookups } from "@/features/products/types";
 
 describe("new-product-import", () => {
   it("màn xem trước nhập mã mới (Phase 15, IMP-02/03)", () => {
@@ -104,10 +107,81 @@ describe("new-product-import", () => {
       mo_ta: "",
       dvt_id: cai,
       nhom_hang_id: lh,
+      cong_doan_id: null,
+      kho_mac_dinh_id: null,
       loai_hang: "HANG_HOA",
       dang_kinh_doanh: true,
       duoc_ban_truc_tiep: true,
       vi_tri_ke: "K-1",
     });
+  });
+
+  it("file cùng bố cục file cập nhật: khớp Nhóm / ĐVT / Xử lý / Vị trí ra id (0141)", () => {
+    const lookups: Lookups = {
+      categories: [
+        { id: "nh-bt", code: "BT", name: "Bố thắng" },
+        { id: "nh-x1", code: "X1", name: "Trùng" },
+        { id: "nh-x2", code: "X2", name: "Trùng" },
+      ],
+      units: [{ id: "dvt-cai", code: "CAI", name: "Cái" }],
+      stages: [{ id: "cd-mn", code: "MUA_NGOAI", name: "Mua ngoài", color: null, standardCode: null }],
+      warehouses: [{ id: "k2", code: "K2", name: "Kho 2" }],
+    };
+    expect(matchLookup(lookups.categories, " bo THANG "), "tên không dấu, hoa thường").toBe("nh-bt");
+    expect(matchLookup(lookups.stages, "mua ngoai"), "mã có gạch dưới khớp dạng có dấu cách").toBe("cd-mn");
+    expect(matchLookup(lookups.warehouses, "k2"), "khớp theo mã").toBe("k2");
+    expect(matchLookup(lookups.categories, "Trùng"), "nhiều mục cùng khớp thì không đoán").toBe(null);
+
+    const base = { nameFromSheet: false, stock: 0, description: "", problems: [] };
+    const drafts = toDraftRows(
+      [
+        {
+          ...base,
+          row: 2,
+          code: "A",
+          name: "Áo",
+          lookupText: { category: "Bố thắng", unit: "cai", stage: "Mua ngoài", warehouse: "Kho 2" },
+          isActive: false,
+        },
+        {
+          ...base,
+          row: 3,
+          code: "B",
+          name: "Bé",
+          lookupText: { category: "Không có", unit: "Thùng", stage: "", warehouse: "" },
+          isActive: null,
+        },
+      ],
+      { unitId: "dvt-cai", lookups },
+    );
+    expect(drafts[0]).toMatchObject({
+      categoryId: "nh-bt",
+      unitId: "dvt-cai",
+      stageId: "cd-mn",
+      warehouseId: "k2",
+      isActive: false,
+      unmatched: {},
+    });
+    expect(drafts[1].unitId, "ĐVT có chữ mà không khớp: không lấy mặc định Cái").toBe(null);
+    expect(drafts[1].isActive, "ô Đang kinh doanh trống = đang kinh doanh").toBe(true);
+
+    const problems = draftProblems(drafts, new Map());
+    expect(problems.get(2)).toBe(undefined);
+    expect(problems.get(3)).toStrictEqual([
+      "Không có nhóm hàng “Không có” — chọn lại",
+      "Không có đơn vị tính “Thùng” — chọn lại",
+    ]);
+
+    expect(toErrorExportRows(drafts, problems, lookups)[0], "file lỗi giữ chữ chưa khớp").toMatchObject({
+      category: "Không có",
+      unit: "Thùng",
+      stage: "",
+      warehouse: "",
+    });
+
+    // Chọn lại ô (kể cả xóa trống nhóm hàng) thì lỗi chữ không khớp mất đi.
+    const fixed = applyToRows(drafts, [3], { categoryId: null, unitId: "dvt-cai" });
+    expect(draftProblems(fixed, new Map()).get(3)).toBe(undefined);
+    expect(toImportPayload(fixed, new Map())[0]).toMatchObject({ cong_doan_id: "cd-mn", kho_mac_dinh_id: "k2" });
   });
 });

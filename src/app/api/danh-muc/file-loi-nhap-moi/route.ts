@@ -11,8 +11,13 @@ const bodySchema = z.object({
       z.object({
         code: z.string(),
         name: z.string(),
+        category: z.string(),
         stock: z.number().nullable(),
+        unit: z.string(),
+        stage: z.string(),
+        isActive: z.boolean(),
         description: z.string(),
+        warehouse: z.string(),
         reason: z.string(),
       }),
     )

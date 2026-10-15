@@ -21,7 +21,8 @@ const KHONG_GIOI_HAN = 999_999_999;
 const CO = new Set(["co", "x", "1", "true", "yes"]);
 const KHONG = new Set(["khong", "0", "false", "no"]);
 
-function docCo(v: unknown): boolean | null {
+/** "Có / Không / 1 / 0" — dùng chung cho file cập nhật và file nhập mã mới. */
+export function docCo(v: unknown): boolean | null {
   const s = readString(v);
   if (s === null) return null;
 

@@ -2,15 +2,25 @@
 // import. Hợp đồng của file Excel "Nhập mã hàng mới" (Phase 15, IMP-01/03).
 import { removeDiacritics } from "@/shared/lib/text";
 
-/** `key` = tiêu đề đã chuẩn hóa (normalizeHeader) — bộ đọc khớp theo đó, không theo vị trí. */
-export const NEW_PRODUCT_COLUMNS = [
-  { key: "ma_hang", title: "Mã hàng", width: 18 },
-  { key: "ten_hang", title: "Tên hàng", width: 42 },
-  { key: "ton_kho", title: "Tồn kho", width: 12 },
-  { key: "mo_ta", title: "Mô tả", width: 42 },
-] as const;
+import { TEMPLATE_COLUMNS } from "./excel-template";
+
+/**
+ * Cùng bố cục với file "Cập nhật mã hàng" (TEMPLATE_COLUMNS, 9 cột) — một file dùng
+ * được cho cả hai màn. Bộ đọc khớp theo tiêu đề đã chuẩn hóa (normalizeHeader), không
+ * theo vị trí, nên file 4 cột cũ (Mã hàng, Tên hàng, Tồn kho, Mô tả) vẫn nhập được.
+ * `key` chỉ là khóa cột của exceljs khi ghi file.
+ */
+export const NEW_PRODUCT_COLUMNS = TEMPLATE_COLUMNS.map(({ key, title, width }) => ({ key, title, width }));
 
 export const REASON_COLUMN = { key: "ly_do", title: "Lý do", width: 50 } as const;
+
+/** Chữ trong các ô danh mục của file — màn xem trước khớp ra id (theo mã hoặc tên). */
+export type LookupText = {
+  category: string;
+  unit: string;
+  stage: string;
+  warehouse: string;
+};
 
 /** Một dòng đọc từ file. `problems` là lỗi đọc được ngay ở server (tồn không phải số…). */
 export type NewProductFileRow = {
@@ -22,14 +32,23 @@ export type NewProductFileRow = {
   stock: number;
   description: string;
   problems: string[];
+  /** Nhóm hàng / Đơn vị tính / Xử lý / Vị trí trong file; vắng = file 4 cột cũ. */
+  lookupText?: LookupText;
+  /** Ô "Đang kinh doanh"; null = để trống. */
+  isActive?: boolean | null;
 };
 
-/** Dòng ghi ra file lỗi / file mẫu. */
+/** Dòng ghi ra file lỗi / file mẫu — cùng 9 cột với file cập nhật. */
 export type NewProductExportRow = {
   code: string;
   name: string;
+  category?: string;
   stock: number | null;
+  unit?: string;
+  stage?: string;
+  isActive?: boolean;
   description: string;
+  warehouse?: string;
   reason?: string;
 };
 

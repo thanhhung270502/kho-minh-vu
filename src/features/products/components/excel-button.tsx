@@ -16,7 +16,7 @@ type Props = {
   onOpenImport?: (kind: ImportKind) => void;
 };
 
-/** "new" = nhập mã mới từ file 4 cột (Phase 15); "update" = cập nhật mã đã có (mẫu 12 cột / KiotViet). */
+/** "new" = nhập mã mới; "update" = cập nhật mã đã có (KiotViet cũng được). Hai luồng dùng chung bố cục file mẫu. */
 export type ImportKind = "new" | "update";
 
 export function ExcelButton({

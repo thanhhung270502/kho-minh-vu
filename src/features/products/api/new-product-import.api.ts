@@ -16,6 +16,8 @@ const fileRowSchema = z.object({
   stock: z.number(),
   description: z.string(),
   problems: z.array(z.string()),
+  lookupText: z.object({ category: z.string(), unit: z.string(), stage: z.string(), warehouse: z.string() }),
+  isActive: z.boolean().nullable(),
 });
 
 /** Hình dạng jsonb do RPC nhap_ma_hang_moi (0081) trả — khóa của database. */
