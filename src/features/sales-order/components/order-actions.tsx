@@ -49,7 +49,7 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
       onOk: async () => {
         try {
           await approve.mutateAsync();
-          message.success("Đã duyệt. In phiếu, giao xong bấm Đã giao.");
+          message.success("Đã duyệt. In phiếu, giao xong bấm Hoàn thành.");
         } catch (error) {
           if (isPostgrestError(error) && error.code === "23514") {
             message.error(error.message);
@@ -78,7 +78,7 @@ export function OrderActions({ orderId, order, lines, permissions }: Props) {
         ) : null}
         {actions.includes("complete") ? (
           <Button type="primary" onClick={() => setCompleteOpen(true)}>
-            Đã giao
+            Hoàn thành
           </Button>
         ) : null}
         {actions.includes("print") ? (
