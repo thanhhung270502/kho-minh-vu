@@ -57,3 +57,6 @@ next-env.d.ts
 # handoff phiên làm việc (cục bộ)
 .handoff/
 .nap-tam/
+
+# file Excel mẫu / file KiotViet thật dùng để thử nhập tay — có dữ liệu đối tác, không commit
+/mau-excel/
