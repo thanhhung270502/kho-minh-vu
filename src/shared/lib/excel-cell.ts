@@ -166,6 +166,15 @@ function isUnresolvedSharedString(value: unknown): boolean {
   return typeof value === "object" && value !== null && "sharedString" in value;
 }
 
+/**
+ * exceljs 4.4.0 (utils/parse-sax.js) giải mã TỪNG khúc zip riêng bằng `bufferToString(chunk)`:
+ * chữ tiếng Việt nhiều byte nằm vắt qua ranh giới khúc thành "�" — không ném lỗi. Đo được
+ * trên file danh mục xuất ra rồi nhập lại: "ĐỜI CŨ" → "Đ��I CŨ", bấm Nạp là ghi tên hỏng.
+ */
+function hasBrokenText(value: unknown): boolean {
+  return readString(value)?.includes("�") ?? false;
+}
+
 async function readViaStream(source: string | Buffer): Promise<RawSheet[]> {
   const reader = new ExcelJS.stream.xlsx.WorkbookReader(
     typeof source === "string" ? source : Readable.from(source),
@@ -188,6 +197,9 @@ async function readViaStream(source: string | Buffer): Promise<RawSheet[]> {
       // nên trả {sharedString: n} thay vì chữ, và KHÔNG ném lỗi — tiêu đề thành "[object Object]".
       if (values.some(isUnresolvedSharedString)) {
         throw new Error("Reader stream chưa nạp bảng chuỗi dùng chung (sharedStrings nằm sau worksheet)");
+      }
+      if (values.some(hasBrokenText)) {
+        throw new Error("File có ký tự không đọc được (hỏng mã hóa) — lưu lại file bằng Excel rồi tải lên lần nữa.");
       }
       rows.push({ rowNumber: row.number ?? rowIndex, values });
     }

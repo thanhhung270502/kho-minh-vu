@@ -80,3 +80,21 @@ describe("readFirstSheet — file lưu từ Excel (sharedStrings sau worksheet)"
     expect(sheet.rows[0].cells.ma_hang).toBe("BLMN");
   });
 });
+
+describe("readFirstSheet — chữ tiếng Việt vắt qua ranh giới khúc stream", () => {
+  // exceljs stream giải mã từng khúc riêng: file 3.300 dòng có dấu hỏng ~12 ký tự thành "�".
+  it("không trả ký tự hỏng, giữ nguyên tên hàng có dấu", async () => {
+    const name = "PHAO XĂNG WAVE S 110 ( ĐỜI CŨ, W17 ) Ốp két tản nhiệt";
+    const buf = await workbook((wb) => {
+      const ws = wb.addWorksheet("Danh sách");
+      ws.addRow(["Mã hàng", "Tên hàng"]);
+      for (let i = 0; i < 3300; i++) ws.addRow([`MA${i}`, `${name} ${i}`]);
+    });
+
+    const sheet = await readFirstSheet(buf);
+
+    expect(sheet.rows).toHaveLength(3300);
+    expect(sheet.rows.filter((r) => String(r.cells.ten_hang).includes("�"))).toHaveLength(0);
+    expect(sheet.rows[3299].cells.ten_hang).toBe(`${name} 3299`);
+  });
+});
