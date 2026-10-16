@@ -3,7 +3,7 @@ import { buildNewProductWorkbook } from "@/features/products/lib/read-new-produc
 
 export const runtime = "nodejs";
 
-/** File mẫu 4 cột: Mã hàng, Tên hàng, Tồn kho, Mô tả (IMP-01). */
+/** File mẫu nhập mã mới — cùng 9 cột với file cập nhật mã hàng (IMP-01). */
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) {

@@ -64,6 +64,8 @@ export function BulkApplyBar({ count, lookups, onApply, onClear }: Props) {
       />
       {lookupSelect("Nhóm hàng…", lookups?.categories, (id) => ({ categoryId: id }))}
       {lookupSelect("ĐVT…", lookups?.units, (id) => ({ unitId: id }))}
+      {lookupSelect("Xử lý…", lookups?.stages, (id) => ({ stageId: id }))}
+      {lookupSelect("Kho mặc định…", lookups?.warehouses, (id) => ({ warehouseId: id }))}
       <Select
         size="small"
         className="w-32"
@@ -83,7 +85,7 @@ export function BulkApplyBar({ count, lookups, onApply, onClear }: Props) {
       <Input.Search
         size="small"
         className="w-40"
-        placeholder="Vị trí…"
+        placeholder="Vị trí kệ…"
         enterButton="Gán"
         maxLength={50}
         onSearch={(value, _event, info) => {

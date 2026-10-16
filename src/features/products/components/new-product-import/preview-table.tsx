@@ -26,14 +26,14 @@ const toOptions = (items: { id: string; name: string }[] | undefined) =>
 
 /**
  * Bảng xem trước: mã, tồn, mô tả từ file chỉ đọc; tên hàng (có thể tự điền từ
- * sheet tên hàng chuẩn) và các cột còn lại sửa tại chỗ. Hãng xe / Dòng
- * xe / Linh kiện / Xử lý tự điền từ mã theo quy chuẩn (phần A) — không chọn tay ở đây.
+ * sheet tên hàng chuẩn) và các cột còn lại sửa tại chỗ. Nhóm hàng / ĐVT / Xử lý /
+ * Kho mặc định / Đang KD điền sẵn từ file; ô không khớp danh mục để trống và báo lỗi.
  */
 export function PreviewTable({ rows, problems, lookups, selected, onSelect, onChange }: Props) {
   const lookupColumn = (
     title: string,
-    field: "categoryId" | "unitId",
-    table: "nhom_hang" | "don_vi_tinh",
+    field: "categoryId" | "unitId" | "stageId",
+    table: "nhom_hang" | "don_vi_tinh" | "cong_doan",
     label: string,
     items: { id: string; name: string }[] | undefined,
   ) => ({
@@ -45,7 +45,7 @@ export function PreviewTable({ rows, problems, lookups, selected, onSelect, onCh
         table={table}
         label={label}
         allowClear={field !== "unitId"}
-        placeholder="Chưa chọn"
+        placeholder={field === "stageId" ? "Mua ngoài" : "Chưa chọn"}
         value={row[field]}
         onChange={(id) => onChange(row.row, { [field]: id })}
         options={toOptions(items)}
@@ -123,6 +123,7 @@ export function PreviewTable({ rows, problems, lookups, selected, onSelect, onCh
       render: (stock: number, row) => (row.fileProblems.length > 0 ? "—" : stock.toLocaleString("vi-VN")),
     },
     lookupColumn("ĐVT", "unitId", "don_vi_tinh", "đơn vị tính", lookups?.units),
+    lookupColumn("Xử lý", "stageId", "cong_doan", "xử lý", lookups?.stages),
     {
       title: "Đang KD",
       key: "isActive",
@@ -140,7 +141,24 @@ export function PreviewTable({ rows, problems, lookups, selected, onSelect, onCh
       ),
     },
     {
-      title: "Vị trí",
+      // Cột "Vị trí" của file = kho mặc định (như file cập nhật); vị trí kệ là cột riêng.
+      title: "Kho mặc định",
+      key: "warehouseId",
+      width: 140,
+      render: (_: unknown, row) => (
+        <Select
+          size="small"
+          allowClear
+          className="w-full"
+          placeholder="Theo kho ghi tồn"
+          value={row.warehouseId ?? undefined}
+          options={toOptions(lookups?.warehouses)}
+          onChange={(id?: string) => onChange(row.row, { warehouseId: id ?? null })}
+        />
+      ),
+    },
+    {
+      title: "Vị trí kệ",
       key: "shelfLocation",
       width: 120,
       render: (_: unknown, row) => (
@@ -162,7 +180,7 @@ export function PreviewTable({ rows, problems, lookups, selected, onSelect, onCh
       columns={columns}
       dataSource={rows}
       // Bảng nằm trong modal: header dính theo khung cuộn riêng, không theo header trang (offset trang đẩy header đè lên dòng dữ liệu).
-      scroll={{ x: 1560, y: "calc(100vh - 420px)" }}
+      scroll={{ x: 1870, y: "calc(100vh - 420px)" }}
       rowClassName={(row) => (problems.has(row.row) ? "[&>td]:bg-red-50" : "")}
       rowSelection={{
         selectedRowKeys: selected,

@@ -7,6 +7,7 @@ import {
   readNewProductUpload,
 } from "../api/new-product-import.api";
 import { productKeys } from "../api/product.keys";
+import type { Lookups } from "../types";
 import {
   catalogProblemsFrom,
   toCheckPayload,
@@ -17,9 +18,18 @@ import {
 /** Đọc file ở server rồi hỏi RPC (chế độ kiểm tra) mã/tên nào đã có trong danh mục. */
 export function useReadNewProductFile() {
   return useMutation({
-    mutationFn: async ({ file, defaultUnitId }: { file: File; defaultUnitId: string | null }) => {
+    mutationFn: async ({
+      file,
+      defaultUnitId,
+      lookups,
+    }: {
+      file: File;
+      defaultUnitId: string | null;
+      /** Để khớp chữ Nhóm hàng / ĐVT / Xử lý / Vị trí trong file ra id. */
+      lookups: Lookups | undefined;
+    }) => {
       const { rows, nameSheetError } = await readNewProductUpload(file);
-      const drafts = toDraftRows(rows, { unitId: defaultUnitId });
+      const drafts = toDraftRows(rows, { unitId: defaultUnitId, lookups });
       const catalog = catalogProblemsFrom(await checkNewProducts(toCheckPayload(drafts)));
       return { drafts, catalog, nameSheetError };
     },

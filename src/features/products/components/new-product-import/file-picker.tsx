@@ -7,17 +7,19 @@ import { MAX_FILE_MB } from "../../lib/excel-template";
 
 type Props = {
   reading: boolean;
+  /** Danh mục (nhóm, ĐVT, xử lý, kho) chưa tải xong — chọn file lúc này sẽ báo "không khớp" sai cho mọi ô. */
+  waitingLookups: boolean;
   error: { title: string; action: string } | null;
   onPick: (file: File) => void;
 };
 
-/** Bước 1: tải file mẫu 4 cột, chọn file đã điền (IMP-01). */
-export function FilePicker({ reading, error, onPick }: Props) {
+/** Bước 1: tải file mẫu (cùng bố cục file cập nhật mã hàng), chọn file đã điền (IMP-01). */
+export function FilePicker({ reading, waitingLookups, error, onPick }: Props) {
   return (
     <div className="flex flex-col gap-3">
       <p className="m-0 text-sm">
-        File chỉ cần 4 cột: <b>Mã hàng</b>, <b>Tên hàng</b>, <b>Tồn kho</b>, <b>Mô tả</b>. Các trường khác chọn ở
-        bước sau.{" "}
+        File cùng bố cục với file cập nhật mã hàng. Bắt buộc <b>Mã hàng</b>, <b>Tên hàng</b>; Nhóm hàng, Đơn vị
+        tính, Xử lý, Vị trí… điền sẵn thì tự khớp, sửa lại được ở bước sau.{" "}
         <a href="/api/danh-muc/mau-nhap-moi" download>
           Tải file mẫu
         </a>
@@ -25,12 +27,12 @@ export function FilePicker({ reading, error, onPick }: Props) {
 
       {error ? <Alert type="error" showIcon title={error.title} description={error.action} /> : null}
 
-      <Spin spinning={reading} description="Đang đọc file…">
+      <Spin spinning={reading || waitingLookups} description={reading ? "Đang đọc file…" : "Đang tải danh mục…"}>
         <Upload.Dragger
           accept=".xlsx"
           multiple={false}
           showUploadList={false}
-          disabled={reading}
+          disabled={reading || waitingLookups}
           beforeUpload={(file) => {
             onPick(file);
             return false; // antd không tự upload — route handler đọc file.

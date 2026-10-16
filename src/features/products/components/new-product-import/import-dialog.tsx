@@ -30,7 +30,7 @@ function toProblem(error: unknown): Problem {
   return explainError(error);
 }
 
-/** "Nhập mã hàng mới" (Phase 15): file 4 cột → chọn trường trên màn → nạp, dòng lỗi bỏ qua. */
+/** "Nhập mã hàng mới" (Phase 15): file cùng bố cục file cập nhật → xem/sửa trên màn → nạp, dòng lỗi bỏ qua. */
 export function NewProductImportDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const lookups = useLookups();
   const read = useReadNewProductFile();
@@ -47,7 +47,7 @@ export function NewProductImportDialog({ open, onClose }: { open: boolean; onClo
     read.reset();
     const defaultUnitId = lookups.data?.units.find((u) => u.code === "CAI")?.id ?? null;
     read.mutate(
-      { file, defaultUnitId },
+      { file, defaultUnitId, lookups: lookups.data },
       { onSuccess: (loaded) => dispatch({ type: "loaded", ...loaded }) },
     );
   }
@@ -60,7 +60,7 @@ export function NewProductImportDialog({ open, onClose }: { open: boolean; onClo
   }
 
   function downloadErrors(map: Map<number, string[]>) {
-    download.mutate(toErrorExportRows(state.drafts, map));
+    download.mutate(toErrorExportRows(state.drafts, map, lookups.data));
   }
 
   function close() {
@@ -103,7 +103,12 @@ export function NewProductImportDialog({ open, onClose }: { open: boolean; onClo
       }
     >
       {state.step === "pick" ? (
-        <FilePicker reading={read.isPending} error={read.error ? toProblem(read.error) : null} onPick={pick} />
+        <FilePicker
+          reading={read.isPending}
+          waitingLookups={lookups.isPending}
+          error={read.error ? toProblem(read.error) : lookups.error ? toProblem(lookups.error) : null}
+          onPick={pick}
+        />
       ) : null}
 
       {state.step === "preview" ? (
