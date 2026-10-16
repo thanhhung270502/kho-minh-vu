@@ -103,7 +103,12 @@ export function NewProductImportDialog({ open, onClose }: { open: boolean; onClo
       }
     >
       {state.step === "pick" ? (
-        <FilePicker reading={read.isPending} error={read.error ? toProblem(read.error) : null} onPick={pick} />
+        <FilePicker
+          reading={read.isPending}
+          waitingLookups={lookups.isPending}
+          error={read.error ? toProblem(read.error) : lookups.error ? toProblem(lookups.error) : null}
+          onPick={pick}
+        />
       ) : null}
 
       {state.step === "preview" ? (
