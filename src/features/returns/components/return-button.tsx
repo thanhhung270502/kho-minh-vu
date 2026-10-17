@@ -38,7 +38,7 @@ export function ReturnButton({ document, canEdit }: Props) {
   function confirmThenCreate() {
     modal.confirm({
       title: `Sinh phiếu trả từ ${document.docNo}?`,
-      content: `Dòng bê nguyên sang từ ${document.docNo}. Sửa lại số trả ở từng dòng rồi hoàn thành. Tồn sẽ ${direction} sau khi hoàn thành.`,
+      content: `Dòng chép từ ${document.docNo} với số còn được trả (đã trừ các phiếu trả trước). Sửa lại số trả ở từng dòng rồi hoàn thành. Tồn sẽ ${direction} sau khi hoàn thành.`,
       okText: "Sinh phiếu trả",
       cancelText: "Thôi",
       onOk: async () => {

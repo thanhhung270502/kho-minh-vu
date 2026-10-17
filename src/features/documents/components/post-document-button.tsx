@@ -1,10 +1,13 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { App, Button, Tooltip, Typography } from "antd";
+import { useState } from "react";
 
 import { PostingSummary } from "@/shared/components/posting-summary";
 import { errorCode, explainError, isPostgrestError } from "@/shared/lib/errors";
 
+import { documentKeys } from "../api/document.keys";
 import { usePostDocument } from "../hooks/useDocuments";
 import { DOC_TYPE_ACTION_LABEL, DOC_TYPE_STOCK_VERB, documentCanGoNegative } from "../lib/doc-type-labels";
 import { negativeReasonLabel } from "../lib/negative-reasons";
@@ -40,6 +43,8 @@ type Props = {
 export function PostDocumentButton({ document, lines, canEdit, extraInvalidateKeys }: Props) {
   const { message, modal } = App.useApp();
   const postDoc = usePostDocument(document.id, { extraKeys: extraInvalidateKeys });
+  const queryClient = useQueryClient();
+  const [preparing, setPreparing] = useState(false);
 
   if (document.status !== "NHAP_LIEU" || !canEdit) return null;
 
@@ -59,7 +64,44 @@ export function PostDocumentButton({ document, lines, canEdit, extraInvalidateKe
       ?.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
-  function confirmThenPost() {
+  /**
+   * Ô số lượng lưu khi rời ô — mà rời ô xảy ra ngay lúc nhấn chuột xuống nút này. Không
+   * chờ lệnh lưu đó thì hộp xác nhận hiện số CŨ và ghi sổ có thể chạy trước khi số mới
+   * vào database (lỗi "sửa số trả rồi mà vẫn ghi số cũ", 17/10/2026).
+   */
+  async function loadLatestLines(): Promise<DocumentLine[]> {
+    while (queryClient.isMutating() > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    const key = documentKeys.lines(document.id);
+    await queryClient.refetchQueries({ queryKey: key, exact: true });
+    return queryClient.getQueryData<DocumentLine[]>(key) ?? lines;
+  }
+
+  async function prepareThenConfirm() {
+    setPreparing(true);
+    try {
+      const latest = await loadLatestLines();
+      const latestOver = canGoNegative ? latest.filter(exceedsStock) : [];
+      if (!latest.length) {
+        message.error("Phiếu chưa có dòng nào.");
+        return;
+      }
+      if (latestOver.length > 0 && !document.negativeReason) {
+        message.error("Chọn lý do xuất âm trước khi hoàn thành.");
+        scrollToReasonPanel();
+        return;
+      }
+      confirmThenPost(latest, latestOver);
+    } finally {
+      setPreparing(false);
+    }
+  }
+
+  function confirmThenPost(
+    lines: DocumentLine[],
+    overLines: Array<DocumentLine & { currentStock: number }>,
+  ) {
     const totalQuantity = lines.reduce((sum, line) => sum + Number(line.quantity), 0);
     const actionLabel = DOC_TYPE_ACTION_LABEL[document.docType];
     const stockVerb = DOC_TYPE_STOCK_VERB[document.docType];
@@ -135,8 +177,8 @@ export function PostDocumentButton({ document, lines, canEdit, extraInvalidateKe
         <Button
           type="primary"
           disabled={Boolean(blockedReason)}
-          loading={postDoc.isPending}
-          onClick={confirmThenPost}
+          loading={postDoc.isPending || preparing}
+          onClick={() => void prepareThenConfirm()}
         >
           Hoàn thành
         </Button>
