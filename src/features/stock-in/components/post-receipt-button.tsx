@@ -28,7 +28,7 @@ export function PostReceiptButton({ receipt, lines, canEdit }: Props) {
   // D-04 cũ chặn ghi sổ khi đơn giá <= 0 — database chưa từng chặn, chỉ giao diện.
   // Phiếu tạo nhanh chưa có nhà cung cấp (giống Tạo đơn) — phải chọn trước khi ghi sổ.
   const blockedReason = !receipt.partnerId
-    ? "Chọn nhà cung cấp ở khung Thông tin phiếu trước khi ghi sổ."
+    ? "Chọn nhà cung cấp ở khung Thông tin phiếu trước khi hoàn thành."
     : lines.length === 0
       ? "Phiếu chưa có dòng nào."
       : null;
@@ -40,7 +40,7 @@ export function PostReceiptButton({ receipt, lines, canEdit }: Props) {
     ];
 
     modal.confirm({
-      title: "Ghi sổ phiếu nhập?",
+      title: "Hoàn thành phiếu nhập?",
       width: 560,
       content: (
         <PostingSummary
@@ -50,7 +50,7 @@ export function PostReceiptButton({ receipt, lines, canEdit }: Props) {
               {lines.length} dòng, tổng số lượng <strong>{formatNumber(totalQuantity)}</strong>.
             </>
           }
-          warningTitle="Ghi sổ xong không sửa được"
+          warningTitle="Hoàn thành rồi không sửa được"
           warningDescription="Sai thì phải hủy phiếu và lập lại. Giá vốn đã tính sẽ KHÔNG tự quay về số cũ — bình quân gia quyền là trung bình lịch sử, không hoàn tác được."
         >
           <Typography.Paragraph className="mb-0">
@@ -59,12 +59,12 @@ export function PostReceiptButton({ receipt, lines, canEdit }: Props) {
           </Typography.Paragraph>
         </PostingSummary>
       ),
-      okText: "Ghi sổ",
+      okText: "Hoàn thành",
       cancelText: "Xem lại",
       onOk: async () => {
         try {
           await postReceipt.mutateAsync();
-          message.success(`Đã ghi sổ phiếu ${receipt.docNo}`);
+          message.success(`Đã hoàn thành phiếu ${receipt.docNo}`);
         } catch (error) {
           // RPC soạn sẵn câu tiếng Việt cho ca nghiệp vụ (thiếu dòng, sai
           // trạng thái, xuất quá tồn) — hiện nguyên văn, đừng dịch lại.
@@ -73,7 +73,7 @@ export function PostReceiptButton({ receipt, lines, canEdit }: Props) {
             return;
           }
           if (errorCode(error) === "42501") {
-            message.error("Tài khoản không có quyền ghi sổ chứng từ.");
+            message.error("Tài khoản không có quyền hoàn thành chứng từ.");
             return;
           }
           const explained = explainError(error);
@@ -91,7 +91,7 @@ export function PostReceiptButton({ receipt, lines, canEdit }: Props) {
         loading={postReceipt.isPending}
         onClick={confirmThenPost}
       >
-        Ghi sổ
+        Hoàn thành
       </Button>
     </Tooltip>
   );

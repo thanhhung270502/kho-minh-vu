@@ -98,7 +98,7 @@ export type DocumentLine = {
 
 export const DOC_STATUS_LABELS: Record<DocStatus, string> = {
   NHAP_LIEU: "Phiếu tạm",
-  HOAN_THANH: "Đã ghi sổ",
+  HOAN_THANH: "Hoàn thành",
   DA_HUY: "Đã hủy",
 };
 

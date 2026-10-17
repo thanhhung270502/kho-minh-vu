@@ -120,7 +120,7 @@ export function KpiStrip() {
             <KpiCell label="Số lượng xuất hôm nay" icon={<ExportOutlined />} {...issued} />
             <KpiCell label="Phiếu nhập hôm nay" icon={<ImportOutlined />} {...receipts} />
             <KpiCell
-              label="Phiếu chờ ghi sổ"
+              label="Phiếu chờ hoàn thành"
               icon={<ClockCircleOutlined />}
               value={n(kpis.pendingDocs)}
               delta={oldestPendingLabel(kpis.oldestPendingDays)}

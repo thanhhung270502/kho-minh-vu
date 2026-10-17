@@ -96,7 +96,7 @@ export function OrderDetailView({
                       <Link href={`/duyet-don/${order.invoice.id}`} className="font-mono">
                         {order.invoice.number}
                       </Link>{" "}
-                      đã ghi sổ. Giao sai thì bấm Sửa đơn để sửa hóa đơn — ghi sổ lại xong, dòng đơn chép theo hóa đơn.
+                      đã hoàn thành. Giao sai thì bấm Sửa đơn để sửa hóa đơn — hoàn thành lại, dòng đơn chép theo hóa đơn.
                     </>
                   ) : (
                     "Đơn đóng sớm, không có hóa đơn. Khách lấy thêm thì lập đơn mới."

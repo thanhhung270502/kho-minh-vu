@@ -29,7 +29,7 @@ describe("activity-format", () => {
         targetId: null,
         code: null,
       }),
-    ).toStrictEqual({ verb: "ghi sổ", object: "86 phiếu nhập" });
+    ).toStrictEqual({ verb: "hoàn thành", object: "86 phiếu nhập" });
     expect(
       activityPhrase({
         ...base,

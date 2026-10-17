@@ -50,7 +50,7 @@ export function PostDocumentButton({ document, lines, canEdit, extraInvalidateKe
   const blockedReason = !lines.length
     ? "Phiếu chưa có dòng nào."
     : missingReason
-      ? "Chọn lý do xuất âm trước khi ghi sổ."
+      ? "Chọn lý do xuất âm trước khi hoàn thành."
       : null;
 
   function scrollToReasonPanel() {
@@ -65,7 +65,7 @@ export function PostDocumentButton({ document, lines, canEdit, extraInvalidateKe
     const stockVerb = DOC_TYPE_STOCK_VERB[document.docType];
 
     modal.confirm({
-      title: `Ghi sổ ${actionLabel}?`,
+      title: `Hoàn thành ${actionLabel}?`,
       width: 560,
       content: (
         <PostingSummary
@@ -76,8 +76,8 @@ export function PostDocumentButton({ document, lines, canEdit, extraInvalidateKe
               {stockVerb}.
             </>
           }
-          warningTitle="Ghi sổ xong phiếu khóa lại"
-          warningDescription="Muốn sửa phải hủy phiếu — hủy phiếu đã ghi sổ chỉ quản lý làm được."
+          warningTitle="Hoàn thành rồi phiếu sẽ khóa lại"
+          warningDescription="Muốn sửa phải hủy phiếu — hủy phiếu đã hoàn thành chỉ quản lý làm được."
         >
           {overLines.length > 0 ? (
             <div>
@@ -86,8 +86,8 @@ export function PostDocumentButton({ document, lines, canEdit, extraInvalidateKe
                 {overLines.map((line) => (
                   <li key={line.id}>
                     {line.productCode} — {line.warehouseName ?? "—"} — tồn{" "}
-                    {formatNumber(line.currentStock)} — số ghi sổ {formatNumber(line.quantity)} —
-                    sau khi ghi sổ còn {formatNumber(line.currentStock - Number(line.quantity))}
+                    {formatNumber(line.currentStock)} — số lượng {formatNumber(line.quantity)} —
+                    sau khi hoàn thành còn {formatNumber(line.currentStock - Number(line.quantity))}
                   </li>
                 ))}
               </ul>
@@ -100,17 +100,17 @@ export function PostDocumentButton({ document, lines, canEdit, extraInvalidateKe
           ) : null}
           {document.orderId ? (
             <Typography.Paragraph className="mb-0">
-              Ghi sổ xong, tiến độ đơn <strong>{document.orderNo}</strong> sẽ cập nhật.
+              Sau khi hoàn thành, tiến độ đơn <strong>{document.orderNo}</strong> sẽ cập nhật.
             </Typography.Paragraph>
           ) : null}
         </PostingSummary>
       ),
-      okText: "Ghi sổ",
+      okText: "Hoàn thành",
       cancelText: "Xem lại",
       onOk: async () => {
         try {
           await postDoc.mutateAsync(undefined);
-          message.success(`Đã ghi sổ phiếu ${document.docNo}`);
+          message.success(`Đã hoàn thành phiếu ${document.docNo}`);
         } catch (error) {
           // RPC soạn sẵn câu tiếng Việt cho ca nghiệp vụ (thiếu lý do, sai
           // trạng thái, xuất quá tồn) — hiện nguyên văn, đừng dịch lại.
@@ -119,7 +119,7 @@ export function PostDocumentButton({ document, lines, canEdit, extraInvalidateKe
             return;
           }
           if (errorCode(error) === "42501") {
-            message.error("Tài khoản không có quyền ghi sổ chứng từ.");
+            message.error("Tài khoản không có quyền hoàn thành chứng từ.");
             return;
           }
           const explained = explainError(error);
@@ -138,7 +138,7 @@ export function PostDocumentButton({ document, lines, canEdit, extraInvalidateKe
           loading={postDoc.isPending}
           onClick={confirmThenPost}
         >
-          Ghi sổ
+          Hoàn thành
         </Button>
       </span>
     </Tooltip>

@@ -46,7 +46,7 @@ export function TransactionHistory({ partnerId }: { partnerId: string }) {
     <QueryState
       query={history}
       isEmpty={(result) => result.rows.length === 0}
-      emptyDescription="Chưa có phiếu nào đã ghi sổ với đối tác này."
+      emptyDescription="Chưa có phiếu nào đã hoàn thành với đối tác này."
     >
       {(result) => (
         <Table<TransactionRow>

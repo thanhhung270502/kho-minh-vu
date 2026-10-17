@@ -17,7 +17,7 @@ export default async function StockInPage() {
     <>
       <PageHeader
         title="Nhập hàng"
-        description="Hàng về kho — ghi sổ xong là tồn tăng và giá vốn tính lại."
+        description="Hàng về kho — hoàn thành là tồn tăng và giá vốn tính lại."
       />
 
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}

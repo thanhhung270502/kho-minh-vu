@@ -48,7 +48,7 @@ export function ApproveSessionButton({
             Chấp nhận tồn 0 cho <strong>{acceptZeroProductIds.length}</strong> mã chưa đếm.
           </Typography.Paragraph>
           <Typography.Paragraph className="mb-0">
-            Duyệt sẽ ghi sổ phiếu kiểm kê: tồn của từng mã về đúng số đã đếm (lệch tính theo tồn
+            Duyệt sẽ hoàn thành phiếu kiểm kê: tồn của từng mã về đúng số đã đếm (lệch tính theo tồn
             sổ lúc đếm). Phiếu không sửa được nữa.
           </Typography.Paragraph>
         </div>

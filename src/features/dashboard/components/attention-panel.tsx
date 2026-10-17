@@ -111,11 +111,11 @@ function buildItems(kpis: OverviewKpis, counts: Counts): Item[] {
   items.push(
     {
       key: "pending",
-      title: "Phiếu chờ ghi sổ",
+      title: "Phiếu chờ hoàn thành",
       count: kpis.pendingDocs,
       description: pendingBreakdownLabel(kpis.pendingDocs, kpis.pendingReceipts, kpis.pendingIssues),
       dot: "bg-trung-tinh-400",
-      cta: "Ghi sổ",
+      cta: "Hoàn thành",
       href:
         kpis.pendingReceipts > 0
           ? "/nhap-hang?trang_thai=NHAP_LIEU"

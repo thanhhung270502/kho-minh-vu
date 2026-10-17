@@ -22,7 +22,7 @@ export function UserPermissionsField<T extends Values>({
 }) {
   const isAdmin = role === "quan_ly";
   const help = isAdmin
-    ? "Quản lý/Admin luôn có đủ mọi quyền, kể cả kiểm kho, nhân viên phụ trách và hủy chứng từ đã ghi sổ."
+    ? "Quản lý/Admin luôn có đủ mọi quyền, kể cả kiểm kho, nhân viên phụ trách và hủy chứng từ đã hoàn thành."
     : canAssign
       ? "Bật/tắt có hiệu lực ở lần tải trang kế tiếp của người đó."
       : "Cần quyền Phân quyền để thay đổi.";

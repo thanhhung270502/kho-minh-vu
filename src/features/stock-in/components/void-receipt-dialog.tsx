@@ -37,7 +37,7 @@ export function VoidReceiptDialog({ receipt, open, onClose }: Props) {
       close();
     } catch (caught) {
       if (errorCode(caught) === "42501") {
-        setError("Chỉ quản lý hủy được phiếu nhập đã ghi sổ.");
+        setError("Chỉ quản lý hủy được phiếu nhập đã hoàn thành.");
         return;
       }
       if (isPostgrestError(caught) && caught.code === "23514") {
@@ -67,7 +67,7 @@ export function VoidReceiptDialog({ receipt, open, onClose }: Props) {
           className="mb-3"
           type="warning"
           showIcon
-          title="Ba điều xảy ra khi hủy phiếu đã ghi sổ"
+          title="Ba điều xảy ra khi hủy phiếu đã hoàn thành"
           description={
             <ul className="mb-0 ps-4">
               <li>Tồn giảm lại bằng bút toán đảo — bản ghi gốc giữ nguyên, không xóa.</li>
@@ -84,7 +84,7 @@ export function VoidReceiptDialog({ receipt, open, onClose }: Props) {
           className="mb-3"
           type="info"
           showIcon
-          title="Phiếu chưa ghi sổ nên chưa đụng tồn — hủy là đóng phiếu lại, không sinh bút toán nào."
+          title="Phiếu chưa hoàn thành nên chưa đụng tồn — hủy là đóng phiếu lại, không sinh bút toán nào."
         />
       )}
 

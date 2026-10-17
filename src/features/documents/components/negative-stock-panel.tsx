@@ -135,13 +135,13 @@ export function NegativeStockPanel({
       <Alert
         type="warning"
         showIcon
-        title={`${overLines.length} dòng sẽ làm tồn âm nếu ghi sổ`}
+        title={`${overLines.length} dòng sẽ làm tồn âm nếu hoàn thành`}
         description={
           <ul className="mb-0 ps-4">
             {overLines.map((line) => (
               <li key={line.id}>
                 {line.productCode} — {line.warehouseName ?? "—"} — tồn{" "}
-                {formatNumber(line.currentStock)} — số ghi sổ {formatNumber(line.quantity)}
+                {formatNumber(line.currentStock)} — số lượng {formatNumber(line.quantity)}
               </li>
             ))}
           </ul>

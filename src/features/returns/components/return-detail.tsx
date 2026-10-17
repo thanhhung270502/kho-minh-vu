@@ -93,8 +93,8 @@ export function ReturnDetailView({
               showIcon
               title={
                 isTraNcc
-                  ? "Ghi sổ phiếu này làm tồn GIẢM ở kho nhận trả."
-                  : "Ghi sổ phiếu này làm tồn TĂNG ở kho nhận trả."
+                  ? "Hoàn thành phiếu này làm tồn GIẢM ở kho nhận trả."
+                  : "Hoàn thành phiếu này làm tồn TĂNG ở kho nhận trả."
               }
             />
 
@@ -113,7 +113,7 @@ export function ReturnDetailView({
                 { key: "createdBy", label: "Người tạo", children: doc.createdByName ?? "—" },
                 {
                   key: "postedAt",
-                  label: "Ngày ghi sổ",
+                  label: "Ngày hoàn thành",
                   children: doc.postedAt ? dayjs(doc.postedAt).format("HH:mm DD/MM/YYYY") : "—",
                 },
                 { key: "note", label: "Ghi chú", children: doc.note ?? "—" },
@@ -125,7 +125,7 @@ export function ReturnDetailView({
                 className="mt-4"
                 type="warning"
                 showIcon
-                title={`Phiếu này đã ghi sổ khi xuất âm — lý do: ${negativeReasonLabel(doc.negativeReason)}`}
+                title={`Phiếu này đã hoàn thành khi xuất âm — lý do: ${negativeReasonLabel(doc.negativeReason)}`}
                 description={doc.negativeReasonNote ?? undefined}
               />
             ) : null}

@@ -58,7 +58,7 @@ export function ReopenPostedButton({
     }
     try {
       const draftId = await reopen.mutateAsync(reason.trim());
-      message.success(`Đã mở sửa phiếu ${document.docNo} — sửa xong bấm Ghi sổ`);
+      message.success(`Đã mở sửa phiếu ${document.docNo} — sửa xong bấm Hoàn thành`);
       setOpen(false);
       router.push(detailHref(draftId));
     } catch (caught) {
@@ -95,7 +95,7 @@ export function ReopenPostedButton({
           className="mb-3"
           type="warning"
           showIcon
-          title="Điều xảy ra khi sửa phiếu đã ghi sổ"
+          title="Điều xảy ra khi sửa phiếu đã hoàn thành"
           description={
             <ul className="mb-0 ps-4">
               <li>
@@ -104,10 +104,10 @@ export function ReopenPostedButton({
               </li>
               <li>
                 Một phiếu nháp mang lại số {document.docNo} mở ra để sửa —{" "}
-                <strong>tồn chỉ cập nhật lại khi bấm Ghi sổ</strong>.
+                <strong>tồn chỉ cập nhật lại khi bấm Hoàn thành</strong>.
               </li>
               {document.orderId ? (
-                <li>Ghi sổ xong, dòng của đơn đặt hàng được chép lại theo hóa đơn đã sửa.</li>
+                <li>Sau khi hoàn thành, dòng của đơn đặt hàng được chép lại theo hóa đơn đã sửa.</li>
               ) : null}
             </ul>
           }

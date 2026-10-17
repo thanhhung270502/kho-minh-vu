@@ -113,7 +113,7 @@ export function ReceiptDetailView({
                 type="info"
                 showIcon
                 title={`Phiếu còn ${hiddenLines} dòng thuộc nhóm hàng bạn không được xem`}
-                description="Các dòng này bị ẩn và không tính vào tổng số lượng, tổng tiền. Phiếu chỉ xem được — cần sửa, ghi sổ hay hủy thì nhờ Quản lý/Admin hoặc người phụ trách nhóm đó."
+                description="Các dòng này bị ẩn và không tính vào tổng số lượng, tổng tiền. Phiếu chỉ xem được — cần sửa, hoàn thành hay hủy thì nhờ Quản lý/Admin hoặc người phụ trách nhóm đó."
               />
             ) : null}
 

@@ -63,7 +63,7 @@ export function ReceiptExpanded({ id, permissions }: Props) {
               <Field label="Người nhập">{note.value ?? receipt.approvedByName ?? "—"}</Field>
               <Field label="Nhà cung cấp">{receipt.partnerName ?? "Chưa chọn"}</Field>
               <Field label="Ngày nhập">{dayjs(receipt.docDate).format("DD/MM/YYYY")}</Field>
-              <Field label="Ghi sổ lúc">
+              <Field label="Hoàn thành lúc">
                 {receipt.postedAt ? dayjs(receipt.postedAt).format("HH:mm DD/MM/YYYY") : "—"}
               </Field>
             </div>

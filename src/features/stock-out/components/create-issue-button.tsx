@@ -110,7 +110,7 @@ export function CreateIssueButton({ label = "Tạo hóa đơn" }: Props) {
           className="mb-3"
           type="info"
           showIcon
-          title="Bấm Tạo là phiếu được cấp số ngay trên server — thêm dòng và ghi sổ ở trang chi tiết."
+          title="Bấm Tạo là phiếu được cấp số ngay trên server — thêm dòng và hoàn thành ở trang chi tiết."
         />
 
         <Form layout="vertical">
@@ -139,7 +139,7 @@ export function CreateIssueButton({ label = "Tạo hóa đơn" }: Props) {
 
         <Typography.Text type="secondary" className="block">
           Đây là đường tạo phiếu không qua đơn — dùng cho xuất kho lẻ, xuất nội bộ.
-          Xuất theo đơn đã duyệt thì bấm “Hoàn thành” ngay trên trang chi tiết đơn — hóa đơn tự sinh và ghi sổ.
+          Xuất theo đơn đã duyệt thì bấm “Hoàn thành” ngay trên trang chi tiết đơn — hóa đơn tự sinh và hoàn thành.
         </Typography.Text>
       </Modal>
     </>
