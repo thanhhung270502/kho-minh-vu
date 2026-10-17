@@ -51,11 +51,8 @@ export function ReopenPostedButton({
     setError(null);
   }
 
+  // 0145: ghi chú không bắt buộc — có thì lưu vào phiếu cũ.
   async function run() {
-    if (reason.trim().length < 5) {
-      setError("Nhập lý do sửa, ít nhất 5 ký tự — lý do lưu vào phiếu cũ.");
-      return;
-    }
     try {
       const draftId = await reopen.mutateAsync(reason.trim());
       message.success(`Đã mở sửa phiếu ${document.docNo} — sửa xong bấm Hoàn thành`);
@@ -93,31 +90,16 @@ export function ReopenPostedButton({
 
         <Alert
           className="mb-3"
-          type="warning"
+          type="info"
           showIcon
-          title="Điều xảy ra khi sửa phiếu đã hoàn thành"
-          description={
-            <ul className="mb-0 ps-4">
-              <li>
-                Phiếu hiện tại được đảo sổ và lưu lại với số {document.docNo}-S… để truy vết trên
-                thẻ kho.
-              </li>
-              <li>
-                Một phiếu nháp mang lại số {document.docNo} mở ra để sửa —{" "}
-                <strong>tồn chỉ cập nhật lại khi bấm Hoàn thành</strong>.
-              </li>
-              {document.orderId ? (
-                <li>Sau khi hoàn thành, dòng của đơn đặt hàng được chép lại theo hóa đơn đã sửa.</li>
-              ) : null}
-            </ul>
-          }
+          title="Tồn quay về như trước khi có phiếu này, rồi cập nhật lại theo số mới khi bấm Hoàn thành."
         />
 
         <Input.TextArea
           autoFocus
           rows={3}
           value={reason}
-          placeholder="Lý do sửa (lưu vào phiếu cũ)"
+          placeholder="Ghi chú (không bắt buộc)"
           onChange={(event) => setReason(event.target.value)}
         />
       </Modal>
