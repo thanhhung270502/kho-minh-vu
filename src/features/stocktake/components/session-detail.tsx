@@ -98,7 +98,7 @@ export function SessionDetail({ sessionId, canCount, canApprove, canViewStock }:
               items={[
                 {
                   key: "dem",
-                  label: "Đếm",
+                  label: "Kiểm",
                   children: (
                     <div className="flex flex-col gap-3">
                       <Segmented

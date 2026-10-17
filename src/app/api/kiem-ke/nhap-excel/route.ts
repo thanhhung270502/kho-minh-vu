@@ -56,7 +56,7 @@ export async function POST(request: Request) {
   if (!(file instanceof File)) {
     return errorResponse(
       "Chưa chọn file",
-      "Chọn file đã điền số đếm (.xlsx) rồi thử lại.",
+      "Chọn file đã điền số kiểm (.xlsx) rồi thử lại.",
       400,
     );
   }
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
   if (file.size > MAX_FILE_MB * 1024 * 1024) {
     return errorResponse(
       `File lớn hơn ${MAX_FILE_MB}MB`,
-      "File mẫu đếm thường nhỏ hơn nhiều — kiểm tra có chọn nhầm file không.",
+      "File mẫu kiểm thường nhỏ hơn nhiều — kiểm tra có chọn nhầm file không.",
       413,
     );
   }
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
   if (rows.length === 0) {
     return errorResponse(
       "File không có dòng hàng nào",
-      "Tải lại file mẫu từ phiên này rồi điền số đếm.",
+      "Tải lại file mẫu từ phiên này rồi điền số kiểm.",
       422,
     );
   }
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
     }
     if (errorCode(error) === CHECK_VIOLATION_CODE) {
       return errorResponse(
-        "Không nhập được số đếm",
+        "Không nhập được số kiểm",
         isPostgrestError(error) ? error.message : explained.action,
         409,
       );

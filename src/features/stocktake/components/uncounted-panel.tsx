@@ -40,10 +40,10 @@ export function UncountedPanel({ sessionId, editable, canApprove }: Props) {
 
         const blockers: string[] = [];
         if (deselected.size > 0) {
-          blockers.push(`${deselected.size} mã chưa đếm đang chờ đếm bù`);
+          blockers.push(`${deselected.size} mã chưa kiểm đang chờ kiểm bù`);
         }
         if (recountRows.length > 0) {
-          blockers.push(`${recountRows.length} dòng chờ đếm lại`);
+          blockers.push(`${recountRows.length} dòng chờ kiểm lại`);
         }
 
         function toggle(keys: Key[]) {
@@ -58,16 +58,16 @@ export function UncountedPanel({ sessionId, editable, canApprove }: Props) {
         return (
           <div className="flex flex-col gap-3">
             {uncounted.length === 0 ? (
-              <Alert type="success" showIcon title="Mọi mã trong phạm vi đã được đếm" />
+              <Alert type="success" showIcon title="Mọi mã trong phạm vi đã được kiểm" />
             ) : (
               <>
                 <Alert
                   type="warning"
                   showIcon
-                  title={`Còn ${uncounted.length} mã chưa đếm — duyệt sẽ tính tồn 0 cho mã được chọn`}
+                  title={`Còn ${uncounted.length} mã chưa kiểm — duyệt sẽ tính tồn 0 cho mã được chọn`}
                 />
                 <Typography.Text type="secondary" className="text-xs">
-                  Bỏ chọn một mã để trả nó về “đếm bù” thay vì chấp nhận tồn 0.
+                  Bỏ chọn một mã để trả nó về “kiểm bù” thay vì chấp nhận tồn 0.
                 </Typography.Text>
                 <div className="overflow-x-auto">
                   <Table<CountSheetRow>

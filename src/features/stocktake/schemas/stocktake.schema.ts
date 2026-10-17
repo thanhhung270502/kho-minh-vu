@@ -24,8 +24,8 @@ export const openSessionSchema = z
   });
 
 export const countQuantitySchema = z
-  .number({ message: "Nhập số đếm" })
-  .min(0, "Số đếm không được âm");
+  .number({ message: "Nhập số kiểm" })
+  .min(0, "Số kiểm không được âm");
 
 export const voidSessionSchema = z.object({
   reason: z.string().trim().min(3, "Nhập lý do hủy phiên"),

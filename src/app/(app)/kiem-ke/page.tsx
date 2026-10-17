@@ -15,7 +15,7 @@ export default async function StocktakePage() {
     <>
       <PageHeader
         title="Kiểm kho"
-        description="Đếm thực tế, xem lệch, duyệt để đưa tồn về đúng số đã đếm"
+        description="Kiểm thực tế, xem lệch, duyệt để đưa tồn về đúng số đã kiểm"
       />
 
       {/* Bộ lọc kho/nhóm hàng của thủ kho siết trong RPC (0066), không ở route —

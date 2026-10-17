@@ -26,7 +26,7 @@ describe("session-status", () => {
     ).toBe("counting");
     expect(SESSION_STATUS_LABELS).toStrictEqual({
       new: "Mới mở",
-      counting: "Đang đếm",
+      counting: "Đang kiểm",
       ready: "Chờ duyệt",
       approved: "Đã duyệt",
       voided: "Đã hủy",

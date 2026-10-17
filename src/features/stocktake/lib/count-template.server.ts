@@ -54,8 +54,8 @@ function sheetTitle(categoryName: string | null): string {
 const GUIDE_ROWS: Array<[string, string]> = [
   ["Chỉ điền cột Tồn thực tế", "Cột Tồn là số trên sổ lúc tải file — để đối chiếu, sửa cũng không có tác dụng."],
   [
-    "Để trống = chưa đếm",
-    "Ô Tồn thực tế để trống nghĩa là mã hàng đó CHƯA ĐẾM — không phải đếm được 0.",
+    "Để trống = chưa kiểm",
+    "Ô Tồn thực tế để trống nghĩa là mã hàng đó CHƯA ĐẾM — không phải kiểm được 0.",
   ],
   [
     "Không đổi tên cột, không thêm sheet phía trước",
