@@ -11,4 +11,5 @@ export const dashboardKeys = {
   stockByGroup: (groupBy: StockGroupBy, warehouseId: string | null) =>
     [...dashboardKeys.all, "stock-by-group", groupBy, warehouseId] as const,
   activity: (group: ActivityGroup) => [...dashboardKeys.all, "activity", group] as const,
+  pendingReturns: () => [...dashboardKeys.all, "pending-returns"] as const,
 };
