@@ -122,7 +122,7 @@ export function IssueHeader({ issue, canEdit }: Props) {
         },
         {
           key: "postedAt",
-          label: "Ngày ghi sổ",
+          label: "Ngày hoàn thành",
           children: issue.postedAt
             ? dayjs(issue.postedAt).format("HH:mm DD/MM/YYYY")
             : "—",

@@ -13,6 +13,7 @@ import {
   type FlowDay,
   type NegativeStockLine,
   type OverviewKpis,
+  type PendingReturn,
   type StockByGroupRow,
 } from "../types";
 
@@ -79,4 +80,17 @@ export async function fetchActivity(group: ActivityGroup, before: string | null)
   });
   if (error) throw error;
   return (data ?? []).map(toActivityEvent);
+}
+
+/** Phiếu trả còn ở trạng thái tạm — chưa có trang danh sách riêng nên ô "Phiếu chờ hoàn thành" dẫn thẳng vào từng phiếu. */
+export async function fetchPendingReturns(limit: number): Promise<PendingReturn[]> {
+  const { data, error } = await getSupabaseBrowserClient()
+    .from("chung_tu")
+    .select("id, so_ct")
+    .in("loai_ct", ["TRA_KHACH", "TRA_NCC"])
+    .eq("trang_thai", "NHAP_LIEU")
+    .order("created_at", { ascending: true })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []).map((row) => ({ id: row.id, docNo: row.so_ct }));
 }

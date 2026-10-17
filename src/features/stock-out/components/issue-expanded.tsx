@@ -75,7 +75,7 @@ export function IssueExpanded({ id, permissions }: Props) {
                 )}
               </Field>
               <Field label="Ngày">{dayjs(issue.docDate).format("DD/MM/YYYY")}</Field>
-              <Field label="Ghi sổ lúc">
+              <Field label="Hoàn thành lúc">
                 {issue.postedAt ? dayjs(issue.postedAt).format("HH:mm DD/MM/YYYY") : "—"}
               </Field>
             </div>

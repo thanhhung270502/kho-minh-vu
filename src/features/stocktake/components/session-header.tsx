@@ -94,21 +94,21 @@ export function SessionHeader({ session, canVoid }: Props) {
           showIcon
           title={
             session.postedAt
-              ? `Đã duyệt lúc ${dayjs(session.postedAt).format("HH:mm DD/MM/YYYY")} — tồn đã về đúng số đếm; phiếu không sửa được.`
-              : "Đã duyệt — tồn đã về đúng số đếm; phiếu không sửa được."
+              ? `Đã duyệt lúc ${dayjs(session.postedAt).format("HH:mm DD/MM/YYYY")} — tồn đã về đúng số kiểm; phiếu không sửa được.`
+              : "Đã duyệt — tồn đã về đúng số kiểm; phiếu không sửa được."
           }
         />
       ) : null}
 
       {session.state === "DA_HUY" ? (
-        <Alert type="warning" showIcon title="Phiên đã hủy — không đếm/duyệt được nữa." />
+        <Alert type="warning" showIcon title="Phiên đã hủy — không kiểm/duyệt được nữa." />
       ) : null}
 
       {session.state === "NHAP_LIEU" && session.scopeCount === 0 ? (
         <Alert
           type="info"
           showIcon
-          title="Phiên này không có mã nào để đếm"
+          title="Phiên này không có mã nào để kiểm"
           description={`Phạm vi chỉ gồm mã có kho mặc định là ${session.warehouseName} hoặc đang có tồn khác 0 tại kho này. Hủy phiên rồi mở lại với kho hoặc nhóm hàng khác.`}
         />
       ) : null}
@@ -135,7 +135,7 @@ export function SessionHeader({ session, canVoid }: Props) {
           },
           {
             key: "progress",
-            label: "Tiến độ đếm",
+            label: "Tiến độ kiểm",
             children: (
               <div className="flex flex-wrap items-center gap-3">
                 <Progress
@@ -148,7 +148,7 @@ export function SessionHeader({ session, canVoid }: Props) {
                 />
                 <Typography.Text type="secondary" className="text-xs">
                   {session.countedCount}/{session.scopeCount}
-                  {session.recountCount > 0 ? ` — chờ đếm lại: ${session.recountCount}` : ""}
+                  {session.recountCount > 0 ? ` — chờ kiểm lại: ${session.recountCount}` : ""}
                 </Typography.Text>
               </div>
             ),

@@ -16,8 +16,8 @@ type FilterOption = "tat_ca" | "co_lech" | "lech_lon" | "cho_dem_lai";
 const FILTER_OPTIONS: { value: FilterOption; label: string }[] = [
   { value: "tat_ca", label: "Tất cả" },
   { value: "co_lech", label: "Có lệch" },
-  { value: "lech_lon", label: "Lệch lớn" },
-  { value: "cho_dem_lai", label: "Chờ đếm lại" },
+  { value: "lech_lon", label: "Lệch nhiều" },
+  { value: "cho_dem_lai", label: "Chờ kiểm lại" },
 ];
 
 type Props = {
@@ -28,7 +28,7 @@ type Props = {
 
 function describeSetRecountError(error: unknown): string {
   const code = errorCode(error);
-  if (code === "42501") return "Tài khoản của bạn không có quyền đặt lại trạng thái đếm.";
+  if (code === "42501") return "Tài khoản của bạn không có quyền đặt lại trạng thái kiểm.";
   if (code === "23514" && isPostgrestError(error)) return error.message;
   const explained = explainError(error);
   return `${explained.title}. ${explained.action}`;
@@ -50,7 +50,7 @@ export function DiscrepancyTable({ sessionId, editable, canApprove }: Props) {
     if (!row.lineId) return;
     try {
       await setRecount.mutateAsync({ lineId: row.lineId, value });
-      message.success(value ? "Đã trả về đếm lại." : "Đã bỏ yêu cầu đếm lại.");
+      message.success(value ? "Đã trả về kiểm lại." : "Đã bỏ yêu cầu kiểm lại.");
     } catch (error) {
       message.error({ content: describeSetRecountError(error), duration: 8 });
     }
@@ -60,7 +60,7 @@ export function DiscrepancyTable({ sessionId, editable, canApprove }: Props) {
     <QueryState
       query={sheet}
       isEmpty={(rows) => rows.every((row) => row.lineId === null)}
-      emptyDescription="Chưa có mã nào được đếm trong phiên này."
+      emptyDescription="Chưa có mã nào được kiểm trong phiên này."
     >
       {(rows) => {
         const countedRows = rows.filter(
@@ -92,14 +92,14 @@ export function DiscrepancyTable({ sessionId, editable, canApprove }: Props) {
         return (
           <div className="flex flex-col gap-3">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Statistic title="Đã đếm" value={countedRows.length} />
+              <Statistic title="Đã kiểm" value={countedRows.length} />
               <Statistic title="Có lệch" value={diffCount} />
-              <Statistic title="Lệch lớn" value={largeCount} styles={{ content: { color: largeCount > 0 ? "#cf1322" : undefined } }} />
-              <Statistic title="Chờ đếm lại" value={recountCount} styles={{ content: { color: recountCount > 0 ? "#d46b08" : undefined } }} />
+              <Statistic title="Lệch nhiều" value={largeCount} styles={{ content: { color: largeCount > 0 ? "#cf1322" : undefined } }} />
+              <Statistic title="Chờ kiểm lại" value={recountCount} styles={{ content: { color: recountCount > 0 ? "#d46b08" : undefined } }} />
             </div>
 
             <Typography.Text type="secondary" className="text-xs">
-              Ngưỡng lệch lớn: từ {LARGE_DISCREPANCY_THRESHOLD.absolute} cái hoặc{" "}
+              Ngưỡng lệch nhiều: từ {LARGE_DISCREPANCY_THRESHOLD.absolute} cái hoặc{" "}
               {LARGE_DISCREPANCY_THRESHOLD.ratio * 100}% tồn sổ.
             </Typography.Text>
 

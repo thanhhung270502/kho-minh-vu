@@ -17,7 +17,7 @@ export default async function StockOutPage() {
     <>
       <PageHeader
         title="Duyệt đơn"
-        description="Hàng ra kho — ghi sổ xong là tồn giảm."
+        description="Hàng ra kho — hoàn thành là tồn giảm."
       />
 
       {/* `useSearchParams()` trong bảng bắt buộc có ranh giới Suspense. */}

@@ -9,7 +9,7 @@ export type SessionStatus = "new" | "counting" | "ready" | "approved" | "voided"
 
 export const SESSION_STATUS_LABELS: Record<SessionStatus, string> = {
   new: "Mới mở",
-  counting: "Đang đếm",
+  counting: "Đang kiểm",
   ready: "Chờ duyệt",
   approved: "Đã duyệt",
   voided: "Đã hủy",

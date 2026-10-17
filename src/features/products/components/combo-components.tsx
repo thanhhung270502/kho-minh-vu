@@ -39,7 +39,7 @@ export function ComboComponents({ comboId, canEdit }: Props) {
                   type="warning"
                   showIcon
                   title="Combo chưa có thành phần"
-                  description="Phiếu xuất có mã này sẽ không ghi sổ được cho tới khi khai thành phần."
+                  description="Phiếu xuất có mã này sẽ không hoàn thành được cho tới khi khai thành phần."
                 />
               ) : (
                 <Table<ComboComponent>

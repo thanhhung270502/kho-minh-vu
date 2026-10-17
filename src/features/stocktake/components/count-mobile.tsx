@@ -55,7 +55,7 @@ export function CountMobile({ sessionId, editable }: Props) {
 
     const parsed = countQuantitySchema.safeParse(quantity);
     if (!parsed.success) {
-      setQuantityError(parsed.error.issues[0]?.message ?? "Nhập số đếm");
+      setQuantityError(parsed.error.issues[0]?.message ?? "Nhập số kiểm");
       return;
     }
     setQuantityError(null);
@@ -70,12 +70,12 @@ export function CountMobile({ sessionId, editable }: Props) {
     } catch (caught) {
       if (errorCode(caught) === "23514") {
         setQuantityError(
-          isPostgrestError(caught) ? caught.message : "Số đếm không hợp lệ.",
+          isPostgrestError(caught) ? caught.message : "Số kiểm không hợp lệ.",
         );
         return;
       }
       if (errorCode(caught) === "42501") {
-        setQuantityError("Bạn không được đếm phiên này.");
+        setQuantityError("Bạn không được kiểm phiên này.");
         return;
       }
       const explained = explainError(caught);
@@ -89,7 +89,7 @@ export function CountMobile({ sessionId, editable }: Props) {
     <div className="mx-auto flex w-full max-w-md flex-col gap-3">
       <div className="flex items-center justify-between">
         <Typography.Text type="secondary">
-          Đã đếm {countedCount}/{total}
+          Đã kiểm {countedCount}/{total}
         </Typography.Text>
       </div>
 
@@ -111,12 +111,12 @@ export function CountMobile({ sessionId, editable }: Props) {
             ) : null}
             {existingLine?.needsRecount ? (
               <Tag color="red" className="w-fit">
-                Cần đếm lại
+                Cần kiểm lại
               </Tag>
             ) : null}
             {existingLine && existingLine.counted !== null ? (
               <Typography.Text type="warning">
-                Đã đếm {existingLine.counted}
+                Đã kiểm {existingLine.counted}
                 {existingLine.countedAt
                   ? ` lúc ${new Date(existingLine.countedAt).toLocaleTimeString("vi-VN", {
                       hour: "2-digit",

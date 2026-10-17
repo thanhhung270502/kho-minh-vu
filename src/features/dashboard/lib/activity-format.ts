@@ -41,7 +41,7 @@ const VERBS: Record<ActivityAction, string> = {
   mo_khoa: "mở khóa",
   hoan_thanh: "hoàn thành",
   huy: "hủy",
-  ghi_so: "ghi sổ",
+  ghi_so: "hoàn thành",
 };
 
 /** Chấm màu theo thao tác — cùng màu với StatusDot: cam = còn việc, xanh dương = đã xác nhận, xanh lá = đã chốt, xám = hủy. */

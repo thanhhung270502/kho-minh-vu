@@ -24,7 +24,7 @@ function NegativeStockContent({ rows }: { rows: NegativeStockLine[] }) {
     <>
       <Typography.Text type="secondary" className="mb-3 block text-[15px]">
         {rows.length.toLocaleString("vi-VN")} dòng phiếu làm tồn xuống dưới 0 — gồm hóa đơn và
-        phiếu trả NCC đã ghi sổ.
+        phiếu trả NCC đã hoàn thành.
       </Typography.Text>
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {counts.map((item) => (

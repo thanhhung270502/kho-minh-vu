@@ -45,11 +45,11 @@ export function ApproveSessionButton({
       content: (
         <div className="flex flex-col gap-2">
           <Typography.Paragraph className="mb-0">
-            Chấp nhận tồn 0 cho <strong>{acceptZeroProductIds.length}</strong> mã chưa đếm.
+            Chấp nhận tồn 0 cho <strong>{acceptZeroProductIds.length}</strong> mã chưa kiểm.
           </Typography.Paragraph>
           <Typography.Paragraph className="mb-0">
-            Duyệt sẽ ghi sổ phiếu kiểm kê: tồn của từng mã về đúng số đã đếm (lệch tính theo tồn
-            sổ lúc đếm). Phiếu không sửa được nữa.
+            Duyệt sẽ hoàn thành phiếu kiểm kê: tồn của từng mã về đúng số đã kiểm (lệch tính theo tồn
+            sổ lúc kiểm). Phiếu không sửa được nữa.
           </Typography.Paragraph>
         </div>
       ),

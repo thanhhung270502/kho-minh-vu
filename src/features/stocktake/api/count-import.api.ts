@@ -145,7 +145,7 @@ export async function postCountFile(input: {
   if (!parsed.success) {
     throw new CountImportError(
       "Máy chủ trả kết quả không đúng dạng",
-      "Tải lại trang rồi kiểm lại file. Nếu đã bấm nạp thật, mở bảng đếm xem số đã đổi chưa trước khi bấm lại — nạp lần hai chỉ ghi đè cùng số.",
+      "Tải lại trang rồi kiểm lại file. Nếu đã bấm nạp thật, mở bảng kiểm xem số đã đổi chưa trước khi bấm lại — nạp lần hai chỉ ghi đè cùng số.",
       500,
     );
   }

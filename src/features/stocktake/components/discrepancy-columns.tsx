@@ -3,7 +3,6 @@
 import { Button, Tag } from "antd";
 import type { TableColumnsType } from "antd";
 
-import { isLargeDiscrepancy } from "../lib/discrepancy";
 import type { CountSheetRow } from "../types";
 
 function formatTime(value: string | null): string {
@@ -54,7 +53,7 @@ export function buildDiscrepancyColumns({
     { title: "Tên hàng", dataIndex: "name", key: "name", ellipsis: true },
     { title: "ĐVT", dataIndex: "unitName", key: "unitName", width: 70 },
     {
-      title: "Số đếm",
+      title: "SL thực tế",
       dataIndex: "counted",
       key: "counted",
       width: 100,
@@ -62,7 +61,7 @@ export function buildDiscrepancyColumns({
       render: (value: number) => formatNumber(value),
     },
     {
-      title: "Tồn sổ lúc đếm",
+      title: "SL tồn",
       dataIndex: "bookQuantity",
       key: "bookQuantity",
       width: 120,
@@ -85,7 +84,7 @@ export function buildDiscrepancyColumns({
       ? [
           {
             title: (
-              <span title="Số tạm nạp từ KiotViet trước đợt đếm — lệch lớn so với số này thường là đếm sót">
+              <span title="Số tạm nạp từ KiotViet trước đợt kiểm — lệch nhiều so với số này thường là sót mã khi kiểm">
                 Tồn KiotViet tạm
               </span>
             ),
@@ -98,23 +97,26 @@ export function buildDiscrepancyColumns({
         ]
       : []),
     {
-      title: "Đếm lúc",
+      title: "Ngày cân bằng",
       dataIndex: "countedAt",
       key: "countedAt",
       width: 110,
       render: (value: string | null) => formatTime(value),
     },
-    { title: "Người đếm", dataIndex: "countedBy", key: "countedBy", width: 120 },
+    { title: "Người duyệt", dataIndex: "countedBy", key: "countedBy", width: 120 },
     {
       title: "Trạng thái",
       key: "status",
       width: 200,
       render: (_: unknown, row) => (
+        // Người dùng 17/10/2026: không gắn "Lệch lớn" từng dòng (nghe ghê) — mọi dòng đã kiểm
+        // hiện chung "Đã cân bằng", chỉ dòng bị trả về mới khác.
         <div className="flex flex-wrap gap-1">
-          {isLargeDiscrepancy(row.counted ?? 0, row.bookQuantity ?? 0) ? (
-            <Tag color="red">Lệch lớn</Tag>
-          ) : null}
-          {row.needsRecount ? <Tag color="orange">Chờ đếm lại</Tag> : null}
+          {row.needsRecount ? (
+            <Tag color="orange">Chờ kiểm lại</Tag>
+          ) : (
+            <Tag color="green">Đã cân bằng</Tag>
+          )}
         </div>
       ),
     },
@@ -131,7 +133,7 @@ export function buildDiscrepancyColumns({
                 </Button>
               ) : (
                 <Button type="link" size="small" className="px-0" onClick={() => onSetRecount(row, true)}>
-                  Trả về đếm lại
+                  Trả về kiểm lại
                 </Button>
               ),
           },

@@ -16,8 +16,8 @@ export function RevisionNotice({ document }: { document: DocumentDetail }) {
       className="mb-4"
       type="warning"
       showIcon
-      title={`Đang sửa phiếu đã ghi sổ — bản cũ lưu ở số ${document.revisedFromNo}`}
-      description="Sổ kho đã đảo phiếu cũ. Sửa xong bấm Ghi sổ để tồn cập nhật lại; hủy bản nháp này là hủy luôn phiếu."
+      title={`Đang sửa phiếu đã hoàn thành — bản cũ lưu ở số ${document.revisedFromNo}`}
+      description="Sổ kho đã đảo phiếu cũ. Sửa xong bấm Hoàn thành để tồn cập nhật lại; hủy bản nháp này là hủy luôn phiếu."
     />
   );
 }

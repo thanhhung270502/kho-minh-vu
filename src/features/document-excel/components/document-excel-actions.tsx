@@ -21,11 +21,11 @@ export function DocumentExcelActions({ kind, canImport, exportButton }: Props) {
   const copy: ExcelImportCopy = {
     label,
     hint: {
-      moi: `Mỗi số phiếu thành một ${label} nháp — chưa đụng tồn, kiểm lại trên web rồi mới ghi sổ.`,
-      cap_nhat: `Sửa thông tin không ảnh hưởng tồn (người nhận, ghi chú, lý do xuất âm…) của mọi ${label}, kể cả đã ghi sổ. Mã hàng, số lượng, kho, ngày phải giữ nguyên. Ô trống = giữ nguyên. Lấy file bằng “Tải mẫu cập nhật” ở nút ⋯ — file có sẵn các phiếu đang lọc.`,
+      moi: `Mỗi số phiếu thành một ${label} nháp — chưa đụng tồn, kiểm lại trên web rồi mới hoàn thành.`,
+      cap_nhat: `Sửa thông tin không ảnh hưởng tồn (người nhận, ghi chú, lý do xuất âm…) của mọi ${label}, kể cả đã hoàn thành. Mã hàng, số lượng, kho, ngày phải giữ nguyên. Ô trống = giữ nguyên. Lấy file bằng “Tải mẫu cập nhật” ở nút ⋯ — file có sẵn các phiếu đang lọc.`,
     },
     createdSuffix: "nháp",
-    doneNote: "Mở từng phiếu để kiểm lại rồi ghi sổ.",
+    doneNote: "Mở từng phiếu để kiểm lại rồi hoàn thành.",
   };
 
   return (

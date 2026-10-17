@@ -60,7 +60,7 @@ export const BUSINESS_PERMISSIONS: ReadonlyArray<{ key: BusinessPermission; labe
   { key: "phan_quyen", label: "Phân quyền", hint: "Tích quyền cho tài khoản nhân viên" },
   { key: "tao_don", label: "Tạo đơn đặt hàng", hint: "Tạo và sửa đơn còn tạm" },
   { key: "xac_nhan_don", label: "Xác nhận / duyệt đơn", hint: "Xác nhận, mở khóa, đóng sớm, hoàn thành đơn" },
-  { key: "nhap_kho", label: "Nhập kho", hint: "Tạo, sửa, ghi sổ phiếu nhập" },
+  { key: "nhap_kho", label: "Nhập kho", hint: "Tạo, sửa, hoàn thành phiếu nhập" },
   { key: "tao_doi_tac", label: "Tạo đối tác", hint: "Thêm, sửa đối tác, nhập Excel đối tác" },
   { key: "tao_ma_hang", label: "Tạo mã hàng", hint: "Thêm, sửa mã hàng, ảnh, danh mục phụ, nhập Excel" },
   { key: "xem_dashboard", label: "Xem trang Tổng quan", hint: "" },

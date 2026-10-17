@@ -89,7 +89,7 @@ export async function updateDocumentHeader(
   if (error) throw error;
   if (!count) {
     throw new Error(
-      "Không lưu được — phiếu đã ghi sổ hoặc tài khoản không có quyền sửa.",
+      "Không lưu được — phiếu đã hoàn thành hoặc tài khoản không có quyền sửa.",
     );
   }
 }
@@ -130,7 +130,7 @@ export async function updateDocumentLine(
     .eq("id", id);
   if (error) throw error;
   if (!count) {
-    throw new Error("Không sửa được dòng — phiếu đã ghi sổ hoặc thiếu quyền.");
+    throw new Error("Không sửa được dòng — phiếu đã hoàn thành hoặc thiếu quyền.");
   }
 }
 
@@ -141,7 +141,7 @@ export async function deleteDocumentLine(id: string): Promise<void> {
     .eq("id", id);
   if (error) throw error;
   if (!count) {
-    throw new Error("Không xóa được dòng — phiếu đã ghi sổ hoặc thiếu quyền.");
+    throw new Error("Không xóa được dòng — phiếu đã hoàn thành hoặc thiếu quyền.");
   }
 }
 
@@ -185,7 +185,7 @@ export async function saveNegativeReason(
   if (error) throw error;
   if (!count) {
     throw new Error(
-      "Không lưu được lý do xuất âm — phiếu đã ghi sổ hoặc thiếu quyền.",
+      "Không lưu được lý do xuất âm — phiếu đã hoàn thành hoặc thiếu quyền.",
     );
   }
 }
@@ -199,7 +199,7 @@ export async function clearNegativeReason(id: string): Promise<void> {
   if (error) throw error;
   if (!count) {
     throw new Error(
-      "Không xóa được lý do xuất âm — phiếu đã ghi sổ hoặc thiếu quyền.",
+      "Không xóa được lý do xuất âm — phiếu đã hoàn thành hoặc thiếu quyền.",
     );
   }
 }

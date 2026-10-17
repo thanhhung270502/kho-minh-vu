@@ -24,7 +24,7 @@ const COPY: Record<
   unlock: {
     title: (orderNo) => `Sửa đơn ${orderNo}`,
     description:
-      "Đơn hàng sẽ chuyển về trạng thái 'Đơn tạm' để tiến hành chỉnh sửa. Thao tác này sẽ được lưu vào nhật ký hệ thống.",
+      "Tồn không đổi — đơn chưa xuất hàng, chỉ mở lại để sửa.",
     okText: "Mở sửa",
   },
   cancel: {
@@ -93,7 +93,7 @@ export function OrderStatusDialog({ mode, open, onClose, orderId, orderNo }: Pro
         autoFocus
         rows={3}
         value={reason}
-        placeholder="Lý do (không bắt buộc)"
+        placeholder="Ghi chú (không bắt buộc)"
         onChange={(event) => setReason(event.target.value)}
       />
     </Modal>

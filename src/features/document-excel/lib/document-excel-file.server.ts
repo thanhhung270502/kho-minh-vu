@@ -130,11 +130,11 @@ export async function buildDocumentWorkbook(
   const notes =
     mode === "moi"
       ? [
-          `Mỗi số phiếu tạo một ${KIND_LABELS[kind].one} NHÁP — chưa đụng tồn. Kiểm lại trên web rồi bấm Ghi sổ / Xác nhận.`,
+          `Mỗi số phiếu tạo một ${KIND_LABELS[kind].one} NHÁP — chưa đụng tồn. Kiểm lại trên web rồi bấm Hoàn thành / Xác nhận.`,
           "Số phiếu đã có trên hệ thống sẽ bị báo lỗi — muốn sửa thì dùng file mẫu cập nhật.",
         ]
       : [
-          "Cập nhật chỉ sửa thông tin KHÔNG ảnh hưởng tồn: đối tác, nhân viên nhận, mã đặt hàng, người nhập, người duyệt đơn, ghi chú phiếu, ghi chú dòng, lý do xuất âm (đơn đặt thêm ngày đặt, ngày giao dự kiến). Sửa được cả phiếu đã ghi sổ.",
+          "Cập nhật chỉ sửa thông tin KHÔNG ảnh hưởng tồn: đối tác, nhân viên nhận, mã đặt hàng, người nhập, người duyệt đơn, ghi chú phiếu, ghi chú dòng, lý do xuất âm (đơn đặt thêm ngày đặt, ngày giao dự kiến). Sửa được cả phiếu đã hoàn thành.",
           "Người tạo và Trạng thái chỉ để xem — sửa trong file không có tác dụng.",
           "Mã hàng, số lượng, số dòng, kho và ngày phiếu phải GIỮ NGUYÊN — khác là báo lỗi. Muốn đổi những thứ này thì hủy phiếu rồi lập phiếu mới.",
           "Ô để trống = giữ nguyên giá trị đang có.",

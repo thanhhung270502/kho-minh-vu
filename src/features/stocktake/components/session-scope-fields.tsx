@@ -53,7 +53,7 @@ export function SessionScopeFields({
       {scope === "category" ? (
         <Form.Item
           label="Nhóm hàng"
-          help="Bỏ trống = đếm toàn kho (dùng cho đợt đếm đầu kỳ trước go-live)."
+          help="Bỏ trống = kiểm toàn kho (dùng cho đợt kiểm đầu kỳ trước go-live)."
         >
           <Controller
             name="categoryIds"

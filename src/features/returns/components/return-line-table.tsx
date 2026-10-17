@@ -76,7 +76,12 @@ export function ReturnLineTable({ documentId, lines, editable, decreasesStock }:
     try {
       await updateLine.mutateAsync({
         id,
-        values: { quantity: parsed, warehouseId: current?.warehouseId ?? null },
+        values: {
+          quantity: parsed,
+          // Kèm đơn giá để updateDocumentLine tính lại thành tiền — thiếu thì tổng tiền phiếu trả giữ số của phiếu gốc.
+          unitPrice: current?.unitPrice ?? 0,
+          warehouseId: current?.warehouseId ?? null,
+        },
       });
     } catch (error) {
       const explained = explainError(error);
@@ -137,6 +142,7 @@ export function ReturnLineTable({ documentId, lines, editable, decreasesStock }:
               status={errors[line.id] ? "error" : undefined}
               defaultValue={Number(value)}
               onBlur={(event) => void editQuantity(line.id, event.target.value, Number(value))}
+              onPressEnter={(event) => event.currentTarget.blur()}
             />
             {errors[line.id] ? (
               <Typography.Text type="danger" className="text-xs">

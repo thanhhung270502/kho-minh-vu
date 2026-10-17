@@ -18,9 +18,9 @@ type StatusFilter = "tat_ca" | "chua_dem" | "da_dem" | "can_dem_lai";
 
 const STATUS_OPTIONS: { label: string; value: StatusFilter }[] = [
   { label: "Tất cả", value: "tat_ca" },
-  { label: "Chưa đếm", value: "chua_dem" },
-  { label: "Đã đếm", value: "da_dem" },
-  { label: "Cần đếm lại", value: "can_dem_lai" },
+  { label: "Chưa kiểm", value: "chua_dem" },
+  { label: "Đã kiểm", value: "da_dem" },
+  { label: "Cần kiểm lại", value: "can_dem_lai" },
 ];
 
 function matchesStatus(row: CountSheetRow, filter: StatusFilter): boolean {
@@ -82,7 +82,7 @@ export function CountDeskTable({ sessionId, editable }: Props) {
 
     const parsed = countQuantitySchema.safeParse(value);
     if (!parsed.success) {
-      message.error(parsed.error.issues[0]?.message ?? "Số đếm không hợp lệ.");
+      message.error(parsed.error.issues[0]?.message ?? "Số kiểm không hợp lệ.");
       return;
     }
 
@@ -145,7 +145,7 @@ export function CountDeskTable({ sessionId, editable }: Props) {
       </div>
 
       <Typography.Text type="secondary" className="text-xs">
-        Gõ số → Enter là lưu và xuống dòng. Lưu lại mã đã đếm sẽ ghi đè và chốt
+        Gõ số → Enter là lưu và xuống dòng. Lưu lại mã đã kiểm sẽ ghi đè và chốt
         lại tồn sổ tại lúc lưu.
       </Typography.Text>
 

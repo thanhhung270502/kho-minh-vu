@@ -110,7 +110,7 @@ export function IssueDetailView({
                 className="mb-4"
                 type="warning"
                 showIcon
-                title={`Phiếu này đã ghi sổ khi xuất âm — lý do: ${negativeReasonLabel(issue.negativeReason)}`}
+                title={`Phiếu này đã hoàn thành khi xuất âm — lý do: ${negativeReasonLabel(issue.negativeReason)}`}
                 description={issue.negativeReasonNote ?? undefined}
               />
             ) : null}

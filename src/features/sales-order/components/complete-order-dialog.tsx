@@ -62,7 +62,7 @@ export function CompleteOrderDialog({ open, onClose, orderId, orderNo, lineCount
       const invoiceId = await complete.mutateAsync(
         negative && reason ? { code: reason, note: note.trim() || null } : undefined,
       );
-      message.success(`Đã hoàn thành đơn ${orderNo} — hóa đơn đã ghi sổ.`);
+      message.success(`Đã hoàn thành đơn ${orderNo} — hóa đơn đã hoàn thành.`);
       close();
       router.push(`/duyet-don/${invoiceId}`);
     } catch (caught) {
@@ -105,7 +105,7 @@ export function CompleteOrderDialog({ open, onClose, orderId, orderNo, lineCount
       {error ? <Alert className="mb-3" type="error" showIcon title={error} /> : null}
 
       <p className="mb-3">
-        Ghi sổ hóa đơn {lineCount} dòng, tổng {orderedQuantity.toLocaleString("vi-VN")} — trừ tồn
+        Hoàn thành hóa đơn {lineCount} dòng, tổng {orderedQuantity.toLocaleString("vi-VN")} — trừ tồn
         ngay theo kho mặc định của từng mã. Sai số lượng thì Sửa đơn sau khi giao; hủy hóa đơn là hủy
         luôn đơn này.
       </p>

@@ -120,7 +120,7 @@ export function OpenSessionDrawer({ open, onClose, isStorekeeper }: Props) {
           className="mb-4"
           type="info"
           showIcon
-          title="Kho KHÔNG cần đóng khi kiểm kê — phiếu nhập/xuất vẫn ghi sổ bình thường. Tồn sổ của mỗi mã được chốt đúng lúc lưu số đếm mã đó, nên đếm xong mã nào nhập ngay mã đó."
+          title="Kho KHÔNG cần đóng khi kiểm kê — phiếu nhập/xuất vẫn hoàn thành bình thường. Tồn sổ của mỗi mã được chốt đúng lúc lưu số kiểm mã đó, nên kiểm xong mã nào nhập ngay mã đó."
         />
 
         <Form.Item

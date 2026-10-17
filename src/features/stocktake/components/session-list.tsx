@@ -88,7 +88,7 @@ const COLUMNS: TableColumnsType<StocktakeSession> = [
   },
   { title: "Tiến độ", width: 160, render: (_, row) => progressColumn(row) },
   {
-    title: "Chờ đếm lại",
+    title: "Chờ kiểm lại",
     dataIndex: "recountCount",
     width: 110,
     align: "right",

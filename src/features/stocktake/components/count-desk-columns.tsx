@@ -53,7 +53,7 @@ export function buildCountDeskColumns({
     { title: "ĐVT", dataIndex: "unitName", key: "unitName", width: 70 },
     { title: "Nhóm", dataIndex: "categoryName", key: "categoryName", width: 140 },
     {
-      title: "Số đếm",
+      title: "SL thực tế",
       dataIndex: "counted",
       key: "counted",
       width: 130,
@@ -72,20 +72,20 @@ export function buildCountDeskColumns({
       ),
     },
     {
-      title: "Đếm lúc",
+      title: "Kiểm lúc",
       dataIndex: "countedAt",
       key: "countedAt",
       width: 110,
       render: (value: string | null) => formatTime(value),
     },
-    { title: "Người đếm", dataIndex: "countedBy", key: "countedBy", width: 120 },
+    { title: "Người kiểm", dataIndex: "countedBy", key: "countedBy", width: 120 },
     {
       title: "Trạng thái",
       key: "status",
       width: 110,
       render: (_: unknown, row) => {
-        if (row.needsRecount) return <Tag color="red">Cần đếm lại</Tag>;
-        if (row.lineId === null) return <Tag color="default">Chưa đếm</Tag>;
+        if (row.needsRecount) return <Tag color="red">Cần kiểm lại</Tag>;
+        if (row.lineId === null) return <Tag color="default">Chưa kiểm</Tag>;
         return null;
       },
     },
@@ -98,12 +98,12 @@ export function buildCountDeskColumns({
             render: (_: unknown, row: CountSheetRow) =>
               row.lineId ? (
                 <Popconfirm
-                  title="Xóa số đếm"
-                  description="Mã sẽ quay về chưa đếm."
+                  title="Xóa số kiểm"
+                  description="Mã sẽ quay về chưa kiểm."
                   onConfirm={() => onDelete(row)}
                 >
                   <Button type="link" size="small" danger className="px-0">
-                    Xóa số đếm
+                    Xóa số kiểm
                   </Button>
                 </Popconfirm>
               ) : null,

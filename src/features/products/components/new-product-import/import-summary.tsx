@@ -26,7 +26,7 @@ export function ImportSummary({ result, errorCount, downloading, onDownloadError
           type="success"
           showIcon
           title={`Tồn trong file đã vào sổ bằng phiếu ${result.docNo}`}
-          description="Phiếu đã ghi sổ. Thẻ kho của từng mã hiện dòng điều chỉnh mang số phiếu này."
+          description="Phiếu đã hoàn thành. Thẻ kho của từng mã hiện dòng điều chỉnh mang số phiếu này."
         />
       ) : null}
 

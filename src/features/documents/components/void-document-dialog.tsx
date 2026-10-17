@@ -24,17 +24,25 @@ type Props = {
  * Tự chứa cả nút bấm lẫn hộp thoại — chỉ hiện khi phiếu đã ghi sổ và tài
  * khoản có quyền.
  */
-export function VoidDocumentDialog({ document, canVoid, extraInvalidateKeys }: Props) {
+export function VoidDocumentDialog({
+  document,
+  canVoid,
+  extraInvalidateKeys,
+}: Props) {
   const { message } = App.useApp();
-  const voidDoc = useVoidDocument(document.id, { extraKeys: extraInvalidateKeys });
+  const voidDoc = useVoidDocument(document.id, {
+    extraKeys: extraInvalidateKeys,
+  });
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   if (document.status !== "HOAN_THANH" || !canVoid) return null;
 
-  // 0139: hóa đơn hủy không bắt buộc lý do; phiếu nhập / trả vẫn bắt buộc (database cũng chặn).
-  const reasonRequired = document.docType !== "XUAT";
+  // 0139: hóa đơn hủy không bắt buộc lý do (vẫn cho ghi). 0144: phiếu trả bỏ hẳn ô lý do.
+  const isReturn =
+    document.docType === "TRA_KHACH" || document.docType === "TRA_NCC";
+  const reasonRequired = document.docType !== "XUAT" && !isReturn;
 
   function close() {
     if (voidDoc.isPending) return;
@@ -88,33 +96,44 @@ export function VoidDocumentDialog({ document, canVoid, extraInvalidateKeys }: P
         onOk={() => void run()}
         onCancel={close}
       >
-        {error ? <Alert className="mb-3" type="error" showIcon title={error} /> : null}
+        {error ? (
+          <Alert className="mb-3" type="error" showIcon title={error} />
+        ) : null}
 
-        <Alert
-          className="mb-3"
-          type="warning"
-          showIcon
-          title="Điều xảy ra khi hủy phiếu đã duyệt"
-          description={
-            <ul className="mb-0 ps-4">
-              <li>Tồn quay lại lúc đầu</li>
-              {document.orderId ? (
-                <li>
-                  Đơn đặt {document.orderNo ?? "gắn với hóa đơn này"} cũng chuyển sang Đã hủy — cần giao lại thì
-                  tạo đơn mới.
-                </li>
-              ) : null}
-            </ul>
-          }
-        />
+        {/* Phiếu trả: chỉ câu hỏi + nút (17/10/2026). Hóa đơn giữ khung vì báo đơn đặt bị hủy theo. */}
+        {isReturn ? null : (
+          <Alert
+            className="mb-3"
+            type="warning"
+            showIcon
+            title="Điều xảy ra khi hủy phiếu đã duyệt"
+            description={
+              <ul className="mb-0 ps-4">
+                <li>Tồn quay lại lúc đầu</li>
+                {document.orderId ? (
+                  <li>
+                    Đơn đặt {document.orderNo ?? "gắn với hóa đơn này"} cũng
+                    chuyển sang Đã hủy — cần giao lại thì tạo đơn mới.
+                  </li>
+                ) : null}
+              </ul>
+            }
+          />
+        )}
 
-        <Input.TextArea
-          autoFocus
-          rows={3}
-          value={reason}
-          placeholder={reasonRequired ? "Lý do hủy (lưu vào phiếu)" : "Lý do hủy (không bắt buộc)"}
-          onChange={(event) => setReason(event.target.value)}
-        />
+        {isReturn ? null : (
+          <Input.TextArea
+            autoFocus
+            rows={3}
+            value={reason}
+            placeholder={
+              reasonRequired
+                ? "Lý do hủy (lưu vào phiếu)"
+                : "Lý do hủy (không bắt buộc)"
+            }
+            onChange={(event) => setReason(event.target.value)}
+          />
+        )}
       </Modal>
     </>
   );

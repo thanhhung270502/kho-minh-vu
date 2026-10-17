@@ -175,7 +175,7 @@ export function ReceiptAside({ receipt, canEdit }: Props) {
           </dd>
         </div>
         <div>
-          <dt className={metaLabel}>Ghi sổ lúc</dt>
+          <dt className={metaLabel}>Hoàn thành lúc</dt>
           <dd className={`m-0 ${metaValue}`}>
             {receipt.postedAt ? dayjs(receipt.postedAt).format("HH:mm DD/MM/YYYY") : "—"}
           </dd>

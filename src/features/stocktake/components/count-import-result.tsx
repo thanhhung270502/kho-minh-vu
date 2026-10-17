@@ -61,12 +61,12 @@ export function CountImportResultView({ result }: { result: CountImportResult })
       </div>
       {result.overwriteCount > 0 ? (
         <Typography.Text type="secondary">
-          Ghi đè số cũ sẽ chốt lại tồn sổ lúc nạp — số đếm trước đó của các mã này bị thay bằng số
+          Ghi đè số cũ sẽ chốt lại tồn sổ lúc nạp — số kiểm trước đó của các mã này bị thay bằng số
           mới trong file.
         </Typography.Text>
       ) : null}
       <IssueTable title="Lỗi — dòng không nạp được" rows={result.errors} />
-      <IssueTable title="Bỏ qua — ô trống, vẫn tính là chưa đếm" rows={result.skippedRows} />
+      <IssueTable title="Bỏ qua — ô trống, vẫn tính là chưa kiểm" rows={result.skippedRows} />
     </>
   );
 }

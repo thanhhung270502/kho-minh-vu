@@ -197,3 +197,5 @@ export function toActivityEvent(row: ActivityRowDb): ActivityEvent {
     actor: (row.nguoi as string | null) ?? null,
   };
 }
+
+export type PendingReturn = { id: string; docNo: string };

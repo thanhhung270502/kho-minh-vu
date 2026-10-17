@@ -43,7 +43,7 @@ export function CountExcelImport({ sessionId, editable }: Props) {
   useEffect(() => {
     if (state.step === "loaded" && result?.loaded) {
       void message.success(
-        `Đã nạp ${(result.newCount + result.overwriteCount).toLocaleString("vi-VN")} số đếm`,
+        `Đã nạp ${(result.newCount + result.overwriteCount).toLocaleString("vi-VN")} số kiểm`,
       );
     }
   }, [state.step, result, message]);
@@ -53,8 +53,8 @@ export function CountExcelImport({ sessionId, editable }: Props) {
       <div className="flex flex-col gap-2">
         <Typography.Text strong>1. Tải file mẫu</Typography.Text>
         <Typography.Paragraph type="secondary" className="mb-0">
-          Mỗi nhóm một file, có cột Tồn (số trên sổ) để đối chiếu — người đếm điền cột Tồn
-          thực tế. Để trống = chưa đếm.
+          Mỗi nhóm một file, có cột Tồn (số trên sổ) để đối chiếu — người kiểm điền cột Tồn
+          thực tế. Để trống = chưa kiểm.
         </Typography.Paragraph>
         <div className="flex flex-wrap items-center gap-2">
           <Select
@@ -79,7 +79,7 @@ export function CountExcelImport({ sessionId, editable }: Props) {
           type="warning"
           showIcon
           title="Phiên đã duyệt/hủy — không nhập được"
-          description="File mẫu vẫn tải được để in giấy, nhưng không nạp số đếm vào phiên này nữa."
+          description="File mẫu vẫn tải được để in giấy, nhưng không nạp số kiểm vào phiên này nữa."
         />
       ) : (
         <>
@@ -95,7 +95,7 @@ export function CountExcelImport({ sessionId, editable }: Props) {
               <p className="px-4 py-6">
                 {state.submitting
                   ? "Đang đọc file và kiểm từng mã…"
-                  : "Kéo file đã điền số đếm vào đây, hoặc bấm để chọn."}
+                  : "Kéo file đã điền số kiểm vào đây, hoặc bấm để chọn."}
               </p>
             </Upload.Dragger>
             <Typography.Paragraph type="secondary" className="mb-0">
@@ -143,7 +143,7 @@ export function CountExcelImport({ sessionId, editable }: Props) {
                         disabled={result.errorCount > 0}
                         onClick={load}
                       >
-                        Nạp số đếm
+                        Nạp số kiểm
                       </Button>
                     </span>
                   </Tooltip>
@@ -156,7 +156,7 @@ export function CountExcelImport({ sessionId, editable }: Props) {
                     <Alert
                       type="success"
                       showIcon
-                      title={`Đã nạp ${(result.newCount + result.overwriteCount).toLocaleString("vi-VN")} số đếm`}
+                      title={`Đã nạp ${(result.newCount + result.overwriteCount).toLocaleString("vi-VN")} số kiểm`}
                     />
                   ) : (
                     <Alert

@@ -12,6 +12,7 @@ import {
   fetchFlowByDay,
   fetchNegativeStockReport,
   fetchOverviewKpis,
+  fetchPendingReturns,
   fetchStockByGroup,
 } from "../api/dashboard.api";
 import { dashboardKeys } from "../api/dashboard.keys";
@@ -87,5 +88,13 @@ export function useActivityFeed(group: ActivityGroup) {
     initialPageParam: null as string | null,
     getNextPageParam: (last) => (last.length < ACTIVITY_PAGE_SIZE ? undefined : (last.at(-1)?.at ?? undefined)),
     placeholderData: keepPreviousData,
+  });
+}
+
+export function usePendingReturns(limit: number, options: { enabled: boolean }) {
+  return useQuery({
+    queryKey: dashboardKeys.pendingReturns(),
+    queryFn: () => fetchPendingReturns(limit),
+    enabled: options.enabled,
   });
 }
